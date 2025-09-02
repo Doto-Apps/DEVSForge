@@ -100,10 +100,10 @@ router.post(
 			return;
 		}
 		try {
-			const debug = true;
+			const debug = false;
 			if (!debug) {
 				const completion = await openai.beta.chat.completions.parse({
-					model: "llama-3.3-70b-instruct",
+					model: "gpt-5-mini",
 					messages: [
 						{ role: "system", content: systemDiagramPrompt.trim() },
 						{ role: "user", content: userPrompt },

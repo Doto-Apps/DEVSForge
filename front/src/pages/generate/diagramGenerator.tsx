@@ -24,16 +24,23 @@ import {
   useReactFlow,
   applyNodeChanges,
   applyEdgeChanges,
+  Edge,
+  Node,
+  EdgeChange,
+  NodeChange,
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css";
+
 import { ZoomSlider } from "../../components/zoom-slider.tsx";
 import ResizerNode from "../../components/custom/reactFlow/ResizerNode.tsx";
 import BiDirectionalEdge from "../../components/custom/reactFlow/BiDirectionalEdge.tsx";
 import { getLayoutedElements } from "@/lib/getLayoutedElements.ts";
+
 import {
   initialNodes,
   initialEdges,
 } from "../../staticModel/initialElements.tsx";
+
 import { Button } from "../../components/ui/button.tsx";
 import DiagramPrompt from "./diagramPrompt.tsx";
 import { SidebarTrigger } from "../../components/ui/sidebar.tsx";
@@ -46,16 +53,20 @@ import {
 } from "../../components/ui/breadcrumb.tsx";
 import { NavActions } from "../../components/nav/nav-actions.tsx";
 import { ModeToggle } from "../../components/mode-toggle.tsx";
+
 import CodeMirror from "@uiw/react-codemirror";
 import { python } from "@codemirror/lang-python";
-import ModelPrompt from "../../modelPrompt.tsx";
 import { githubLight, githubDark } from "@uiw/codemirror-theme-github";
-import { ModelData, DiagramDataType, NodeData } from "@/types";
-import { useTheme } from "../../components/theme-provider.tsx"; // Assure-toi que ce hook existe
+
+import ModelPrompt from "../../modelPrompt.tsx";
 import StepShower from "../../components/stepShower.tsx";
-import { Edge, Node, EdgeChange, NodeChange } from "@xyflow/react";
+
+import { ModelData, DiagramDataType, NodeData } from "@/types";
+import { useTheme } from "../../components/theme-provider.tsx";
 import { saveDiagram } from "../../api/diagramApi.ts";
 import { useAuth } from "@/providers/AuthProvider.tsx";
+
+/* ---------------------------------- CFG ---------------------------------- */
 
 const nodeTypes: ComponentProps<typeof ReactFlow>["nodeTypes"] = {
   resizer: ResizerNode,
@@ -71,13 +82,51 @@ const edgeTypes = {
   bidirectional: BiDirectionalEdge,
 };
 
+type RFNode = Node<NodeData>;
+type RFEdge = Edge;
+
+/* ------------------------------- small utils ------------------------------ */
+
+const deepClone = <T,>(v: T): T => JSON.parse(JSON.stringify(v));
+
+/** compare vite fait : id + position + size (si présent) + ports (taille) + targets/sources */
+function isSameLayout(aNodes: RFNode[], aEdges: RFEdge[], bNodes: RFNode[], bEdges: RFEdge[]) {
+  if (aNodes.length !== bNodes.length || aEdges.length !== bEdges.length) return false;
+
+  const mapA = new Map(aNodes.map(n => [n.id, n]));
+  for (const bn of bNodes) {
+    const an = mapA.get(bn.id);
+    if (!an) return false;
+    const ap = an.position, bp = bn.position;
+    if (!ap || !bp) return false;
+    if (ap.x !== bp.x || ap.y !== bp.y) return false;
+    const aw = (an.style as any)?.width, bw = (bn.style as any)?.width;
+    const ah = (an.style as any)?.height, bh = (bn.style as any)?.height;
+    if (aw !== bw || ah !== bh) return false;
+  }
+
+  const E = (e: RFEdge) => `${e.id ?? ""}|${e.source}->${e.target}`;
+  const setA = new Set(aEdges.map(E));
+  for (const e of bEdges) if (!setA.has(E(e))) return false;
+
+  return true;
+}
+
+/* -------------------------------- Component ------------------------------- */
+
 const DiagramGenerator = () => {
   const lastSavedDiagram = useRef<DiagramDataType | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
   const { theme } = useTheme();
-  const [stage, setStage] = useState(0);
   const { fitView } = useReactFlow();
+  const { token } = useAuth();
+
+  // stages: 0 = prompt, 1 = diagram view, 2 = model/code view
+  const [stage, setStage] = useState(0);
+
   const [code, setCode] = useState("// Hello, CodeMirror!");
+
   const [diagramData, setDiagramData] = useState<DiagramDataType | undefined>({
     name: "Unamed model",
     diagramId: null,
@@ -86,286 +135,257 @@ const DiagramGenerator = () => {
     models: [],
     currentModel: 0,
   });
-  const { token } = useAuth();
+
+  // --- layout orchestration ---
+  const layoutReqId = useRef(0);
+  const layoutTimer = useRef<number | null>(null);
+
+  const schedule = (fn: () => void, ms = 60) => {
+    if (layoutTimer.current) {
+      window.clearTimeout(layoutTimer.current);
+      layoutTimer.current = null;
+    }
+    // petit debounce “façon timeout” pour coller à ta manière
+    layoutTimer.current = window.setTimeout(fn, ms);
+  };
+
+  const runLayout = useCallback(
+    (nodes: RFNode[], edges: RFEdge[], direction: "RIGHT" | "LEFT" | "UP" | "DOWN" = "RIGHT") => {
+      const myId = ++layoutReqId.current;
+      return getLayoutedElements(nodes, edges, direction).then(({ nodes: n, edges: e }) => {
+        // ignore résultats obsolètes
+        if (myId !== layoutReqId.current) return;
+
+        setDiagramData(prev => {
+          if (!prev) return prev;
+          // évite la boucle si rien n'a vraiment changé
+          const same = isSameLayout(prev.nodes as RFNode[], prev.edges as RFEdge[], n as RFNode[], e as RFEdge[]);
+          if (same) return prev;
+
+          return { ...prev, nodes: n as RFNode[], edges: e as RFEdge[] };
+        });
+
+        requestAnimationFrame(() => fitView());
+      });
+    },
+    [fitView]
+  );
+
+  /* ----------------------------- ReactFlow events ----------------------------- */
 
   const onNodesChange = useCallback((changes: NodeChange<Node<NodeData>>[]) => {
-    setDiagramData((prev) =>
+    setDiagramData(prev =>
       prev
         ? {
             ...prev,
             nodes: applyNodeChanges(changes, prev.nodes),
           }
-        : undefined
+        : prev
     );
-  }, []);
+    // relayer un layout léger après modif manuelle
+    schedule(() => {
+      if (!diagramData) return;
+      if (stage !== 1) return;
+      runLayout((diagramData.nodes as RFNode[]) ?? [], (diagramData.edges as RFEdge[]) ?? [], "RIGHT");
+    });
+  }, [diagramData, stage, runLayout]);
 
   const onEdgesChange = useCallback((changes: EdgeChange<Edge>[]) => {
-    setDiagramData((prev) =>
+    setDiagramData(prev =>
       prev
         ? {
             ...prev,
             edges: applyEdgeChanges(changes, prev.edges),
           }
-        : undefined
+        : prev
     );
-  }, []);
+    // relayer un layout léger après modif manuelle
+    schedule(() => {
+      if (!diagramData) return;
+      if (stage !== 1) return;
+      runLayout((diagramData.nodes as RFNode[]) ?? [], (diagramData.edges as RFEdge[]) ?? [], "RIGHT");
+    });
+  }, [diagramData, stage, runLayout]);
 
-  const onConnect = useCallback<NonNullable<ComponentProps<typeof ReactFlow>['onConnect']>>((connection) => {
-    setDiagramData((prev) =>
+  const onConnect = useCallback<NonNullable<ComponentProps<typeof ReactFlow>["onConnect"]>>((connection) => {
+    setDiagramData(prev =>
       prev
         ? {
             ...prev,
             edges: addEdge(connection, prev.edges),
           }
-        : undefined
+        : prev
     );
-  }, []);
+    schedule(() => {
+      if (!diagramData) return;
+      if (stage !== 1) return;
+      runLayout((diagramData.nodes as RFNode[]) ?? [], (diagramData.edges as RFEdge[]) ?? [], "RIGHT");
+    });
+  }, [diagramData, stage, runLayout]);
+
+  /* --------------------------- Models build (Kahn) --------------------------- */
 
   const createModelDataStructure = () => {
-    // 2. Construire le graphe des dépendances
-    const inDegree: Record<string, number> = {}; // Compte le nombre d'arêtes entrant dans chaque modèle
-    const graph: Record<string, string[]> = {}; // Liste d'adjacence des dépendances
-    if (diagramData) {
-      // Initialiser le graphe et les degrés entrants (in-degrees)
-      diagramData.nodes.forEach((model) => {
-        inDegree[model.id] = 0;
-        graph[model.id] = [];
-      });
+    if (!diagramData) return;
 
-      // Remplir le graphe et les degrés entrants
-      diagramData.edges.forEach((edge) => {
-        inDegree[edge.target] += 1;
-        graph[edge.source].push(edge.target);
-      });
-    }
+    const inDegree: Record<string, number> = {};
+    const graph: Record<string, string[]> = {};
 
-    // 3. Algorithme de tri topologique (Kahn's algorithm)
+    diagramData.nodes.forEach((model) => {
+      inDegree[model.id] = 0;
+      graph[model.id] = [];
+    });
+
+    diagramData.edges.forEach((edge) => {
+      inDegree[edge.target] += 1;
+      graph[edge.source].push(edge.target);
+    });
+
     const queue: string[] = [];
     const result: string[] = [];
 
-    // Ajouter les nœuds avec un degré entrant de 0 (pas de dépendances)
     Object.keys(inDegree).forEach((id) => {
-      if (inDegree[id] === 0) {
-        queue.push(id);
-      }
+      if (inDegree[id] === 0) queue.push(id);
     });
 
-    // Processus de tri topologique
     while (queue.length > 0) {
-      const currentNode: string | undefined = queue.shift(); // Prendre un nœud sans dépendance
-
-      if (currentNode) {
-        result.push(currentNode); // Ajouter le nœud au résultat
-
-        // Réduire le degré entrant des nœuds dépendants
-
-        graph[currentNode].forEach((neighbor) => {
-          inDegree[neighbor] -= 1;
-          if (inDegree[neighbor] === 0) {
-            queue.push(neighbor);
-          }
-        });
-      }
+      const currentNode = queue.shift()!;
+      result.push(currentNode);
+      graph[currentNode].forEach((neighbor) => {
+        inDegree[neighbor] -= 1;
+        if (inDegree[neighbor] === 0) queue.push(neighbor);
+      });
     }
 
-    // 4. Si le résultat contient tous les modèles, nous avons un ordre valide
-    if (result.length !== diagramData?.nodes.length) {
+    if (result.length !== diagramData.nodes.length) {
       console.error("Il existe un cycle de dépendances!");
       return;
     }
 
-    // 5. Récupérer les codes des modèles dans l'ordre de tri topologique
     const orderedModels: ModelData[] = result.map((id) => ({
-      id: id,
-      name:
-        diagramData.nodes.find((node) => node.id === id)?.data.label ||
-        "Unnamed",
+      id,
+      name: diagramData.nodes.find((node) => node.id === id)?.data.label || "Unnamed",
       code: "",
-      dependencies: diagramData.edges
-        .filter((edge) => edge.target === id)
-        .map((edge) => edge.source), // Les sources des dépendances
-      type:
-        diagramData.nodes.find((node) => node.id === id)?.data.modelType ||
-        "atomic",
+      dependencies: diagramData.edges.filter((edge) => edge.target === id).map((edge) => edge.source),
+      type: diagramData.nodes.find((node) => node.id === id)?.data.modelType || "atomic",
     }));
 
-    setDiagramData((prevData) => {
-      if (!prevData) return undefined; // Ou gérez un état initial vide si nécessaire
-
-      return {
-        ...prevData,
-        models: orderedModels,
-        currentModel: 0,
-      };
-    });
+    setDiagramData((prev) => (prev ? { ...prev, models: orderedModels, currentModel: 0 } : prev));
   };
 
-  const updateDiagram = (diagramData: DiagramDataType) => {
-    setDiagramData((prev) =>
-      prev
-        ? {
-            ...prev,
-            nodes: diagramData.nodes,
-            edges: diagramData.edges,
-            name: diagramData.name,
-          }
-        : undefined
-    );
+  /* ------------------------------- Updaters ------------------------------- */
+
+  const updateDiagram = (newdiagramData: DiagramDataType) => {
+    // deep clone pour couper toute ref partagée
+    const nodes = deepClone(newdiagramData.nodes ?? []);
+    const edges = deepClone(newdiagramData.edges ?? []);
+
+    setDiagramData({
+      name: newdiagramData.name ?? "Unnamed model",
+      diagramId: null,
+      nodes,
+      edges,
+      models: [],
+      currentModel: 0,
+    });
 
     setStage(1);
+
+    // “timeout” léger façon debounce avant layout (colle à ta pratique)
+    schedule(() => {
+      runLayout(nodes as RFNode[], edges as RFEdge[], "RIGHT");
+    }, 80);
   };
 
   const updateModelCode = (modelName: string, modelCode: string) => {
     setCode(modelCode);
-    const temp = diagramData;
-    if (temp) {
-      temp.models[temp.currentModel].name = modelName;
-      temp.models[temp.currentModel].code = modelCode;
-      setDiagramData(temp);
-    }
+    setDiagramData(prev => {
+      if (!prev) return prev;
+      const models = prev.models.map((m, idx) =>
+        idx === prev.currentModel ? { ...m, name: modelName, code: modelCode } : m
+      );
+      return { ...prev, models };
+    });
   };
 
   const onValidateModel = () => {
-    setDiagramData((prevData) => {
-      if (!prevData) return undefined; // Ou gérez un état initial vide si nécessaire
-
-      return {
-        ...prevData,
-        currentModel: prevData.currentModel + 1,
-        nodes: prevData.nodes || [], // Garantir que nodes est défini
-        edges: prevData.edges || [], // Garantir que edges est défini
-        models: prevData.models || [], // Garantir que models est défini
-      };
-    });
-    // Je devrais faire un save bdd ici
+    setDiagramData(prev =>
+      prev
+        ? {
+            ...prev,
+            currentModel: prev.currentModel + 1,
+            nodes: prev.nodes || [],
+            edges: prev.edges || [],
+            models: prev.models || [],
+          }
+        : prev
+    );
+    // TODO: save BDD ici si besoin
   };
 
   const onValidate = () => {
     setStage(2);
     createModelDataStructure();
-    //je devrais faire un save bdd ici avec le diagrammes
-    //lets swap here the highlighted model
+    // TODO: save BDD du diagramme ici si besoin
   };
 
+  /* -------------------------- Highlight current model -------------------------- */
+
   const changeHiglightedModel = useCallback(() => {
-    if (
-      !diagramData ||
-      !diagramData.models ||
-      diagramData.models.length === 0
-    ) {
-      console.error("diagramData or models is not set correctly:", diagramData);
-      return;
-    }
+    if (!diagramData || !diagramData.models || diagramData.models.length === 0) return;
 
     const currentModelId = diagramData.models[diagramData.currentModel]?.id;
-    if (!currentModelId) {
-      console.error("Invalid currentModel ID:", currentModelId);
-      return;
-    }
+    if (!currentModelId) return;
 
-    setDiagramData((prevData) => {
+    setDiagramData(prevData => {
       if (!prevData) return prevData;
 
-      // Vérifie si une mise à jour est vraiment nécessaire
       const isAlreadyHighlighted = prevData.nodes.some(
         (node) => node.id === currentModelId && node.data.isSelected === true
       );
-
-      if (isAlreadyHighlighted) {
-        return prevData; // Pas de mise à jour si déjà sélectionné
-      }
+      if (isAlreadyHighlighted) return prevData;
 
       const updatedNodes = prevData.nodes.map((node) => ({
         ...node,
-        data: {
-          ...node.data,
-          isSelected: node.id === currentModelId,
-        },
+        data: { ...node.data, isSelected: node.id === currentModelId },
       }));
 
-      return {
-        ...prevData,
-        nodes: updatedNodes,
-      };
+      return { ...prevData, nodes: updatedNodes };
     });
   }, [diagramData]);
 
   const getDependencyCodes = (model: ModelData) => {
-    return model.dependencies?.map((d) => {
-      return diagramData?.models.filter((m) => m.id === d).map((m) => m.code);
-    }).filter((str): str is string[] => str !== undefined).flat() ?? [];
+    return (
+      model.dependencies
+        ?.map((d) => diagramData?.models.filter((m) => m.id === d).map((m) => m.code))
+        .filter((arr): arr is string[] => Array.isArray(arr))
+        .flat() ?? []
+    );
   };
 
-  const onLayoutRef = useRef(
-    ({ direction = "RIGHT" }) => {
-      const opts = direction;
-      if (diagramData) {
-        getLayoutedElements(diagramData.nodes, diagramData.edges, opts).then(
-          ({ nodes: layoutedNodes, edges: layoutedEdges }) => {
-            setDiagramData((prev) =>
-              prev
-                ? {
-                    ...prev,
-                    nodes: layoutedNodes,
-                    edges: layoutedEdges,
-                  }
-                : undefined
-            );
-            setTimeout(() => fitView(), 0);
-          }
-        );
-      }
-    }
-  );
+  /* ------------------------------- Auto Save ------------------------------- */
 
-  useEffect(() => {
-    if (
-      diagramData &&
-      !diagramData.diagramId &&
-      diagramData.models.length > 0 &&
-      !isSaving
-    ) {
-      setIsSaving(true); // Empêche un deuxième appel
-
-      const currentModelId = diagramData.models[diagramData.currentModel]?.id;
-      const isAlreadyHighlighted = diagramData.nodes.some(
-        (node) => node.id === currentModelId && node.data.isSelected
-      );
-
-      if (!isAlreadyHighlighted) {
-        changeHiglightedModel();
-        console.log("changing selected");
-      }
-
-      if (
-        JSON.stringify(lastSavedDiagram.current) !== JSON.stringify(diagramData)
-      ) {
-        saveDiagram(diagramData, token)
-          .then((diagramId) => {
-            if (diagramId !== -1) {
-              setDiagramData((prev) =>
-                prev
-                  ? {
-                      ...prev,
-                      diagramId: diagramId,
-                    }
-                  : undefined
-              );
-              lastSavedDiagram.current = { ...diagramData, diagramId };
-            }
-            setIsSaving(false); // Réactive la possibilité de sauvegarder
-          })
-          .catch(() => setIsSaving(false)); // Évite un blocage en cas d’erreur
-          lastSavedDiagram.current = diagramData
-      } else {
-        setIsSaving(false);
-      }
-    }
-  }, [diagramData, changeHiglightedModel, isSaving, token]);
-
+  /* ------------------------- Layout trigger (global) ------------------------- */
+  // Quand on arrive en stage 1 avec un diagramme, tenter un layout (debounced).
   useLayoutEffect(() => {
-    onLayoutRef.current({ direction: "RIGHT" });
-  }, [diagramData?.edges, diagramData?.models]);
+    if (!diagramData) return;
+    if (stage !== 1) return;
+
+    schedule(() => {
+      runLayout((diagramData.nodes as RFNode[]) ?? [], (diagramData.edges as RFEdge[]) ?? [], "RIGHT");
+    }, 80);
+
+    // Invalider les promesses de layout obsolètes au cleanup
+    return () => {
+      layoutReqId.current++;
+      if (layoutTimer.current) {
+        window.clearTimeout(layoutTimer.current);
+        layoutTimer.current = null;
+      }
+    };
+  }, [stage, diagramData?.nodes, diagramData?.edges, runLayout]);
+
+  /* ---------------------------------- UI ---------------------------------- */
 
   if (!diagramData) {
     return <p>An error occured</p>;
@@ -399,16 +419,11 @@ const DiagramGenerator = () => {
       <ResizablePanelGroup direction="horizontal">
         {stage === 0 || stage === 1 ? (
           <>
-            {/* Bloc commun pour case 0 et 1 */}
             <ResizablePanel defaultSize={40} minSize={20}>
               <DiagramPrompt stage={stage} onGenerate={updateDiagram} />
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel
-              defaultSize={60}
-              minSize={20}
-              onResize={() => fitView()}
-            >
+            <ResizablePanel defaultSize={60} minSize={20} onResize={() => fitView()}>
               <ReactFlow
                 nodes={diagramData.nodes}
                 edges={diagramData.edges}
@@ -429,11 +444,11 @@ const DiagramGenerator = () => {
             </ResizablePanel>
           </>
         ) : null}
+
         {stage === 2 ? (
           <>
             <ResizablePanel defaultSize={40} minSize={20}>
               <ResizablePanelGroup direction="vertical">
-                {/* Bloc 2 (contenu vertical) */}
                 <ResizablePanel defaultSize={60} minSize={20}>
                   <ModelPrompt
                     stage={stage}
@@ -445,11 +460,7 @@ const DiagramGenerator = () => {
                   />
                 </ResizablePanel>
                 <ResizableHandle />
-                <ResizablePanel
-                  defaultSize={40}
-                  minSize={20}
-                  onResize={() => fitView()}
-                >
+                <ResizablePanel defaultSize={40} minSize={20} onResize={() => fitView()}>
                   <ReactFlow
                     nodes={diagramData.nodes}
                     edges={diagramData.edges}
@@ -481,7 +492,6 @@ const DiagramGenerator = () => {
                 theme={theme === "dark" ? githubDark : githubLight}
                 extensions={[python()]}
               />
-
               <Button
                 className="absolute bottom-0 left-1/2 transform -translate-x-1/2 mb-4 w-auto px-4 py-2 bg-foreground text-background rounded"
                 onClick={onValidateModel}

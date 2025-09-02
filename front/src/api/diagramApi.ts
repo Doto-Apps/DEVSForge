@@ -24,7 +24,7 @@ export const generateDiagram = async (
 
         const diagramData = await diagramResponse.json();
 
-        console.log("diagramData");
+        console.log("diagramData " + JSON.stringify(diagramData));
 
         if (diagramResponse.ok) {
             toast({
