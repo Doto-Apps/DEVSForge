@@ -1,19 +1,12 @@
-FROM node:22-alpine
+FROM golang:1.24
 
-WORKDIR /app
 
-# Déclare un volume pour le montage des fichiers locaux (optionnel, utile en dev)
+COPY . .
+RUN go install github.com/cosmtrek/air@latest
+RUN go mod tidy 
+WORKDIR /app/back
 VOLUME [ "/app" ]
 
-# Copie uniquement les fichiers nécessaires pour l'installation des dépendances
-COPY package.json package-lock.json ./
-COPY nodemon.json ./
-
-# Installe les dépendances
-RUN npm install
-
-# Expose le port utilisé par votre application
 EXPOSE 3000
 
-# Commande correcte pour démarrer le script "dev"
-CMD ["npm", "run", "dev"]
+ENTRYPOINT ["air", "-c", ".air.toml"]

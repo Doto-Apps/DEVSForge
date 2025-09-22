@@ -1,0 +1,69 @@
+services:
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./.env.front
+    ports:
+      - 5173:5173
+    volumes:
+      - ./front:/app
+      - /app/node_modules
+    
+  backend:
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./.env.back
+    ports:
+      - 3000:3000
+    volumes:
+      - ./back:/app
+      - .env.back:/app/.env.back
+    command: air
+    depends_on:
+      db:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync
+          path: ./back
+          target: /app
+  db:
+    image: postgres:alpine
+    env_file:
+      - ./.env.back  # On force le fichier .env.back ici
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U easydevs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  broker:
+    image: apache/kafka:latest
+    container_name: broker
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+    ports:
+      - 9092:9092
+
+
+volumes:
+  postgres-db:

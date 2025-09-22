@@ -17,32 +17,24 @@
 #         - security
 #       run: bundle audit
 #
-# pre-commit:
-#   parallel: true
-#   jobs:
-#     - run: yarn eslint {staged_files}
-#       glob: "*.{js,ts,jsx,tsx}"
-#
-#     - name: rubocop
-#       glob: "*.rb"
-#       exclude:
-#         - config/application.rb
-#         - config/routes.rb
-#       run: bundle exec rubocop --force-exclusion {all_files}
-#
-#     - name: govet
-#       files: git ls-files -m
-#       glob: "*.go"
-#       run: go vet {files}
-#
-#     - script: "hello.js"
-#       runner: node
-#
-#     - script: "hello.go"
-#       runner: go run
+commit-msg:
+  scripts:
+    "commitlint.sh":
+      runner: bash
+      
 pre-commit:
-  commands:
-    check:
+  parallel: true
+  jobs:
+    - name: Format front
+      run: pnpm biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
       glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
-      run: npx @biomejs/biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
-      stage_fixed: true
+
+    - name: Format back
+      run: go fmt
+      root: "/back"
+      glob: "*.go"
+
+    # - name: govet
+    #   files: git ls-files -m
+    #   glob: "*.go"
+    #   run: go vet {files}

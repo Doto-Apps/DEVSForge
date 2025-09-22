@@ -25,6 +25,10 @@ export default defineConfig({
 					label: "ADR",
 					autogenerate: { directory: "adr" },
 				},
+				{
+					label: "Projects",
+					autogenerate: { directory: "project" },
+				},
 			],
 		}),
 	],

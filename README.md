@@ -65,9 +65,21 @@ docker compose down
 Une fois le projet démarré, vous pouvez commencer à interagir avec l'API et les composants React du frontend.
 
 
+## Installer extension Biome si bous servez de VScode
 
-## Forcer le commit en cas d'erreur pre-commit
+
+## Expert mode
+
+**Use 2 seperated terminal to run both commands**
+
+- Start front using : `npm run start:front` it will run the project locally using your OS
+- Start back using : `npm run start:back` it will run a docker-compose.yml located in `back/docker-compose.yml`
+
+
+## How to commit
+
+The project use lefthook and commitlint with conventional commit : https://www.conventionalcommits.org/en/v1.0.0/ 
+
+### Forcer le commit en cas d'erreur pre-commit
 
 - `git commit -m "fix: toto" --no-verify`
-
-## Installer extension Biome si bous servez de VScode

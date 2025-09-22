@@ -1,8 +1,0 @@
-{
-	"ignore": ["**/*.test.ts", "**/*.spec.ts", "node_modules"],
-	"watch": ["src"],
-	"exec": "npm start",
-	"ext": "ts",
-	"legacyWatch": true,
-	"inspect": "0.0.0.0"
-}

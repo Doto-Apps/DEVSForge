@@ -1,34 +1,44 @@
-import { Edge, Node } from '@xyflow/react';
+import type { components } from "@/api/v1";
+import type { Edge, Node } from "@xyflow/react";
 
-export type NodeData = {
-    modelType: "atomic" | "coupled"
-    label: string
-    inputPorts?: { id: string }[]
-    outputPorts?: { id: string }[]
-    isSelected?: boolean
-}
+export type ReactFlowInput = {
+	nodes: Node<ReactFlowModelData>[];
+	edges: Edge<EdgeData>[];
+};
 
-export type ModelData = 
-{
-    id: string
-    name: string
-    code: string
-    dependencies?: string[]
-    type: "atomic" | "coupled"
+export type ReactFlowPort = { id: string };
 
-}
+export type ReactFlowModelData = {
+	id: string;
+	modelType: "atomic" | "coupled";
+	label: string;
+	inputPorts?: ReactFlowPort[];
+	outputPorts?: ReactFlowPort[];
+	reactFlowModelGraphicalData?: ReactFlowModelGraphicalData;
+	parameters?: components["schemas"]["json.ModelParameter"][];
+	code: string;
+};
 
-export type DiagramDataType =
-{
-    diagramId : number | null
-    name: string,
-    nodes: Node<NodeData>[]
-    edges: Edge[]
-    currentModel : number
-    models: ModelData[]
-}
+export type EdgeData = {
+	holderId: string;
+};
 
-export type User = {
-    id: number
-    email: string, 
-}
+export type ReactFlowModelGraphicalData = {
+	headerBackgroundColor?: string;
+	headerTextColor?: string;
+	bodyBackgroundColor?: string;
+};
+
+export type WorkerResponse = {
+	diagnostics: Diagnostic[];
+	error?: Error;
+};
+
+export type Diagnostic = {
+	severity: number;
+	message: string;
+	startLineNumber: number;
+	startColumn: number;
+	endLineNumber: number;
+	endColumn: number;
+};

@@ -1,0 +1,8 @@
+FROM cosmtrek/air:v1.61.7
+
+WORKDIR /app
+VOLUME [ "/app" ]
+
+EXPOSE 3000
+
+ENTRYPOINT ["air", "-c", ".air.toml"]

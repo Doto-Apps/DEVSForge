@@ -1,0 +1,36 @@
+services:    
+  backend:
+    build:
+      context: ../
+      dockerfile: back/Dockerfile.dev
+    env_file:
+      - ./back/.env.back
+    ports:
+      - 3000:3000
+    volumes:
+      - ../:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    develop:
+      watch:
+        - action: sync
+          path: ./back
+          target: /app/back
+  db:
+    image: postgres:alpine
+    env_file:
+      - ./.env.back  # On force le fichier .env.back ici
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+      - ../db-init:/docker-entrypoint-initdb.d 
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U easydevs"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres-db:

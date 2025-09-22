@@ -8,39 +8,43 @@ services:
     ports:
       - 5173:5173
     volumes:
-      - ./front:/app # Synchronisation du code local
+      - ./front:/app
       - /app/node_modules
-
+    
   backend:
     build:
       context: ./back
       dockerfile: Dockerfile.dev
-    ports:
-      - 3000:3000
     env_file:
       - ./.env.back
+    ports:
+      - 3000:3000
     volumes:
-      - ./back/src:/app/src
+      - ./back:/app
+      - .env.back:/app/.env.back
+    command: air
     depends_on:
       db:
         condition: service_healthy
-
+    develop:
+      watch:
+        - action: sync
+          path: ./back
+          target: /app
   db:
-    image: postgres:15-alpine
-    container_name: postgres_db
-    environment:
-      POSTGRES_USER: easydevs
-      POSTGRES_PASSWORD: test123
-      POSTGRES_DB: easydevs
+    image: postgres:alpine
+    env_file:
+      - ./.env.back  # On force le fichier .env.back ici
     ports:
-      - 5432:5432
+      - "5432:5432"
     volumes:
-      - ./back/migrations:/docker-entrypoint-initdb.d
+      - postgres-db:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d 
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U easydevs" ]
+      test: ["CMD-SHELL", "pg_isready -U easydevs"]
       interval: 10s
       timeout: 5s
       retries: 5
 
 volumes:
-  db_data:
+  postgres-db:
