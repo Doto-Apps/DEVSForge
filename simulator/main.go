@@ -64,6 +64,7 @@ func run(args []string) error {
 			go func(m *shared.RunnableModel) {
 				rawJSON, err := json.Marshal(shared.RunnableManifest{
 					Models: []*shared.RunnableModel{m},
+					Count:  manifest.Count,
 				})
 				if err != nil {
 					errCh <- fmt.Errorf("error when launching %s : Invalid JSON to stringify", m.ID)
@@ -76,7 +77,7 @@ func run(args []string) error {
 					return
 				}
 
-				cmd := exec.Command("go", "run", "runner/main.go", "--file", tmpFile.Name())
+				cmd := exec.Command("go", "run", "runners/go/main.go", "--file", tmpFile.Name())
 				cmd.Dir = parent
 
 				cmd.Stdout = os.Stdout

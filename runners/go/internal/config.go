@@ -4,26 +4,25 @@ import (
 	"devsforge/shared"
 	"fmt"
 	"os"
-	"sync"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
 type RunnerConfig struct {
-	Model          shared.RunnableModel
-	ID             string
-	ProviderString string
-	Logger         *zerolog.Logger
+	Model     *shared.RunnableModel
+	ID        string
+	Logger    *zerolog.Logger
+	PeerCount int
 }
 
-var (
-	config *RunnerConfig
-	once   sync.Once
-)
+var config *RunnerConfig
 
-func InitConfig(model shared.RunnableModel) *RunnerConfig {
-	logger := initFileLogger("/tmp/devs-sim-events.log", model.ID)
+func InitConfig(manifest shared.RunnableManifest) *RunnerConfig {
+	filePath := "/tmp/devs-sim-events.log"
+	model := *manifest.Models[0]
+	// A rendre dynamique avec les args
+	logger := initFileLogger(filePath, model.ID)
 	logger.Debug().Any("informations", map[string]string{
 		"IPC Provider": "File based /tmp/simulation.log",
 		"ID":           model.ID,
@@ -32,11 +31,13 @@ func InitConfig(model shared.RunnableModel) *RunnerConfig {
 		"Ports":        fmt.Sprintf("%v", model.Ports),
 		"Connections":  fmt.Sprintf("%v", model.Connections),
 	}).Msg("Config Information")
+	WatchAndStreamFile(filePath)
+
 	config = &RunnerConfig{
-		ID:             model.ID,
-		Model:          model,
-		ProviderString: "file:/tmp/devs-sim-events.log",
-		Logger:         logger,
+		ID:        model.ID,
+		Model:     &model,
+		Logger:    logger,
+		PeerCount: manifest.Count - 1,
 	}
 
 	return config

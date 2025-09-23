@@ -1,13 +1,15 @@
+// Package cmd : Run a go model
 package cmd
 
 import (
-	"devsforge/runner/internal"
+	"devsforge/runners/go/internal"
 	"devsforge/shared"
 	"devsforge/shared/utils"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"time"
 )
 
 // LaunchRunner Launch a runner with args
@@ -50,11 +52,21 @@ func LaunchRunner(args []string) error {
 	}
 	log.Println("✅ Manifest validated")
 
-	model := *manifest.Models[0]
+	LaunchSim(manifest)
 
-	internal.InitConfig(model)
 	log.Println("======================================")
 	log.Println("   ⚙️ Runner ended successfully ✅    ")
 	log.Println("======================================")
 	return nil
+}
+
+func LaunchSim(model shared.RunnableManifest) {
+	log.Println("Init model")
+	internal.InitConfig(model)
+	time.Sleep(5 * time.Second)
+	log.Println("Init done")
+	internal.SendMessage("init_done")
+	log.Println("Waiting for all models to be init")
+	internal.WaitForAllReady(30 * time.Second)
+	log.Println("All models are ready")
 }

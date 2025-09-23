@@ -1,7 +1,7 @@
 package main
 
 import (
-	"devsforge/runner/cmd"
+	"devsforge/runners/go/cmd"
 	"fmt"
 	"os"
 )
