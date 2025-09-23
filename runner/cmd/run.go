@@ -18,9 +18,14 @@ func LaunchRunner(args []string) error {
 	fs := flag.NewFlagSet("runner", flag.ContinueOnError)
 	jsonStr := fs.String("json", "", "JSON string to parse")
 	filePath := fs.String("file", "", "Path to JSON file")
+	configFile := fs.String("configFile", "", "Path to YAML config file")
 
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("error parsing flags: %w", err)
+	}
+
+	if *configFile == "" {
+		log.Println("⚠️ No config provided use default config")
 	}
 
 	var manifest shared.RunnableManifest

@@ -3,7 +3,8 @@ package internal
 import (
 	"encoding/json"
 	"fmt"
-	"log"
+
+	"github.com/rs/zerolog/log"
 )
 
 func HandleMessage(message string) error {
@@ -14,7 +15,7 @@ func HandleMessage(message string) error {
 	}
 
 	if parsedMessage.Data.Type == "init" {
-		log.Println("Init message received...")
+		log.Debug().Msg("Init message received...")
 	}
 
 	return nil

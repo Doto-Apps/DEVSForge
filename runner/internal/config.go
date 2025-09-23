@@ -2,28 +2,63 @@ package internal
 
 import (
 	"devsforge/shared"
-	"log"
-	"time"
+	"fmt"
+	"os"
+	"sync"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
-func InitConfig(model shared.RunnableModel) {
-	log.SetPrefix(model.ID)
-	log.Printf("ID: %s\n", model.ID)
-	log.Printf("Name: %s\n", model.Name)
-	log.Printf("Language: %s\n", "Todo")
-	log.Printf("Ports:\n%+v\n", model.Ports)
-	log.Printf("Connections:\n%+v\n", model.Connections)
+type RunnerConfig struct {
+	Model          shared.RunnableModel
+	ID             string
+	ProviderString string
+	Logger         *zerolog.Logger
+}
 
-	log.Println("Kafka provider")
-	log.Println("Waiting for init message")
-	time.Sleep(2 * time.Second)
-	log.Println("Init using message")
-	time.Sleep(2 * time.Second)
-	log.Println("Running")
-	time.Sleep(2 * time.Second)
-	log.Println("Got message")
-	time.Sleep(2 * time.Second)
-	log.Println("Waiting next time")
-	time.Sleep(2 * time.Second)
-	log.Println("Next time is current time end of run")
+var (
+	config *RunnerConfig
+	once   sync.Once
+)
+
+func InitConfig(model shared.RunnableModel) *RunnerConfig {
+	logger := initFileLogger("/tmp/devs-sim-events.log", model.ID)
+	logger.Debug().Any("informations", map[string]string{
+		"IPC Provider": "File based /tmp/simulation.log",
+		"ID":           model.ID,
+		"Name":         model.Name,
+		"Language":     "Todo",
+		"Ports":        fmt.Sprintf("%v", model.Ports),
+		"Connections":  fmt.Sprintf("%v", model.Connections),
+	}).Msg("Config Information")
+	config = &RunnerConfig{
+		ID:             model.ID,
+		Model:          model,
+		ProviderString: "file:/tmp/devs-sim-events.log",
+		Logger:         logger,
+	}
+
+	return config
+}
+
+func initFileLogger(logFilePath string, id string) *zerolog.Logger {
+	var output *os.File
+	if logFilePath != "" {
+		f, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
+		if err != nil {
+			panic(err)
+		}
+		output = f
+	} else {
+		output = os.Stdout
+	}
+
+	l := zerolog.New(output).With().Timestamp().Str("ID", id).Logger()
+	log.Logger = l // optionnel : mettre ce logger par défaut dans zerolog/log
+	return &l
+}
+
+func GetConfig() *RunnerConfig {
+	return config
 }
