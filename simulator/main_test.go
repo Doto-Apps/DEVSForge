@@ -2,66 +2,44 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 	"testing"
 
-	"github.com/testcontainers/testcontainers-go"
-	"github.com/testcontainers/testcontainers-go/wait"
+	tccompose "github.com/testcontainers/testcontainers-go/modules/compose"
 )
-
-func startKafkaContainer(ctx context.Context) (brokerAddr string, terminate func(), err error) {
-	req := testcontainers.ContainerRequest{
-		Image:        "apache/kafka:latest",
-		ExposedPorts: []string{"9092/tcp"},
-		Env: map[string]string{
-			"KAFKA_NODE_ID":                                  "1",
-			"KAFKA_PROCESS_ROLES":                            "broker,controller",
-			"KAFKA_LISTENERS":                                "PLAINTEXT://localhost:9092,CONTROLLER://localhost:9093",
-			"KAFKA_ADVERTISED_LISTENERS":                     "PLAINTEXT://localhost:9092",
-			"KAFKA_CONTROLLER_LISTENER_NAMES":                "CONTROLLER",
-			"KAFKA_LISTENER_SECURITY_PROTOCOL_MAP":           "CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT",
-			"KAFKA_CONTROLLER_QUORUM_VOTERS":                 "1@localhost:9093",
-			"KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR":         "1",
-			"KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR": "1",
-			"KAFKA_TRANSACTION_STATE_LOG_MIN_ISR":            "1",
-			"KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS":         "0",
-			"KAFKA_NUM_PARTITIONS":                           "1",
-		},
-		WaitingFor: wait.ForListeningPort("9092/tcp"),
-	}
-	kafkaC, err := testcontainers.GenericContainer(ctx, testcontainers.GenericContainerRequest{
-		ContainerRequest: req,
-		Started:          true,
-	})
-	if err != nil {
-		return "", nil, err
-	}
-
-	host, err := kafkaC.Host(ctx)
-	if err != nil {
-		return "", nil, err
-	}
-	port, err := kafkaC.MappedPort(ctx, "9092")
-	if err != nil {
-		return "", nil, err
-	}
-
-	broker := fmt.Sprintf("%s:%s", host, port.Port())
-	return broker, func() { kafkaC.Terminate(ctx) }, nil
-}
 
 func TestRunWithFileKafka(t *testing.T) {
 	ctx := context.Background()
+	composeFile := "tests/docker-compose.yml"
 
-	// Lance Kafka temporaire
-	broker, terminate, err := startKafkaContainer(ctx)
-	if err != nil {
-		t.Fatalf("failed to start Kafka: %v", err)
+	if _, err := os.Stat(composeFile); os.IsNotExist(err) {
+		t.Skipf("docker-compose file %s not found, skipping test", composeFile)
 	}
+
+	stack, err := tccompose.NewDockerCompose(
+		composeFile,
+	)
+	if err != nil {
+		t.Fatalf("could not create compose stack: %v", err)
+	}
+
+	if err := stack.Up(ctx, tccompose.Wait(true)); err != nil {
+		t.Fatalf("compose up failed: %v", err)
+	}
+
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		stack.Down(ctx, tccompose.RemoveOrphans(true), tccompose.RemoveImagesLocal)
+		os.Exit(1)
+	}()
+
+	defer stack.Down(ctx, tccompose.RemoveOrphans(true))
 	t.Log("Kafka started...")
-	defer terminate()
 
 	// JSON statique pour tester
 	jsonContent := `{
@@ -78,12 +56,8 @@ func TestRunWithFileKafka(t *testing.T) {
 		t.Fatalf("failed to write temp manifest: %v", err)
 	}
 
-	// Configurer le runner pour utiliser ce broker Kafka
-	os.Setenv("KAFKA_BROKER", broker)
-	defer os.Unsetenv("KAFKA_BROKER")
-
-	// Appelle run() avec --file
-	err = run([]string{"--file", jsonPath})
+	os.Setenv("KAFKA_TOPIC", "sim-test")
+	err = run([]string{"--file", jsonPath, "--kafka", "localhost:9092"})
 	if err != nil {
 		t.Fatalf("expected no error, got\n %v", err)
 	}

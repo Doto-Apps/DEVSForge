@@ -1,14 +1,12 @@
 package internal
 
 import (
-	"encoding/json"
-	"fmt"
 	"log"
 	"time"
 )
 
 type Message struct {
-	ID      string `json:"ID"`
+	ID      string `json:"id"`
 	Level   string `json:"level"`
 	Message string `json:"message"`
 }
@@ -16,26 +14,35 @@ type Message struct {
 var messageCh = make(chan string, 1)
 
 func HandleMessage(message string) error {
-	var parsedMessage Message
-	err := json.Unmarshal([]byte(message), &parsedMessage)
-	if err != nil {
-		return fmt.Errorf("error when parsing message: %w", err)
+	log.Println("Got a msg")
+	// var parsedMessage Message
+	// err := json.Unmarshal([]byte(message), &parsedMessage)
+	// if err != nil {
+	// 	return fmt.Errorf("error when parsing message: %w", err)
+	// }
+	//
+	// //Message that need to be considered : info level and id different of the current config
+	// if parsedMessage.Level == "info" && parsedMessage.ID != config.ID {
+	// 	if parsedMessage.Message == "init_done" || parsedMessage.Message == "election_required" {
+	// 		log.Println("Got a message here")
+	// 		messageCh <- parsedMessage.Message
+	// 	}
+	// 	log.Printf("Got a message that I dont handle: %v\n", parsedMessage)
+	// }
+	if message == "init_done" || message == "election_required" {
+		log.Printf("Got a message %s\n", message)
+		messageCh <- message
 	}
-
-	// Message that need to be considered : info level and id different of the current config
-	if parsedMessage.Level == "info" && parsedMessage.ID != config.ID {
-		if parsedMessage.Message == "init_done" || parsedMessage.Message == "election_required" {
-			messageCh <- parsedMessage.Message
-		}
-		log.Printf("Got a message that I dont handle: %v\n", parsedMessage)
-	}
+	log.Printf("Got a message that I dont handle: %v\n", message)
 
 	return nil
 }
 
 func SendMessage(msg string) {
 	// Logic to implement from config to choose the right place to send message/multiplex message
-	config.Logger.Info().Msg(msg)
+	// config.Logger.Info().Msg(msg)
+	config.Producer.SendMessage(msg)
+	log.Println("Message sent ", msg)
 }
 
 func WaitForElectionRequired(timeout time.Duration) {

@@ -3,7 +3,7 @@ package main
 import (
 	"devsforge/shared"
 	"devsforge/shared/utils"
-	"encoding/json"
+	"devsforge/simulator/internal"
 	"flag"
 	"fmt"
 	"log"
@@ -22,6 +22,7 @@ func run(args []string) error {
 	jsonStr := fs.String("json", "", "JSON string to parse")
 	filePath := fs.String("file", "", "Path to JSON file")
 	dockerProvider := fs.Bool("docker", false, "Whether to use docker to launch runner or use shell")
+	kafka := fs.String("kafka", "", "The kafka endpoint")
 
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("error parsing flags: %w", err)
@@ -47,6 +48,21 @@ func run(args []string) error {
 	if len(manifest.Models) == 0 {
 		return fmt.Errorf("no models provided in the manifest")
 	}
+	kafkaTopic, err := internal.GetKafkaTopic(*kafka)
+	if err != nil {
+		return fmt.Errorf("cant initialise kafka topic : %w", err)
+	}
+	yamlConfig := shared.YamlInputConfig{
+		Kafka: shared.YamlInputConfigKafka{
+			Enabled: true,
+			Address: *kafka,
+			Topic:   kafkaTopic,
+		},
+	}
+	configFile, err := internal.GenerateRunnerYamlConfig(yamlConfig)
+	if err != nil {
+		panic(err)
+	}
 
 	if *dockerProvider {
 		log.Printf("Launching %d runners using docker...\n", len(manifest.Models))
@@ -62,22 +78,12 @@ func run(args []string) error {
 		parent := filepath.Dir(cwd)
 		for _, model := range manifest.Models {
 			go func(m *shared.RunnableModel) {
-				rawJSON, err := json.Marshal(shared.RunnableManifest{
-					Models: []*shared.RunnableModel{m},
-					Count:  manifest.Count,
-				})
+				tmpFile, err := internal.GenerateJSONRunnerManifest(m, manifest.Count)
 				if err != nil {
-					errCh <- fmt.Errorf("error when launching %s : Invalid JSON to stringify", m.ID)
+					errCh <- err
 					return
 				}
-				tmpFile, _ := os.CreateTemp("", "model-*.json")
-				defer tmpFile.Close()
-				if _, err := tmpFile.Write(rawJSON); err != nil {
-					errCh <- fmt.Errorf("error when launching %s : cannot write tmp file: %w", m.ID, err)
-					return
-				}
-
-				cmd := exec.Command("go", "run", "runners/go/main.go", "--file", tmpFile.Name())
+				cmd := exec.Command("go", "run", "runners/go/main.go", "--file", tmpFile.Name(), "--config", configFile.Name())
 				cmd.Dir = parent
 
 				cmd.Stdout = os.Stdout
@@ -101,6 +107,23 @@ func run(args []string) error {
 	log.Println("======================================")
 	log.Println("       🏗️ Simulation ended... ✨      ")
 	log.Println("======================================")
+	log.Printf("Cleaning environment... ")
+	err = Cleanup(*kafka, kafkaTopic)
+	if err != nil {
+		return fmt.Errorf("error during cleanup : %w", err)
+	}
+	log.Printf("Done\n")
+
+	return nil
+}
+
+func Cleanup(kafkaConnStr string, kafkaTopic string) error {
+	if kafkaConnStr != "" && kafkaTopic != "" {
+		err := internal.DeleteTopic(kafkaConnStr, kafkaTopic)
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

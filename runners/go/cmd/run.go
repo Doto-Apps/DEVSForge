@@ -20,14 +20,14 @@ func LaunchRunner(args []string) error {
 	fs := flag.NewFlagSet("runner", flag.ContinueOnError)
 	jsonStr := fs.String("json", "", "JSON string to parse")
 	filePath := fs.String("file", "", "Path to JSON file")
-	configFile := fs.String("configFile", "", "Path to YAML config file")
+	configFile := fs.String("config", "", "Path to YAML config file")
 
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("error parsing flags: %w", err)
 	}
 
 	if *configFile == "" {
-		log.Println("⚠️ No config provided use default config")
+		return fmt.Errorf("⚠️ No config file provided ")
 	}
 
 	var manifest shared.RunnableManifest
@@ -52,7 +52,7 @@ func LaunchRunner(args []string) error {
 	}
 	log.Println("✅ Manifest validated")
 
-	LaunchSim(manifest)
+	LaunchSim(manifest, *configFile)
 
 	log.Println("======================================")
 	log.Println("   ⚙️ Runner ended successfully ✅    ")
@@ -60,13 +60,12 @@ func LaunchRunner(args []string) error {
 	return nil
 }
 
-func LaunchSim(model shared.RunnableManifest) {
+func LaunchSim(model shared.RunnableManifest, yamlConfigFilePath string) {
 	log.Println("Init model")
-	internal.InitConfig(model)
+	internal.InitConfig(model, yamlConfigFilePath)
 	time.Sleep(5 * time.Second)
-	log.Println("Init done")
-	internal.SendMessage("init_done")
 	log.Println("Waiting for all models to be init")
+	internal.SendMessage("init_done")
 	internal.WaitForAllReady(30 * time.Second)
-	log.Println("All models are ready")
+	log.Println("All models are ready, time election")
 }

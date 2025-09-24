@@ -3,10 +3,11 @@ package internal
 import (
 	"devsforge/shared"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"gopkg.in/yaml.v3"
 )
 
 type RunnerConfig struct {
@@ -14,15 +15,22 @@ type RunnerConfig struct {
 	ID        string
 	Logger    *zerolog.Logger
 	PeerCount int
+	Producer  *KafkaProducer
+	Collector *KafkaCollector
 }
 
 var config *RunnerConfig
 
-func InitConfig(manifest shared.RunnableManifest) *RunnerConfig {
-	filePath := "/tmp/devs-sim-events.log"
+func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *RunnerConfig {
+	runnerConfig, err := LoadYamlConfig(yamlConfigPath)
+	if err != nil {
+		panic(err)
+	}
 	model := *manifest.Models[0]
-	// A rendre dynamique avec les args
-	logger := initFileLogger(filePath, model.ID)
+	log.Printf("Connecting to kafka: %s | %s | %s", runnerConfig.Kafka.Address, runnerConfig.Kafka.Topic, model.ID)
+	// TODO: A rendre dynamique avec les args pour faire kafka ou autres
+	logger, producer := NewLoggerWithKafka(runnerConfig.Kafka.Address, runnerConfig.Kafka.Topic, model.ID)
+
 	logger.Debug().Any("informations", map[string]string{
 		"IPC Provider": "File based /tmp/simulation.log",
 		"ID":           model.ID,
@@ -31,33 +39,35 @@ func InitConfig(manifest shared.RunnableManifest) *RunnerConfig {
 		"Ports":        fmt.Sprintf("%v", model.Ports),
 		"Connections":  fmt.Sprintf("%v", model.Connections),
 	}).Msg("Config Information")
-	WatchAndStreamFile(filePath)
+
+	collector := NewKafkaCollector(runnerConfig.Kafka.Address, runnerConfig.Kafka.Topic, model.ID)
+	collector.Start()
 
 	config = &RunnerConfig{
 		ID:        model.ID,
 		Model:     &model,
-		Logger:    logger,
+		Logger:    &logger,
 		PeerCount: manifest.Count - 1,
+		Producer:  producer,
+		Collector: collector,
 	}
 
 	return config
 }
 
-func initFileLogger(logFilePath string, id string) *zerolog.Logger {
-	var output *os.File
-	if logFilePath != "" {
-		f, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0666)
-		if err != nil {
-			panic(err)
-		}
-		output = f
-	} else {
-		output = os.Stdout
+// LoadYamlConfig load YAML config file
+func LoadYamlConfig(path string) (*shared.YamlInputConfig, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("read config file: %w", err)
 	}
 
-	l := zerolog.New(output).With().Timestamp().Str("ID", id).Logger()
-	log.Logger = l // optionnel : mettre ce logger par défaut dans zerolog/log
-	return &l
+	var cfg shared.YamlInputConfig
+	if err := yaml.Unmarshal(data, &cfg); err != nil {
+		return nil, fmt.Errorf("unmarshal yaml: %w", err)
+	}
+
+	return &cfg, nil
 }
 
 func GetConfig() *RunnerConfig {
