@@ -3,8 +3,6 @@ title: Simulateur - Concept et Fonctionnement
 description: Decris comment on va concevoir le simulateur DEVS
 ---
 
-# Simulateur DEVS – Concept et Fonctionnement
-
 ## Introduction
 
 Ce document décrit le fonctionnement du simulateur et des runners associés.  

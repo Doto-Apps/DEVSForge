@@ -29,6 +29,10 @@ export default defineConfig({
 					label: "Projects",
 					autogenerate: { directory: "project" },
 				},
+				{
+					label: "Simulation",
+					autogenerate: { directory: "simulation" },
+				},
 			],
 		}),
 	],

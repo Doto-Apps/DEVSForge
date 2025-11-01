@@ -1,12 +1,7 @@
 FROM golang:1.24
 
-
-COPY . .
-RUN go install github.com/cosmtrek/air@latest
-RUN go mod tidy 
 WORKDIR /app/back
-VOLUME [ "/app" ]
 
-EXPOSE 3000
+RUN go install github.com/cosmtrek/air@latest
 
-ENTRYPOINT ["air", "-c", ".air.toml"]
+CMD ["air", "-c", "/app/back/.air.toml"]
