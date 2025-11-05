@@ -6,6 +6,12 @@ type YamlInputConfigKafka struct {
 	Topic   string `yaml:"topic"`
 }
 
+type YamlInputConfigGRPC struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
+}
+
 type YamlInputConfig struct {
 	Kafka YamlInputConfigKafka `yaml:"kafka"`
+	GRPC  YamlInputConfigGRPC  `yaml:"grpc"`
 }

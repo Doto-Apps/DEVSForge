@@ -58,6 +58,10 @@ func run(args []string) error {
 			Address: *kafka,
 			Topic:   kafkaTopic,
 		},
+		GRPC: shared.YamlInputConfigGRPC{
+			Host: "localhost",
+			Port: 50051,
+		},
 	}
 	configFile, err := internal.GenerateRunnerYamlConfig(yamlConfig)
 	if err != nil {
@@ -78,7 +82,7 @@ func run(args []string) error {
 		parent := filepath.Dir(cwd)
 		for _, model := range manifest.Models {
 			go func(m *shared.RunnableModel) {
-				tmpFile, err := internal.GenerateJSONRunnerManifest(m, manifest.Count)
+				tmpFile, err := internal.GenerateJSONRunnerManifest(m, manifest.Count, manifest.SimulationID)
 				if err != nil {
 					errCh <- err
 					return

@@ -13,7 +13,7 @@ import (
 
 func TestRunWithFileKafka(t *testing.T) {
 	ctx := context.Background()
-	composeFile := "tests/docker-compose.yml"
+	composeFile := "../tests/docker-compose.yml"
 
 	if _, err := os.Stat(composeFile); os.IsNotExist(err) {
 		t.Skipf("docker-compose file %s not found, skipping test", composeFile)
@@ -42,14 +42,10 @@ func TestRunWithFileKafka(t *testing.T) {
 	t.Log("Kafka started...")
 
 	// JSON statique pour tester
-	jsonContent := `{
-		"models": [
-			{"id": "m1", "name": "ModelOne"},
-			{"id": "m2", "name": "ModelTwo"}
-		],
-        "count": 2
-	}`
-
+	jsonContent, err := os.ReadFile("test/manifest.json")
+	if err != nil {
+		t.Fatalf("Error while reading test manifest\n %v", err)
+	}
 	tmpDir := t.TempDir()
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
 	if err := os.WriteFile(jsonPath, []byte(jsonContent), 0644); err != nil {

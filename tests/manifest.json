@@ -1,0 +1,12 @@
+{
+  "models": [
+    {
+      "language": "go",
+      "id": "m1",
+      "name": "GeneratorIncremental",
+      "code": "package main\n\nimport (\n\t\"modeling\"\n)\n\n// GeneratorIncremental: génère un tick toutes les 1.0 unités de temps, 3 fois, puis se passivise.\ntype GeneratorIncremental struct {\n\tmodeling.Atomic\n\tvalue int\n}\n\nfunc NewModel() modeling.Atomic {\n\tbase := modeling.NewAtomic(\"GeneratorIncremental\")\n\tm := &GeneratorIncremental{\n\t\tAtomic: base,\n\t\tvalue:  0,\n\t}\n\t// Première échéance interne à t+1\n\tm.HoldIn(\"active\", 1.0)\n\treturn m\n}\n\n// A chaque interne: on \"émet\" logiquement un incrément via Lambda() puis on reprogramme dans 1.0,\n// et après 3 incréments on se passivise.\nfunc (m *GeneratorIncremental) DeltInt() {\n\tm.value++\n\tif m.value >= 3 {\n\t\tm.Passivate()\n\t} else {\n\t\tm.HoldIn(\"active\", 1.0)\n\t}\n}\n\n// Pas d'influence externe: on aligne juste le sigma.\nfunc (m *GeneratorIncremental) DeltExt(e float64) {\n\tm.Continue(e)\n}\n\n// Confluent: interne prioritaire pour simplicité.\nfunc (m *GeneratorIncremental) DeltCon(e float64) {\n\tm.DeltInt()\n}\n\n// Pas d'output matériel ici (le bootstrap n'achemine pas encore les sorties), on laisse vide.\nfunc (m *GeneratorIncremental) Lambda() {\n\t// no-op\n}\n"
+    }
+  ],
+  "count": 1,
+  "id": "test"
+}

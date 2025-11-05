@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package devs;
+
+option go_package = "devsforge/runners/proto;devspb";
+
+import "google/protobuf/any.proto";
+
+// Service générique pour piloter un modèle DEVS
+service DevsModel {
+  rpc Initialize(InitializeRequest) returns (InitializeResponse);
+  rpc TimeAdvance(TimeAdvanceRequest) returns (TimeAdvanceResponse);
+  rpc InternalTransition(InternalTransitionRequest) returns (InternalTransitionResponse);
+  rpc ExternalTransition(ExternalTransitionRequest) returns (ExternalTransitionResponse);
+  rpc ConfluentTransition(ConfluentTransitionRequest) returns (ConfluentTransitionResponse);
+  rpc Output(OutputRequest) returns (OutputResponse);
+  rpc GetState(GetStateRequest) returns (GetStateResponse);
+}
+// ---- Messages ----
+
+message InitializeRequest {
+  repeated google.protobuf.Any arguments = 1;
+}
+
+message InitializeResponse {}
+
+message TimeAdvanceRequest {}
+message TimeAdvanceResponse {
+  double sigma = 1;
+}
+
+message PortEvent {
+  string port_name = 1;
+  bytes payload = 2; // tu pourras le changer en string/json plus tard
+}
+
+message InternalTransitionRequest {}
+message InternalTransitionResponse {}
+
+message ExternalTransitionRequest {
+  double elapsed = 1;
+  repeated PortEvent inputs = 2;
+}
+message ExternalTransitionResponse {}
+
+message ConfluentTransitionRequest {
+  double elapsed = 1;
+  repeated PortEvent inputs = 2;
+}
+message ConfluentTransitionResponse {}
+
+message OutputRequest {}
+message OutputResponse {
+  repeated PortEvent outputs = 1;
+}
+
+message GetStateRequest {}
+message GetStateResponse {
+  string phase = 1;
+  double sigma = 2;
+  string state_string = 3;
+}
