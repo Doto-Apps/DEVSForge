@@ -1,6 +1,6 @@
 package internal
 
-import devspb "devsforge/proto"
+import devspb "devsforge/simulator/proto/go"
 
 var modelClient devspb.DevsModelClient
 

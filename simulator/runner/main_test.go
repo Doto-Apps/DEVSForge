@@ -9,8 +9,8 @@ import (
 	"syscall"
 	"testing"
 
-	"devsforge/mediator/cmd"
-	"devsforge/shared"
+	"devsforge/simulator/runner/cmd"
+	"devsforge/simulator/shared"
 
 	tccompose "github.com/testcontainers/testcontainers-go/modules/compose"
 	"gopkg.in/yaml.v3"

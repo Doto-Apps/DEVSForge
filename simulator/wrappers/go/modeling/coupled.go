@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-package main
+package modeling
 
 type Coupled interface {
 	Component                                 // Coupled interface complies with the Component interface.

@@ -20,10 +20,10 @@
  * SOFTWARE.
  */
 
-package main
+package modeling
 
 import (
-	"devsforge/mediator/util"
+	"devsforge/simulator/runner/util"
 	"fmt"
 	"math"
 )

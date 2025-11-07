@@ -1,9 +1,9 @@
 package main
 
 import (
-	"devsforge/shared"
-	"devsforge/shared/utils"
 	"devsforge/simulator/internal"
+	"devsforge/simulator/shared"
+	"devsforge/simulator/shared/utils"
 	"flag"
 	"fmt"
 	"log"
@@ -87,7 +87,7 @@ func run(args []string) error {
 					errCh <- err
 					return
 				}
-				cmd := exec.Command("go", "run", "runners/go/main.go", "--file", tmpFile.Name(), "--config", configFile.Name())
+				cmd := exec.Command("go", "run", "simulator/runner/main.go", "--file", tmpFile.Name(), "--config", configFile.Name())
 				cmd.Dir = parent
 
 				cmd.Stdout = os.Stdout
