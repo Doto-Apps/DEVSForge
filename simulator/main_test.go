@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -42,10 +43,28 @@ func TestRunWithFileKafka(t *testing.T) {
 	t.Log("Kafka started...")
 
 	// JSON statique pour tester
-	jsonContent, err := os.ReadFile("test/manifest.json")
+
+	codeContent, err := os.ReadFile("test/m1.go")
 	if err != nil {
 		t.Fatalf("Error while reading test manifest\n %v", err)
 	}
+
+	jsonContent := fmt.Sprintf(`{
+		"models": [
+			{
+			"language": "go",
+			"id": "m1",
+			"name": "GeneratorIncremental",
+			"code": %s
+			}
+		],
+		"count": 1,
+		"id": "test"
+	}`, codeContent)
+	if err != nil {
+		t.Fatalf("Error while reading test manifest\n %v", err)
+	}
+
 	tmpDir := t.TempDir()
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
 	if err := os.WriteFile(jsonPath, []byte(jsonContent), 0644); err != nil {

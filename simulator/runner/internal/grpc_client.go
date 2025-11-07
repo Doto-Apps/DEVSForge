@@ -2,12 +2,12 @@ package internal
 
 import devspb "devsforge/simulator/proto/go"
 
-var modelClient devspb.DevsModelClient
+var modelClient devspb.AtomicModelServiceClient
 
-func SetModelClient(c devspb.DevsModelClient) {
+func SetModelClient(c devspb.AtomicModelServiceClient) {
 	modelClient = c
 }
 
-func GetModelClient() devspb.DevsModelClient {
+func GetModelClient() devspb.AtomicModelServiceClient {
 	return modelClient
 }

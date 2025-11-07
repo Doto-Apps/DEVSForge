@@ -23,14 +23,22 @@ type RunnerConfig struct {
 var config *RunnerConfig
 
 func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *RunnerConfig {
+	// Charge la config YAML (Kafka, gRPC, etc.)
 	runnerConfig, err := LoadYamlConfig(yamlConfigPath)
 	if err != nil {
 		panic(err)
 	}
 
+	// Pour l'instant tu imposes 1 seul modèle par runner
 	model := *manifest.Models[0]
-	log.Printf("Connecting to kafka: %s | %s | %s", runnerConfig.Kafka.Address, runnerConfig.Kafka.Topic, model.ID)
 
+	log.Printf("Connecting to kafka: %s | topic=%s | modelID=%s",
+		runnerConfig.Kafka.Address,
+		runnerConfig.Kafka.Topic,
+		model.ID,
+	)
+
+	// Logger + Producer Kafka
 	logger, producer := NewLoggerWithKafka(runnerConfig.Kafka.Address, runnerConfig.Kafka.Topic, model.ID)
 
 	logger.Debug().Any("informations", map[string]string{
@@ -43,7 +51,6 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 	}).Msg("Config Information")
 
 	collector := NewKafkaCollector(runnerConfig.Kafka.Address, runnerConfig.Kafka.Topic, model.ID)
-	collector.Start()
 
 	config = &RunnerConfig{
 		ID:        model.ID,

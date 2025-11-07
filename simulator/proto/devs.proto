@@ -1,62 +1,76 @@
 syntax = "proto3";
 
-package devs;
+package devsforge.devs;
 
-option go_package = "devsforge/runners/proto;devspb";
+option go_package = "devsforge/simulator/runner/proto;devspb";
 
-import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
 
-// Service générique pour piloter un modèle DEVS
-service DevsModel {
-  rpc Initialize(InitializeRequest) returns (InitializeResponse);
-  rpc TimeAdvance(TimeAdvanceRequest) returns (TimeAdvanceResponse);
-  rpc InternalTransition(InternalTransitionRequest) returns (InternalTransitionResponse);
-  rpc ExternalTransition(ExternalTransitionRequest) returns (ExternalTransitionResponse);
-  rpc ConfluentTransition(ConfluentTransitionRequest) returns (ConfluentTransitionResponse);
-  rpc Output(OutputRequest) returns (OutputResponse);
-  rpc GetState(GetStateRequest) returns (GetStateResponse);
-}
-// ---- Messages ----
+// =======================
+// Messages de base
+// =======================
 
-message InitializeRequest {
-  repeated google.protobuf.Any arguments = 1;
+// Temps écoulé depuis la dernière transition
+message ElapsedTime {
+  double value = 1;
 }
 
-message InitializeResponse {}
-
-message TimeAdvanceRequest {}
+// Réponse de TimeAdvance() : sigma
 message TimeAdvanceResponse {
   double sigma = 1;
 }
 
-message PortEvent {
+// Message pour injecter une valeur dans un port d'entrée
+message InputMessage {
+  // Nom du port d'entrée (GetInPort(portName))
   string port_name = 1;
-  bytes payload = 2; // tu pourras le changer en string/json plus tard
+
+  // Valeur sérialisée en JSON (pour rester agnostique au type)
+  string value_json = 2;
 }
 
-message InternalTransitionRequest {}
-message InternalTransitionResponse {}
+// Valeurs produites sur un port de sortie lors de Output()
+message PortOutput {
+  string port_name = 1;
 
-message ExternalTransitionRequest {
-  double elapsed = 1;
-  repeated PortEvent inputs = 2;
+  // Toutes les valeurs présentes sur ce port (sérialisées en JSON)
+  repeated string values_json = 2;
 }
-message ExternalTransitionResponse {}
 
-message ConfluentTransitionRequest {
-  double elapsed = 1;
-  repeated PortEvent inputs = 2;
-}
-message ConfluentTransitionResponse {}
-
-message OutputRequest {}
+// Réponse de Output() : ensemble des sorties générées
 message OutputResponse {
-  repeated PortEvent outputs = 1;
+  repeated PortOutput outputs = 1;
 }
 
-message GetStateRequest {}
-message GetStateResponse {
-  string phase = 1;
-  double sigma = 2;
-  string state_string = 3;
+// =======================
+// Service gRPC pour un Atomic (noms parlants)
+// =======================
+
+service AtomicModelService {
+  // Initialisation du modèle (Component.Initialize)
+  rpc Initialize(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // Fin de simulation / nettoyage (Component.Exit)
+  rpc Finalize(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // TimeAdvance() : renvoie sigma (TA)
+  rpc TimeAdvance(google.protobuf.Empty) returns (TimeAdvanceResponse);
+
+  // InternalTransition() : DeltInt
+  rpc InternalTransition(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // ExternalTransition(e) : DeltExt
+  rpc ExternalTransition(ElapsedTime) returns (google.protobuf.Empty);
+
+  // ConfluentTransition(e) : DeltCon
+  rpc ConfluentTransition(ElapsedTime) returns (google.protobuf.Empty);
+
+  // Output() : Lambda
+  // Le wrapper lit les ports de sortie du modèle, construit OutputResponse,
+  // et peut ensuite vider les ports si c'est ta convention.
+  rpc Output(google.protobuf.Empty) returns (OutputResponse);
+
+  // Injection d'une valeur dans un port d'entrée (AddValue sur un inPort)
+  // C'est ce que le runner va appeler quand il reçoit un message pour ce modèle.
+  rpc AddInput(InputMessage) returns (google.protobuf.Empty);
 }

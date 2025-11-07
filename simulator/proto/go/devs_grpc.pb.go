@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.5.1
 // - protoc             v6.33.0
-// source: runners/proto/devs.proto
+// source: devs.proto
 
 package devspb
 
@@ -11,6 +11,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	emptypb "google.golang.org/protobuf/types/known/emptypb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -19,335 +20,391 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	DevsModel_Initialize_FullMethodName          = "/devs.DevsModel/Initialize"
-	DevsModel_TimeAdvance_FullMethodName         = "/devs.DevsModel/TimeAdvance"
-	DevsModel_InternalTransition_FullMethodName  = "/devs.DevsModel/InternalTransition"
-	DevsModel_ExternalTransition_FullMethodName  = "/devs.DevsModel/ExternalTransition"
-	DevsModel_ConfluentTransition_FullMethodName = "/devs.DevsModel/ConfluentTransition"
-	DevsModel_Output_FullMethodName              = "/devs.DevsModel/Output"
-	DevsModel_GetState_FullMethodName            = "/devs.DevsModel/GetState"
+	AtomicModelService_Initialize_FullMethodName          = "/devsforge.devs.AtomicModelService/Initialize"
+	AtomicModelService_Finalize_FullMethodName            = "/devsforge.devs.AtomicModelService/Finalize"
+	AtomicModelService_TimeAdvance_FullMethodName         = "/devsforge.devs.AtomicModelService/TimeAdvance"
+	AtomicModelService_InternalTransition_FullMethodName  = "/devsforge.devs.AtomicModelService/InternalTransition"
+	AtomicModelService_ExternalTransition_FullMethodName  = "/devsforge.devs.AtomicModelService/ExternalTransition"
+	AtomicModelService_ConfluentTransition_FullMethodName = "/devsforge.devs.AtomicModelService/ConfluentTransition"
+	AtomicModelService_Output_FullMethodName              = "/devsforge.devs.AtomicModelService/Output"
+	AtomicModelService_AddInput_FullMethodName            = "/devsforge.devs.AtomicModelService/AddInput"
 )
 
-// DevsModelClient is the client API for DevsModel service.
+// AtomicModelServiceClient is the client API for AtomicModelService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-//
-// Service générique pour piloter un modèle DEVS
-type DevsModelClient interface {
-	Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error)
-	TimeAdvance(ctx context.Context, in *TimeAdvanceRequest, opts ...grpc.CallOption) (*TimeAdvanceResponse, error)
-	InternalTransition(ctx context.Context, in *InternalTransitionRequest, opts ...grpc.CallOption) (*InternalTransitionResponse, error)
-	ExternalTransition(ctx context.Context, in *ExternalTransitionRequest, opts ...grpc.CallOption) (*ExternalTransitionResponse, error)
-	ConfluentTransition(ctx context.Context, in *ConfluentTransitionRequest, opts ...grpc.CallOption) (*ConfluentTransitionResponse, error)
-	Output(ctx context.Context, in *OutputRequest, opts ...grpc.CallOption) (*OutputResponse, error)
-	GetState(ctx context.Context, in *GetStateRequest, opts ...grpc.CallOption) (*GetStateResponse, error)
+type AtomicModelServiceClient interface {
+	// Initialisation du modèle (Component.Initialize)
+	Initialize(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Fin de simulation / nettoyage (Component.Exit)
+	Finalize(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// TimeAdvance() : renvoie sigma (TA)
+	TimeAdvance(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TimeAdvanceResponse, error)
+	// InternalTransition() : DeltInt
+	InternalTransition(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// ExternalTransition(e) : DeltExt
+	ExternalTransition(ctx context.Context, in *ElapsedTime, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// ConfluentTransition(e) : DeltCon
+	ConfluentTransition(ctx context.Context, in *ElapsedTime, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// Output() : Lambda
+	// Le wrapper lit les ports de sortie du modèle, construit OutputResponse,
+	// et peut ensuite vider les ports si c'est ta convention.
+	Output(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OutputResponse, error)
+	// Injection d'une valeur dans un port d'entrée (AddValue sur un inPort)
+	// C'est ce que le runner va appeler quand il reçoit un message pour ce modèle.
+	AddInput(ctx context.Context, in *InputMessage, opts ...grpc.CallOption) (*emptypb.Empty, error)
 }
 
-type devsModelClient struct {
+type atomicModelServiceClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewDevsModelClient(cc grpc.ClientConnInterface) DevsModelClient {
-	return &devsModelClient{cc}
+func NewAtomicModelServiceClient(cc grpc.ClientConnInterface) AtomicModelServiceClient {
+	return &atomicModelServiceClient{cc}
 }
 
-func (c *devsModelClient) Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error) {
+func (c *atomicModelServiceClient) Initialize(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(InitializeResponse)
-	err := c.cc.Invoke(ctx, DevsModel_Initialize_FullMethodName, in, out, cOpts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AtomicModelService_Initialize_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *devsModelClient) TimeAdvance(ctx context.Context, in *TimeAdvanceRequest, opts ...grpc.CallOption) (*TimeAdvanceResponse, error) {
+func (c *atomicModelServiceClient) Finalize(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AtomicModelService_Finalize_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *atomicModelServiceClient) TimeAdvance(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*TimeAdvanceResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(TimeAdvanceResponse)
-	err := c.cc.Invoke(ctx, DevsModel_TimeAdvance_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, AtomicModelService_TimeAdvance_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *devsModelClient) InternalTransition(ctx context.Context, in *InternalTransitionRequest, opts ...grpc.CallOption) (*InternalTransitionResponse, error) {
+func (c *atomicModelServiceClient) InternalTransition(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(InternalTransitionResponse)
-	err := c.cc.Invoke(ctx, DevsModel_InternalTransition_FullMethodName, in, out, cOpts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AtomicModelService_InternalTransition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *devsModelClient) ExternalTransition(ctx context.Context, in *ExternalTransitionRequest, opts ...grpc.CallOption) (*ExternalTransitionResponse, error) {
+func (c *atomicModelServiceClient) ExternalTransition(ctx context.Context, in *ElapsedTime, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ExternalTransitionResponse)
-	err := c.cc.Invoke(ctx, DevsModel_ExternalTransition_FullMethodName, in, out, cOpts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AtomicModelService_ExternalTransition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *devsModelClient) ConfluentTransition(ctx context.Context, in *ConfluentTransitionRequest, opts ...grpc.CallOption) (*ConfluentTransitionResponse, error) {
+func (c *atomicModelServiceClient) ConfluentTransition(ctx context.Context, in *ElapsedTime, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ConfluentTransitionResponse)
-	err := c.cc.Invoke(ctx, DevsModel_ConfluentTransition_FullMethodName, in, out, cOpts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AtomicModelService_ConfluentTransition_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *devsModelClient) Output(ctx context.Context, in *OutputRequest, opts ...grpc.CallOption) (*OutputResponse, error) {
+func (c *atomicModelServiceClient) Output(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*OutputResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(OutputResponse)
-	err := c.cc.Invoke(ctx, DevsModel_Output_FullMethodName, in, out, cOpts...)
+	err := c.cc.Invoke(ctx, AtomicModelService_Output_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *devsModelClient) GetState(ctx context.Context, in *GetStateRequest, opts ...grpc.CallOption) (*GetStateResponse, error) {
+func (c *atomicModelServiceClient) AddInput(ctx context.Context, in *InputMessage, opts ...grpc.CallOption) (*emptypb.Empty, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(GetStateResponse)
-	err := c.cc.Invoke(ctx, DevsModel_GetState_FullMethodName, in, out, cOpts...)
+	out := new(emptypb.Empty)
+	err := c.cc.Invoke(ctx, AtomicModelService_AddInput_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// DevsModelServer is the server API for DevsModel service.
-// All implementations must embed UnimplementedDevsModelServer
+// AtomicModelServiceServer is the server API for AtomicModelService service.
+// All implementations must embed UnimplementedAtomicModelServiceServer
 // for forward compatibility.
-//
-// Service générique pour piloter un modèle DEVS
-type DevsModelServer interface {
-	Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error)
-	TimeAdvance(context.Context, *TimeAdvanceRequest) (*TimeAdvanceResponse, error)
-	InternalTransition(context.Context, *InternalTransitionRequest) (*InternalTransitionResponse, error)
-	ExternalTransition(context.Context, *ExternalTransitionRequest) (*ExternalTransitionResponse, error)
-	ConfluentTransition(context.Context, *ConfluentTransitionRequest) (*ConfluentTransitionResponse, error)
-	Output(context.Context, *OutputRequest) (*OutputResponse, error)
-	GetState(context.Context, *GetStateRequest) (*GetStateResponse, error)
-	mustEmbedUnimplementedDevsModelServer()
+type AtomicModelServiceServer interface {
+	// Initialisation du modèle (Component.Initialize)
+	Initialize(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	// Fin de simulation / nettoyage (Component.Exit)
+	Finalize(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	// TimeAdvance() : renvoie sigma (TA)
+	TimeAdvance(context.Context, *emptypb.Empty) (*TimeAdvanceResponse, error)
+	// InternalTransition() : DeltInt
+	InternalTransition(context.Context, *emptypb.Empty) (*emptypb.Empty, error)
+	// ExternalTransition(e) : DeltExt
+	ExternalTransition(context.Context, *ElapsedTime) (*emptypb.Empty, error)
+	// ConfluentTransition(e) : DeltCon
+	ConfluentTransition(context.Context, *ElapsedTime) (*emptypb.Empty, error)
+	// Output() : Lambda
+	// Le wrapper lit les ports de sortie du modèle, construit OutputResponse,
+	// et peut ensuite vider les ports si c'est ta convention.
+	Output(context.Context, *emptypb.Empty) (*OutputResponse, error)
+	// Injection d'une valeur dans un port d'entrée (AddValue sur un inPort)
+	// C'est ce que le runner va appeler quand il reçoit un message pour ce modèle.
+	AddInput(context.Context, *InputMessage) (*emptypb.Empty, error)
+	mustEmbedUnimplementedAtomicModelServiceServer()
 }
 
-// UnimplementedDevsModelServer must be embedded to have
+// UnimplementedAtomicModelServiceServer must be embedded to have
 // forward compatible implementations.
 //
 // NOTE: this should be embedded by value instead of pointer to avoid a nil
 // pointer dereference when methods are called.
-type UnimplementedDevsModelServer struct{}
+type UnimplementedAtomicModelServiceServer struct{}
 
-func (UnimplementedDevsModelServer) Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error) {
+func (UnimplementedAtomicModelServiceServer) Initialize(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Initialize not implemented")
 }
-func (UnimplementedDevsModelServer) TimeAdvance(context.Context, *TimeAdvanceRequest) (*TimeAdvanceResponse, error) {
+func (UnimplementedAtomicModelServiceServer) Finalize(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Finalize not implemented")
+}
+func (UnimplementedAtomicModelServiceServer) TimeAdvance(context.Context, *emptypb.Empty) (*TimeAdvanceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method TimeAdvance not implemented")
 }
-func (UnimplementedDevsModelServer) InternalTransition(context.Context, *InternalTransitionRequest) (*InternalTransitionResponse, error) {
+func (UnimplementedAtomicModelServiceServer) InternalTransition(context.Context, *emptypb.Empty) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InternalTransition not implemented")
 }
-func (UnimplementedDevsModelServer) ExternalTransition(context.Context, *ExternalTransitionRequest) (*ExternalTransitionResponse, error) {
+func (UnimplementedAtomicModelServiceServer) ExternalTransition(context.Context, *ElapsedTime) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ExternalTransition not implemented")
 }
-func (UnimplementedDevsModelServer) ConfluentTransition(context.Context, *ConfluentTransitionRequest) (*ConfluentTransitionResponse, error) {
+func (UnimplementedAtomicModelServiceServer) ConfluentTransition(context.Context, *ElapsedTime) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ConfluentTransition not implemented")
 }
-func (UnimplementedDevsModelServer) Output(context.Context, *OutputRequest) (*OutputResponse, error) {
+func (UnimplementedAtomicModelServiceServer) Output(context.Context, *emptypb.Empty) (*OutputResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Output not implemented")
 }
-func (UnimplementedDevsModelServer) GetState(context.Context, *GetStateRequest) (*GetStateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetState not implemented")
+func (UnimplementedAtomicModelServiceServer) AddInput(context.Context, *InputMessage) (*emptypb.Empty, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AddInput not implemented")
 }
-func (UnimplementedDevsModelServer) mustEmbedUnimplementedDevsModelServer() {}
-func (UnimplementedDevsModelServer) testEmbeddedByValue()                   {}
+func (UnimplementedAtomicModelServiceServer) mustEmbedUnimplementedAtomicModelServiceServer() {}
+func (UnimplementedAtomicModelServiceServer) testEmbeddedByValue()                            {}
 
-// UnsafeDevsModelServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to DevsModelServer will
+// UnsafeAtomicModelServiceServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to AtomicModelServiceServer will
 // result in compilation errors.
-type UnsafeDevsModelServer interface {
-	mustEmbedUnimplementedDevsModelServer()
+type UnsafeAtomicModelServiceServer interface {
+	mustEmbedUnimplementedAtomicModelServiceServer()
 }
 
-func RegisterDevsModelServer(s grpc.ServiceRegistrar, srv DevsModelServer) {
-	// If the following call pancis, it indicates UnimplementedDevsModelServer was
+func RegisterAtomicModelServiceServer(s grpc.ServiceRegistrar, srv AtomicModelServiceServer) {
+	// If the following call pancis, it indicates UnimplementedAtomicModelServiceServer was
 	// embedded by pointer and is nil.  This will cause panics if an
 	// unimplemented method is ever invoked, so we test this at initialization
 	// time to prevent it from happening at runtime later due to I/O.
 	if t, ok := srv.(interface{ testEmbeddedByValue() }); ok {
 		t.testEmbeddedByValue()
 	}
-	s.RegisterService(&DevsModel_ServiceDesc, srv)
+	s.RegisterService(&AtomicModelService_ServiceDesc, srv)
 }
 
-func _DevsModel_Initialize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InitializeRequest)
+func _AtomicModelService_Initialize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DevsModelServer).Initialize(ctx, in)
+		return srv.(AtomicModelServiceServer).Initialize(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DevsModel_Initialize_FullMethodName,
+		FullMethod: AtomicModelService_Initialize_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevsModelServer).Initialize(ctx, req.(*InitializeRequest))
+		return srv.(AtomicModelServiceServer).Initialize(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DevsModel_TimeAdvance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(TimeAdvanceRequest)
+func _AtomicModelService_Finalize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DevsModelServer).TimeAdvance(ctx, in)
+		return srv.(AtomicModelServiceServer).Finalize(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DevsModel_TimeAdvance_FullMethodName,
+		FullMethod: AtomicModelService_Finalize_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevsModelServer).TimeAdvance(ctx, req.(*TimeAdvanceRequest))
+		return srv.(AtomicModelServiceServer).Finalize(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DevsModel_InternalTransition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(InternalTransitionRequest)
+func _AtomicModelService_TimeAdvance_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DevsModelServer).InternalTransition(ctx, in)
+		return srv.(AtomicModelServiceServer).TimeAdvance(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DevsModel_InternalTransition_FullMethodName,
+		FullMethod: AtomicModelService_TimeAdvance_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevsModelServer).InternalTransition(ctx, req.(*InternalTransitionRequest))
+		return srv.(AtomicModelServiceServer).TimeAdvance(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DevsModel_ExternalTransition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ExternalTransitionRequest)
+func _AtomicModelService_InternalTransition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DevsModelServer).ExternalTransition(ctx, in)
+		return srv.(AtomicModelServiceServer).InternalTransition(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DevsModel_ExternalTransition_FullMethodName,
+		FullMethod: AtomicModelService_InternalTransition_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevsModelServer).ExternalTransition(ctx, req.(*ExternalTransitionRequest))
+		return srv.(AtomicModelServiceServer).InternalTransition(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DevsModel_ConfluentTransition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ConfluentTransitionRequest)
+func _AtomicModelService_ExternalTransition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ElapsedTime)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DevsModelServer).ConfluentTransition(ctx, in)
+		return srv.(AtomicModelServiceServer).ExternalTransition(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DevsModel_ConfluentTransition_FullMethodName,
+		FullMethod: AtomicModelService_ExternalTransition_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevsModelServer).ConfluentTransition(ctx, req.(*ConfluentTransitionRequest))
+		return srv.(AtomicModelServiceServer).ExternalTransition(ctx, req.(*ElapsedTime))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DevsModel_Output_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(OutputRequest)
+func _AtomicModelService_ConfluentTransition_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ElapsedTime)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DevsModelServer).Output(ctx, in)
+		return srv.(AtomicModelServiceServer).ConfluentTransition(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DevsModel_Output_FullMethodName,
+		FullMethod: AtomicModelService_ConfluentTransition_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevsModelServer).Output(ctx, req.(*OutputRequest))
+		return srv.(AtomicModelServiceServer).ConfluentTransition(ctx, req.(*ElapsedTime))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DevsModel_GetState_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetStateRequest)
+func _AtomicModelService_Output_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(emptypb.Empty)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DevsModelServer).GetState(ctx, in)
+		return srv.(AtomicModelServiceServer).Output(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: DevsModel_GetState_FullMethodName,
+		FullMethod: AtomicModelService_Output_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DevsModelServer).GetState(ctx, req.(*GetStateRequest))
+		return srv.(AtomicModelServiceServer).Output(ctx, req.(*emptypb.Empty))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// DevsModel_ServiceDesc is the grpc.ServiceDesc for DevsModel service.
+func _AtomicModelService_AddInput_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InputMessage)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AtomicModelServiceServer).AddInput(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: AtomicModelService_AddInput_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AtomicModelServiceServer).AddInput(ctx, req.(*InputMessage))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// AtomicModelService_ServiceDesc is the grpc.ServiceDesc for AtomicModelService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var DevsModel_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "devs.DevsModel",
-	HandlerType: (*DevsModelServer)(nil),
+var AtomicModelService_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "devsforge.devs.AtomicModelService",
+	HandlerType: (*AtomicModelServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "Initialize",
-			Handler:    _DevsModel_Initialize_Handler,
+			Handler:    _AtomicModelService_Initialize_Handler,
+		},
+		{
+			MethodName: "Finalize",
+			Handler:    _AtomicModelService_Finalize_Handler,
 		},
 		{
 			MethodName: "TimeAdvance",
-			Handler:    _DevsModel_TimeAdvance_Handler,
+			Handler:    _AtomicModelService_TimeAdvance_Handler,
 		},
 		{
 			MethodName: "InternalTransition",
-			Handler:    _DevsModel_InternalTransition_Handler,
+			Handler:    _AtomicModelService_InternalTransition_Handler,
 		},
 		{
 			MethodName: "ExternalTransition",
-			Handler:    _DevsModel_ExternalTransition_Handler,
+			Handler:    _AtomicModelService_ExternalTransition_Handler,
 		},
 		{
 			MethodName: "ConfluentTransition",
-			Handler:    _DevsModel_ConfluentTransition_Handler,
+			Handler:    _AtomicModelService_ConfluentTransition_Handler,
 		},
 		{
 			MethodName: "Output",
-			Handler:    _DevsModel_Output_Handler,
+			Handler:    _AtomicModelService_Output_Handler,
 		},
 		{
-			MethodName: "GetState",
-			Handler:    _DevsModel_GetState_Handler,
+			MethodName: "AddInput",
+			Handler:    _AtomicModelService_AddInput_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "runners/proto/devs.proto",
+	Metadata: "devs.proto",
 }

@@ -3,6 +3,8 @@ package main
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -11,6 +13,7 @@ import (
 
 	"devsforge/simulator/runner/cmd"
 	"devsforge/simulator/shared"
+	"devsforge/simulator/shared/utils"
 
 	tccompose "github.com/testcontainers/testcontainers-go/modules/compose"
 	"gopkg.in/yaml.v3"
@@ -59,16 +62,39 @@ func TestLaunchRunnerWithKafka(t *testing.T) {
 
 	t.Log("✅ Kafka started for runner test...")
 
-	// 2️⃣ Charger le manifest JSON du modèle (avec le DumbModel dans "code")
-	// ⚠️ Adapte le chemin si nécessaire.
-	jsonContent, err := os.ReadFile("../tests/manifest.json")
+	var manifest shared.RunnableManifest
+
+	codeContent, err := os.ReadFile("../tests/m1.go")
 	if err != nil {
-		t.Fatalf("Error while reading test manifest: %v", err)
+		t.Fatalf("Error while reading test code\n %v", err)
+	}
+
+	jsonContent := fmt.Sprintf(`{
+		"models": [
+			{
+			"language": "go",
+			"id": "m1",
+			"name": "GeneratorIncremental",
+			"code": %q
+			}
+		],
+		"count": 1,
+		"id": "test"
+	}`, string(codeContent))
+
+	err = utils.ParseManifest(jsonContent, &manifest)
+	if err != nil {
+		t.Fatalf("Error while parsing test manifest\n %v", err)
+	}
+
+	data, err := json.Marshal(manifest)
+	if err != nil {
+		t.Fatalf("failed to marshal manifest: %v", err)
 	}
 
 	tmpDir := t.TempDir()
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
-	if err := os.WriteFile(jsonPath, jsonContent, 0o644); err != nil {
+	if err := os.WriteFile(jsonPath, data, 0644); err != nil {
 		t.Fatalf("failed to write temp manifest: %v", err)
 	}
 
