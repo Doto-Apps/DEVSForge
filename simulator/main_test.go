@@ -61,9 +61,6 @@ func TestRunWithFileKafka(t *testing.T) {
 		"count": 1,
 		"id": "test"
 	}`, codeContent)
-	if err != nil {
-		t.Fatalf("Error while reading test manifest\n %v", err)
-	}
 
 	tmpDir := t.TempDir()
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
