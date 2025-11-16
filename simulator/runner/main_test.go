@@ -67,7 +67,7 @@ func TestLaunchRunnerWithKafka(t *testing.T) {
 
 	var manifest shared.RunnableManifest
 
-	codeContent, err := os.ReadFile("../tests/m1.go")
+	codeContent, err := os.ReadFile("../tests/m1/m1.go")
 	if err != nil {
 		t.Fatalf("Error while reading test code\n %v", err)
 	}

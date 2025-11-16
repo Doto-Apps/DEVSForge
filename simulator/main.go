@@ -11,7 +11,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"time"
 )
 
 func run(args []string) error {
@@ -116,7 +115,6 @@ func run(args []string) error {
 					errCh <- fmt.Errorf("error launching runner %s via go run: %w", m.ID, err)
 					return
 				}
-				time.Sleep(10 * time.Second)
 				errCh <- nil
 			}(model)
 		}

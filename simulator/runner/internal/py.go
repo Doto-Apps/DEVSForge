@@ -170,7 +170,7 @@ import json
 import logging
 import os
 
-from wrappers.python.rpc.devsModelServer import serve  # à toi de fournir devs_model_server.py
+from simulator.wrappers.python.rpc.devsModelServer import serve  # ton serveur gRPC Python
 from model import NewModel  # fonction NewModel(cfg) dans model.py
 
 
@@ -185,7 +185,7 @@ def main() -> None:
     parser.add_argument("--json", required=True, help="JSON string to parse")
     args = parser.parse_args()
 
-    # Parse le JSON en dict. A toi de mapper ça vers ta structure dans NewModel.
+    # Parse le JSON en dict. À toi de mapper ça vers ta structure dans NewModel.
     config = json.loads(args.json)
 
     # Création du modèle utilisateur (implémenté dans model.py)

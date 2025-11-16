@@ -45,32 +45,32 @@ func TestRunWithFileKafka(t *testing.T) {
 	t.Log("Kafka started...")
 
 	// ============================
-	// Manifest avec GEN + COLLECTOR
+	// Manifest avec M1 (PY) + M2 (GO)
 	// ============================
 
 	var manifest shared.RunnableManifest
 
-	// Code du générateur (ton m1.go)
-	genCode, err := os.ReadFile("tests/m1/m1.go")
+	// Code du modèle Python (m1.py)
+	pyCode, err := os.ReadFile("tests/m1/m1.py")
 	if err != nil {
-		t.Fatalf("Error while reading generator code\n %v", err)
+		t.Fatalf("Error while reading python model code\n %v", err)
 	}
 
-	// Code du collecteur (m2.go qu'on vient de créer)
-	collectorCode, err := os.ReadFile("tests/m2/m2.go")
+	// Code du collecteur Go (m2.go)
+	goCollectorCode, err := os.ReadFile("tests/m2/m2.go")
 	if err != nil {
-		t.Fatalf("Error while reading collector code\n %v", err)
+		t.Fatalf("Error while reading go collector code\n %v", err)
 	}
 
 	// Manifest JSON :
-	// - modèle "gen" avec port "out"
-	// - modèle "collector" avec port "in"
-	// - une connexion gen.out -> collector.in
+	// - modèle "m1" (python) avec port "out"
+	// - modèle "m2" (go) avec port "in"
+	// - connexion m1.out -> m2.in
 	jsonContent := fmt.Sprintf(`{
 		"models": [
 			{
-				"language": "go",
-				"id": "gen",
+				"language": "python",
+				"id": "m1",
 				"name": "GeneratorIncremental",
 				"code": %q,
 				"ports": [
@@ -78,14 +78,14 @@ func TestRunWithFileKafka(t *testing.T) {
 				],
 				"connections": [
 					{
-						"from": { "id": "gen", "port": "out" },
-						"to":   { "id": "collector", "port": "in" }
+						"from": { "id": "m1", "port": "out" },
+						"to":   { "id": "m2", "port": "in" }
 					}
 				]
 			},
 			{
 				"language": "go",
-				"id": "collector",
+				"id": "m2",
 				"name": "Collector",
 				"code": %q,
 				"ports": [
@@ -96,9 +96,9 @@ func TestRunWithFileKafka(t *testing.T) {
 		],
 		"count": 1,
 		"simulationId": "test"
-	}`, string(genCode), string(collectorCode))
+	}`, string(pyCode), string(goCollectorCode))
 
-	// On parse le manifest pour vérifier qu'il est bien formé
+	// Vérifie que le manifest est bien formé
 	if err := utils.ParseManifest(jsonContent, &manifest); err != nil {
 		t.Fatalf("Error while parsing test manifest\n %v", err)
 	}

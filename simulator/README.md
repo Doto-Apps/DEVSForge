@@ -18,3 +18,8 @@ The role of the coordinator are the folowing :
 
 ### Wrapper
     TODO: a faire
+
+
+Genrator hi
+collabarotar get hi and hello 
+observer get 

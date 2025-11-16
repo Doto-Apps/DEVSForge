@@ -10,9 +10,9 @@ from google.protobuf.empty_pb2 import Empty
 # - si tu as généré les fichiers dans simulator/proto/python, tu peux faire :
 #   from proto.python import devs_pb2, devs_pb2_grpc
 # - ou simplement import devs_pb2 si tu es dans le même package.
-from proto.python import devs_pb2, devs_pb2_grpc
+from simulator.proto.python import devs_pb2, devs_pb2_grpc
 
-from modeling import Atomic  # ton runtime Python (Atomic / Component / Port)
+from simulator.wrappers.python.modeling.modeling import Atomic  # ton runtime Python (Atomic / Component / Port)
 
 
 class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
