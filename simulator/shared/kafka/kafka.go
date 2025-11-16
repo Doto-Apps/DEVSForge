@@ -1,11 +1,9 @@
-package internal
+package kafka
 
 import (
 	"context"
 	"log"
 	"os"
-
-	"devsforge/simulator/shared"
 
 	"github.com/rs/zerolog"
 	"github.com/segmentio/kafka-go"
@@ -59,7 +57,7 @@ func (p *KafkaProducer) SendMessage(value string) error {
 }
 
 // SendDevsMessage envoie un message DEVS-SF typé (KafkaMessage sérialisé en JSON).
-func (p *KafkaProducer) SendDevsMessage(msg *shared.KafkaMessage) error {
+func (p *KafkaProducer) SendDevsMessage(msg *KafkaMessage) error {
 	data, err := msg.Marshal()
 	if err != nil {
 		return err
@@ -127,15 +125,33 @@ func (c *KafkaCollector) StartRaw(handler func([]byte) error) {
 }
 
 // StartDevsLoop : boucle typée DEVS-SF, qui parse KafkaMessage et appelle un handler.
-func (c *KafkaCollector) StartDevsLoop(handler func(*shared.KafkaMessage) error) {
-	c.StartRaw(func(data []byte) error {
-		devsMsg, err := shared.UnmarshalKafkaMessage(data)
+func (c *KafkaCollector) StartDevsLoop(handler func(*KafkaMessage) error) error {
+	// Ne plus utiliser de goroutine, bloquer directement
+	defer c.reader.Close()
+
+	for {
+		m, err := c.reader.ReadMessage(context.Background())
 		if err != nil {
-			log.Printf("⚠️ invalid DEVS-SF message JSON: %v (raw=%s)", err, string(data))
-			return nil // on ignore juste ce message
+			log.Printf("❌ Kafka read error: %v", err)
+			continue
 		}
-		return handler(devsMsg)
-	})
+
+		devsMsg, err := UnmarshalKafkaMessage(m.Value)
+		if err != nil {
+			log.Printf("⚠️ invalid DEVS-SF message JSON: %v (raw=%s)", err, string(m.Value))
+			continue
+		}
+
+		if err := handler(devsMsg); err != nil {
+			log.Printf("⚠️ handler error: %v", err)
+		}
+
+		// Si c'est SimulationDone, on sort de la boucle
+		if devsMsg.DevsType == DevsTypeSimulationDone {
+			log.Println("SimulationDone received, exiting loop")
+			return nil
+		}
+	}
 }
 
 func (c *KafkaCollector) Close() error {

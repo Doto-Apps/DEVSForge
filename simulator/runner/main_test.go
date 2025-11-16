@@ -37,15 +37,7 @@ func TestLaunchRunnerWithKafka(t *testing.T) {
 	stack, err := tccompose.NewDockerCompose(
 		composeFile,
 	)
-	if err != nil {
-		t.Fatalf("could not create compose stack: %v", err)
-	}
 
-	if err := stack.Up(ctx, tccompose.Wait(true)); err != nil {
-		t.Fatalf("compose up failed: %v", err)
-	}
-
-	// Gestion propre du Ctrl+C pendant le test
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 	go func() {
@@ -59,6 +51,17 @@ func TestLaunchRunnerWithKafka(t *testing.T) {
 			t.Logf("compose down returned error: %v", err)
 		}
 	}()
+
+	if err != nil {
+		t.Fatalf("could not create compose stack: %v", err)
+	}
+
+	if err := stack.Up(ctx, tccompose.Wait(true)); err != nil {
+		t.Fatalf("compose up failed: %v", err)
+
+	}
+
+	// Gestion propre du Ctrl+C pendant le test
 
 	t.Log("✅ Kafka started for runner test...")
 

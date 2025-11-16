@@ -72,7 +72,8 @@ func (s *DEVSModelServer) Output(ctx context.Context, _ *emptypb.Empty) (*devspb
 	var resp devspb.OutputResponse
 
 	// Récupération des ports de sortie via Component.GetOutPorts()
-	for _, port := range s.model.GetOutPorts() {
+	portType := "out"
+	for _, port := range s.model.GetPorts(&portType) {
 		portName := port.GetName()
 
 		// On suppose que les ports sont typés []string
@@ -106,8 +107,8 @@ func (s *DEVSModelServer) AddInput(ctx context.Context, req *devspb.InputMessage
 	portName := req.GetPortName()
 	value := req.GetValueJson() // ici on traite la valeur comme un string
 
-	inPort := s.model.GetInPort(portName)
-	if inPort == nil {
+	inPort, err := s.model.GetPortByName(portName)
+	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "input port %s not found", portName)
 	}
 

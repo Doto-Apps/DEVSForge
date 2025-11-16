@@ -1,5 +1,5 @@
 // Package shared contient les types génériques partagés entre runner / coord / wrappers.
-package shared
+package kafka
 
 // DevsType représente le type logique du message DEVS-SF transporté sur Kafka.
 // On s'aligne sur les valeurs texte vues dans l'exemple simlytics.
@@ -42,10 +42,11 @@ type ModelOutput struct {
 // KafkaMessage est la structure simplifiée qui colle aux exemples DEVS-SF.
 // Elle te permet de (un)marshal directement ce qui transite sur Kafka.
 type KafkaMessage struct {
-	DevsType          DevsType           `json:"devsType"`                    // type logique du message
-	Time              *SimTime           `json:"time,omitempty"`              // temps courant du message
-	NextTime          *SimTime           `json:"nextTime,omitempty"`          // temps de la prochaine transition (NextTime / TransitionDone / ModelOutput)
-	Sender            string             `json:"sender,omitempty"`            // ex: "clerk1"
+	DevsType          DevsType           `json:"devsType"`           // type logique du message
+	Time              *SimTime           `json:"time,omitempty"`     // temps courant du message
+	NextTime          *SimTime           `json:"nextTime,omitempty"` // temps de la prochaine transition (NextTime / TransitionDone / ModelOutput)
+	Sender            string             `json:"sender,omitempty"`   // ex: "clerk1"
+	Target            string             `json:"target,omitempty"`
 	ModelInputsOption *ModelInputsOption `json:"modelInputsOption,omitempty"` // pour ExecuteTransition
 	ModelOutput       *ModelOutput       `json:"modelOutput,omitempty"`       // pour ModelOutputMessage
 }

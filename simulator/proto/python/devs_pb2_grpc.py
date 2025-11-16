@@ -3,7 +3,8 @@
 import grpc
 import warnings
 
-from proto import devs_pb2 as proto_dot_devs__pb2
+import devs_pb2 as devs__pb2
+from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 
 GRPC_GENERATED_VERSION = '1.76.0'
 GRPC_VERSION = grpc.__version__
@@ -18,15 +19,18 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + ' but the generated code in proto/devs_pb2_grpc.py depends on'
+        + ' but the generated code in devs_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
     )
 
 
-class DevsModelStub(object):
-    """Service générique pour piloter un modèle DEVS
+class AtomicModelServiceStub(object):
+    """=======================
+    Service gRPC pour un Atomic (noms parlants)
+    =======================
+
     """
 
     def __init__(self, channel):
@@ -36,136 +40,169 @@ class DevsModelStub(object):
             channel: A grpc.Channel.
         """
         self.Initialize = channel.unary_unary(
-                '/devs.DevsModel/Initialize',
-                request_serializer=proto_dot_devs__pb2.InitializeRequest.SerializeToString,
-                response_deserializer=proto_dot_devs__pb2.InitializeResponse.FromString,
+                '/devsforge.devs.AtomicModelService/Initialize',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                _registered_method=True)
+        self.Finalize = channel.unary_unary(
+                '/devsforge.devs.AtomicModelService/Finalize',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
         self.TimeAdvance = channel.unary_unary(
-                '/devs.DevsModel/TimeAdvance',
-                request_serializer=proto_dot_devs__pb2.TimeAdvanceRequest.SerializeToString,
-                response_deserializer=proto_dot_devs__pb2.TimeAdvanceResponse.FromString,
+                '/devsforge.devs.AtomicModelService/TimeAdvance',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=devs__pb2.TimeAdvanceResponse.FromString,
                 _registered_method=True)
         self.InternalTransition = channel.unary_unary(
-                '/devs.DevsModel/InternalTransition',
-                request_serializer=proto_dot_devs__pb2.InternalTransitionRequest.SerializeToString,
-                response_deserializer=proto_dot_devs__pb2.InternalTransitionResponse.FromString,
+                '/devsforge.devs.AtomicModelService/InternalTransition',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
         self.ExternalTransition = channel.unary_unary(
-                '/devs.DevsModel/ExternalTransition',
-                request_serializer=proto_dot_devs__pb2.ExternalTransitionRequest.SerializeToString,
-                response_deserializer=proto_dot_devs__pb2.ExternalTransitionResponse.FromString,
+                '/devsforge.devs.AtomicModelService/ExternalTransition',
+                request_serializer=devs__pb2.ElapsedTime.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
         self.ConfluentTransition = channel.unary_unary(
-                '/devs.DevsModel/ConfluentTransition',
-                request_serializer=proto_dot_devs__pb2.ConfluentTransitionRequest.SerializeToString,
-                response_deserializer=proto_dot_devs__pb2.ConfluentTransitionResponse.FromString,
+                '/devsforge.devs.AtomicModelService/ConfluentTransition',
+                request_serializer=devs__pb2.ElapsedTime.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
         self.Output = channel.unary_unary(
-                '/devs.DevsModel/Output',
-                request_serializer=proto_dot_devs__pb2.OutputRequest.SerializeToString,
-                response_deserializer=proto_dot_devs__pb2.OutputResponse.FromString,
+                '/devsforge.devs.AtomicModelService/Output',
+                request_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+                response_deserializer=devs__pb2.OutputResponse.FromString,
                 _registered_method=True)
-        self.GetState = channel.unary_unary(
-                '/devs.DevsModel/GetState',
-                request_serializer=proto_dot_devs__pb2.GetStateRequest.SerializeToString,
-                response_deserializer=proto_dot_devs__pb2.GetStateResponse.FromString,
+        self.AddInput = channel.unary_unary(
+                '/devsforge.devs.AtomicModelService/AddInput',
+                request_serializer=devs__pb2.InputMessage.SerializeToString,
+                response_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
                 _registered_method=True)
 
 
-class DevsModelServicer(object):
-    """Service générique pour piloter un modèle DEVS
+class AtomicModelServiceServicer(object):
+    """=======================
+    Service gRPC pour un Atomic (noms parlants)
+    =======================
+
     """
 
     def Initialize(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Initialisation du modèle (Component.Initialize)
+        """
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def Finalize(self, request, context):
+        """Fin de simulation / nettoyage (Component.Exit)
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def TimeAdvance(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """TimeAdvance() : renvoie sigma (TA)
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def InternalTransition(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """InternalTransition() : DeltInt
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ExternalTransition(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """ExternalTransition(e) : DeltExt
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def ConfluentTransition(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """ConfluentTransition(e) : DeltCon
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def Output(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+        """Output() : Lambda
+        Le wrapper lit les ports de sortie du modèle, construit OutputResponse,
+        et peut ensuite vider les ports si c'est ta convention.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
-    def GetState(self, request, context):
-        """Missing associated documentation comment in .proto file."""
+    def AddInput(self, request, context):
+        """Injection d'une valeur dans un port d'entrée (AddValue sur un inPort)
+        C'est ce que le runner va appeler quand il reçoit un message pour ce modèle.
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
 
-def add_DevsModelServicer_to_server(servicer, server):
+def add_AtomicModelServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Initialize': grpc.unary_unary_rpc_method_handler(
                     servicer.Initialize,
-                    request_deserializer=proto_dot_devs__pb2.InitializeRequest.FromString,
-                    response_serializer=proto_dot_devs__pb2.InitializeResponse.SerializeToString,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            ),
+            'Finalize': grpc.unary_unary_rpc_method_handler(
+                    servicer.Finalize,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'TimeAdvance': grpc.unary_unary_rpc_method_handler(
                     servicer.TimeAdvance,
-                    request_deserializer=proto_dot_devs__pb2.TimeAdvanceRequest.FromString,
-                    response_serializer=proto_dot_devs__pb2.TimeAdvanceResponse.SerializeToString,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=devs__pb2.TimeAdvanceResponse.SerializeToString,
             ),
             'InternalTransition': grpc.unary_unary_rpc_method_handler(
                     servicer.InternalTransition,
-                    request_deserializer=proto_dot_devs__pb2.InternalTransitionRequest.FromString,
-                    response_serializer=proto_dot_devs__pb2.InternalTransitionResponse.SerializeToString,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'ExternalTransition': grpc.unary_unary_rpc_method_handler(
                     servicer.ExternalTransition,
-                    request_deserializer=proto_dot_devs__pb2.ExternalTransitionRequest.FromString,
-                    response_serializer=proto_dot_devs__pb2.ExternalTransitionResponse.SerializeToString,
+                    request_deserializer=devs__pb2.ElapsedTime.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'ConfluentTransition': grpc.unary_unary_rpc_method_handler(
                     servicer.ConfluentTransition,
-                    request_deserializer=proto_dot_devs__pb2.ConfluentTransitionRequest.FromString,
-                    response_serializer=proto_dot_devs__pb2.ConfluentTransitionResponse.SerializeToString,
+                    request_deserializer=devs__pb2.ElapsedTime.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
             'Output': grpc.unary_unary_rpc_method_handler(
                     servicer.Output,
-                    request_deserializer=proto_dot_devs__pb2.OutputRequest.FromString,
-                    response_serializer=proto_dot_devs__pb2.OutputResponse.SerializeToString,
+                    request_deserializer=google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+                    response_serializer=devs__pb2.OutputResponse.SerializeToString,
             ),
-            'GetState': grpc.unary_unary_rpc_method_handler(
-                    servicer.GetState,
-                    request_deserializer=proto_dot_devs__pb2.GetStateRequest.FromString,
-                    response_serializer=proto_dot_devs__pb2.GetStateResponse.SerializeToString,
+            'AddInput': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddInput,
+                    request_deserializer=devs__pb2.InputMessage.FromString,
+                    response_serializer=google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'devs.DevsModel', rpc_method_handlers)
+            'devsforge.devs.AtomicModelService', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('devs.DevsModel', rpc_method_handlers)
+    server.add_registered_method_handlers('devsforge.devs.AtomicModelService', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
-class DevsModel(object):
-    """Service générique pour piloter un modèle DEVS
+class AtomicModelService(object):
+    """=======================
+    Service gRPC pour un Atomic (noms parlants)
+    =======================
+
     """
 
     @staticmethod
@@ -182,9 +219,36 @@ class DevsModel(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/devs.DevsModel/Initialize',
-            proto_dot_devs__pb2.InitializeRequest.SerializeToString,
-            proto_dot_devs__pb2.InitializeResponse.FromString,
+            '/devsforge.devs.AtomicModelService/Initialize',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def Finalize(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/devsforge.devs.AtomicModelService/Finalize',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,
@@ -209,9 +273,9 @@ class DevsModel(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/devs.DevsModel/TimeAdvance',
-            proto_dot_devs__pb2.TimeAdvanceRequest.SerializeToString,
-            proto_dot_devs__pb2.TimeAdvanceResponse.FromString,
+            '/devsforge.devs.AtomicModelService/TimeAdvance',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            devs__pb2.TimeAdvanceResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -236,9 +300,9 @@ class DevsModel(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/devs.DevsModel/InternalTransition',
-            proto_dot_devs__pb2.InternalTransitionRequest.SerializeToString,
-            proto_dot_devs__pb2.InternalTransitionResponse.FromString,
+            '/devsforge.devs.AtomicModelService/InternalTransition',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,
@@ -263,9 +327,9 @@ class DevsModel(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/devs.DevsModel/ExternalTransition',
-            proto_dot_devs__pb2.ExternalTransitionRequest.SerializeToString,
-            proto_dot_devs__pb2.ExternalTransitionResponse.FromString,
+            '/devsforge.devs.AtomicModelService/ExternalTransition',
+            devs__pb2.ElapsedTime.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,
@@ -290,9 +354,9 @@ class DevsModel(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/devs.DevsModel/ConfluentTransition',
-            proto_dot_devs__pb2.ConfluentTransitionRequest.SerializeToString,
-            proto_dot_devs__pb2.ConfluentTransitionResponse.FromString,
+            '/devsforge.devs.AtomicModelService/ConfluentTransition',
+            devs__pb2.ElapsedTime.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,
@@ -317,9 +381,9 @@ class DevsModel(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/devs.DevsModel/Output',
-            proto_dot_devs__pb2.OutputRequest.SerializeToString,
-            proto_dot_devs__pb2.OutputResponse.FromString,
+            '/devsforge.devs.AtomicModelService/Output',
+            google_dot_protobuf_dot_empty__pb2.Empty.SerializeToString,
+            devs__pb2.OutputResponse.FromString,
             options,
             channel_credentials,
             insecure,
@@ -331,7 +395,7 @@ class DevsModel(object):
             _registered_method=True)
 
     @staticmethod
-    def GetState(request,
+    def AddInput(request,
             target,
             options=(),
             channel_credentials=None,
@@ -344,9 +408,9 @@ class DevsModel(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/devs.DevsModel/GetState',
-            proto_dot_devs__pb2.GetStateRequest.SerializeToString,
-            proto_dot_devs__pb2.GetStateResponse.FromString,
+            '/devsforge.devs.AtomicModelService/AddInput',
+            devs__pb2.InputMessage.SerializeToString,
+            google_dot_protobuf_dot_empty__pb2.Empty.FromString,
             options,
             channel_credentials,
             insecure,

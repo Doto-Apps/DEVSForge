@@ -1,30 +1,11 @@
-/*
- * Copyright (c) 2021, Román Cárdenas Rodríguez.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
 package modeling
 
 import "reflect"
 
 type Port interface {
 	GetName() string             // returns the name of the Port.
+	GetId() string               // returns the name of the Port.
+	GetPortType() string         // returns the name of the Port.
 	Length() int                 // returns the number of elements stored in the Port.
 	IsEmpty() bool               // returns true if the Port does not contain any element.
 	Clear()                      // removes all the elements stored in the Port.
@@ -41,10 +22,10 @@ type Port interface {
 // name: name of the port.
 // portValue: slice of desired the data type of the port.
 // It panics if portValue is not a slice.
-func NewPort(name string, portValue interface{}) Port {
+func NewPort(id string, name string, portType string, portValue interface{}) Port {
 	switch reflect.ValueOf(portValue).Kind() {
 	case reflect.Slice:
-		p := port{name, nil, portValue}
+		p := port{id, portType, name, nil, portValue}
 		p.Clear()
 		return &p
 	default:
@@ -53,14 +34,26 @@ func NewPort(name string, portValue interface{}) Port {
 }
 
 type port struct {
-	name   string      // Name of the port.
-	parent Component   // Parent DEVS model that contains the port.
-	values interface{} // Values stored in the port. It is an empty interface to allow ports of different data types.
+	id       string
+	portType string
+	name     string      // Name of the port.
+	parent   Component   // Parent DEVS model that contains the port.
+	values   interface{} // Values stored in the port. It is an empty interface to allow ports of different data types.
 }
 
 // GetName returns the name of the port.
 func (p *port) GetName() string {
 	return p.name
+}
+
+// GetId returns the name of the port.
+func (p *port) GetId() string {
+	return p.id
+}
+
+// GetPortType returns the name of the port.
+func (p *port) GetPortType() string {
+	return p.portType
 }
 
 // Length returns the number of values stored in the port.
@@ -122,7 +115,10 @@ func (p *port) String() string {
 	auxComponent := p.parent
 	for auxComponent != nil {
 		name = auxComponent.GetName() + "." + name
-		auxComponent = auxComponent.GetParent()
+		parent := auxComponent.GetParent()
+		if parent != nil {
+			auxComponent = *parent
+		}
 	}
 	return name
 }

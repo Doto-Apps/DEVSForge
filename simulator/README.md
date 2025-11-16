@@ -4,7 +4,17 @@
 
 `go test -v`: `-v` is needed to have outputs
 
-- Les events sont mis dans `/tmp/devs-sim-events.log` pour le moment, il faudrait rendre le chemin dynamique
-- Faudra aussi rajouter des providers comme kafka
-- Actuellement la superposition d'ecriture ne pose pas de probleme si la taille totale du message est <4kb selon la doc
-- Si la superposition de log devient problematique on devra integrer une premiere commande pour creer un fichier FIFO
+## How it works
+
+### Coordinator 
+
+The coordinator receive a runnable mannifest either from the back when a user start a simulation ( not implemented ) or by hand like we do with the test. 
+The role of the coordinator are the folowing :
+- Split the main manifest by model and start runner with sending the corresponding single runnable manifest 
+- Coordinate runner with kafka
+
+### Runner 
+    TODO: a faire
+
+### Wrapper
+    TODO: a faire

@@ -2,48 +2,40 @@ package main
 
 import (
 	"encoding/json"
+	"log"
 
 	"devsforge/simulator/shared"
 	modeling "devsforge/simulator/wrappers/go/modeling"
 )
 
-// GeneratorIncremental : petit modèle DEVS de test
-// - time advance = 1.0 en phase "active"
-// - à chaque internal transition, value++
-// - après 3 steps, passivation
-// - Lambda() envoie { "value": X } sur le port "out".
-type GeneratorIncremental struct {
-	modeling.Atomic
+type GeneratorIncrementalParameters struct {
 	value int
+	color string
 }
 
-// NewModel est l’entrypoint appelé par le wrapper.
-// Il reçoit la config complète du modèle (nom, ports, paramètres, etc.)
-// et doit retourner un modeling.Atomic prêt à être simulé.
+type GeneratorIncremental struct {
+	modeling.Atomic
+	Parameters GeneratorIncrementalParameters
+	storage    string
+}
+
 func NewModel(cfg shared.RunnableModel) modeling.Atomic {
-	// 1) Création du modèle Atomic de base
-	base := modeling.NewAtomic(cfg.Name)
-
-	// 2) Création des ports à partir de la config – typés []string
-	for _, port := range cfg.Ports {
-		if port.Type == "in" {
-			base.AddInPort(modeling.NewPort(port.ID, []string{}))
-		} else {
-			base.AddOutPort(modeling.NewPort(port.ID, []string{}))
-		}
+	base := &GeneratorIncremental{
+		Atomic: modeling.NewAtomic(cfg),
+		Parameters: GeneratorIncrementalParameters{
+			value: 0,
+			color: "",
+		},
 	}
-
-	// 3) Wrap dans notre modèle spécifique
-	return &GeneratorIncremental{
-		Atomic: base,
-		value:  0,
-	}
+	return base
 }
 
 // Initialize est appelée avant la simulation.
 func (m *GeneratorIncremental) Initialize() {
-	m.value = 0
+	m.Parameters.value = 0
+	m.storage = "base"
 	m.HoldIn("active", 1.0)
+	log.Println("Pute")
 }
 
 // Exit est appelée après la simulation.
@@ -53,10 +45,11 @@ func (m *GeneratorIncremental) Exit() {
 
 // DeltInt : transition interne
 func (m *GeneratorIncremental) DeltInt() {
-	m.value++
+	m.Parameters.value++
 
-	if m.value >= 3 {
+	if m.Parameters.value >= 3 {
 		m.Passivate()
+		m.storage = "gt 3"
 	} else {
 		m.HoldIn("active", 1.0)
 	}
@@ -77,17 +70,17 @@ func (m *GeneratorIncremental) DeltCon(e float64) {
 // Lambda : fonction de sortie
 // Envoie la valeur courante sur le port "out" sous forme JSON.
 func (m *GeneratorIncremental) Lambda() {
-	outPort := m.GetOutPort("out")
-	if outPort == nil {
-		return
-	}
-
-	payload, err := json.Marshal(map[string]int{
-		"value": m.value,
-	})
+	outPort, err := m.GetPortByName("out")
 	if err != nil {
 		return
 	}
 
+	payload, err := json.Marshal(map[string]int{
+		"value": m.Parameters.value,
+	})
+	if err != nil {
+		return
+	}
 	outPort.AddValue(string(payload))
+
 }
