@@ -20,6 +20,9 @@ The role of the coordinator are the folowing :
     TODO: a faire
 
 
-Genrator hi
-collabarotar get hi and hello 
-observer get 
+TODO: faire test unitaire pour le runner + wrapper + modele go avec un envoi factice dans le kafka pour l'init sim 
+TODO: faire test unitaire pour le runner + wrapper + modele python avec un envoi factice dans le kafka pour l'init sim 
+
+TODO: faire test unitaire pour le coordinator + runners(go) + runner(python) avec simulation compléte 
+
+TODO: Faire les read me correctement et modifier la docs pour expliquer comment on lance les test et comment focntionne le système 
