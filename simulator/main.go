@@ -1,18 +1,20 @@
 package main
 
 import (
-	"devsforge/shared"
-	"devsforge/shared/utils"
 	"devsforge/simulator/internal"
+	"devsforge/simulator/shared"
+	"devsforge/simulator/shared/utils"
 	"flag"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
 )
 
 func run(args []string) error {
+	log.SetPrefix("[COORDI] ")
 	log.Println("======================================")
 	log.Println("        🏗️ DEVSForge Simulator        ")
 	log.Println("======================================")
@@ -48,6 +50,17 @@ func run(args []string) error {
 	if len(manifest.Models) == 0 {
 		return fmt.Errorf("no models provided in the manifest")
 	}
+	// on créer des runner states, ca nous permet de garder l'etat des modèle
+	runnerStates := make(map[string]*internal.RunnerState)
+	for _, m := range manifest.Models {
+		runnerStates[m.ID] = &internal.RunnerState{
+			ID:       m.ID,
+			NextTime: math.Inf(1),
+			HasInit:  false,
+			Inbox:    nil,
+		}
+	}
+
 	kafkaTopic, err := internal.GetKafkaTopic(*kafka)
 	if err != nil {
 		return fmt.Errorf("cant initialise kafka topic : %w", err)
@@ -58,8 +71,15 @@ func run(args []string) error {
 			Address: *kafka,
 			Topic:   kafkaTopic,
 		},
+		GRPC: shared.YamlInputConfigGRPC{
+			Host: "localhost",
+			Port: 50051,
+		},
 	}
 	configFile, err := internal.GenerateRunnerYamlConfig(yamlConfig)
+
+	cfg := internal.InitConfig(yamlConfig)
+
 	if err != nil {
 		panic(err)
 	}
@@ -76,14 +96,16 @@ func run(args []string) error {
 			panic(err)
 		}
 		parent := filepath.Dir(cwd)
+
+		// lance les runner
 		for _, model := range manifest.Models {
 			go func(m *shared.RunnableModel) {
-				tmpFile, err := internal.GenerateJSONRunnerManifest(m, manifest.Count)
+				tmpFile, err := internal.GenerateJSONRunnerManifest(m, manifest.Count, manifest.SimulationID)
 				if err != nil {
 					errCh <- err
 					return
 				}
-				cmd := exec.Command("go", "run", "runners/go/main.go", "--file", tmpFile.Name(), "--config", configFile.Name())
+				cmd := exec.Command("go", "run", "simulator/runner/main.go", "--file", tmpFile.Name(), "--config", configFile.Name())
 				cmd.Dir = parent
 
 				cmd.Stdout = os.Stdout
@@ -93,15 +115,21 @@ func run(args []string) error {
 					errCh <- fmt.Errorf("error launching runner %s via go run: %w", m.ID, err)
 					return
 				}
-
 				errCh <- nil
 			}(model)
 		}
+
+		if err := internal.RunCoordinator(cfg, &manifest, runnerStates); err != nil {
+			return fmt.Errorf("coordination error: %w", err)
+		}
+
+		// Attente de la fin de tout les runner
 		for range manifest.Models {
 			if err := <-errCh; err != nil {
 				fmt.Println("❌ Runner failed:", err)
 			}
 		}
+
 	}
 
 	log.Println("======================================")

@@ -2,7 +2,7 @@ package internal
 
 import (
 	"crypto/rand"
-	"devsforge/shared"
+	"devsforge/simulator/shared"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -46,10 +46,11 @@ func GenerateRunnerYamlConfig(config shared.YamlInputConfig) (*os.File, error) {
 	return tmpFile, nil
 }
 
-func GenerateJSONRunnerManifest(m *shared.RunnableModel, modelCount int) (*os.File, error) {
+func GenerateJSONRunnerManifest(m *shared.RunnableModel, modelCount int, simulationID string) (*os.File, error) {
 	rawJSON, err := json.Marshal(shared.RunnableManifest{
-		Models: []*shared.RunnableModel{m},
-		Count:  modelCount,
+		Models:       []*shared.RunnableModel{m},
+		Count:        modelCount,
+		SimulationID: simulationID,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error when launching %s : Invalid JSON to stringify", m.ID)
