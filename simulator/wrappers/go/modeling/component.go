@@ -25,7 +25,7 @@ type Component interface {
 func NewComponent(cfg shared.RunnableModel) Component {
 	ports := make([]Port, 0)
 	for _, port := range cfg.Ports {
-		ports = append(ports, NewPort(port.ID, port.ID, string(port.Type), []string{}))
+		ports = append(ports, NewPort(port.ID, port.ID, string(port.Type), make([]interface{}, 0)))
 	}
 	c := component{name: cfg.Name, id: cfg.ID, parent: nil, ports: ports}
 	return &c
@@ -92,7 +92,7 @@ func (c *component) IsInputEmpty() bool {
 // AddPorts adds new Port to the Port list of the component.
 func (c *component) AddPorts(ports []Port) {
 	for _, port := range ports {
-		c.ports = append(c.ports, NewPort(port.GetId(), port.GetName(), port.GetPortType(), ""))
+		c.ports = append(c.ports, NewPort(port.GetId(), port.GetName(), port.GetPortType(), make([]interface{}, 0)))
 	}
 }
 

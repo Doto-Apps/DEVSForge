@@ -78,6 +78,7 @@ func LaunchRunner(args []string) error {
 	} else {
 		return fmt.Errorf("please provide --json or --file")
 	}
+	log.SetPrefix("[RUNNER: " + manifest.Models[0].ID + " ]\t")
 
 	if len(manifest.Models) != 1 {
 		return fmt.Errorf("❌ Manifest has no models or more than 1. Runner can only run 1 model at the same time")
@@ -100,6 +101,7 @@ func LaunchRunner(args []string) error {
 		}
 	}()
 
+	log.Printf("Launch using language: %s", manifest.Models[0].Language)
 	// 2) Préparation spécifique au langage (Go / Python / ...)
 	switch manifest.Models[0].Language {
 	case "go":

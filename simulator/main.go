@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"devsforge/simulator/internal"
 	"devsforge/simulator/shared"
 	"devsforge/simulator/shared/utils"
@@ -119,7 +120,9 @@ func run(args []string) error {
 			}(model)
 		}
 
-		if err := internal.RunCoordinator(cfg, &manifest, runnerStates); err != nil {
+		coordinator := internal.CreateCoordinnator(cfg, context.Background())
+		log.Println("All Model started, lauching coordinator main loop")
+		if err := coordinator.RunCoordinator(&manifest, runnerStates); err != nil {
 			return fmt.Errorf("coordination error: %w", err)
 		}
 

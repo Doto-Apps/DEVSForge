@@ -1,27 +1,43 @@
 package internal
 
 import (
+	"context"
 	"devsforge/simulator/shared"
 	"devsforge/simulator/shared/kafka"
 	"fmt"
 	"log"
 	"math"
+
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-// Config doit être le même type que celui retourné par InitConfig
-// et utilisé dans le runner (avec .Producer et .Collector)
-type CoordinatorConfig = CoordConfig
+type Coordinator struct {
+	Config  *CoordConfig
+	Context context.Context
+}
+
+func CreateCoordinnator(cfg *CoordConfig, ctx context.Context) Coordinator {
+	return Coordinator{
+		Config:  cfg,
+		Context: ctx,
+	}
+}
 
 // RunCoordinator lance la boucle de coordination DEVS
-func RunCoordinator(cfg *CoordinatorConfig, manifest *shared.RunnableManifest, runnerStates map[string]*RunnerState) error {
+func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest, runnerStates map[string]*RunnerState) error {
 	// Channels pour recevoir les messages importants
-	nextTimeCh := make(chan *kafka.KafkaMessage)
-	transitionDoneCh := make(chan *kafka.KafkaMessage)
-	outputCh := make(chan *kafka.KafkaMessage)
+	nextTimeCh := make(chan *kafka.BaseKafkaMessage)
+	transitionDoneCh := make(chan *kafka.BaseKafkaMessage)
+	outputCh := make(chan *kafka.BaseKafkaMessage)
+	log.SetPrefix("[COORDI] ")
 
 	// Goroutine qui écoute Kafka côté coordi
 	go func() {
-		err := cfg.Collector.StartDevsLoop(func(msg *kafka.KafkaMessage) error {
+		err := c.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
+			if msg.Sender != "" {
+				return nil
+			}
+
 			switch msg.DevsType {
 			case kafka.DevsTypeNextTime:
 				nextTimeCh <- msg
@@ -30,7 +46,7 @@ func RunCoordinator(cfg *CoordinatorConfig, manifest *shared.RunnableManifest, r
 			case kafka.DevsTypeModelOutput:
 				outputCh <- msg
 			default:
-				// On ignore les autres types côté coordi
+				log.Printf("Unreconized message : %s\n", msg.DevsType.String())
 			}
 			return nil
 		})
@@ -43,18 +59,17 @@ func RunCoordinator(cfg *CoordinatorConfig, manifest *shared.RunnableManifest, r
 
 	startTime := 0.0 // si tu as un manifest.StartTime tu peux l’utiliser ici
 
-	log.Println("[COORDI] Envoi des InitSim à tous les runners...")
+	log.Println("Envoi des InitSim à tous les runners...")
 	for _, st := range runnerStates {
-		msg := &kafka.KafkaMessage{
+		msg := &kafka.KafkaMessageInitSim{
 			DevsType: kafka.DevsTypeInitSim,
 			Time: &kafka.SimTime{
-				TimeType: "devs.msg.time.DoubleSimTime",
+				TimeType: kafka.DevsDoubleSimTime.String(),
 				T:        startTime,
 			},
 			Target: st.ID,
-			Sender: "coordinator",
 		}
-		if err := cfg.Producer.SendDevsMessage(msg); err != nil {
+		if err := c.SendMessage(msg); err != nil {
 			return fmt.Errorf("error sending InitSim to %s: %w", st.ID, err)
 		}
 	}
@@ -76,14 +91,14 @@ func RunCoordinator(cfg *CoordinatorConfig, manifest *shared.RunnableManifest, r
 		st.HasInit = true
 	}
 
-	log.Println("[COORDI] Tous les runners ont répondu avec leur NextTime initial.")
+	log.Println("Tous les runners ont répondu avec leur NextTime initial.")
 
 	// --- Phase 2 : Boucle principale de simulation ---
 
 	for {
 		tmin := computeMinTime(runnerStates)
 		if math.IsInf(tmin, 1) {
-			log.Println("[COORDI] Tous les nextTime sont +Inf, fin de simulation.")
+			log.Println("Tous les nextTime sont +Inf, fin de simulation.")
 			break
 		}
 
@@ -100,20 +115,19 @@ func RunCoordinator(cfg *CoordinatorConfig, manifest *shared.RunnableManifest, r
 			st.Inbox = nil
 		}
 
-		log.Printf("[COORDI] t = %.6f, imminents = %d\n", tmin, len(imminents))
+		log.Printf("t = %.6f, imminents = %d\n", tmin, len(imminents))
 
 		// 2) demander les outputs aux imminents
 		for _, st := range imminents {
-			msg := &kafka.KafkaMessage{
+			msg := &kafka.KafkaMessageSendOutput{
 				DevsType: kafka.DevsTypeSendOutput,
-				Time: &kafka.SimTime{
-					TimeType: "devs.msg.time.DoubleSimTime",
+				Time: kafka.SimTime{
+					TimeType: kafka.DevsDoubleSimTime.String(),
 					T:        tmin,
 				},
 				Target: st.ID,
-				Sender: "coordinator",
 			}
-			if err := cfg.Producer.SendDevsMessage(msg); err != nil {
+			if err := c.SendMessage(msg); err != nil {
 				return fmt.Errorf("error sending SendOutput to %s: %w", st.ID, err)
 			}
 		}
@@ -126,7 +140,7 @@ func RunCoordinator(cfg *CoordinatorConfig, manifest *shared.RunnableManifest, r
 		}
 
 		// 4) router les outputs vers les Inbox des destinataires
-		routeOutputs(manifest, runnerStates, outputsBySender, tmin)
+		routeOutputs(manifest, runnerStates, outputsBySender)
 
 		// 5) déterminer qui transitionne
 		transitionTargets := map[string]*RunnerState{}
@@ -141,24 +155,23 @@ func RunCoordinator(cfg *CoordinatorConfig, manifest *shared.RunnableManifest, r
 
 		// 6) envoyer ExecuteTransition
 		for _, st := range transitionTargets {
-			var inputs *kafka.ModelInputsOption
+			var inputs kafka.ModelInputsOption
 			if len(st.Inbox) > 0 {
-				inputs = &kafka.ModelInputsOption{
+				inputs = kafka.ModelInputsOption{
 					PortValueList: st.Inbox,
 				}
 			}
 
-			msg := &kafka.KafkaMessage{
+			msg := &kafka.KafkaMessageExecuteTransition{
 				DevsType: kafka.DevsTypeExecuteTransition,
-				Time: &kafka.SimTime{
-					TimeType: "devs.msg.time.DoubleSimTime",
+				Time: kafka.SimTime{
+					TimeType: kafka.DevsDoubleSimTime.String(),
 					T:        tmin,
 				},
 				ModelInputsOption: inputs,
 				Target:            st.ID,
-				Sender:            "coordinator",
 			}
-			if err := cfg.Producer.SendDevsMessage(msg); err != nil {
+			if err := c.SendMessage(msg); err != nil {
 				return fmt.Errorf("error sending ExecuteTransition to %s: %w", st.ID, err)
 			}
 		}
@@ -177,29 +190,23 @@ func RunCoordinator(cfg *CoordinatorConfig, manifest *shared.RunnableManifest, r
 				st.NextTime = msg.NextTime.T
 			}
 		}
-
-		// et on recommence
 	}
 
 	// --- Phase 3 : SimulationDone ---
 
-	log.Println("[COORDI] Envoi des SimulationDone à tous les runners...")
+	log.Println("Envoi des SimulationDone à tous les runners...")
 	for _, st := range runnerStates {
-		msg := &kafka.KafkaMessage{
+		msg := &kafka.KafkaMessageSimulationDone{
 			DevsType: kafka.DevsTypeSimulationDone,
-			Time: &kafka.SimTime{
-				TimeType: "devs.msg.time.DoubleSimTime",
-				T:        0, // ou le dernier tmin si tu veux le garder
-			},
-			Target: st.ID,
-			Sender: "coordinator",
+			Target:   st.ID,
 		}
-		if err := cfg.Producer.SendDevsMessage(msg); err != nil {
+
+		if err := c.SendMessage(msg); err != nil {
 			log.Printf("error sending SimulationDone to %s: %v", st.ID, err)
 		}
 	}
 
-	log.Println("[COORDI] Coordination terminée.")
+	log.Println("Coordination terminée.")
 	return nil
 }
 
@@ -224,7 +231,6 @@ func routeOutputs(
 	manifest *shared.RunnableManifest,
 	runners map[string]*RunnerState,
 	outputsBySender map[string]*kafka.ModelOutput,
-	t float64,
 ) {
 	for senderID, out := range outputsBySender {
 		if out == nil {
@@ -275,4 +281,40 @@ func findConnectionsFrom(
 	}
 
 	return res
+}
+
+func (c *Coordinator) SendMessage(msg kafka.KafkaMessageI) error {
+	data, err := msg.Marshal()
+	if err != nil {
+		return fmt.Errorf("cannot marshal kafka message : %w", err)
+	}
+
+	return c.Config.KafkaClient.ProduceSync(c.Context, &kgo.Record{Value: data}).FirstErr()
+}
+
+func (c *Coordinator) StartReceiveLoop(handler func(*kafka.BaseKafkaMessage) error) error {
+	client := c.Config.KafkaClient
+	for {
+		fetches := client.PollFetches(c.Context)
+		if errs := fetches.Errors(); len(errs) > 0 {
+			// All errors are retried internally when fetching, but non-retriable errors are
+			// returned from polls so that users can notice and take action.
+			panic(fmt.Sprint(errs))
+		}
+
+		// We can iterate through a record iterator...
+		iter := fetches.RecordIter()
+		for !iter.Done() {
+			record := iter.Next()
+			msg, err := kafka.UnmarshalKafkaMessage(record.Value)
+			if err != nil {
+				return fmt.Errorf("cannot unmarshall kafka message : %w", err)
+			}
+
+			err = handler(msg)
+			if err != nil {
+				return err
+			}
+		}
+	}
 }

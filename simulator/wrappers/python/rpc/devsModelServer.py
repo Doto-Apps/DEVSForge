@@ -1,18 +1,14 @@
 # simulator/wrappers/python/rpc/devs_model_server.py
 
 from concurrent import futures
-from typing import Optional
+from typing import Optional, Any, List
+import json
 
 import grpc
 from google.protobuf.empty_pb2 import Empty
 
-# 💡 Adapte ces imports selon ton projet :
-# - si tu as généré les fichiers dans simulator/proto/python, tu peux faire :
-#   from proto.python import devs_pb2, devs_pb2_grpc
-# - ou simplement import devs_pb2 si tu es dans le même package.
 from simulator.proto.python import devs_pb2, devs_pb2_grpc
-
-from simulator.wrappers.python.modeling.modeling import Atomic  # ton runtime Python (Atomic / Component / Port)
+from simulator.wrappers.python.modeling.modeling import Atomic  # ton runtime Python
 
 
 class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
@@ -20,6 +16,9 @@ class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
     Équivalent Python de DEVSModelServer (Go).
 
     Il expose un modèle Atomic (Python) via le service gRPC AtomicModelService.
+    Les valeurs circulent maintenant sous forme **JSON** sur le réseau :
+    - Output : les valeurs des ports sont sérialisées en JSON (list[str]).
+    - AddInput : value_json est désérialisé en objet Python avant d'être ajouté au port.
     """
 
     def __init__(self, model: Atomic) -> None:
@@ -65,6 +64,7 @@ class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
 
     # Output correspond à Lambda()
     # On lit les ports de sortie et on renvoie les valeurs au runner.
+    # ⚠️ Comme en Go, on sérialise chaque valeur en JSON.
     def Output(
         self, request: Empty, context: grpc.ServicerContext
     ) -> devs_pb2.OutputResponse:
@@ -78,15 +78,23 @@ class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
         for port in self._model.get_ports(port_type):
             port_name = port.get_name()
 
-            values = port.get_values()  # on s'attend à une List[str]
+            values = port.get_values()  # on s'attend à une List[Any]
             if not isinstance(values, list):
                 context.abort(
                     grpc.StatusCode.INTERNAL,
                     f"port {port_name} n'a pas un type list (type réel: {type(values)})",
                 )
 
-            # On force chaque valeur en str au cas où
-            values_json = [str(v) for v in values]
+            values_json: List[str] = []
+            for v in values:
+                try:
+                    # Équivalent du json.Marshal(value) côté Go
+                    values_json.append(json.dumps(v))
+                except TypeError as exc:
+                    context.abort(
+                        grpc.StatusCode.INTERNAL,
+                        f"Cannot JSON-encode value for port {port_name}: {exc}",
+                    )
 
             out = devs_pb2.PortOutput(
                 port_name=port_name,
@@ -94,17 +102,27 @@ class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
             )
             resp.outputs.append(out)
 
-            # Si tu veux vider le port après lecture, décommente :
+            # Optionnel : vider le port après lecture
             # port.clear()
 
         return resp
 
     # AddInput permet d'ajouter une valeur dans un port d'entrée du modèle.
+    # ⚠️ Comme en Go, on reçoit un JSON (string) et on le transforme en objet Python.
     def AddInput(
         self, request: devs_pb2.InputMessage, context: grpc.ServicerContext
     ) -> Empty:
         port_name = request.port_name
-        value = request.value_json  # on traite la valeur comme un string JSON
+        value_json = request.value_json  # string JSON
+
+        try:
+            # Symétrique de json.Unmarshal côté Go (si tu le fais dans Port.AddValue)
+            value: Any = json.loads(value_json)
+        except json.JSONDecodeError as exc:
+            context.abort(
+                grpc.StatusCode.INVALID_ARGUMENT,
+                f"invalid JSON for value_json on port {port_name}: {exc}",
+            )
 
         try:
             in_port = self._model.get_port_by_name(port_name)
@@ -114,8 +132,7 @@ class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
                 f"input port {port_name} not found",
             )
 
-        # Le port est supposé être créé avec un type List[str] côté modèle,
-        # donc add_value(string) est cohérent.
+        # Le port est supposé contenir des valeurs typées (list[Any])
         in_port.add_value(value)
 
         return Empty()
@@ -125,7 +142,6 @@ class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
 
 
 # Optionnel : petite fonction utilitaire pour lancer le serveur gRPC
-
 def serve(
     model: Atomic,
     host: str = "127.0.0.1",

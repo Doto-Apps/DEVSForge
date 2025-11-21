@@ -3,7 +3,9 @@ package rpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"log"
 
 	devspb "devsforge/simulator/proto/go"
 	"devsforge/simulator/wrappers/go/modeling"
@@ -67,17 +69,20 @@ func (s *DEVSModelServer) ConfluentTransition(ctx context.Context, req *devspb.E
 // On lit les ports de sortie et on renvoie les valeurs au runner.
 func (s *DEVSModelServer) Output(ctx context.Context, _ *emptypb.Empty) (*devspb.OutputResponse, error) {
 	// On laisse le modèle calculer ses sorties
+	log.Printf("\n[DEBUG] %+v \n", s.model.GetPorts(nil))
 	s.model.Lambda()
+	log.Printf("\n[DEBUG] %+v \n", s.model.GetPorts(nil))
 
 	var resp devspb.OutputResponse
 
 	// Récupération des ports de sortie via Component.GetOutPorts()
 	portType := "out"
+	parsedValues := make([]string, 0)
 	for _, port := range s.model.GetPorts(&portType) {
 		portName := port.GetName()
 
 		// On suppose que les ports sont typés []string
-		values, ok := port.GetValues().([]string)
+		values, ok := port.GetValues().([]interface{})
 		if !ok {
 			// Si ce n'est pas []string, on fallback en stringifiant
 			// (à toi d'ajuster si tu veux utiliser du JSON ou autre)
@@ -87,10 +92,22 @@ func (s *DEVSModelServer) Output(ctx context.Context, _ *emptypb.Empty) (*devspb
 				portName, port.GetValues(),
 			)
 		}
+		for _, value := range values {
+			parsedValue, err := json.Marshal(value)
+			if err != nil {
+				return nil, status.Errorf(
+					codes.Internal,
+					"Cannot marshal values : %s",
+					err,
+				)
+			}
+			parsedValues = append(parsedValues, string(parsedValue))
+
+		}
 
 		out := &devspb.PortOutput{
 			PortName:   portName,
-			ValuesJson: values,
+			ValuesJson: parsedValues,
 		}
 
 		resp.Outputs = append(resp.Outputs, out)

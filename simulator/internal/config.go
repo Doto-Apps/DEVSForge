@@ -7,14 +7,13 @@ import (
 	"log"
 	"os"
 
-	"github.com/rs/zerolog"
+	"github.com/twmb/franz-go/pkg/kgo"
 	"gopkg.in/yaml.v3"
 )
 
 type CoordConfig struct {
-	Logger    *zerolog.Logger
-	Producer  *kafka.KafkaProducer
-	Collector *kafka.KafkaCollector
+	KafkaConfig kafka.KafkaConfig
+	KafkaClient *kgo.Client
 }
 
 var config *CoordConfig
@@ -28,14 +27,17 @@ func InitConfig(yamlConfig shared.YamlInputConfig) *CoordConfig {
 	)
 
 	// Logger + Producer Kafka
-	logger, producer := kafka.NewLoggerWithKafka(yamlConfig.Kafka.Address, yamlConfig.Kafka.Topic, "Coordinator")
+	kafkaConfig := kafka.NewKafkaConfig(yamlConfig.Kafka.Address, yamlConfig.Kafka.Topic, "Coordinator")
 
-	collector := kafka.NewKafkaCollector(yamlConfig.Kafka.Address, yamlConfig.Kafka.Topic, "Coordinator")
+	client, err := kgo.NewClient(kafkaConfig.Config...)
+	if err != nil {
+		log.Printf("Error while creating kafka client: %v\n", err)
+		return nil
+	}
 
 	config = &CoordConfig{
-		Logger:    &logger,
-		Producer:  producer,
-		Collector: collector,
+		KafkaConfig: *kafkaConfig,
+		KafkaClient: client,
 	}
 
 	return config

@@ -1,6 +1,9 @@
 package modeling
 
-import "reflect"
+import (
+	"encoding/json"
+	"reflect"
+)
 
 type Port interface {
 	GetName() string             // returns the name of the Port.
@@ -111,14 +114,14 @@ func (p *port) GetParent() Component {
 
 // String returns a string representation of the port.
 func (p *port) String() string {
-	name := p.name
-	auxComponent := p.parent
-	for auxComponent != nil {
-		name = auxComponent.GetName() + "." + name
-		parent := auxComponent.GetParent()
-		if parent != nil {
-			auxComponent = *parent
-		}
+	tmp := map[string]interface{}{
+		"Name":   p.name,
+		"Values": p.values,
 	}
-	return name
+	str, err := json.Marshal(tmp)
+	if err != nil {
+		return "Error"
+	}
+
+	return string(str)
 }

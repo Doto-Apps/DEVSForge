@@ -21,7 +21,6 @@ class GeneratorIncremental(Atomic):
         self.value = 0
         self.storage = "base"
         self.hold_in("active", 1.0)
-        logging.info("Pute")
 
     # Exit est appelée après la simulation.
     def exit(self) -> None:
@@ -57,7 +56,7 @@ class GeneratorIncremental(Atomic):
             # Si le modèle n'a pas de port "out" dans le manifest, on ne fait rien
             return
 
-        payload = json.dumps({"value": self.value})
+        payload = {"value": self.value}
         out_port.add_value(payload)
 
 

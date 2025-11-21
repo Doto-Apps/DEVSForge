@@ -8,18 +8,16 @@ import (
 	"net"
 	"os"
 
-	"github.com/rs/zerolog"
+	"github.com/twmb/franz-go/pkg/kgo"
 	"gopkg.in/yaml.v3"
 )
 
 type RunnerConfig struct {
-	Model     *shared.RunnableModel
-	ID        string
-	Logger    *zerolog.Logger
-	PeerCount int
-	Producer  *kafka.KafkaProducer
-	Collector *kafka.KafkaCollector
-	GRPC      shared.YamlInputConfigGRPC
+	Model       *shared.RunnableModel
+	ID          string
+	KafkaConfig kafka.KafkaConfig
+	KafkaClient *kgo.Client
+	GRPC        shared.YamlInputConfigGRPC
 }
 
 var config *RunnerConfig
@@ -27,14 +25,21 @@ var config *RunnerConfig
 // focntion qui laisse choiri le port
 // TODO: verifier si il n'y a pas des os ou ca bug
 func pickFreePort() (int, error) {
-	lis, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		return 0, err
-	}
-	defer lis.Close()
+	for port := 50051; port <= 51051; port++ {
+		addr := fmt.Sprintf("127.0.0.1:%d", port)
 
-	addr := lis.Addr().(*net.TCPAddr)
-	return addr.Port, nil
+		lis, err := net.Listen("tcp", addr)
+		if err != nil {
+			// Port already in use, try next one
+			continue
+		}
+
+		// Port available, close listener and return it
+		lis.Close()
+		return port, nil
+	}
+
+	return 0, fmt.Errorf("no free port found in range 50051-51051")
 }
 
 func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *RunnerConfig {
@@ -67,38 +72,22 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 		runnerConfig.GRPC.Port,
 	)
 
-	// Logger + Producer Kafka
-	logger, producer := kafka.NewLoggerWithKafka(
-		runnerConfig.Kafka.Address,
+	kafkaConfig := kafka.NewKafkaConfig(runnerConfig.Kafka.Address,
 		runnerConfig.Kafka.Topic,
-		model.ID,
-	)
+		model.ID)
 
-	logger.Debug().Any("informations", map[string]string{
-		"IPC Provider": "File based /tmp/simulation.log",
-		"ID":           model.ID,
-		"Name":         model.Name,
-		"Language":     "Todo",
-		"Ports":        fmt.Sprintf("%v", model.Ports),
-		"Connections":  fmt.Sprintf("%v", model.Connections),
-		"GRPC Host":    runnerConfig.GRPC.Host,
-		"GRPC Port":    fmt.Sprintf("%d", runnerConfig.GRPC.Port),
-	}).Msg("Config Information")
-
-	collector := kafka.NewKafkaCollector(
-		runnerConfig.Kafka.Address,
-		runnerConfig.Kafka.Topic,
-		model.ID,
-	)
+	client, err := kgo.NewClient(kafkaConfig.Config...)
+	if err != nil {
+		log.Printf("Error while creating kafka client: %v\n", err)
+		return nil
+	}
 
 	config = &RunnerConfig{
-		ID:        model.ID,
-		Model:     &model,
-		Logger:    &logger,
-		PeerCount: manifest.Count - 1,
-		Producer:  producer,
-		Collector: collector,
-		GRPC:      runnerConfig.GRPC,
+		ID:          model.ID,
+		Model:       &model,
+		KafkaConfig: *kafkaConfig,
+		GRPC:        runnerConfig.GRPC,
+		KafkaClient: client,
 	}
 
 	return config

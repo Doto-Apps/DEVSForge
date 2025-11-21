@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import Any, Dict, Iterable, List, Optional
+import json
 
 # Équivalents de util.PASSIVE / util.ACTIVE / util.INFINITY
 PASSIVE = "passive"
@@ -20,9 +21,9 @@ class Port:
     Équivalent de struct port en Go.
 
     - id: identifiant interne du port (ID du modèle / DSL)
-    - name: nom logique du port (celui utilisé dans les modèles)
+    - name: nom logique du port
     - port_type: "in" ou "out"
-    - values: liste des valeurs stockées, typiquement des strings JSON
+    - values: liste des valeurs stockées (List[Any])
     """
     id: str
     name: str
@@ -30,7 +31,7 @@ class Port:
     parent: Optional["Component"] = None
     values: List[Any] = field(default_factory=list)
 
-    # API inspirée de ton Port Go
+    # --- API équivalente à Port interface (Go) ---
 
     def get_name(self) -> str:
         return self.name
@@ -45,7 +46,7 @@ class Port:
         return len(self.values)
 
     def is_empty(self) -> bool:
-        return not self.values
+        return self.length() == 0
 
     def clear(self) -> None:
         self.values.clear()
@@ -60,6 +61,7 @@ class Port:
         return self.values[0]
 
     def get_values(self) -> List[Any]:
+        # comme GetValues() interface{} → ici on renvoie la liste (copie légère)
         return list(self.values)
 
     def set_parent(self, c: "Component") -> None:
@@ -69,13 +71,22 @@ class Port:
         return self.parent
 
     def __str__(self) -> str:
-        # reproduction de la logique name = parent.parent.name + "." + name
-        name = self.name
-        aux = self.parent
-        while aux is not None:
-            name = f"{aux.get_name()}.{name}"
-            aux = aux.get_parent()
-        return name
+        """
+        Même style que port.String() en Go :
+        {
+          "Name": "<name>",
+          "Values": [...]
+        }
+        """
+        tmp = {
+            "Name": self.name,
+            "Values": self.values,
+        }
+        try:
+            return json.dumps(tmp, default=str)
+        except TypeError:
+            # fallback en cas d'objet non sérialisable
+            return f'{{"Name": {self.name!r}, "Values": {self.values!r}}}'
 
 
 # =========================
@@ -84,14 +95,14 @@ class Port:
 
 class Component(ABC):
     """
-    Équivalent de ton interface Component Go + struct component.
+    Équivalent de l'interface Component Go + struct component.
     """
 
     def __init__(self, id: str, name: str, ports: Iterable[Port] | None = None) -> None:
         self._id = id
         self._name = name
         self._parent: Optional["Component"] = None
-        # on indexe les ports par leur name
+        # Ports indexés par leur name
         self._ports: Dict[str, Port] = {}
         if ports:
             self.add_ports(list(ports))
@@ -107,7 +118,6 @@ class Component(ABC):
     @abstractmethod
     def initialize(self) -> None:
         """
-        Doit être surchargé par les modèles concrets.
         Équivalent de Component.Initialize() en Go.
         """
         ...
@@ -115,7 +125,6 @@ class Component(ABC):
     @abstractmethod
     def exit(self) -> None:
         """
-        Doit être surchargé par les modèles concrets.
         Équivalent de Component.Exit() en Go.
         """
         ...
@@ -123,6 +132,7 @@ class Component(ABC):
     def is_input_empty(self) -> bool:
         """
         Retourne True si aucun port d'entrée ("in") ne contient de valeur.
+        Équivalent de IsInputEmpty() en Go.
         """
         for p in self._ports.values():
             if p.get_port_type() == "in" and not p.is_empty():
@@ -130,8 +140,20 @@ class Component(ABC):
         return True
 
     def add_ports(self, ports: Iterable[Port]) -> None:
+        """
+        Équivalent de AddPorts([]Port) en Go.
+
+        On clone les ports en recréant un Port avec même id / name / type,
+        mais une liste de valeurs vide, comme NewPort(..., make([]interface{}, 0)).
+        """
         for p in ports:
-            self.add_port(p)
+            cloned = Port(
+                id=p.get_id(),
+                name=p.get_name(),
+                port_type=p.get_port_type(),
+                values=[],
+            )
+            self.add_port(cloned)
 
     def add_port(self, port: Port) -> None:
         port.set_parent(self)
@@ -141,9 +163,16 @@ class Component(ABC):
         try:
             return self._ports[port_name]
         except KeyError:
-            raise KeyError(f"Port '{port_name}' not found on component '{self._name}'")
+            raise KeyError(
+                f"Port '{port_name}' not found on component '{self._name}'"
+            )
 
     def get_ports(self, port_type: Optional[str] = None) -> List[Port]:
+        """
+        Équivalent de GetPorts(portType *string) []Port en Go.
+        - port_type is None ⇒ tous les ports
+        - sinon, seulement ceux dont p.get_port_type() == port_type
+        """
         if port_type is None:
             return list(self._ports.values())
         return [p for p in self._ports.values() if p.get_port_type() == port_type]
@@ -170,10 +199,6 @@ class Component(ABC):
 class Atomic(Component, ABC):
     """
     Équivalent de type atomic struct + interface Atomic en Go.
-
-    Gère phase + sigma et fournit les helpers HoldIn / Passivate / etc.
-    Les méthodes de transition (delt_int, delt_ext, delt_con, lambda_)
-    doivent être implémentées par les sous-classes.
     """
 
     def __init__(self, id: str, name: str, ports: Iterable[Port] | None = None) -> None:
@@ -189,25 +214,21 @@ class Atomic(Component, ABC):
 
     @abstractmethod
     def delt_int(self) -> None:
-        """Internal transition (DeltInt)."""
         ...
 
     @abstractmethod
     def delt_ext(self, e: float) -> None:
-        """External transition (DeltExt)."""
         ...
 
     @abstractmethod
     def delt_con(self, e: float) -> None:
-        """Confluent transition (DeltCon)."""
         ...
 
     @abstractmethod
     def lambda_(self) -> None:
-        """Output function (Lambda). Écrit sur les ports de sortie."""
         ...
 
-    # --- Helpers DEVS comme dans ton atomic Go ---
+    # --- Helpers DEVS comme dans atomic.go ---
 
     def hold_in(self, phase: str, sigma: float) -> None:
         self._phase = phase
@@ -230,7 +251,6 @@ class Atomic(Component, ABC):
         self._sigma = INFINITY
 
     def continue_(self, e: float) -> None:
-        """Continue(e): sigma = sigma - e."""
         self.set_sigma(self._sigma - e)
 
     def phase_is(self, phase: str) -> bool:
@@ -246,7 +266,6 @@ class Atomic(Component, ABC):
         return self._sigma
 
     def set_sigma(self, sigma: float) -> None:
-        # comme ton math.Max(sigma, 0)
         if sigma < 0:
             sigma = 0.0
         self._sigma = sigma
@@ -256,13 +275,14 @@ class Atomic(Component, ABC):
 
 
 # =========================
-# "RunnableModel" côté Python (équivalent léger)
+# RunnableModel côté Python
+# (équivalent léger de shared.RunnableModel)
 # =========================
 
 @dataclass
 class RunnableModelPortCfg:
-    id: str
-    type: str  # "in" / "out"
+    id: str        # ID du port (servira pour id + name du Port)
+    type: str      # "in" / "out"
 
 
 @dataclass
@@ -274,12 +294,9 @@ class RunnableModelCfg:
 
 def new_atomic_from_cfg(cfg: RunnableModelCfg, atomic_cls: type[Atomic]) -> Atomic:
     """
-    Équivalent très simplifié de NewAtomic(cfg shared.RunnableModel).
-
-    - cfg décrit les ports et le nom/id du modèle.
-    - atomic_cls est la classe Python qui implémente le modèle (ex: GeneratorIncremental).
-
-    Retourne une instance d'Atomic prête à être utilisée.
+    Équivalent de NewAtomic(cfg) côté Python :
+    - crée les Ports à partir du cfg (id & name = cfg.Ports[i].ID, type = "in"/"out")
+    - instancie la classe Atomic avec id/name/ports.
     """
     ports = [
         Port(id=p.id, name=p.id, port_type=p.type, values=[])

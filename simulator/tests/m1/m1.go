@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"log"
 
 	"devsforge/simulator/shared"
 	modeling "devsforge/simulator/wrappers/go/modeling"
@@ -35,7 +34,6 @@ func (m *GeneratorIncremental) Initialize() {
 	m.Parameters.value = 0
 	m.storage = "base"
 	m.HoldIn("active", 1.0)
-	log.Println("Pute")
 }
 
 // Exit est appelée après la simulation.
@@ -81,6 +79,6 @@ func (m *GeneratorIncremental) Lambda() {
 	if err != nil {
 		return
 	}
-	outPort.AddValue(string(payload))
+	outPort.AddValue(payload)
 
 }
