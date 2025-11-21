@@ -35,8 +35,7 @@ func (r *Runner) RunInitSim(msg kafka.KafkaMessageInitSim) error {
 		r.NextTime = math.MaxFloat64
 	}
 
-	var nextTimeField kafka.SimTime
-	nextTimeField = kafka.SimTime{
+	nextTimeField := kafka.SimTime{
 		TimeType: kafka.DevsTypeNextTime.String(),
 		T:        r.NextTime,
 	}

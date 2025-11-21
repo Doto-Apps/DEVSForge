@@ -78,8 +78,8 @@ func (r *Runner) RunExecuteTransition(msg kafka.KafkaMessageExecuteTransition) e
 		// On garde nextTime en mémoire, mais on NE l’envoie PAS dans le message JSON
 		r.NextTime = math.MaxFloat64
 	}
-	var nextTimeField kafka.SimTime
-	nextTimeField = kafka.SimTime{
+
+	nextTimeField := kafka.SimTime{
 		TimeType: kafka.DevsDoubleSimTime.String(),
 		T:        r.NextTime,
 	}

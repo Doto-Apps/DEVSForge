@@ -4,11 +4,14 @@ import (
 	"context"
 	devspb "devsforge/simulator/proto/go"
 	"devsforge/simulator/shared/kafka"
+	"errors"
 	"fmt"
 	"log"
 )
 
-// LaunchSim : ne contient plus que la logique de simulation DEVS (tout ce qui était après "connected:")
+// ErrSimulationDone signale la fin normale de la simulation
+var ErrSimulationDone = errors.New("simulation completed normally")
+
 func LaunchSim(wrapper *WrapperInfo) error {
 	cfg := wrapper.Cfg
 	if cfg == nil {
@@ -21,15 +24,15 @@ func LaunchSim(wrapper *WrapperInfo) error {
 	modelClient := devspb.NewAtomicModelServiceClient(wrapper.GRPCConn)
 	runner := createRunner(cfg, context.Background(), modelClient)
 
-	// Boucle Kafka typée DEVS-SF
-
 	log.Println("======================================")
 	log.Println("   Debut de la boucle de simulation    ")
 	log.Println("======================================")
+
 	if err := runner.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
 		if msg.Target != cfg.Model.ID || msg.Sender == cfg.Model.ID {
 			return nil
 		}
+
 		tolog, err := msg.Marshal()
 		if err == nil {
 			log.Printf("[IN]: %s", tolog)
@@ -45,6 +48,7 @@ func LaunchSim(wrapper *WrapperInfo) error {
 				Target:   msg.Target,
 			})
 		}
+
 		// ======================
 		// ExecuteTransition : internal / external / confluent
 		// ======================
@@ -56,6 +60,7 @@ func LaunchSim(wrapper *WrapperInfo) error {
 				ModelInputsOption: *msg.ModelInputsOption,
 			})
 		}
+
 		// ======================
 		// SendOutput : lambda + ModelOutputMessage
 		// ======================
@@ -70,18 +75,22 @@ func LaunchSim(wrapper *WrapperInfo) error {
 		// SimulationDone : Finalize
 		// ======================
 		if msg.DevsType == kafka.DevsTypeSimulationDone {
-			return runner.RunSimulationDone()
+			if err := runner.RunSimulationDone(); err != nil {
+				return err
+			}
+			// Retourner l'erreur sentinelle pour sortir de la boucle
+			return ErrSimulationDone
 		}
 
 		log.Printf("⚠️ Unhandled DevsType Message receive on kafka: %s", msg.DevsType)
 		return nil
-	}); err != nil {
+	}); err != nil && !errors.Is(err, ErrSimulationDone) {
+		// Vraie erreur, pas une fin normale
 		return err
 	}
 
 	log.Println("======================================")
 	log.Println("   Fin de la boucle de simulation    ")
 	log.Println("======================================")
-
 	return nil
 }

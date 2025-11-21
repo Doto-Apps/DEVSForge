@@ -113,7 +113,7 @@ func (s *DEVSModelServer) Output(ctx context.Context, _ *emptypb.Empty) (*devspb
 		resp.Outputs = append(resp.Outputs, out)
 
 		// Si tu veux vider le port après lecture :
-		// port.Clear()
+		port.Clear()
 	}
 
 	return &resp, nil

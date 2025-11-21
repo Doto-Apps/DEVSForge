@@ -102,8 +102,7 @@ class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):
             )
             resp.outputs.append(out)
 
-            # Optionnel : vider le port après lecture
-            # port.clear()
+            port.clear()
 
         return resp
 

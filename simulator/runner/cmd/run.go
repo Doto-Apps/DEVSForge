@@ -32,7 +32,7 @@ func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 	} else {
 		rootDir, err = os.MkdirTemp("./tmp", prefix)
 		if err != nil {
-			return nil, fmt.Errorf("failed to create simulation temp dir %s at %s location, error : %w", prefix, err)
+			return nil, fmt.Errorf("failed to create simulation temp dir %s at %s location, error : %w", prefix, pattern, err)
 		}
 		log.Printf("📁 Created simulation temp dir %s", rootDir)
 	}

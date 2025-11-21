@@ -37,8 +37,15 @@ func (m *Collector) DeltInt() {
 // Transition externe : on considère qu'on a reçu au moins un message
 // (si plus tard tu veux lire les vraies valeurs, tu pourras étendre ici)
 func (m *Collector) DeltExt(e float64) {
+
+	inPort, err := m.GetPortByName("in")
+	if err != nil {
+		return
+	}
+	raw := inPort.GetValues()
+
 	m.Count++
-	log.Println("[COLLECTOR] DeltExt, nouveau message reçu")
+	log.Printf("[COLLECTOR] DeltExt, nouveau message reçu %s", raw)
 	m.Passivate()
 }
 
