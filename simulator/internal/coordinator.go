@@ -34,7 +34,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest, runnerSt
 	// Goroutine qui écoute Kafka côté coordi
 	go func() {
 		err := c.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
-			if msg.Sender != "" {
+			if msg.Sender == "" {
 				return nil
 			}
 
@@ -84,7 +84,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest, runnerSt
 			continue
 		}
 		if msg.NextTime == nil {
-			st.NextTime = math.Inf(1)
+			st.NextTime = math.MaxFloat64
 		} else {
 			st.NextTime = msg.NextTime.T
 		}
@@ -97,7 +97,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest, runnerSt
 
 	for {
 		tmin := computeMinTime(runnerStates)
-		if math.IsInf(tmin, 1) {
+		if tmin == math.MaxFloat64 {
 			log.Println("Tous les nextTime sont +Inf, fin de simulation.")
 			break
 		}
@@ -185,7 +185,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest, runnerSt
 				continue
 			}
 			if msg.NextTime == nil {
-				st.NextTime = math.Inf(1)
+				st.NextTime = math.MaxFloat64
 			} else {
 				st.NextTime = msg.NextTime.T
 			}

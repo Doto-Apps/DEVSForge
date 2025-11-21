@@ -75,7 +75,8 @@ func (r *Runner) RunExecuteTransition(msg kafka.KafkaMessageExecuteTransition) e
 	r.NextTime = r.CurrentTime + sigma
 
 	if math.IsInf(r.NextTime, 1) {
-		return nil
+		// On garde nextTime en mémoire, mais on NE l’envoie PAS dans le message JSON
+		r.NextTime = math.MaxFloat64
 	}
 	var nextTimeField kafka.SimTime
 	nextTimeField = kafka.SimTime{

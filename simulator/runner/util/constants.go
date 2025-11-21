@@ -25,7 +25,7 @@ package util
 import "math"
 
 var (
-	INFINITY = math.Inf(0)
+	INFINITY = math.MaxFloat64
 )
 
 const (

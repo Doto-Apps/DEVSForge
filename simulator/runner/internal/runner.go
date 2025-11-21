@@ -22,7 +22,7 @@ type Runner struct {
 func createRunner(cfg *RunnerConfig, ctx context.Context, modelClient devspb.AtomicModelServiceClient) Runner {
 	return Runner{
 		CurrentTime: 0.0,
-		NextTime:    math.Inf(1),
+		NextTime:    math.MaxFloat64,
 		Config:      cfg,
 		Context:     ctx,
 		ModelClient: modelClient,
