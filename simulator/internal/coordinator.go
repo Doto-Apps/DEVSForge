@@ -212,7 +212,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest, runnerSt
 
 // t_min global
 func computeMinTime(runners map[string]*RunnerState) float64 {
-	tmin := math.Inf(1)
+	tmin := math.MaxFloat64
 	for _, st := range runners {
 		if st.NextTime < tmin {
 			tmin = st.NextTime
