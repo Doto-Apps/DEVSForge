@@ -12,6 +12,7 @@ type YamlInputConfigGRPC struct {
 }
 
 type YamlInputConfig struct {
-	Kafka YamlInputConfigKafka `yaml:"kafka"`
-	GRPC  YamlInputConfigGRPC  `yaml:"grpc"`
+	Kafka        YamlInputConfigKafka `yaml:"kafka"`
+	GRPC         YamlInputConfigGRPC  `yaml:"grpc"`
+	TmpDirectory string               `yaml:"tmpDirectory"`
 }

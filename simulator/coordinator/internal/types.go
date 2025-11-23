@@ -8,3 +8,5 @@ type RunnerState struct {
 	HasInit  bool
 	Inbox    []kafka.PortValue // messages reçus avant un ExecuteTransition
 }
+
+type RunnerStates = map[string]*RunnerState

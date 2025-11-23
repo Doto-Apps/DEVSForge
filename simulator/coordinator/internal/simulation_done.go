@@ -1,0 +1,21 @@
+package internal
+
+import (
+	"devsforge/simulator/shared/kafka"
+	"fmt"
+)
+
+func (c *Coordinator) RunSimulationDone() error {
+	for _, st := range c.RunnerStates {
+		msg := &kafka.KafkaMessageSimulationDone{
+			DevsType: kafka.DevsTypeSimulationDone,
+			Target:   st.ID,
+		}
+
+		if err := c.SendMessage(msg); err != nil {
+			return fmt.Errorf("error sending SimulationDone to %s: %v", st.ID, err)
+		}
+	}
+
+	return nil
+}

@@ -73,3 +73,7 @@ local.properties
 
 # OpenAPI
 openapi.json
+
+#python 
+*.pyc
+__pycache__/

@@ -13,17 +13,17 @@ import (
 )
 
 type RunnerConfig struct {
-	Model       *shared.RunnableModel
-	ID          string
-	KafkaConfig kafka.KafkaConfig
-	KafkaClient *kgo.Client
-	GRPC        shared.YamlInputConfigGRPC
+	Model        *shared.RunnableModel
+	ID           string
+	KafkaConfig  kafka.KafkaConfig
+	KafkaClient  *kgo.Client
+	GRPC         shared.YamlInputConfigGRPC
+	TmpDirectory string
 }
 
 var config *RunnerConfig
 
-// focntion qui laisse choiri le port
-// TODO: verifier si il n'y a pas des os ou ca bug
+// pickFreePort Choose a free port to run the model
 func pickFreePort() (int, error) {
 	for port := 50051; port <= 51051; port++ {
 		addr := fmt.Sprintf("127.0.0.1:%d", port)
@@ -83,11 +83,12 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 	}
 
 	config = &RunnerConfig{
-		ID:          model.ID,
-		Model:       &model,
-		KafkaConfig: *kafkaConfig,
-		GRPC:        runnerConfig.GRPC,
-		KafkaClient: client,
+		ID:           model.ID,
+		Model:        &model,
+		KafkaConfig:  *kafkaConfig,
+		GRPC:         runnerConfig.GRPC,
+		KafkaClient:  client,
+		TmpDirectory: runnerConfig.TmpDirectory,
 	}
 
 	return config

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"devsforge/simulator/coordinator/internal"
 	"devsforge/simulator/shared"
 	"devsforge/simulator/shared/utils"
 	"fmt"
@@ -114,7 +115,7 @@ func TestRunWithFileKafkaOnlyWithGO(t *testing.T) {
 	os.Setenv("KAFKA_TOPIC", "sim-test")
 
 	// Lancement du simulateur avec le manifest et l'endpoint Kafka
-	err = run([]string{"--file", jsonPath, "--kafka", "localhost:9092"})
+	err = internal.RunSimulation([]string{"--file", jsonPath, "--kafka", "localhost:9092"})
 	if err != nil {
 		t.Fatalf("expected no error, got\n %v", err)
 	}

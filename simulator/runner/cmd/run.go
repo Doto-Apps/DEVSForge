@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 )
 
 // prepareGeneralWrapper : partie commune à tous les langages
@@ -21,25 +20,11 @@ func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 	cfg := internal.InitConfig(manifest, yamlConfigFilePath)
 
 	// TODO: BEGIN -> a tout momeent ca degagre dans coord
-	prefix := "devsforge_" + manifest.SimulationID + "_"
-	pattern := filepath.Join("./tmp", prefix+"*")
-	// Si un dossier existe déjà avec ce préfixe, on le réutilise
-	candidates, err := filepath.Glob(pattern)
-	var rootDir string
-	if err == nil && len(candidates) > 0 {
-		rootDir = candidates[0]
-		log.Printf("♻️ Reusing existing simulation temp dir %s", rootDir)
-	} else {
-		rootDir, err = os.MkdirTemp("./tmp", prefix)
-		if err != nil {
-			return nil, fmt.Errorf("failed to create simulation temp dir %s at %s location, error : %w", prefix, pattern, err)
-		}
-		log.Printf("📁 Created simulation temp dir %s", rootDir)
-	}
+
 	// END
 	return &internal.WrapperInfo{
 		Cfg:     cfg,
-		RootDir: rootDir,
+		RootDir: cfg.TmpDirectory,
 	}, nil
 }
 

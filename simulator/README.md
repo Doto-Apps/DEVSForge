@@ -1,11 +1,38 @@
 # Simulator
 
+PROJECT UNDER HEAVY DEVELOPMENT IT MAY NOT WORK FOR ALL USE CASE PLEASE SEND AN ISSUE.
+
+
+## Next steps 
+
+- [ ] Log all in a file
+- [x] Temporary directory with config
+- [ ] Make an helper to Marshal incoming data in ports
+- [ ] Implement/Remove portType with primitive typing ?
+- [ ] Unit test using a single go model and send kafka message in the test
+  - [x] Ensure we handle correctly SendInit, SendNextTime, SendOuput, ExecuteTransition, SimulationDone, DeltaExt, DeltaInt
+  - [ ] Ensure we handle correctly Confluent
+- [ ] Unit test using a go model and a python model
+- [ ] Add java language
+- [ ] Add C++ language
+- [ ] Improve READMEs and code documentation in golang and python
+- [ ] Add a Realworld unit test using all methods
+- [ ] Deploy modeling libraries to make them available for all developers
+
+## Implementation State
+
+| Language  | Implemented | Information |
+| :--------------- |:--------------- | :-----|
+| Golang  |   Yes |  Implementation complete |
+| Python  | Yes |   Implementation complete |
+| Java  | No | |
+| C++  | No | |
+
 ## How to test
 
 For testing the simulation in this project you will need : 
 - Docker or Docker Desktop for windows users.
 - GO in any recent version 
-- python > 3.1xx
 
 ### Test the runner alone
 
@@ -56,10 +83,3 @@ THe role of the runner are the following :
 ## Wrapper
     TODO: a faire
 
-
-TODO: faire test unitaire pour le runner + wrapper + modele go avec un envoi factice dans le kafka pour l'init sim 
-TODO: faire test unitaire pour le runner + wrapper + modele python avec un envoi factice dans le kafka pour l'init sim 
-
-TODO: faire test unitaire pour le coordinator + runners(go) + runner(python) avec simulation compléte 
-
-TODO: Faire les read me correctement et modifier la docs pour expliquer comment on lance les test et comment focntionne le système 
