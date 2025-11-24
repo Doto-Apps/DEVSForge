@@ -1,8 +1,8 @@
 package internal
 
 import (
-	"devsforge/simulator/shared"
-	"devsforge/simulator/shared/kafka"
+	shared "devsforge-shared"
+	"devsforge-shared/kafka"
 	"log"
 	"math"
 )

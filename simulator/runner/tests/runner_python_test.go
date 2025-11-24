@@ -2,6 +2,7 @@
 package tests
 
 import (
+	shared "devsforge-shared"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,10 +10,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"devsforge/simulator/runner/cmd"
-	"devsforge/simulator/shared"
-	"devsforge/simulator/shared/kafka"
-	"devsforge/simulator/shared/utils"
+	"devsforge-runner/cmd"
+	"devsforge-shared/kafka"
+	"devsforge-shared/utils"
 
 	"gopkg.in/yaml.v3"
 )
@@ -27,7 +27,7 @@ func TestRunPythonModel(t *testing.T) {
 
 	var manifest shared.RunnableManifest
 
-	codeContent, err := os.ReadFile("../../tests/m1/m1.py")
+	codeContent, err := os.ReadFile("../../tests/m1py/m1.py")
 	if err != nil {
 		t.Fatalf("Error while reading test code\n %v", err)
 	}
@@ -99,7 +99,7 @@ func TestRunPythonModel(t *testing.T) {
 
 	go func() {
 		if err := cmd.LaunchRunner(args); err != nil {
-			t.Fatalf("expected runner to exit cleanly, got error:\n%v", err)
+			testLogger.Fatalf("expected runner to exit cleanly, got error:\n%v", err)
 		}
 	}()
 

@@ -1,11 +1,11 @@
 package handler
 
 import (
-	"devsforge/back/database"
-	"devsforge/back/json"
-	"devsforge/back/middleware"
-	"devsforge/back/model"
-	"devsforge/back/request"
+	"devsforge/database"
+	"devsforge/json"
+	"devsforge/middleware"
+	"devsforge/model"
+	"devsforge/request"
 
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"

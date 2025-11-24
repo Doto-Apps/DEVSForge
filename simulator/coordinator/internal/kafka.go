@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
-	kafkaShared "devsforge/simulator/shared/kafka"
+	kafkaShared "devsforge-shared/kafka"
 
-	"github.com/segmentio/kafka-go"
+	kafka "github.com/segmentio/kafka-go"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 

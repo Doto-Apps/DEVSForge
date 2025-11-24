@@ -1,7 +1,7 @@
 package main
 
 import (
-	"devsforge/simulator/coordinator/internal"
+	"devsforge-coordinator/internal"
 	"fmt"
 	"os"
 )

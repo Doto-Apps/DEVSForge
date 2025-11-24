@@ -1,13 +1,13 @@
 package handler
 
 import (
-	"devsforge/back/database"
-	"devsforge/back/lib"
-	"devsforge/back/middleware"
-	"devsforge/back/model"
-	"devsforge/back/request"
-	"devsforge/back/response"
-	"devsforge/back/services"
+	"devsforge/database"
+	"devsforge/lib"
+	"devsforge/middleware"
+	"devsforge/model"
+	"devsforge/request"
+	"devsforge/response"
+	"devsforge/services"
 
 	"github.com/gofiber/fiber/v2"
 )

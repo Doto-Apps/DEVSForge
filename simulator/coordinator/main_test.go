@@ -2,9 +2,9 @@ package main
 
 import (
 	"context"
-	"devsforge/simulator/coordinator/internal"
-	"devsforge/simulator/shared"
-	"devsforge/simulator/shared/utils"
+	"devsforge-coordinator/internal"
+	shared "devsforge-shared"
+	"devsforge-shared/utils"
 	"fmt"
 	"os"
 	"os/signal"

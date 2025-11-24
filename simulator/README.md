@@ -19,6 +19,7 @@ PROJECT UNDER HEAVY DEVELOPMENT IT MAY NOT WORK FOR ALL USE CASE PLEASE SEND AN 
 - [ ] Add a Realworld unit test using all methods
 - [ ] Deploy modeling libraries to make them available for all developers
 - [ ] Handle Create and delete temporary directories in the coordinator
+- [ ] Change Kafka function to add topic with the new kgo lib
 
 ## Implementation State
 

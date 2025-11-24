@@ -2,29 +2,45 @@
 package cmd
 
 import (
-	"devsforge/simulator/runner/internal"
-	"devsforge/simulator/shared"
-	"devsforge/simulator/shared/utils"
+	"devsforge-runner/internal"
+	"devsforge-runner/internal/config"
+	"devsforge-runner/internal/generators"
+	"devsforge-runner/util"
+	shared "devsforge-shared"
+	"devsforge-shared/utils"
 	"flag"
 	"fmt"
 	"log"
 	"os"
+	"path"
 )
 
 // prepareGeneralWrapper : partie commune à tous les langages
 // - InitConfig
 // - création (ou réutilisation) du dossier de simulation devsforge_<SimulationID>_*
-func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath string) (*internal.WrapperInfo, error) {
+func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath string) (*generators.WrapperInfo, error) {
 	log.Println("Init model")
 
-	cfg := internal.InitConfig(manifest, yamlConfigFilePath)
+	cfg := config.InitConfig(manifest, yamlConfigFilePath)
 
-	// TODO: BEGIN -> a tout momeent ca degagre dans coord
+	// on doit créer le dossier pour le modèle courant du style model_id
 
-	// END
-	return &internal.WrapperInfo{
-		Cfg:     cfg,
-		RootDir: cfg.TmpDirectory,
+	modelRoot := path.Join(cfg.TmpDirectory, "model_"+cfg.Model.ID)
+	modelingFolder := path.Join("../../wrappers", string(cfg.Model.Language))
+
+	if err := os.Mkdir(modelRoot, 0777); err != nil {
+		return nil, fmt.Errorf("failed to create model %s root dir: %w", cfg.Model.ID, err)
+	}
+
+	err := util.CopyDir(modelingFolder, modelRoot)
+	if err != nil {
+		return nil, fmt.Errorf("failed to copy directory from %s to : %s", modelingFolder, modelRoot)
+	}
+
+	return &generators.WrapperInfo{
+		Cfg:      cfg,
+		RootDir:  cfg.TmpDirectory,
+		ModelDir: modelingFolder,
 	}, nil
 }
 
@@ -88,11 +104,11 @@ func LaunchRunner(args []string) error {
 	// 2) Préparation spécifique au langage (Go / Python / ...)
 	switch manifest.Models[0].Language {
 	case "go":
-		if err := internal.PrepareGoWraper(wrapper, manifest); err != nil {
+		if err := generators.PrepareGoWraper(wrapper, manifest); err != nil {
 			return err
 		}
 	case "python":
-		if err := internal.PreparePythonWraper(wrapper, manifest); err != nil {
+		if err := generators.PreparePythonWraper(wrapper, manifest); err != nil {
 			return err
 		}
 	default:

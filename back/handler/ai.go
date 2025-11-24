@@ -2,10 +2,10 @@ package handler
 
 import (
 	"context"
-	"devsforge/back/middleware"
-	"devsforge/back/prompt"
-	"devsforge/back/request"
-	"devsforge/back/response"
+	"devsforge/middleware"
+	"devsforge/prompt"
+	"devsforge/request"
+	"devsforge/response"
 	"encoding/json"
 	"fmt"
 	"log"

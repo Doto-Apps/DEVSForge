@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"devsforge/simulator/shared"
+	shared "devsforge-shared"
 	"flag"
 	"fmt"
 	"log"

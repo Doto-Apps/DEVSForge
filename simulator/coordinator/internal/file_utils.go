@@ -2,8 +2,9 @@ package internal
 
 import (
 	"crypto/rand"
-	"devsforge/simulator/shared"
-	"devsforge/simulator/shared/utils"
+	shared "devsforge-shared"
+	"devsforge-shared/utils"
+
 	"encoding/hex"
 	"encoding/json"
 	"fmt"

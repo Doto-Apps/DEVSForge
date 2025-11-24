@@ -1,7 +1,7 @@
 package router
 
 import (
-	"devsforge/back/handler"
+	"devsforge/handler"
 
 	"github.com/gofiber/fiber/v2"
 )

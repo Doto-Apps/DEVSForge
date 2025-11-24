@@ -2,8 +2,10 @@ package internal
 
 import (
 	"context"
-	devspb "devsforge/simulator/proto/go"
-	"devsforge/simulator/shared/kafka"
+	"devsforge-runner/internal/generators"
+	"devsforge-runner/internal/runner"
+	"devsforge-shared/kafka"
+	devspb "devsforge-wrapper/proto"
 	"errors"
 	"fmt"
 	"log"
@@ -12,7 +14,7 @@ import (
 // ErrSimulationDone signale la fin normale de la simulation
 var ErrSimulationDone = errors.New("simulation completed normally")
 
-func LaunchSim(wrapper *WrapperInfo) error {
+func LaunchSim(wrapper *generators.WrapperInfo) error {
 	cfg := wrapper.Cfg
 	if cfg == nil {
 		return fmt.Errorf("LaunchSim: missing config")
@@ -22,13 +24,13 @@ func LaunchSim(wrapper *WrapperInfo) error {
 	}
 
 	modelClient := devspb.NewAtomicModelServiceClient(wrapper.GRPCConn)
-	runner := createRunner(cfg, context.Background(), modelClient)
+	runnerInstance := runner.CreateRunner(cfg, context.Background(), modelClient)
 
 	log.Println("======================================")
 	log.Println("   Debut de la boucle de simulation    ")
 	log.Println("======================================")
 
-	if err := runner.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
+	if err := runnerInstance.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
 		if msg.Target != cfg.Model.ID || msg.Sender == cfg.Model.ID {
 			return nil
 		}
@@ -42,7 +44,7 @@ func LaunchSim(wrapper *WrapperInfo) error {
 		// InitSim : Initialize + NextTime
 		// ======================
 		if msg.DevsType == kafka.DevsTypeInitSim {
-			return runner.RunInitSim(kafka.KafkaMessageInitSim{
+			return runnerInstance.RunInitSim(kafka.KafkaMessageInitSim{
 				DevsType: msg.DevsType,
 				Time:     msg.Time,
 				Target:   msg.Target,
@@ -53,7 +55,7 @@ func LaunchSim(wrapper *WrapperInfo) error {
 		// ExecuteTransition : internal / external / confluent
 		// ======================
 		if msg.DevsType == kafka.DevsTypeExecuteTransition {
-			return runner.RunExecuteTransition(kafka.KafkaMessageExecuteTransition{
+			return runnerInstance.RunExecuteTransition(kafka.KafkaMessageExecuteTransition{
 				DevsType:          msg.DevsType,
 				Time:              *msg.Time,
 				Target:            msg.Target,
@@ -65,7 +67,7 @@ func LaunchSim(wrapper *WrapperInfo) error {
 		// SendOutput : lambda + ModelOutputMessage
 		// ======================
 		if msg.DevsType == kafka.DevsTypeSendOutput {
-			return runner.RunSendOutput(kafka.KafkaMessageSendOutput{
+			return runnerInstance.RunSendOutput(kafka.KafkaMessageSendOutput{
 				DevsType: msg.DevsType,
 				Time:     *msg.Time,
 			})
@@ -75,7 +77,7 @@ func LaunchSim(wrapper *WrapperInfo) error {
 		// SimulationDone : Finalize
 		// ======================
 		if msg.DevsType == kafka.DevsTypeSimulationDone {
-			if err := runner.RunSimulationDone(); err != nil {
+			if err := runnerInstance.RunSimulationDone(); err != nil {
 				return err
 			}
 			// Retourner l'erreur sentinelle pour sortir de la boucle

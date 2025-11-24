@@ -1,8 +1,8 @@
 package services
 
 import (
-	"devsforge/back/database"
-	"devsforge/back/model"
+	"devsforge/database"
+	"devsforge/model"
 	"errors"
 )
 

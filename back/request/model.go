@@ -1,9 +1,9 @@
 package request
 
 import (
-	"devsforge/back/enum"
-	"devsforge/back/json"
-	"devsforge/back/model"
+	"devsforge/enum"
+	"devsforge/json"
+	"devsforge/model"
 )
 
 type ModelRequest struct {

@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"devsforge/simulator/shared/kafka"
+	"devsforge-shared/kafka"
 	"log"
 	"math"
 )

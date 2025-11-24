@@ -1,7 +1,7 @@
 package main
 
 import (
-	"devsforge/simulator/runner/cmd"
+	"devsforge-runner/cmd"
 	"fmt"
 	"os"
 )

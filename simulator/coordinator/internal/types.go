@@ -1,6 +1,6 @@
 package internal
 
-import "devsforge/simulator/shared/kafka"
+import "devsforge-shared/kafka"
 
 type RunnerState struct {
 	ID       string

@@ -2,7 +2,7 @@ package internal
 
 import (
 	"context"
-	"devsforge/simulator/shared"
+	shared "devsforge-shared"
 	"fmt"
 	"log"
 	"math"

@@ -2,7 +2,7 @@ package tests
 
 import (
 	"context"
-	"devsforge/simulator/shared/kafka"
+	"devsforge-shared/kafka"
 	"fmt"
 	"log"
 	"time"

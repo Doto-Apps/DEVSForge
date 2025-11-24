@@ -1,6 +1,6 @@
 package shared
 
-import "devsforge/simulator/shared/enum"
+import "devsforge-shared/enum"
 
 type CodeLanguage string
 
