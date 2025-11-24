@@ -7,8 +7,8 @@ import json
 import grpc
 from google.protobuf.empty_pb2 import Empty
 
-from simulator.proto.python import devs_pb2, devs_pb2_grpc
-from simulator.wrappers.python.modeling.modeling import Atomic  # ton runtime Python
+from proto.python import devs_pb2, devs_pb2_grpc
+from wrappers.python.modeling.modeling import Atomic  # ton runtime Python
 
 
 class DevsModelServer(devs_pb2_grpc.AtomicModelServiceServicer):

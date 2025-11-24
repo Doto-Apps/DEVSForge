@@ -1,7 +1,7 @@
 import json
 import logging
 
-from simulator.wrappers.python.modeling.modeling import (
+from wrappers.python.modeling.modeling import (
     Atomic,
     RunnableModelCfg,
     RunnableModelPortCfg,

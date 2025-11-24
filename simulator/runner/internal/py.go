@@ -10,7 +10,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -22,7 +21,7 @@ import (
 )
 
 // findSimulatorRoot : WEAK function we use to go up to find dependencies to copy/paste/use
-func findSimulatorRoot(rootFolder string) (string, error) {
+func findSimulatorRoot() (string, error) {
 	dir, err := os.Getwd()
 	if err != nil {
 		return "", err
@@ -30,7 +29,7 @@ func findSimulatorRoot(rootFolder string) (string, error) {
 
 	for {
 		// Si le nom du dossier courant est "simulator", on s'arrête
-		if filepath.Base(dir) == rootFolder {
+		if filepath.Base(dir) == "simulator" {
 			return dir, nil
 		}
 
@@ -101,13 +100,11 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 	cmd.Dir = modelDir
 
 	// On récupère la racine du projet (là où il y a wrappers/, proto/, etc.)
-	projectRoot, err := findSimulatorRoot("simulator")
+	projectRoot, err := findSimulatorRoot()
 
 	if err != nil {
 		return fmt.Errorf("failed to get working directory for PYTHONPATH: %w", err)
 	}
-
-	projectRoot = path.Join(projectRoot, "../")
 
 	// On passe le port gRPC via l'environnement + le PYTHONPATH
 	portStr := strconv.Itoa(cfg.GRPC.Port)
@@ -197,7 +194,7 @@ import json
 import logging
 import os
 
-from simulator.wrappers.python.rpc.devsModelServer import serve  # ton serveur gRPC Python
+from wrappers.python.rpc.devsModelServer import serve  # ton serveur gRPC Python
 from model import NewModel  # fonction NewModel(cfg) dans model.py
 
 
