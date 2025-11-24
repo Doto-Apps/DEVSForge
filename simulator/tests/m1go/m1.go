@@ -1,8 +1,8 @@
 package main
 
 import (
+	modeling "devsforge-wrapper/modeling"
 	"encoding/json"
-	modeling "wrapper/modeling"
 )
 
 type GeneratorIncrementalParameters struct {
@@ -78,5 +78,4 @@ func (m *GeneratorIncremental) Lambda() {
 		return
 	}
 	outPort.AddValue(payload)
-
 }

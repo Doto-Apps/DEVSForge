@@ -5,7 +5,6 @@ import (
 	"devsforge-runner/internal/config"
 	shared "devsforge-shared"
 	devspb "devsforge-wrapper/proto"
-
 	"encoding/json"
 	"fmt"
 	"log"
@@ -21,8 +20,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var goMainFileName = "main.go"
-var goModelFileName = "model.go"
+var (
+	goMainFileName  = "main.go"
+	goModelFileName = "model.go"
+)
 
 // PrepareGoWraper : tout ce qui était avant le label "connected:" dans l'ancienne LaunchSim
 func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) error {
@@ -34,12 +35,12 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 	bootstrapPath := filepath.Join(wrapper.ModelDir, goMainFileName)
 	modelPath := filepath.Join(wrapper.ModelDir, "model.go")
 
-	if err := os.WriteFile(modelPath, []byte(cfg.Model.Code), 0o644); err != nil {
+	if err := os.WriteFile(modelPath, []byte(cfg.Model.Code), 0o777); err != nil {
 		return fmt.Errorf("failed to write %s: %w", goModelFileName, err)
 	}
 
 	bootstrapSrc := GenerateGoBootstrapSource(cfg)
-	if err := os.WriteFile(bootstrapPath, []byte(bootstrapSrc), 0o644); err != nil {
+	if err := os.WriteFile(bootstrapPath, []byte(bootstrapSrc), 0o777); err != nil {
 		return fmt.Errorf("failed to write %s: %w", goMainFileName, err)
 	}
 
@@ -138,7 +139,6 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 
 func GenerateGoBootstrapSource(cfg *config.RunnerConfig) string {
 	return fmt.Sprintf(`package main
-package main
 
 import (
 	"encoding/json"
@@ -147,9 +147,9 @@ import (
 	"net"
 	"os"
 
-	"wrapper/modeling"
-	devspb "wrapper/proto"
-	rpcwrapper "wrapper/rpc"
+	"devsforge-wrapper/modeling"
+	devspb "devsforge-wrapper/proto"
+	rpcwrapper "devsforge-wrapper/rpc"
 
 	"google.golang.org/grpc"
 )
