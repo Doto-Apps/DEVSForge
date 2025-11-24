@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"runtime"
 	"strconv"
@@ -100,11 +101,13 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 	cmd.Dir = modelDir
 
 	// On récupère la racine du projet (là où il y a wrappers/, proto/, etc.)
-	projectRoot, err := findSimulatorRoot("EasyDEVS")
+	projectRoot, err := findSimulatorRoot("simulator")
 
 	if err != nil {
 		return fmt.Errorf("failed to get working directory for PYTHONPATH: %w", err)
 	}
+
+	projectRoot = path.Join(projectRoot, "../")
 
 	// On passe le port gRPC via l'environnement + le PYTHONPATH
 	portStr := strconv.Itoa(cfg.GRPC.Port)
