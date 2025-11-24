@@ -2,6 +2,7 @@
 
 PROJECT UNDER HEAVY DEVELOPMENT IT MAY NOT WORK FOR ALL USE CASE PLEASE SEND AN ISSUE.
 
+TODO: Important choix a faire si on ne veux pas devoir sortir le dossier temp de sim du dossier du projet il nous faut avoir deux workspace distinct back et sim sans que la racine n'est de go mod -> il n'existe pas de système d'exclusiion de wrokspace en go
 
 ## Next steps 
 

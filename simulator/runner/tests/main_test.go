@@ -14,7 +14,7 @@ import (
 )
 
 var KafkaAddr = "localhost:9092"
-var TmpDirectory = "./tmp"
+var TmpDirectory = "../../../../tmp"
 var ErrSimulationDone = errors.New("simulation completed normally")
 var Sender = "fakecoordinator"
 var testLogger = log.New(os.Stdout, "[TEST FAKE COORDINATOR ]   :", log.LstdFlags)

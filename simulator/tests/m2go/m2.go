@@ -1,8 +1,8 @@
 package main
 
 import (
+	modeling "devsforge-wrapper/modeling"
 	"log"
-	"wrapper/modeling"
 )
 
 type Collector struct {
