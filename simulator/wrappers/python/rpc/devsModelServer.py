@@ -163,3 +163,4 @@ def serve(
     server.start()
     print(f"[PY-WRAPPER] gRPC server running on {host}:{port} for model {model.get_name()}")
     server.wait_for_termination()
+    print(f"[PY-WRAPPER] Ending gRPC server on {host}:{port} for model {model.get_name()}")

@@ -20,6 +20,29 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// findSimulatorRoot : WEAK function we use to go up to find dependencies to copy/paste/use
+func findSimulatorRoot(rootFolder string) (string, error) {
+	dir, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+
+	for {
+		// Si le nom du dossier courant est "simulator", on s'arrête
+		if filepath.Base(dir) == rootFolder {
+			return dir, nil
+		}
+
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			// On est sorti de l'arborescence sans trouver "simulator"
+			return "", fmt.Errorf(`dossier "simulator" introuvable dans les parents`)
+		}
+
+		dir = parent
+	}
+}
+
 // PreparePythonWrapper : version Python de PrepareGoWraper.
 // Elle génère model.py + main.py, lance le process Python, puis attend que le gRPC soit prêt.
 func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) error {
@@ -77,7 +100,8 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 	cmd.Dir = modelDir
 
 	// On récupère la racine du projet (là où il y a wrappers/, proto/, etc.)
-	projectRoot, err := os.Getwd()
+	projectRoot, err := findSimulatorRoot("EasyDEVS")
+
 	if err != nil {
 		return fmt.Errorf("failed to get working directory for PYTHONPATH: %w", err)
 	}

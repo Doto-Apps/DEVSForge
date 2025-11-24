@@ -1,0 +1,64 @@
+name: Go CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'simulator/**'
+      - 'go.mod'
+      - 'go.sum'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'simulator/**'
+      - 'go.mod'
+      - 'go.sum'
+
+env:
+  GO_VERSION: '1.24'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - run: go mod download
+      - run: go build -v ./simulator/coordinator
+      - run: go build -v ./simulator/runner
+
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 10
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          version: latest
+          args: --verbose
+
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    needs: build
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - run: go mod download
+      - run: go test -v ./simulator/runner/tests/...

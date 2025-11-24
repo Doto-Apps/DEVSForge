@@ -81,8 +81,6 @@ func LaunchRunner(args []string) error {
 
 		if err := wrapper.Cleanup(); err != nil {
 			log.Printf("⚠️ Cleanup error: %v", err)
-		} else {
-			log.Println("Cleanup done")
 		}
 	}()
 

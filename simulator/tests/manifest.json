@@ -2,7 +2,7 @@
   "models": [
     {
       "language": "go",
-      "id": "m1",
+      "id": "m1-go",
       "name": "GeneratorIncremental",
       "code": ""
     }

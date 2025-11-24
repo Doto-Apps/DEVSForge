@@ -29,9 +29,10 @@ func NewKafkaConfig(brokerAdress string, topic string, ID string) *KafkaConfig {
 
 		// Gestion plus safe des rebalances
 		kgo.BlockRebalanceOnPoll(),
+		kgo.RebalanceTimeout(2 * time.Second),
 
-		// Autocommit toutes les 5s (valeur par défaut, mais explicite)
-		kgo.AutoCommitInterval(5 * time.Second),
+		kgo.AutoCommitInterval(1 * time.Second),
+		kgo.TransactionTimeout(3 * time.Second),
 	}
 	log.Printf("Kafka Config Initialised: %s", brokerAdress)
 	return &KafkaConfig{Config: opts}

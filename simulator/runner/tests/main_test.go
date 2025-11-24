@@ -1,99 +1,96 @@
-// main_test.go — dans runners/go/
+// main_test.go
 package tests
 
 import (
 	"context"
+	"errors"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"testing"
-	"time"
 
 	tccompose "github.com/testcontainers/testcontainers-go/modules/compose"
 )
 
 var KafkaAddr = "localhost:9092"
 var TmpDirectory = "./tmp"
+var ErrSimulationDone = errors.New("simulation completed normally")
+var Sender = "fakecoordinator"
+var testLogger = log.New(os.Stdout, "[TEST FAKE COORDINATOR ]   :", log.LstdFlags)
 
-// TestLaunchRunnerWithKafka démarre Kafka via docker-compose, puis lance UN runner
-// avec un manifest JSON (contenant ton DumbModel) + un YAML de config généré.
+// Variable globale pour la stack, utile pour la fermer proprement
+var stack *tccompose.DockerCompose
+
 func TestMain(m *testing.M) {
-
 	ctx := context.Background()
-
-	// ⚠️ Adapte le chemin si ton docker-compose n'est pas là.
 	composeFile := "../../tests/docker-compose.yml"
 
 	if _, err := os.Stat(composeFile); os.IsNotExist(err) {
 		log.Fatalf("docker-compose file %s not found, skipping test", composeFile)
 	}
 
-	// 1️⃣ Démarrer Kafka avec testcontainers-go
-	stack, err := tccompose.NewDockerCompose(
-		composeFile,
-	)
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		stack.Down(ctx, tccompose.RemoveOrphans(true), tccompose.RemoveImagesLocal)
-		cleanup()
-		os.Exit(1)
-	}()
-
-	defer func() {
-		if err := stack.Down(ctx, tccompose.RemoveOrphans(true)); err != nil {
-			log.Fatalf("compose down returned error: %v", err)
-		}
-		cleanup()
-	}()
-
+	// 1. Initialisation de la stack
+	var err error
+	stack, err = tccompose.NewDockerCompose(composeFile)
 	if err != nil {
 		log.Fatalf("could not create compose stack: %v", err)
 	}
 
+	// 2. Gestion des signaux (Ctrl+C)
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		<-sigs
+		log.Println("🛑 Interrupt received, shutting down...")
+		teardownGlobal(ctx)
+		os.Exit(1)
+	}()
+
+	// 3. Démarrage (BeforeAll)
+	log.Println("🚀 Starting Docker Stack...")
 	if err := stack.Up(ctx, tccompose.Wait(true)); err != nil {
 		log.Fatalf("compose up failed: %v", err)
-
 	}
+	log.Println("✅ Kafka started.")
 
-	// Gestion propre du Ctrl+C pendant le test
+	// 4. Exécution des tests
+	exitCode := m.Run()
 
-	log.Println("✅ Kafka started for runner test...")
+	// 5. Nettoyage Global (AfterAll)
+	// On le fait explicitement AVANT os.Exit
+	teardownGlobal(ctx)
 
-	tests := m.Run()
+	os.Exit(exitCode)
+}
 
-	// 3) Teardown global : stopper le container, fermer les connexions, etc.
+// Fonction pour éteindre Docker proprement
+func teardownGlobal(ctx context.Context) {
+	if stack != nil {
+		log.Println("⬇️ Stopping Docker Stack...")
+		if err := stack.Down(ctx, tccompose.RemoveOrphans(true), tccompose.RemoveImagesLocal); err != nil {
+			log.Printf("⚠️ Error during stack down: %v", err)
+		}
+	}
+}
 
-	os.Exit(tests)
+// --- LE AFTER EACH EST ICI ---
+
+// setupTest configure l'environnement pour UN test unique
+// À appeler au début de chaque TestXxx(t *testing.T)
+func setupTest(t *testing.T) {
+	// Création du dossier temporaire (BeforeEach)
+	_ = os.MkdirAll(TmpDirectory, 0755)
+
+	// Enregistrement du nettoyage (AfterEach)
+	t.Cleanup(func() {
+		cleanup() // Votre fonction qui supprime ./tmp
+	})
 }
 
 func cleanup() {
-	// Réessayer plusieurs fois avec backoff (au cas où)
-	var lastErr error
-	for i := range 5 {
-		if i > 0 {
-			delay := time.Duration(i*300) * time.Millisecond
-			time.Sleep(delay)
-			log.Printf("Retrying cleanup (attempt %d/5)...", i+1)
-		}
-
-		if err := os.RemoveAll(TmpDirectory); err != nil {
-			lastErr = err
-			continue
-		}
-
-		log.Printf("🧹 temp dir %s removed", TmpDirectory)
-		lastErr = nil
-		break
-	}
-
-	if lastErr != nil {
-		// Si échec après 5 tentatives, logger mais ne pas bloquer
-		log.Printf("⚠️ Could not remove temp dir %s after 5 attempts: %v", TmpDirectory, lastErr)
-		log.Printf("   Directory will be reused on next run")
-
-	}
+	// Votre logique de suppression de dossier existante...
+	log.Printf("🧹 Test Cleaning up %s...", TmpDirectory)
+	os.RemoveAll(TmpDirectory)
+	log.Printf("✅ Test Cleaned %s...", TmpDirectory)
 }

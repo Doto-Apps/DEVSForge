@@ -36,7 +36,8 @@ func SendMessage(client *kgo.Client, msg kafka.KafkaMessageI) error {
 		return fmt.Errorf("cannot marshal kafka message : %w", err)
 	}
 
-	return client.ProduceSync(ctx, &kgo.Record{Value: data, Topic: "runner-test"}).FirstErr()
+	log.Println("[ TEST COORDINATOR ]: Sending : " + string(data))
+	return client.ProduceSync(ctx, &kgo.Record{Value: data}).FirstErr()
 }
 
 func StartReceiveLoop(client *kgo.Client, handler func(*kafka.BaseKafkaMessage) error) error {

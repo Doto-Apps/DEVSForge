@@ -9,15 +9,16 @@ PROJECT UNDER HEAVY DEVELOPMENT IT MAY NOT WORK FOR ALL USE CASE PLEASE SEND AN 
 - [x] Temporary directory with config
 - [ ] Make an helper to Marshal incoming data in ports
 - [ ] Implement/Remove portType with primitive typing ?
-- [ ] Unit test using a single go model and send kafka message in the test
+- [x] Unit test using a single go model and send kafka message in the test
   - [x] Ensure we handle correctly SendInit, SendNextTime, SendOuput, ExecuteTransition, SimulationDone, DeltaExt, DeltaInt
-  - [ ] Ensure we handle correctly Confluent
+  - [x] Ensure we handle correctly Confluent
 - [ ] Unit test using a go model and a python model
 - [ ] Add java language
 - [ ] Add C++ language
 - [ ] Improve READMEs and code documentation in golang and python
 - [ ] Add a Realworld unit test using all methods
 - [ ] Deploy modeling libraries to make them available for all developers
+- [ ] Handle Create and delete temporary directories in the coordinator
 
 ## Implementation State
 
