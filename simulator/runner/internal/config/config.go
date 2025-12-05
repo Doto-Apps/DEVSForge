@@ -46,7 +46,7 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 	// Charge la config YAML (Kafka, gRPC, etc.) — on ne va garder que Kafka
 	runnerConfig, err := LoadYamlConfig(yamlConfigPath)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("failed to load YAML config at %s with error :  %w", yamlConfigPath, err))
 	}
 
 	// Pour l'instant tu imposes 1 seul modèle par runner

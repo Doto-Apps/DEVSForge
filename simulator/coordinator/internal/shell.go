@@ -18,9 +18,10 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	// Faudra modifier pour utiliser le binaire directement
 	cwd, err := os.Getwd()
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("error while getting working directory %w", err))
 	}
-	parent := filepath.Dir(cwd)
+	coordDir := filepath.Dir(cwd)
+	simDir := filepath.Dir(coordDir)
 
 	runnerStates := make(map[string]*RunnerState)
 	for _, m := range manifest.Models {
@@ -32,6 +33,8 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 		}
 	}
 
+	log.Println("working dir " + simDir)
+
 	// lance les runner
 	for _, model := range manifest.Models {
 		go func(m *shared.RunnableModel) {
@@ -40,8 +43,8 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 				errCh <- err
 				return
 			}
-			cmd := exec.Command("go", "run", "simulator/runner/main.go", "--file", tmpFile.Name(), "--config", configFile.Name())
-			cmd.Dir = parent
+			cmd := exec.Command("go", "run", "runner/main.go", "--file", tmpFile.Name(), "--config", configFile.Name())
+			cmd.Dir = simDir
 
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr

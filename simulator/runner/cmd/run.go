@@ -30,7 +30,7 @@ func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 	// on doit créer le dossier pour le modèle courant du style model_id
 
 	modelRoot := path.Join(cfg.TmpDirectory, "model_"+cfg.Model.ID)
-	modelingFolder := path.Join("../../../wrappers", string(cfg.Model.Language))
+	modelingFolder := path.Join("../wrappers", string(cfg.Model.Language))
 
 	// Delete firstly
 	if err := os.RemoveAll(modelRoot); err != nil {
@@ -38,7 +38,7 @@ func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 	}
 
 	if err := os.Mkdir(modelRoot, 0777); err != nil {
-		return nil, fmt.Errorf("failed to create model %s root dir: %w", cfg.Model.ID, err)
+		return nil, fmt.Errorf("failed to create model %s from : %s with root dir %s - error : %w", cfg.Model.ID, modelRoot, cwd, err)
 	}
 
 	err = util.CopyDir(modelingFolder, modelRoot)

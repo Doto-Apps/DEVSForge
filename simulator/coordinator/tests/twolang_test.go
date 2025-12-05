@@ -1,49 +1,16 @@
-package main
+package tests
 
 import (
-	"context"
 	"devsforge-coordinator/internal"
 	shared "devsforge-shared"
 	"devsforge-shared/utils"
 	"fmt"
 	"os"
-	"os/signal"
 	"path/filepath"
-	"syscall"
 	"testing"
-
-	tccompose "github.com/testcontainers/testcontainers-go/modules/compose"
 )
 
 func TestRunWithFileKafka(t *testing.T) {
-	ctx := context.Background()
-	composeFile := "tests/docker-compose.yml"
-
-	if _, err := os.Stat(composeFile); os.IsNotExist(err) {
-		t.Skipf("docker-compose file %s not found, skipping test", composeFile)
-	}
-
-	stack, err := tccompose.NewDockerCompose(
-		composeFile,
-	)
-	if err != nil {
-		t.Fatalf("could not create compose stack: %v", err)
-	}
-
-	if err := stack.Up(ctx, tccompose.Wait(true)); err != nil {
-		t.Fatalf("compose up failed: %v", err)
-	}
-
-	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
-	go func() {
-		<-sigs
-		stack.Down(ctx, tccompose.RemoveOrphans(true), tccompose.RemoveImagesLocal)
-		os.Exit(1)
-	}()
-
-	defer stack.Down(ctx, tccompose.RemoveOrphans(true))
-	t.Log("Kafka started...")
 
 	// ============================
 	// Manifest avec M1 (PY) + M2 (GO)
@@ -52,13 +19,13 @@ func TestRunWithFileKafka(t *testing.T) {
 	var manifest shared.RunnableManifest
 
 	// Code du modèle Python (m1.py)
-	pyCode, err := os.ReadFile("tests/m1/m1.py")
+	pyCode, err := os.ReadFile("../../tests/m1py/m1.py")
 	if err != nil {
 		t.Fatalf("Error while reading python model code\n %v", err)
 	}
 
 	// Code du collecteur Go (m2.go)
-	goCollectorCode, err := os.ReadFile("tests/m2/m2.go")
+	goCollectorCode, err := os.ReadFile("../../tests/m2go/m2.go")
 	if err != nil {
 		t.Fatalf("Error while reading go collector code\n %v", err)
 	}
@@ -71,7 +38,7 @@ func TestRunWithFileKafka(t *testing.T) {
 		"models": [
 			{
 				"language": "python",
-				"id": "m1",
+				"id": "m1go",
 				"name": "GeneratorIncremental",
 				"code": %q,
 				"ports": [
@@ -86,7 +53,7 @@ func TestRunWithFileKafka(t *testing.T) {
 			},
 			{
 				"language": "go",
-				"id": "m2",
+				"id": "m2go",
 				"name": "Collector",
 				"code": %q,
 				"ports": [
