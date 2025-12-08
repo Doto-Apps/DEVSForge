@@ -2,6 +2,6 @@ FROM golang:1.24
 
 WORKDIR /app/back
 
-RUN go install github.com/cosmtrek/air@latest
+RUN go install github.com/cosmtrek/air@v1.61.2
 
 CMD ["air", "-c", "/app/back/.air.toml"]
