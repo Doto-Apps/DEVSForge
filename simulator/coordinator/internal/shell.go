@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	shared "devsforge-shared"
+	"devsforge-shared/utils"
 	"fmt"
 	"log"
 	"math"
@@ -12,16 +13,24 @@ import (
 )
 
 func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, cfg *CoordConfig) error {
-	log.Printf("Launching %d runners using shell...\n", len(manifest.Models))
+	log.Printf("Launching %d runners using shell...", len(manifest.Models))
 	errCh := make(chan error, len(manifest.Models))
-	// Pour dev je recupere le dossier parent et je fais direct un go run
-	// Faudra modifier pour utiliser le binaire directement
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(fmt.Errorf("error while getting working directory %w", err))
+
+	// Resolve simulator root in a deterministic way.
+	simDir := os.Getenv(utils.EnvSimulatorRoot)
+	if simDir == "" {
+		var err error
+		simDir, err = utils.SimulatorRoot()
+		if err != nil {
+			return fmt.Errorf("failed to resolve simulator root: %w", err)
+		}
 	}
-	coordDir := filepath.Dir(cwd)
-	simDir := filepath.Dir(coordDir)
+
+	// Validate runner entrypoint early to avoid confusing runtime failures.
+	runnerMain := filepath.Join(simDir, "runner", "main.go")
+	if _, err := os.Stat(runnerMain); err != nil {
+		return fmt.Errorf("runner entrypoint not found: %q: %w", runnerMain, err)
+	}
 
 	runnerStates := make(map[string]*RunnerState)
 	for _, m := range manifest.Models {
@@ -33,9 +42,8 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 		}
 	}
 
-	log.Println("working dir " + simDir)
+	log.Printf("Using simulator root: %s", simDir)
 
-	// lance les runner
 	for _, model := range manifest.Models {
 		go func(m *shared.RunnableModel) {
 			tmpFile, err := GenerateJSONRunnerManifest(m, manifest.Count, manifest.SimulationID)
@@ -43,9 +51,14 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 				errCh <- err
 				return
 			}
-			cmd := exec.Command("go", "run", "runner/main.go", "--file", tmpFile.Name(), "--config", configFile.Name())
-			cmd.Dir = simDir
 
+			// Run from simulator root so relative paths are stable.
+			cmd := exec.Command("go", "run", "./runner/main.go",
+				"--file", tmpFile.Name(),
+				"--config", configFile.Name(),
+			)
+			cmd.Dir = simDir
+			cmd.Env = append(os.Environ(), utils.EnvSimulatorRoot+"="+simDir)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 
@@ -58,16 +71,17 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	}
 
 	coordinator := CreateCoordinnator(cfg, context.Background(), runnerStates)
-	log.Println("All Model started, lauching coordinator main loop")
+	log.Println("All models started, launching coordinator main loop")
+
 	if err := coordinator.RunCoordinator(&manifest); err != nil {
 		return fmt.Errorf("coordination error: %w", err)
 	}
 
-	// Attente de la fin de tout les runner
 	for range manifest.Models {
 		if err := <-errCh; err != nil {
-			fmt.Println("❌ Runner failed:", err)
+			fmt.Println("Runner failed:", err)
 		}
 	}
+
 	return nil
 }

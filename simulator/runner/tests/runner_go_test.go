@@ -28,7 +28,7 @@ func TestRunGoModel(t *testing.T) {
 
 	var manifest shared.RunnableManifest
 
-	codeContent, err := os.ReadFile("../../tests/m1go/m1.go")
+	codeContent, err := os.ReadFile("./tests/m1go/m1.go")
 	if err != nil {
 		t.Fatalf("Error while reading test code\n %v", err)
 	}
@@ -71,7 +71,7 @@ func TestRunGoModel(t *testing.T) {
 			Address: KafkaAddr,
 			Topic:   kafkaTopic,
 		},
-		TmpDirectory: TmpDirectory,
+		TmpDirectory: SimRoot,
 	}
 
 	cfgPath := filepath.Join(tmpDir, "runner-config.yaml")

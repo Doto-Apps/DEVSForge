@@ -25,21 +25,18 @@ var config *RunnerConfig
 
 // pickFreePort Choose a free port to run the model
 func pickFreePort() (int, error) {
-	for port := 50051; port <= 51051; port++ {
-		addr := fmt.Sprintf("127.0.0.1:%d", port)
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return 0, fmt.Errorf("failed to listen on random port: %w", err)
+	}
+	defer l.Close()
 
-		lis, err := net.Listen("tcp", addr)
-		if err != nil {
-			// Port already in use, try next one
-			continue
-		}
-
-		// Port available, close listener and return it
-		lis.Close()
-		return port, nil
+	addr, ok := l.Addr().(*net.TCPAddr)
+	if !ok {
+		return 0, fmt.Errorf("listener addr is not *net.TCPAddr, got %T", l.Addr())
 	}
 
-	return 0, fmt.Errorf("no free port found in range 50051-51051")
+	return addr.Port, nil
 }
 
 func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *RunnerConfig {
@@ -58,18 +55,23 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 		panic(fmt.Errorf("failed to allocate gRPC port: %w", err))
 	}
 
-	// On fixe l'host (tu peux garder celui du YAML si tu veux)
 	if runnerConfig.GRPC.Host == "" {
 		runnerConfig.GRPC.Host = "127.0.0.1"
 	}
-	runnerConfig.GRPC.Port = grpcPort
+
+	grpcConfig := shared.YamlInputConfigGRPC{
+		Host: runnerConfig.GRPC.Host,
+		Port: grpcPort,
+	}
+
+	// On fixe l'host (tu peux garder celui du YAML si tu veux)
 
 	log.Printf("[RUNNER %s] Connecting to kafka: %s | topic=%s | gRPC=%s:%d",
 		model.ID,
 		runnerConfig.Kafka.Address,
 		runnerConfig.Kafka.Topic,
-		runnerConfig.GRPC.Host,
-		runnerConfig.GRPC.Port,
+		grpcConfig.Host,
+		grpcConfig.Port,
 	)
 
 	kafkaConfig := kafka.NewKafkaConfig(runnerConfig.Kafka.Address,
@@ -86,7 +88,7 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 		ID:           model.ID,
 		Model:        &model,
 		KafkaConfig:  *kafkaConfig,
-		GRPC:         runnerConfig.GRPC,
+		GRPC:         grpcConfig,
 		KafkaClient:  client,
 		TmpDirectory: runnerConfig.TmpDirectory,
 	}

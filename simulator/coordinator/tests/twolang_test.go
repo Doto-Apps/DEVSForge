@@ -1,39 +1,36 @@
 package tests
 
 import (
-	"devsforge-coordinator/internal"
-	shared "devsforge-shared"
-	"devsforge-shared/utils"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"devsforge-coordinator/internal"
+	shared "devsforge-shared"
+	"devsforge-shared/utils"
 )
 
 func TestRunWithFileKafka(t *testing.T) {
+	t.Helper()
 
-	// ============================
-	// Manifest avec M1 (PY) + M2 (GO)
-	// ============================
+	// Keep all temp files under simulator/tmp.
+	tmpDir := setupTest(t)
 
 	var manifest shared.RunnableManifest
 
-	// Code du modèle Python (m1.py)
-	pyCode, err := os.ReadFile("../../tests/m1py/m1.py")
+	pyPath := filepath.Join(SimRoot, "tests", "m1py", "m1.py")
+	pyCode, err := os.ReadFile(pyPath)
 	if err != nil {
-		t.Fatalf("Error while reading python model code\n %v", err)
+		t.Fatalf("Failed to read python model code %q: %v", pyPath, err)
 	}
 
-	// Code du collecteur Go (m2.go)
-	goCollectorCode, err := os.ReadFile("../../tests/m2go/m2.go")
+	goPath := filepath.Join(SimRoot, "tests", "m2go", "m2.go")
+	goCollectorCode, err := os.ReadFile(goPath)
 	if err != nil {
-		t.Fatalf("Error while reading go collector code\n %v", err)
+		t.Fatalf("Failed to read go collector code %q: %v", goPath, err)
 	}
 
-	// Manifest JSON :
-	// - modèle "m1" (python) avec port "out"
-	// - modèle "m2" (go) avec port "in"
-	// - connexion m1.out -> m2.in
 	jsonContent := fmt.Sprintf(`{
 		"models": [
 			{
@@ -66,24 +63,23 @@ func TestRunWithFileKafka(t *testing.T) {
 		"simulationId": "test"
 	}`, string(pyCode), string(goCollectorCode))
 
-	// Vérifie que le manifest est bien formé
 	if err := utils.ParseManifest(jsonContent, &manifest); err != nil {
-		t.Fatalf("Error while parsing test manifest\n %v", err)
+		t.Fatalf("Failed to parse test manifest: %v", err)
 	}
 
-	// On écrit le manifest JSON dans un fichier temporaire
-	tmpDir := t.TempDir()
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
-	if err := os.WriteFile(jsonPath, []byte(jsonContent), 0644); err != nil {
-		t.Fatalf("failed to write temp manifest: %v", err)
+	if err := os.WriteFile(jsonPath, []byte(jsonContent), 0o644); err != nil {
+		t.Fatalf("Failed to write temp manifest %q: %v", jsonPath, err)
 	}
 
-	// Topic Kafka utilisé par le coordi / runners
-	os.Setenv("KAFKA_TOPIC", "sim-test")
+	// Kafka topic used by coordinator/runners.
+	prevTopic := os.Getenv("KAFKA_TOPIC")
+	_ = os.Setenv("KAFKA_TOPIC", "sim-test")
+	t.Cleanup(func() {
+		_ = os.Setenv("KAFKA_TOPIC", prevTopic)
+	})
 
-	// Lancement du simulateur avec le manifest et l'endpoint Kafka
-	err = internal.RunSimulation([]string{"--file", jsonPath, "--kafka", "localhost:9092"})
-	if err != nil {
-		t.Fatalf("expected no error, got\n %v", err)
+	if err := internal.RunSimulation([]string{"--file", jsonPath, "--kafka", KafkaAddr}); err != nil {
+		t.Fatalf("Expected no error, got: %v", err)
 	}
 }

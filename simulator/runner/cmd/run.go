@@ -12,38 +12,48 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 )
 
 // prepareGeneralWrapper : partie commune à tous les langages
 // - InitConfig
 // - création (ou réutilisation) du dossier de simulation devsforge_<SimulationID>_*
 func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath string) (*generators.WrapperInfo, error) {
-	log.Println("Init model")
-	cwd, err := os.Getwd()
-	if err != nil {
-		panic(err)
-	}
-
 	cfg := config.InitConfig(manifest, yamlConfigFilePath)
 
-	// on doit créer le dossier pour le modèle courant du style model_id
+	simRoot := os.Getenv("DEVSFORGE_SIM_ROOT")
+	if simRoot == "" {
+		wd, err := os.Getwd()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get working directory: %w", err)
+		}
+		simRoot = wd
+	}
 
-	modelRoot := path.Join(cfg.TmpDirectory, "model_"+cfg.Model.ID)
-	modelingFolder := path.Join("../wrappers", string(cfg.Model.Language))
+	// Resolve tmp directory to an absolute path if needed.
+	if !filepath.IsAbs(cfg.TmpDirectory) {
+		cfg.TmpDirectory = filepath.Join(simRoot, cfg.TmpDirectory)
+	}
+	if err := os.MkdirAll(cfg.TmpDirectory, 0o755); err != nil {
+		return nil, fmt.Errorf("failed to create tmp directory %q: %w", cfg.TmpDirectory, err)
+	}
 
-	// Delete firstly
+	modelRoot := filepath.Join(cfg.TmpDirectory, "model_"+cfg.Model.ID)
+	modelingFolder := filepath.Join(simRoot, "wrappers", string(cfg.Model.Language))
+
+	if _, err := os.Stat(modelingFolder); err != nil {
+		return nil, fmt.Errorf("wrapper directory not found: %q: %w", modelingFolder, err)
+	}
+
 	if err := os.RemoveAll(modelRoot); err != nil {
-		return nil, fmt.Errorf("failed to remove dir %s: %w", modelRoot, err)
+		return nil, fmt.Errorf("failed to remove directory %q: %w", modelRoot, err)
+	}
+	if err := os.MkdirAll(modelRoot, 0o755); err != nil {
+		return nil, fmt.Errorf("failed to create model directory %q: %w", modelRoot, err)
 	}
 
-	if err := os.Mkdir(modelRoot, 0777); err != nil {
-		return nil, fmt.Errorf("failed to create model %s from : %s with root dir %s - error : %w", cfg.Model.ID, modelRoot, cwd, err)
-	}
-
-	err = util.CopyDir(modelingFolder, modelRoot)
-	if err != nil {
-		return nil, fmt.Errorf("failed to copy directory from %s to : %s with root dir %s : %w", modelingFolder, modelRoot, cwd, err)
+	if err := util.CopyDir(modelingFolder, modelRoot); err != nil {
+		return nil, fmt.Errorf("failed to copy wrapper directory from %q to %q: %w", modelingFolder, modelRoot, err)
 	}
 
 	return &generators.WrapperInfo{

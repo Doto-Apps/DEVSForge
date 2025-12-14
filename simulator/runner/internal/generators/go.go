@@ -54,6 +54,10 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 	log.Printf("Compiling model wrapper...")
 	buildCmd := exec.Command("go", "build", "-o", binaryPath, ".")
 	buildCmd.Dir = wrapper.ModelDir
+
+	// Important : on désactive le go.work pour ce build-là
+	buildCmd.Env = append(os.Environ(), "GOWORK=off")
+
 	buildCmd.Stdout = os.Stdout
 	buildCmd.Stderr = os.Stderr
 

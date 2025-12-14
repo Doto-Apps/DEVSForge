@@ -5,5 +5,5 @@ use (
 	./simulator/coordinator
 	./simulator/runner
 	./simulator/shared
-	./wrappers/go
+	./simulator/wrappers/go
 )

@@ -2,6 +2,7 @@ package internal
 
 import (
 	shared "devsforge-shared"
+	"devsforge-shared/utils"
 	"flag"
 	"fmt"
 	"log"
@@ -37,43 +38,51 @@ func RunSimulation(args []string) error {
 
 	kafkaTopic, err := GetKafkaTopic(*kafka)
 	if err != nil {
-		return fmt.Errorf("cant initialise kafka topic : %w", err)
+		return fmt.Errorf("failed to initialize Kafka topic: %w", err)
 	}
 
-	tmpDirForCreation := "../../../../tmp"
-	if err := os.MkdirAll(tmpDirForCreation, 0755); err != nil {
-		return fmt.Errorf("failed to create temp dir, error : %v", err)
+	// Resolve simulator root in a deterministic way.
+	simRoot := os.Getenv(utils.EnvSimulatorRoot)
+	if simRoot == "" {
+		simRoot, err = utils.SimulatorRoot()
+		if err != nil {
+			return fmt.Errorf("failed to resolve simulator root: %w", err)
+		}
+	}
+
+	// Ensure tmp base directory exists under simulator/tmp.
+	tmpBase := filepath.Join(simRoot, "tmp")
+	if err := os.MkdirAll(tmpBase, 0o755); err != nil {
+		return fmt.Errorf("failed to create tmp base directory %q: %w", tmpBase, err)
 	}
 
 	prefix := "devsforge_" + manifest.SimulationID + "_"
-
-	rootDir, err := os.MkdirTemp(tmpDirForCreation, prefix)
+	rootDir, err := os.MkdirTemp(tmpBase, prefix)
 	if err != nil {
-		return fmt.Errorf("failed to create simulation temp dir %s at %s location, error : %w", prefix, rootDir, err)
+		return fmt.Errorf("failed to create simulation temp dir with prefix %q under %q: %w", prefix, tmpBase, err)
 	}
 	log.Printf("📁 Created simulation temp dir %s", rootDir)
 
-	tmpFolderName := filepath.Base(rootDir)
-	runnerTmpDir := filepath.Join("../../tmp", tmpFolderName)
-
+	// Pass an absolute tmp directory to runners (stable, no relative paths).
 	yamlConfig := shared.YamlInputConfig{
 		Kafka: shared.YamlInputConfigKafka{
 			Enabled: true,
 			Address: *kafka,
 			Topic:   kafkaTopic,
 		},
-		TmpDirectory: runnerTmpDir,
+		TmpDirectory: rootDir,
 	}
 
 	configFile, err := GenerateRunnerYamlConfig(yamlConfig)
 	if err != nil {
-		return fmt.Errorf("failed to generate runner yaml config: %w", err)
+		return fmt.Errorf("failed to generate runner YAML config: %w", err)
 	}
 
 	cfg := InitConfig(yamlConfig)
 
 	if *dockerProvider {
-		log.Printf("Launching %d runners using docker...\n", len(manifest.Models))
+		log.Printf("Launching %d runners using docker...", len(manifest.Models))
+		// TODO: Docker path should also rely on simRoot / rootDir if needed.
 	} else {
 		if err := RunShellSimulation(manifest, configFile, cfg); err != nil {
 			return err
@@ -83,13 +92,13 @@ func RunSimulation(args []string) error {
 	log.Println("======================================")
 	log.Println("       🏗️ Simulation ended... ✨      ")
 	log.Println("======================================")
-	log.Printf("Cleaning environment... ")
+	log.Println("Cleaning environment...")
 
 	if err := Cleanup(*kafka, kafkaTopic); err != nil {
-		return fmt.Errorf("error during cleanup : %w", err)
+		return fmt.Errorf("error during cleanup: %w", err)
 	}
 
-	log.Printf("Done\n")
+	log.Println("Done")
 	return nil
 }
 
