@@ -109,7 +109,7 @@ func generateDiagram(c *fiber.Ctx) error {
 	}
 	Messages = append(Messages, openai.UserMessage(fullPrompt))
 
-	chat, _ := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
 		Messages:    openai.F(Messages),
 		MaxTokens:   openai.Int(4000),
 		TopP:        openai.Float(0.7),
@@ -124,8 +124,21 @@ func generateDiagram(c *fiber.Ctx) error {
 		Model: openai.F(os.Getenv("AI_MODEL")),
 	})
 
+	if err != nil {
+		log.Println("OpenAI Chat Completion error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
+	}
+
+	if chat == nil || len(chat.Choices) == 0 {
+		log.Println("OpenAI returned empty response")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
+	}
+
 	response := response.DiagramResponse{}
-	_ = json.Unmarshal([]byte(chat.Choices[0].Message.Content), &response)
+	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &response); err != nil {
+		log.Println("JSON Unmarshal error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
+	}
 
 	return c.JSON(response)
 }
@@ -177,7 +190,7 @@ func generateModel(c *fiber.Ctx) error {
 		Strict:      openai.Bool(true),
 	}
 
-	chat, _ := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
 		Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
 			openai.SystemMessage(prompt.ModelPrompt),
 			openai.UserMessage(fullPrompt),
@@ -194,8 +207,21 @@ func generateModel(c *fiber.Ctx) error {
 		Model: openai.F(os.Getenv("AI_MODEL")),
 	})
 
+	if err != nil {
+		log.Println("OpenAI Chat Completion error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
+	}
+
+	if chat == nil || len(chat.Choices) == 0 {
+		log.Println("OpenAI returned empty response")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
+	}
+
 	response := response.GeneratedModelResponse{}
-	_ = json.Unmarshal([]byte(chat.Choices[0].Message.Content), &response)
+	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &response); err != nil {
+		log.Println("JSON Unmarshal error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
+	}
 
 	return c.JSON(response)
 }

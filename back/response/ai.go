@@ -13,15 +13,15 @@ const (
 )
 
 type Model struct {
-	ID         string    `json:"id" validate:"required"`   // obligatoire
-	Type       ModelType `json:"type" validate:"required"` // enum obligatoire
-	Ports      *Ports    `json:"ports,omitempty"`          // optionnel
-	Components []string  `json:"components,omitempty"`     // optionnel
+	ID         string    `json:"id" jsonschema:"required"`         // required
+	Type       ModelType `json:"type" jsonschema:"required"`       // required enum
+	Ports      Ports     `json:"ports" jsonschema:"required"`      // required
+	Components []string  `json:"components" jsonschema:"required"` // required (can be empty array)
 }
 
 type Ports struct {
-	In  []string `json:"in,omitempty"`
-	Out []string `json:"out,omitempty"`
+	In  []string `json:"in" jsonschema:"required"`  // required (can be empty array)
+	Out []string `json:"out" jsonschema:"required"` // required (can be empty array)
 }
 
 type Connection struct {
