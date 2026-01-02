@@ -56,7 +56,10 @@ func TestRunGoModel(t *testing.T) {
 		t.Fatalf("failed to marshal manifest: %v", err)
 	}
 
-	tmpDir := t.TempDir()
+	tmpDir, err := utils.CreateTempDir(SimRoot)
+	if err != nil {
+		t.Fatalf("failed to create temp dir in simulator/tmp: %v", err)
+	}
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
 	if err := os.WriteFile(jsonPath, data, 0644); err != nil {
 		t.Fatalf("failed to write temp manifest: %v", err)
@@ -71,7 +74,7 @@ func TestRunGoModel(t *testing.T) {
 			Address: KafkaAddr,
 			Topic:   kafkaTopic,
 		},
-		TmpDirectory: SimRoot,
+		TmpDirectory: tmpDir,
 	}
 
 	cfgPath := filepath.Join(tmpDir, "runner-config.yaml")
