@@ -119,15 +119,7 @@ export function DiagramPromptForm({
 				</form>
 			</Form>
 
-			<div className="mt-8 p-4 bg-muted rounded-lg max-w-2xl">
-				<h3 className="font-semibold mb-2">💡 Conseils pour un bon prompt</h3>
-				<ul className="text-sm text-muted-foreground space-y-1">
-					<li>• Décrivez les composants principaux du système</li>
-					<li>• Mentionnez les interactions entre composants</li>
-					<li>• Précisez les entrées et sorties du système</li>
-					<li>• Indiquez les comportements temporels si pertinent</li>
-				</ul>
-			</div>
+
 		</div>
 	);
 }
