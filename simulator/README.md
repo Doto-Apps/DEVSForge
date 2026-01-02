@@ -42,14 +42,14 @@ For testing the simulation in this project you will need :
 There is two main test in the folowing project, the first one is to test a runner alone to verify thats he run smoothly. The test included the start of the docker and any needed dependency.
 From the root of the project : 
 
-`go test -v /simulaltor/runner`: `-v` is needed to have outputs
+`go test -v /simulator/runner/tests`: `-v` is needed to have outputs
 
 ### Test the entire simulation ( runners + coord )
 
 This test include the runnable manifest conatining differents model, automatic start of the kafka, and the execution of the all simulation in general.
 From the root of the project : 
 
-`go test -v /simulaltor`: `-v` is needed to have outputs
+`go test -v /simulator/coordinator/tests`: `-v` is needed to have outputs
 
 ## How it works
 
