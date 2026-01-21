@@ -8,7 +8,9 @@ type GeneratedDocumentation = {
 };
 
 type UseGenerateDocumentationResult = {
-	generateDocumentation: (modelId: string) => Promise<GeneratedDocumentation | null>;
+	generateDocumentation: (
+		modelId: string,
+	) => Promise<GeneratedDocumentation | null>;
 	isLoading: boolean;
 	error: string | null;
 };

@@ -15,16 +15,16 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { useGenerateDocumentation } from "@/hooks/useGenerateDocumentation";
 import { useToast } from "@/hooks/use-toast";
+import { useGenerateDocumentation } from "@/hooks/useGenerateDocumentation";
 import type { ReactFlowModelData } from "@/types";
 import type { Node } from "@xyflow/react";
 import { Loader2, Sparkles, X } from "lucide-react";
-import { useState, type KeyboardEvent } from "react";
+import { type KeyboardEvent, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { Textarea } from "../ui/textarea";
 import { ModelParameterEditor } from "./ModelParameterEditor";
 import { PortCountEditor } from "./reactFlow/PortCountEditor";
-import { Textarea } from "../ui/textarea";
 
 const MODEL_ROLES = ["generator", "transducer", "observer"] as const;
 
@@ -36,7 +36,8 @@ type Props = {
 
 export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 	const [keywordInput, setKeywordInput] = useState("");
-	const { generateDocumentation, isLoading: isGenerating } = useGenerateDocumentation();
+	const { generateDocumentation, isLoading: isGenerating } =
+		useGenerateDocumentation();
 	const { toast } = useToast();
 
 	const update = (changes: Partial<ReactFlowModelData>) => {
@@ -163,11 +164,11 @@ export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 						<div>
 							<Label>Model Description</Label>
 							<Textarea
-					value={model.data.description}
-					className="font-mono h-32"
-					onChange={(e) => update({ description: e.target.value })}
-					disabled={disabled}	/>
-							
+								value={model.data.description}
+								className="font-mono h-32"
+								onChange={(e) => update({ description: e.target.value })}
+								disabled={disabled}
+							/>
 						</div>
 
 						<div>

@@ -15,8 +15,8 @@ const getModelComponent = (
 			instanceId: nodeInNodes.id.split("/").pop() ?? "",
 			modelId: nodeInNodes.data.id,
 			instanceMetadata: {
-				modelRole : nodeInNodes.data.modelRole,
-				keyword : nodeInNodes.data.keyword,
+				modelRole: nodeInNodes.data.modelRole,
+				keyword: nodeInNodes.data.keyword,
 				position: { x: nodeInNodes.position.x, y: nodeInNodes.position.y },
 				style: {
 					height: nodeInNodes.measured?.height ?? DEFAULT_NODE_SIZE,
