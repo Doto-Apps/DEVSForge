@@ -37,3 +37,17 @@ type Endpoint struct {
 type GeneratedModelResponse struct {
 	Code string `json:"code" validate:"required"`
 }
+
+type DocumentationRole string
+
+const (
+	DocumentationRoleGenerator  DocumentationRole = "generator"
+	DocumentationRoleTransducer DocumentationRole = "transducer"
+	DocumentationRoleObserver   DocumentationRole = "observer"
+)
+
+type GeneratedDocumentationResponse struct {
+	Description string            `json:"description" jsonschema:"required"`
+	Keywords    []string          `json:"keywords" jsonschema:"required"`
+	Role        DocumentationRole `json:"role" jsonschema:"required,enum=generator,enum=transducer,enum=observer"`
+}

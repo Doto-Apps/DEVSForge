@@ -12,11 +12,14 @@ export type ReactFlowModelData = {
 	id: string;
 	modelType: "atomic" | "coupled";
 	label: string;
+	description: string;
 	inputPorts?: ReactFlowPort[];
 	outputPorts?: ReactFlowPort[];
 	reactFlowModelGraphicalData?: ReactFlowModelGraphicalData;
 	parameters?: components["schemas"]["json.ModelParameter"][];
 	code: string;
+	modelRole: string;
+	keyword: string[];
 };
 
 export type EdgeData = {

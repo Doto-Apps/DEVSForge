@@ -65,8 +65,14 @@ definitions:
         type: boolean
       backgroundColor:
         type: string
+      keyword:
+        items:
+          type: string
+        type: array
       modelColors:
         $ref: '#/definitions/json.ModelColors'
+      modelRole:
+        type: string
       parameters:
         items:
           $ref: '#/definitions/json.ModelParameter'
@@ -80,6 +86,8 @@ definitions:
       toolbarVisible:
         type: boolean
     required:
+    - keyword
+    - modelRole
     - position
     - style
     type: object
@@ -313,6 +321,14 @@ definitions:
     type: object
   request.GenerateDiagramRequest:
     type: object
+  request.GenerateDocumentationRequest:
+    properties:
+      modelId:
+        example: uuid-of-model
+        type: string
+    required:
+    - modelId
+    type: object
   request.GenerateModelRequest:
     properties:
       modelName:
@@ -486,6 +502,16 @@ definitions:
     - connections
     - models
     type: object
+  response.DocumentationRole:
+    enum:
+    - generator
+    - transducer
+    - observer
+    type: string
+    x-enum-varnames:
+    - DocumentationRoleGenerator
+    - DocumentationRoleTransducer
+    - DocumentationRoleObserver
   response.Endpoint:
     properties:
       model:
@@ -497,6 +523,17 @@ definitions:
     required:
     - model
     - port
+    type: object
+  response.GeneratedDocumentationResponse:
+    properties:
+      description:
+        type: string
+      keywords:
+        items:
+          type: string
+        type: array
+      role:
+        $ref: '#/definitions/response.DocumentationRole'
     type: object
   response.GeneratedModelResponse:
     properties:
@@ -524,24 +561,21 @@ definitions:
   response.Model:
     properties:
       components:
-        description: optionnel
+        description: required (can be empty array)
         items:
           type: string
         type: array
       id:
-        description: obligatoire
+        description: required
         type: string
       ports:
         allOf:
         - $ref: '#/definitions/response.Ports'
-        description: optionnel
+        description: required
       type:
         allOf:
         - $ref: '#/definitions/response.ModelType'
-        description: enum obligatoire
-    required:
-    - id
-    - type
+        description: required enum
     type: object
   response.ModelResponse:
     properties:
@@ -596,10 +630,12 @@ definitions:
   response.Ports:
     properties:
       in:
+        description: required (can be empty array)
         items:
           type: string
         type: array
       out:
+        description: required (can be empty array)
         items:
           type: string
         type: array
@@ -674,6 +710,47 @@ paths:
               type: string
             type: object
       summary: Generate a diagram
+      tags:
+      - AI
+  /ai/generate-documentation:
+    post:
+      consumes:
+      - application/json
+      description: Analyzes a DEVS model and generates description, keywords, and
+        role using AI.
+      parameters:
+      - description: Model ID to generate documentation for
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.GenerateDocumentationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Generated documentation
+          schema:
+            $ref: '#/definitions/response.GeneratedDocumentationResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Model not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: AI processing error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate model documentation
       tags:
       - AI
   /ai/generate-model:

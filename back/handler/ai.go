@@ -2,7 +2,9 @@ package handler
 
 import (
 	"context"
+	"devsforge/database"
 	"devsforge/middleware"
+	"devsforge/model"
 	"devsforge/prompt"
 	"devsforge/request"
 	"devsforge/response"
@@ -10,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/invopop/jsonschema"
@@ -23,6 +26,7 @@ func SetupAiRoutes(app *fiber.App) {
 
 	group.Post("/generate-diagram", generateDiagram)
 	group.Post("/generate-model", generateModel)
+	group.Post("/generate-documentation", generateDocumentation)
 }
 
 // Request structures
@@ -110,10 +114,10 @@ func generateDiagram(c *fiber.Ctx) error {
 	Messages = append(Messages, openai.UserMessage(fullPrompt))
 
 	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
-		Messages:    openai.F(Messages),
-		MaxTokens:   openai.Int(4000),
-		TopP:        openai.Float(0.7),
-		Temperature: openai.Float(0.9),
+		Messages:            openai.F(Messages),
+		MaxCompletionTokens: openai.Int(4000),
+		TopP:                openai.Float(0.7),
+		Temperature:         openai.Float(0.9),
 		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
 			openai.ResponseFormatJSONSchemaParam{
 				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
@@ -195,9 +199,9 @@ func generateModel(c *fiber.Ctx) error {
 			openai.SystemMessage(prompt.ModelPrompt),
 			openai.UserMessage(fullPrompt),
 		}),
-		MaxTokens:   openai.Int(4000),
-		TopP:        openai.Float(0.7),
-		Temperature: openai.Float(0.9),
+		MaxCompletionTokens: openai.Int(4000),
+		TopP:                openai.Float(0.7),
+		Temperature:         openai.Float(0.9),
 		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
 			openai.ResponseFormatJSONSchemaParam{
 				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
@@ -224,4 +228,122 @@ func generateModel(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(response)
+}
+
+// GenerateDocumentation godoc
+// @Summary Generate model documentation
+// @Description Analyzes a DEVS model and generates description, keywords, and role using AI.
+// @Tags AI
+// @Accept json
+// @Produce json
+// @Param body body request.GenerateDocumentationRequest true "Model ID to generate documentation for"
+// @Success 200 {object} response.GeneratedDocumentationResponse "Generated documentation"
+// @Failure 400 {object} map[string]string "Invalid request"
+// @Failure 404 {object} map[string]string "Model not found"
+// @Failure 500 {object} map[string]string "AI processing error"
+// @Router /ai/generate-documentation [post]
+func generateDocumentation(c *fiber.Ctx) error {
+	var req request.GenerateDocumentationRequest
+
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	if req.ModelID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Model ID is required"})
+	}
+
+	// Fetch the model from database
+	db := database.DB
+	var m model.Model
+	if err := db.First(&m, "user_id = ? AND id = ?", c.Locals("user_id").(string), req.ModelID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Model not found"})
+	}
+
+	// Build ports description
+	var portsIn, portsOut []string
+	for _, port := range m.Ports {
+		if port.Type == "in" {
+			portsIn = append(portsIn, port.ID)
+		} else {
+			portsOut = append(portsOut, port.ID)
+		}
+	}
+
+	// Build components description (for coupled models)
+	var componentsDesc string
+	if m.Type == "coupled" && len(m.Components) > 0 {
+		var compNames []string
+		for _, comp := range m.Components {
+			compNames = append(compNames, comp.ModelID)
+		}
+		componentsDesc = fmt.Sprintf("Components: %s", strings.Join(compNames, ", "))
+	}
+
+	fullPrompt := fmt.Sprintf(`
+[MODEL ANALYSIS REQUEST]
+Model Name: %s
+Model Type: %s
+Input Ports: %v
+Output Ports: %v
+%s
+
+Code:
+%s
+
+Please analyze this DEVS model and generate:
+1. A clear description of what it does
+2. Relevant keywords for search and RAG-based reuse
+3. The role (generator, transducer, or observer)
+
+Respond ONLY in JSON following the provided schema.
+`, m.Name, m.Type, portsIn, portsOut, componentsDesc, m.Code)
+
+	client, err := getOpenAIClient()
+	if err != nil {
+		log.Println("OpenAI error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	schemaParam := openai.ResponseFormatJSONSchemaJSONSchemaParam{
+		Name:        openai.F("Documentation"),
+		Description: openai.F("Model documentation with description, keywords, and role"),
+		Schema:      openai.F(GenerateSchema[response.GeneratedDocumentationResponse]()),
+		Strict:      openai.Bool(true),
+	}
+
+	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+		Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
+			openai.SystemMessage(prompt.DocumentationPrompt),
+			openai.UserMessage(fullPrompt),
+		}),
+		MaxCompletionTokens: openai.Int(1000),
+		TopP:                openai.Float(0.7),
+		Temperature:         openai.Float(0.7),
+		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
+			openai.ResponseFormatJSONSchemaParam{
+				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
+				JSONSchema: openai.F(schemaParam),
+			},
+		),
+		Model: openai.F(os.Getenv("AI_MODEL")),
+	})
+
+	if err != nil {
+		log.Println("OpenAI Chat Completion error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
+	}
+
+	if chat == nil || len(chat.Choices) == 0 {
+		log.Println("OpenAI returned empty response")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
+	}
+
+	docResponse := response.GeneratedDocumentationResponse{}
+	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &docResponse); err != nil {
+		log.Println("JSON Unmarshal error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
+	}
+
+	return c.JSON(docResponse)
 }

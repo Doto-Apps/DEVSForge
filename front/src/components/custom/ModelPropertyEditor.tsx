@@ -4,6 +4,8 @@ import {
 	AccordionItem,
 	AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -13,11 +15,18 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { useGenerateDocumentation } from "@/hooks/useGenerateDocumentation";
+import { useToast } from "@/hooks/use-toast";
 import type { ReactFlowModelData } from "@/types";
 import type { Node } from "@xyflow/react";
+import { Loader2, Sparkles, X } from "lucide-react";
+import { useState, type KeyboardEvent } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ModelParameterEditor } from "./ModelParameterEditor";
 import { PortCountEditor } from "./reactFlow/PortCountEditor";
+import { Textarea } from "../ui/textarea";
+
+const MODEL_ROLES = ["generator", "transducer", "observer"] as const;
 
 type Props = {
 	model: Node<ReactFlowModelData>;
@@ -26,6 +35,10 @@ type Props = {
 };
 
 export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
+	const [keywordInput, setKeywordInput] = useState("");
+	const { generateDocumentation, isLoading: isGenerating } = useGenerateDocumentation();
+	const { toast } = useToast();
+
 	const update = (changes: Partial<ReactFlowModelData>) => {
 		onChange?.({
 			...model,
@@ -34,6 +47,27 @@ export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 				...changes,
 			},
 		});
+	};
+
+	const addKeyword = (keyword: string) => {
+		const trimmed = keyword.trim();
+		if (trimmed && !model.data.keyword?.includes(trimmed)) {
+			update({ keyword: [...(model.data.keyword ?? []), trimmed] });
+		}
+		setKeywordInput("");
+	};
+
+	const removeKeyword = (keywordToRemove: string) => {
+		update({
+			keyword: model.data.keyword?.filter((k) => k !== keywordToRemove) ?? [],
+		});
+	};
+
+	const handleKeywordKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === "Enter" || e.key === ",") {
+			e.preventDefault();
+			addKeyword(keywordInput);
+		}
 	};
 
 	const handlePortUpdate = (
@@ -71,13 +105,50 @@ export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 		update({ parameters: params });
 	};
 
+	const handleGenerateDocumentation = async () => {
+		const result = await generateDocumentation(model.data.id);
+		if (result) {
+			update({
+				description: result.description,
+				keyword: result.keywords,
+				modelRole: result.role,
+			});
+			toast({
+				title: "Documentation generated",
+				description: "Description, keywords, and role have been updated.",
+			});
+		} else {
+			toast({
+				title: "Generation failed",
+				description: "Failed to generate documentation. Please try again.",
+				variant: "destructive",
+			});
+		}
+	};
+
 	return (
-		<div className="h-full w-full bg-card p-4 space-y-4 text-sm">
+		<div className="h-full w-full bg-card p-4 space-y-4 text-sm overflow-y-auto">
 			<Accordion type="multiple" className="w-full" defaultValue={["item-1"]}>
 				<AccordionItem value="item-1">
-					<AccordionTrigger className="font-semibold text-md">
-						Information
-					</AccordionTrigger>
+					<div className="flex items-center justify-between">
+						<AccordionTrigger className="font-semibold text-md flex-1">
+							Information
+						</AccordionTrigger>
+						<Button
+							variant="ghost"
+							size="sm"
+							onClick={handleGenerateDocumentation}
+							disabled={disabled || isGenerating}
+							className="h-8 px-2 mr-2"
+							title="Generate documentation with AI"
+						>
+							{isGenerating ? (
+								<Loader2 className="h-4 w-4 animate-spin" />
+							) : (
+								<Sparkles className="h-4 w-4" />
+							)}
+						</Button>
+					</div>
 					<AccordionContent className="flex flex-col gap-4 text-balance p-1">
 						<div>
 							<Label>Model Name</Label>
@@ -85,6 +156,68 @@ export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 								value={model.data.label}
 								onChange={(e) => update({ label: e.target.value })}
 								className="mt-1"
+								disabled={disabled}
+							/>
+						</div>
+
+						<div>
+							<Label>Model Description</Label>
+							<Textarea
+					value={model.data.description}
+					className="font-mono h-32"
+					onChange={(e) => update({ description: e.target.value })}
+					disabled={disabled}	/>
+							
+						</div>
+
+						<div>
+							<Label>Model Role</Label>
+							<Select
+								value={model.data.modelRole || ""}
+								onValueChange={(value) => update({ modelRole: value })}
+								disabled={disabled}
+							>
+								<SelectTrigger className="mt-1">
+									<SelectValue placeholder="Select a role" />
+								</SelectTrigger>
+								<SelectContent>
+									{MODEL_ROLES.map((role) => (
+										<SelectItem key={role} value={role}>
+											{role.charAt(0).toUpperCase() + role.slice(1)}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+
+						<div>
+							<Label>Keywords</Label>
+							<div className="flex flex-wrap gap-1.5 mt-1 mb-2">
+								{model.data.keyword?.map((kw) => (
+									<Badge
+										key={kw}
+										variant="secondary"
+										className="flex items-center gap-1 pr-1"
+									>
+										{kw}
+										{!disabled && (
+											<button
+												type="button"
+												onClick={() => removeKeyword(kw)}
+												className="hover:bg-muted rounded-full p-0.5"
+											>
+												<X className="h-3 w-3" />
+											</button>
+										)}
+									</Badge>
+								))}
+							</div>
+							<Input
+								value={keywordInput}
+								onChange={(e) => setKeywordInput(e.target.value)}
+								onKeyDown={handleKeywordKeyDown}
+								onBlur={() => keywordInput && addKeyword(keywordInput)}
+								placeholder="Add keyword (Enter to add)"
 								disabled={disabled}
 							/>
 						</div>

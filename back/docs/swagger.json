@@ -61,6 +61,67 @@
                 }
             }
         },
+        "/ai/generate-documentation": {
+            "post": {
+                "description": "Analyzes a DEVS model and generates description, keywords, and role using AI.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Generate model documentation",
+                "parameters": [
+                    {
+                        "description": "Model ID to generate documentation for",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GenerateDocumentationRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Generated documentation",
+                        "schema": {
+                            "$ref": "#/definitions/response.GeneratedDocumentationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Model not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "AI processing error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/ai/generate-model": {
             "post": {
                 "description": "Sends a prompt to OpenAI to generate a DEVS model code.",
@@ -1529,6 +1590,8 @@
         "json.ModelMetadata": {
             "type": "object",
             "required": [
+                "keyword",
+                "modelRole",
                 "position",
                 "style"
             ],
@@ -1542,8 +1605,17 @@
                 "backgroundColor": {
                     "type": "string"
                 },
+                "keyword": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "modelColors": {
                     "$ref": "#/definitions/json.ModelColors"
+                },
+                "modelRole": {
+                    "type": "string"
                 },
                 "parameters": {
                     "type": "array",
@@ -1900,6 +1972,18 @@
         "request.GenerateDiagramRequest": {
             "type": "object"
         },
+        "request.GenerateDocumentationRequest": {
+            "type": "object",
+            "required": [
+                "modelId"
+            ],
+            "properties": {
+                "modelId": {
+                    "type": "string",
+                    "example": "uuid-of-model"
+                }
+            }
+        },
         "request.GenerateModelRequest": {
             "type": "object",
             "required": [
@@ -2156,6 +2240,19 @@
                 }
             }
         },
+        "response.DocumentationRole": {
+            "type": "string",
+            "enum": [
+                "generator",
+                "transducer",
+                "observer"
+            ],
+            "x-enum-varnames": [
+                "DocumentationRoleGenerator",
+                "DocumentationRoleTransducer",
+                "DocumentationRoleObserver"
+            ]
+        },
         "response.Endpoint": {
             "type": "object",
             "required": [
@@ -2170,6 +2267,23 @@
                 "port": {
                     "description": "obligatoire",
                     "type": "string"
+                }
+            }
+        },
+        "response.GeneratedDocumentationResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "role": {
+                    "$ref": "#/definitions/response.DocumentationRole"
                 }
             }
         },
@@ -2209,24 +2323,20 @@
         },
         "response.Model": {
             "type": "object",
-            "required": [
-                "id",
-                "type"
-            ],
             "properties": {
                 "components": {
-                    "description": "optionnel",
+                    "description": "required (can be empty array)",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "id": {
-                    "description": "obligatoire",
+                    "description": "required",
                     "type": "string"
                 },
                 "ports": {
-                    "description": "optionnel",
+                    "description": "required",
                     "allOf": [
                         {
                             "$ref": "#/definitions/response.Ports"
@@ -2234,7 +2344,7 @@
                     ]
                 },
                 "type": {
-                    "description": "enum obligatoire",
+                    "description": "required enum",
                     "allOf": [
                         {
                             "$ref": "#/definitions/response.ModelType"
@@ -2317,12 +2427,14 @@
             "type": "object",
             "properties": {
                 "in": {
+                    "description": "required (can be empty array)",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "out": {
+                    "description": "required (can be empty array)",
                     "type": "array",
                     "items": {
                         "type": "string"
