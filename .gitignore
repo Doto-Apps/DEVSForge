@@ -51,6 +51,7 @@ out/
 web-build/
 temp/
 tmp/
+vendor/
 
 # Testing
 coverage/
@@ -73,3 +74,7 @@ local.properties
 
 # OpenAPI
 openapi.json
+
+#python 
+*.pyc
+__pycache__/

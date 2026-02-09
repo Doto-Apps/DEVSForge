@@ -1,0 +1,76 @@
+syntax = "proto3";
+
+package devsforge.devs;
+
+option go_package = "devsforge/simulator/runner/proto;devspb";
+
+import "google/protobuf/empty.proto";
+
+// =======================
+// Messages de base
+// =======================
+
+// Temps écoulé depuis la dernière transition
+message ElapsedTime {
+  double value = 1;
+}
+
+// Réponse de TimeAdvance() : sigma
+message TimeAdvanceResponse {
+  double sigma = 1;
+}
+
+// Message pour injecter une valeur dans un port d'entrée
+message InputMessage {
+  // Nom du port d'entrée (GetInPort(portName))
+  string port_name = 1;
+
+  // Valeur sérialisée en JSON (pour rester agnostique au type)
+  string value_json = 2;
+}
+
+// Valeurs produites sur un port de sortie lors de Output()
+message PortOutput {
+  string port_name = 1;
+
+  // Toutes les valeurs présentes sur ce port (sérialisées en JSON)
+  repeated string values_json = 2;
+}
+
+// Réponse de Output() : ensemble des sorties générées
+message OutputResponse {
+  repeated PortOutput outputs = 1;
+}
+
+// =======================
+// Service gRPC pour un Atomic (noms parlants)
+// =======================
+
+service AtomicModelService {
+  // Initialisation du modèle (Component.Initialize)
+  rpc Initialize(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // Fin de simulation / nettoyage (Component.Exit)
+  rpc Finalize(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // TimeAdvance() : renvoie sigma (TA)
+  rpc TimeAdvance(google.protobuf.Empty) returns (TimeAdvanceResponse);
+
+  // InternalTransition() : DeltInt
+  rpc InternalTransition(google.protobuf.Empty) returns (google.protobuf.Empty);
+
+  // ExternalTransition(e) : DeltExt
+  rpc ExternalTransition(ElapsedTime) returns (google.protobuf.Empty);
+
+  // ConfluentTransition(e) : DeltCon
+  rpc ConfluentTransition(ElapsedTime) returns (google.protobuf.Empty);
+
+  // Output() : Lambda
+  // Le wrapper lit les ports de sortie du modèle, construit OutputResponse,
+  // et peut ensuite vider les ports si c'est ta convention.
+  rpc Output(google.protobuf.Empty) returns (OutputResponse);
+
+  // Injection d'une valeur dans un port d'entrée (AddValue sur un inPort)
+  // C'est ce que le runner va appeler quand il reçoit un message pour ce modèle.
+  rpc AddInput(InputMessage) returns (google.protobuf.Empty);
+}

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"devsforge/back/config"
-	"devsforge/back/model"
+	"devsforge/config"
+	"devsforge/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

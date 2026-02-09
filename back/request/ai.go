@@ -17,3 +17,7 @@ type GenerateModelRequest struct {
 	PreviousModelsCode string `json:"previousModelsCode" validate:"required" example:"Existing model code"`
 	UserPrompt         string `json:"userPrompt" validate:"required" example:"Generate a model based on the previous code"`
 }
+
+type GenerateDocumentationRequest struct {
+	ModelID string `json:"modelId" validate:"required" example:"uuid-of-model"`
+}

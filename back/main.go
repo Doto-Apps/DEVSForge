@@ -7,12 +7,12 @@
 package main
 
 import (
-	"devsforge/back/database"
+	"devsforge/database"
 	"log"
 
-	"devsforge/back/router"
+	"devsforge/router"
 
-	_ "devsforge/back/docs"
+	_ "devsforge/docs"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"

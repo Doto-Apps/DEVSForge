@@ -1,13 +1,15 @@
 package handler
 
 import (
-	"devsforge/back/database"
-	"devsforge/back/lib"
-	"devsforge/back/middleware"
-	"devsforge/back/model"
-	"devsforge/back/request"
-	"devsforge/back/response"
-	"devsforge/back/services"
+	"fmt"
+
+	"devsforge/database"
+	"devsforge/lib"
+	"devsforge/middleware"
+	"devsforge/model"
+	"devsforge/request"
+	"devsforge/response"
+	"devsforge/services"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -164,9 +166,17 @@ func patchModel(c *fiber.Ctx) error {
 		return SendRequestError(c, fiber.StatusBadRequest, err)
 	}
 
+	// Debug log
+	fmt.Printf("DEBUG - Received metadata.ModelRole: %v\n", req.Metadata.ModelRole)
+	fmt.Printf("DEBUG - Received metadata.Keyword: %v\n", req.Metadata.Keyword)
+
 	modelUpdate := req.ToModel(model.UserID)
 
 	db.Omit("LibID", "ID", "UserID").Model(&model).UpdateColumns(modelUpdate)
+
+	if err := db.First(&model, "user_id = ? AND id = ?", c.Locals("user_id").(string), id).Error; err != nil {
+		return SendRequestError(c, fiber.StatusInternalServerError, err)
+	}
 
 	res := response.CreateModelResponse(model)
 

@@ -70,6 +70,83 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	"/ai/generate-documentation": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Generate model documentation
+		 * @description Analyzes a DEVS model and generates description, keywords, and role using AI.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Model ID to generate documentation for */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.GenerateDocumentationRequest"];
+				};
+			};
+			responses: {
+				/** @description Generated documentation */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.GeneratedDocumentationResponse"];
+					};
+				};
+				/** @description Invalid request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Model not found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description AI processing error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/ai/generate-model": {
 		parameters: {
 			query?: never;
@@ -1899,7 +1976,9 @@ export interface components {
 			alwaysShowExtraInfo?: boolean;
 			alwaysShowToolbar?: boolean;
 			backgroundColor?: string;
+			keyword: string[];
 			modelColors?: components["schemas"]["json.ModelColors"];
+			modelRole: string;
 			parameters?: components["schemas"]["json.ModelParameter"][];
 			position: components["schemas"]["json.ModelPosition"];
 			style: components["schemas"]["json.ModelStyle"];
@@ -1995,6 +2074,10 @@ export interface components {
 			workspaceId: string;
 		};
 		"request.GenerateDiagramRequest": Record<string, never>;
+		"request.GenerateDocumentationRequest": {
+			/** @example uuid-of-model */
+			modelId: string;
+		};
 		"request.GenerateModelRequest": {
 			/** @example MyModel */
 			modelName: string;
@@ -2062,11 +2145,18 @@ export interface components {
 			/** @description obligatoire */
 			models: components["schemas"]["response.Model"][];
 		};
+		/** @enum {string} */
+		"response.DocumentationRole": "generator" | "transducer" | "observer";
 		"response.Endpoint": {
 			/** @description obligatoire */
 			model: string;
 			/** @description obligatoire */
 			port: string;
+		};
+		"response.GeneratedDocumentationResponse": {
+			description?: string;
+			keywords?: string[];
+			role?: components["schemas"]["response.DocumentationRole"];
 		};
 		"response.GeneratedModelResponse": {
 			code: string;
@@ -2078,14 +2168,14 @@ export interface components {
 			username: string;
 		};
 		"response.Model": {
-			/** @description optionnel */
+			/** @description required (can be empty array) */
 			components?: string[];
-			/** @description obligatoire */
-			id: string;
-			/** @description optionnel */
+			/** @description required */
+			id?: string;
+			/** @description required */
 			ports?: components["schemas"]["response.Ports"];
-			/** @description enum obligatoire */
-			type: components["schemas"]["response.ModelType"];
+			/** @description required enum */
+			type?: components["schemas"]["response.ModelType"];
 		};
 		"response.ModelResponse": {
 			code: string;
@@ -2103,7 +2193,9 @@ export interface components {
 		/** @enum {string} */
 		"response.ModelType": "atomic" | "coupled";
 		"response.Ports": {
+			/** @description required (can be empty array) */
 			in?: string[];
+			/** @description required (can be empty array) */
 			out?: string[];
 		};
 		"response.RefreshResponse": {

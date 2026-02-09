@@ -78,7 +78,10 @@ const createReactflowModel = (
 		data: {
 			id: model.id ?? "Unnamed model",
 			modelType: model.type ?? "atomic",
+			modelRole: model.metadata.modelRole ?? "",
+			keyword: model.metadata.keyword ?? [],
 			label: model.name ?? "Unnamed model",
+			description: model.description,
 			inputPorts: model.ports
 				.filter((p) => p.type === "in")
 				.map((p) => ({ id: p.id })),

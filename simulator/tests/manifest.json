@@ -1,0 +1,12 @@
+{
+  "models": [
+    {
+      "language": "go",
+      "id": "m1-go",
+      "name": "GeneratorIncremental",
+      "code": ""
+    }
+  ],
+  "count": 1,
+  "id": "test"
+}

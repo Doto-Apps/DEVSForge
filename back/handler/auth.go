@@ -5,12 +5,12 @@ import (
 	"net/mail"
 	"time"
 
-	"devsforge/back/config"
-	"devsforge/back/database"
-	"devsforge/back/middleware"
-	"devsforge/back/model"
-	"devsforge/back/request"
-	"devsforge/back/response"
+	"devsforge/config"
+	"devsforge/database"
+	"devsforge/middleware"
+	"devsforge/model"
+	"devsforge/request"
+	"devsforge/response"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"

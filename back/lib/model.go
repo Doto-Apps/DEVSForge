@@ -1,8 +1,8 @@
 package lib
 
 import (
-	"devsforge/back/json"
-	"devsforge/back/model"
+	"devsforge/json"
+	"devsforge/model"
 	"errors"
 	"fmt"
 )

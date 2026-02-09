@@ -15,6 +15,8 @@ const getModelComponent = (
 			instanceId: nodeInNodes.id.split("/").pop() ?? "",
 			modelId: nodeInNodes.data.id,
 			instanceMetadata: {
+				modelRole: nodeInNodes.data.modelRole,
+				keyword: nodeInNodes.data.keyword,
 				position: { x: nodeInNodes.position.x, y: nodeInNodes.position.y },
 				style: {
 					height: nodeInNodes.measured?.height ?? DEFAULT_NODE_SIZE,
@@ -85,12 +87,14 @@ const nodeToModel = (
 		code: node.data.code,
 		components: comp,
 		ports: getModelPorts(node),
-		description: "",
+		description: node.data.description,
 		type: node.data.modelType,
 		metadata: {
 			position: !node.id.includes("/")
 				? { x: node.position.x, y: node.position.y }
 				: { x: 0, y: 0 },
+			modelRole: node.data.modelRole,
+			keyword: node.data.keyword,
 			style: !node.id.includes("/")
 				? {
 						height: node.measured?.height ?? DEFAULT_NODE_SIZE,

@@ -23,6 +23,7 @@ import { CreateModel } from "./pages/model/CreateModel";
 import { EditModel } from "./pages/model/EditModel";
 import { TestModel } from "./pages/model/TestModel";
 import { CreateWorkspace } from "./pages/workspace/CreateWorkspace";
+import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
 import { DnDProvider } from "./providers/DnDContext";
 
 const HomePage = () => <div>Page d'accueil</div>;
@@ -83,6 +84,8 @@ const Main = () => {
 
 				<Route path="/workspace/new" element={<CreateWorkspace />} />
 				<Route path="/workspace/:id/diagram/new" element={<CreateDiagram />} />
+
+				<Route path="/devs-generator" element={<GeneratorFlow />} />
 
 				<Route path="/" element={<TestModel />} />
 

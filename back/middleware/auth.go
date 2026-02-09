@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"devsforge/back/config"
+	"devsforge/config"
 
 	jwtware "github.com/gofiber/contrib/jwt"
 	"github.com/gofiber/fiber/v2"

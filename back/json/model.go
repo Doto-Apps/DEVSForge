@@ -1,7 +1,7 @@
 package json
 
 import (
-	"devsforge/back/enum"
+	"devsforge/enum"
 )
 
 type ModelPort struct {
@@ -71,6 +71,8 @@ type ModelMetadata struct {
 	Style               ModelStyle       `json:"style" validate:"required"`
 	Parameters          []ModelParameter `json:"parameters,omitempty"`
 	ModelColors         ModelColors      `json:"modelColors,omitempty"`
+	Keyword             []string         `json:"keyword" validate:"required"`
+	ModelRole           *string          `json:"modelRole" validate:"required"`
 }
 
 type ModelComponent struct {

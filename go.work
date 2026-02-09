@@ -1,0 +1,9 @@
+go 1.25.4
+
+use (
+	./back
+	./simulator/coordinator
+	./simulator/runner
+	./simulator/shared
+	./simulator/wrappers/go
+)

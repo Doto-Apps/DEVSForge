@@ -1,17 +1,17 @@
 # Utilise une image Node.js légère
-FROM node:18-alpine AS builder
+FROM node:20-alpine AS builder
 
 # Crée un répertoire de travail
 WORKDIR /app
 
 # Copie uniquement les fichiers nécessaires pour l'installation
-COPY package.json package-lock.json ./
+COPY package.json pnpm-lock.yaml ./
 
 # Installe les dépendances
-RUN npm install
+RUN pnpm install --frozen-lockfile
 
 COPY . .
-RUN npm run build
+RUN pnpm run build
 
 
 FROM nginx:stable-alpine
