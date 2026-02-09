@@ -19,8 +19,8 @@ import {
 	SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
 import { useToast } from "@/hooks/use-toast";
+import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
 import type { CodeGenerationPanelProps } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -50,7 +50,9 @@ export function CodeGenerationPanel({
 	const { generateCode, isLoading, error } = useGenerateModelCode();
 	const { toast } = useToast();
 	const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
-	const [selectedLanguage, setSelectedLanguage] = useState<"python" | "go">("python");
+	const [selectedLanguage, setSelectedLanguage] = useState<"python" | "go">(
+		"python",
+	);
 
 	// Only atomic models need code generation
 	const atomicModels = diagram.models.filter((m) => m.type === "atomic");
@@ -89,7 +91,11 @@ export function CodeGenerationPanel({
 			ports.push({ id: `${model.id}-${portName}`, name: portName, type: "in" });
 		}
 		for (const portName of model.ports.out) {
-			ports.push({ id: `${model.id}-${portName}`, name: portName, type: "out" });
+			ports.push({
+				id: `${model.id}-${portName}`,
+				name: portName,
+				type: "out",
+			});
 		}
 		return ports;
 	};
@@ -186,9 +192,7 @@ export function CodeGenerationPanel({
 									type="button"
 									onClick={() => setSelectedModelId(model.id)}
 									className={`w-full text-left p-2 rounded-md transition-colors flex items-center gap-2 ${
-										isSelected
-											? "bg-accent"
-											: "hover:bg-accent/50"
+										isSelected ? "bg-accent" : "hover:bg-accent/50"
 									}`}
 								>
 									<span className="flex-shrink-0">
@@ -229,9 +233,7 @@ export function CodeGenerationPanel({
 											type="button"
 											onClick={() => setSelectedModelId(model.id)}
 											className={`w-full text-left p-2 rounded-md transition-colors flex items-center gap-2 ${
-												isSelected
-													? "bg-accent"
-													: "hover:bg-accent/50"
+												isSelected ? "bg-accent" : "hover:bg-accent/50"
 											}`}
 										>
 											<span className="flex-shrink-0">
@@ -258,7 +260,7 @@ export function CodeGenerationPanel({
 					<CardHeader className="pb-2">
 						<CardTitle className="text-lg flex items-center gap-2">
 							<Code2 className="w-5 h-5" />
-						{selectedModel?.name ?? "Select a model"}
+							{selectedModel?.name ?? "Select a model"}
 						</CardTitle>
 					</CardHeader>
 					<CardContent className="text-sm text-muted-foreground">
@@ -268,14 +270,12 @@ export function CodeGenerationPanel({
 							</p>
 							{selectedModel?.ports.in.length ? (
 								<p>
-									<strong>Inputs:</strong>{" "}
-									{selectedModel.ports.in.join(", ")}
+									<strong>Inputs:</strong> {selectedModel.ports.in.join(", ")}
 								</p>
 							) : null}
 							{selectedModel?.ports.out.length ? (
 								<p>
-									<strong>Outputs:</strong>{" "}
-									{selectedModel.ports.out.join(", ")}
+									<strong>Outputs:</strong> {selectedModel.ports.out.join(", ")}
 								</p>
 							) : null}
 							{selectedModel?.dependencies.length ? (
@@ -298,7 +298,9 @@ export function CodeGenerationPanel({
 								<FormLabel>Language</FormLabel>
 								<Select
 									value={selectedLanguage}
-									onValueChange={(value: "python" | "go") => setSelectedLanguage(value)}
+									onValueChange={(value: "python" | "go") =>
+										setSelectedLanguage(value)
+									}
 								>
 									<SelectTrigger className="mt-1.5">
 										<SelectValue placeholder="Select language" />
@@ -315,9 +317,7 @@ export function CodeGenerationPanel({
 								name="prompt"
 								render={({ field }) => (
 									<FormItem className="flex-1 flex flex-col">
-										<FormLabel>
-											Describe the model behavior
-										</FormLabel>
+										<FormLabel>Describe the model behavior</FormLabel>
 										<FormControl>
 											<Textarea
 												placeholder={`Describe how ${selectedModel?.name} should behave. e.g., This model should alternate between ON and OFF states every 10 seconds...`}
@@ -331,11 +331,7 @@ export function CodeGenerationPanel({
 							/>
 
 							<div className="space-y-2 mt-4">
-								<Button
-									type="submit"
-									className="w-full"
-									disabled={isLoading}
-								>
+								<Button type="submit" className="w-full" disabled={isLoading}>
 									{isLoading ? (
 										<>
 											<Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -367,14 +363,16 @@ export function CodeGenerationPanel({
 					</Form>
 				)}
 
-				{!isCurrentModel && selectedModel?.codeGenerated && isSelectedAtomic && (
-					<div className="flex-1 flex items-center justify-center">
-						<p className="text-sm text-muted-foreground text-center">
-							This model has already been generated. You can view and edit
-							its code on the right.
-						</p>
-					</div>
-				)}
+				{!isCurrentModel &&
+					selectedModel?.codeGenerated &&
+					isSelectedAtomic && (
+						<div className="flex-1 flex items-center justify-center">
+							<p className="text-sm text-muted-foreground text-center">
+								This model has already been generated. You can view and edit its
+								code on the right.
+							</p>
+						</div>
+					)}
 
 				{/* Coupled models don't have code */}
 				{!isSelectedAtomic && (
@@ -395,7 +393,9 @@ export function CodeGenerationPanel({
 			<div className="flex-1 flex flex-col">
 				<div className="p-2 border-b bg-muted/30 flex items-center justify-between">
 					<span className="text-sm font-medium">
-						{isSelectedAtomic ? `Code: ${selectedModel?.name}` : `Structure: ${selectedModel?.name}`}
+						{isSelectedAtomic
+							? `Code: ${selectedModel?.name}`
+							: `Structure: ${selectedModel?.name}`}
 					</span>
 					{isSelectedAtomic && selectedModel?.codeGenerated && (
 						<span className="text-xs text-green-600 dark:text-green-400 flex items-center gap-1">
@@ -428,9 +428,13 @@ export function CodeGenerationPanel({
 						</div>
 					) : (
 						<div className="h-full flex flex-col items-center justify-center bg-muted/20 p-8">
-							<p className="text-lg font-medium mb-4">Coupled Model Structure</p>
+							<p className="text-lg font-medium mb-4">
+								Coupled Model Structure
+							</p>
 							<div className="text-sm text-muted-foreground space-y-2">
-								<p><strong>Components:</strong></p>
+								<p>
+									<strong>Components:</strong>
+								</p>
 								<ul className="list-disc list-inside">
 									{selectedModel?.components?.map((comp) => (
 										<li key={comp}>{comp}</li>

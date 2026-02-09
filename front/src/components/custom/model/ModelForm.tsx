@@ -79,7 +79,10 @@ export default function ModelForm({
 					description: values.description ?? "",
 					code: code,
 					type: values.type,
-					language: values.type === "coupled" ? "python" : values.language ?? "python",
+					language:
+						values.type === "coupled"
+							? "python"
+							: (values.language ?? "python"),
 					libId: libId,
 					metadata: {
 						style: {

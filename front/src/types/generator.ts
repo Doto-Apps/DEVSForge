@@ -2,7 +2,8 @@ import type { components } from "@/api/v1";
 import type { ReactFlowInput } from ".";
 
 // Types for LLM diagram responses
-export type LLMDiagramResponse = components["schemas"]["response.DiagramResponse"];
+export type LLMDiagramResponse =
+	components["schemas"]["response.DiagramResponse"];
 export type LLMModel = components["schemas"]["response.Model"];
 export type LLMConnection = components["schemas"]["response.Connection"];
 export type LLMEndpoint = components["schemas"]["response.Endpoint"];

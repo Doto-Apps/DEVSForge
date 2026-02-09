@@ -1,14 +1,21 @@
-import type { Simulation } from "@/types";
 import type { components } from "@/api/v1";
+import type { Simulation } from "@/types";
 import { useCallback, useState } from "react";
 import { useSimulationPolling } from "./useSimulationPolling";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(/\/+$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(
+	/\/+$/,
+	"",
+);
 
-type SimulationEventResponse = components["schemas"]["response.SimulationEventResponse"];
+type SimulationEventResponse =
+	components["schemas"]["response.SimulationEventResponse"];
 
 type StartSimulationResult = {
-	startSimulation: (modelId: string, maxTime?: number) => Promise<Simulation | null>;
+	startSimulation: (
+		modelId: string,
+		maxTime?: number,
+	) => Promise<Simulation | null>;
 	simulation: Simulation | null;
 	isLoading: boolean;
 	error: string | null;

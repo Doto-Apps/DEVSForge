@@ -4,8 +4,10 @@ import { useEffect, useState } from "react";
 
 // Types from OpenAPI
 export type LanguageInfo = components["schemas"]["response.LanguageInfo"];
-export type LanguagesResponse = components["schemas"]["response.LanguageListResponse"];
-export type TemplateResponse = components["schemas"]["response.LanguageTemplateResponse"];
+export type LanguagesResponse =
+	components["schemas"]["response.LanguageListResponse"];
+export type TemplateResponse =
+	components["schemas"]["response.LanguageTemplateResponse"];
 
 /**
  * Hook to fetch the list of available programming languages for DEVS models

@@ -18,13 +18,13 @@ import {
 } from "react-router-dom";
 
 import { CreateDiagram } from "./pages/diagram/CreateDiagram";
+import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
 import { CreateLibrary } from "./pages/library/CreateLibrary";
 import { CreateModel } from "./pages/model/CreateModel";
 import { EditModel } from "./pages/model/EditModel";
 import { SimulateModel } from "./pages/model/SimulateModel";
 import { TestModel } from "./pages/model/TestModel";
 import { CreateWorkspace } from "./pages/workspace/CreateWorkspace";
-import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
 import { DnDProvider } from "./providers/DnDContext";
 
 const HomePage = () => <div>Page d'accueil</div>;

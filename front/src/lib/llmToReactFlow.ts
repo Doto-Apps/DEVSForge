@@ -91,7 +91,9 @@ const buildDependencyGraph = (
  * Topological sort to determine code generation order
  * Atomic models without dependencies are generated first
  */
-const topologicalSort = (models: GeneratedModelData[]): GeneratedModelData[] => {
+const topologicalSort = (
+	models: GeneratedModelData[],
+): GeneratedModelData[] => {
 	const visited = new Set<string>();
 	const result: GeneratedModelData[] = [];
 	const modelMap = new Map(models.map((m) => [m.id, m]));
@@ -182,7 +184,9 @@ export const generatedDiagramToReactFlow = (
 			},
 			dragging: false,
 			selected: false,
-			...(isRoot ? { deletable: false } : { extent: "parent", parentId: rootModel.id }),
+			...(isRoot
+				? { deletable: false }
+				: { extent: "parent", parentId: rootModel.id }),
 		});
 	});
 
@@ -222,7 +226,10 @@ export const generatedDiagramToReactFlow = (
 export const createAtomicModelRequests = (
 	diagram: GeneratedDiagram,
 	libraryId: string,
-): { requests: components["schemas"]["request.ModelRequest"][]; idMap: Map<string, string> } => {
+): {
+	requests: components["schemas"]["request.ModelRequest"][];
+	idMap: Map<string, string>;
+} => {
 	const requests: components["schemas"]["request.ModelRequest"][] = [];
 	const idMap = new Map<string, string>(); // Map from original model name to generated UUID
 
@@ -273,7 +280,7 @@ export const createCoupledModelRequests = (
 		// Also build a map from component name to instanceId for connection mapping
 		const modelComponents: components["schemas"]["json.ModelComponent"][] = [];
 		const nameToInstanceId = new Map<string, string>(); // Map component name to instanceId
-		
+
 		if (model.components) {
 			for (const componentName of model.components) {
 				const componentId = atomicIdMap.get(componentName);
@@ -290,12 +297,13 @@ export const createCoupledModelRequests = (
 
 		// Map connections from diagram to model connections format
 		// Filter connections that are relevant to this coupled model's components
-		const modelConnections: components["schemas"]["json.ModelConnection"][] = [];
-		
+		const modelConnections: components["schemas"]["json.ModelConnection"][] =
+			[];
+
 		for (const conn of diagram.connections) {
 			const fromInstanceId = nameToInstanceId.get(conn.from.model);
 			const toInstanceId = nameToInstanceId.get(conn.to.model);
-			
+
 			// Only include connections between components of this coupled model
 			if (fromInstanceId && toInstanceId) {
 				modelConnections.push({
@@ -345,4 +353,3 @@ export const generatedDiagramToModelRequests = (
 	const { requests } = createAtomicModelRequests(diagram, libraryId);
 	return requests;
 };
-

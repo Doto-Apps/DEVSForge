@@ -1,11 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from "react";
 import type { components } from "@/api/v1";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 type SimulationResponse = components["schemas"]["response.SimulationResponse"];
-type SimulationEventResponse = components["schemas"]["response.SimulationEventResponse"];
-type SimulationEventsResponse = components["schemas"]["response.SimulationEventsResponse"];
+type SimulationEventResponse =
+	components["schemas"]["response.SimulationEventResponse"];
+type SimulationEventsResponse =
+	components["schemas"]["response.SimulationEventsResponse"];
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(/\/+$/, "");
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(
+	/\/+$/,
+	"",
+);
 
 type UseSimulationPollingOptions = {
 	/** Polling interval in ms (default: 500) */
@@ -36,7 +41,7 @@ type UseSimulationPollingResult = {
 };
 
 export const useSimulationPolling = (
-	options: UseSimulationPollingOptions = {}
+	options: UseSimulationPollingOptions = {},
 ): UseSimulationPollingResult => {
 	const { interval = 500, enabled = false, onEvents, onStatusChange } = options;
 
@@ -60,7 +65,7 @@ export const useSimulationPolling = (
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
 					},
-				}
+				},
 			);
 
 			if (!response.ok) {
@@ -80,7 +85,10 @@ export const useSimulationPolling = (
 				}
 
 				// Stop polling if simulation is done
-				if (data.simulation.status === "completed" || data.simulation.status === "failed") {
+				if (
+					data.simulation.status === "completed" ||
+					data.simulation.status === "failed"
+				) {
 					stopPolling();
 				}
 			}
@@ -93,7 +101,8 @@ export const useSimulationPolling = (
 				onEvents?.(newEvents);
 			}
 		} catch (err) {
-			const errorMessage = err instanceof Error ? err.message : "An error occurred";
+			const errorMessage =
+				err instanceof Error ? err.message : "An error occurred";
 			setError(errorMessage);
 		}
 	}, [onEvents, onStatusChange]);
@@ -114,7 +123,7 @@ export const useSimulationPolling = (
 			// Fetch immediately
 			fetchEvents();
 		},
-		[fetchEvents, interval]
+		[fetchEvents, interval],
 	);
 
 	const stopPolling = useCallback(() => {

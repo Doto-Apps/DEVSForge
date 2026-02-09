@@ -31,7 +31,7 @@ export function PortEditor({
 
 	const handleNameChange = (index: number, newName: string) => {
 		const updated = ports.map((port, i) =>
-			i === index ? { ...port, name: newName } : port
+			i === index ? { ...port, name: newName } : port,
 		);
 		onChange(updated);
 	};
