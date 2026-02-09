@@ -1,8 +1,19 @@
 import NavHeader from "@/components/nav/nav-header";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import {
+	Accordion,
+	AccordionContent,
+	AccordionItem,
+	AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import {
 	ArrowRight,
@@ -37,8 +48,9 @@ export function ModelerHome() {
 										Design, simulate, and refine DEVS models with focus.
 									</CardTitle>
 									<CardDescription className="text-base">
-										A clean workspace for atomic and coupled models, versioned libraries,
-										and fast iteration. Build structure first, then bring behavior to life.
+										A clean workspace for atomic and coupled models, versioned
+										libraries, and fast iteration. Build structure first, then
+										bring behavior to life.
 									</CardDescription>
 								</CardHeader>
 								<CardContent className="flex flex-wrap gap-3">
@@ -76,7 +88,8 @@ export function ModelerHome() {
 										<div>
 											<p className="font-medium">Atomic behavior first</p>
 											<p className="text-muted-foreground">
-												Define ports, states, and transitions before wiring large structures.
+												Define ports, states, and transitions before wiring
+												large structures.
 											</p>
 										</div>
 									</div>
@@ -85,7 +98,8 @@ export function ModelerHome() {
 										<div>
 											<p className="font-medium">Coupled composition</p>
 											<p className="text-muted-foreground">
-												Compose reusable models to keep your system modular and testable.
+												Compose reusable models to keep your system modular and
+												testable.
 											</p>
 										</div>
 									</div>
@@ -94,7 +108,8 @@ export function ModelerHome() {
 										<div>
 											<p className="font-medium">Simulation feedback</p>
 											<p className="text-muted-foreground">
-												Validate assumptions with repeatable runs and traceable results.
+												Validate assumptions with repeatable runs and traceable
+												results.
 											</p>
 										</div>
 									</div>
@@ -126,7 +141,8 @@ export function ModelerHome() {
 									<BrainCircuit className="h-5 w-5 text-primary" />
 									<CardTitle className="text-lg">AI Diagram Maker</CardTitle>
 									<CardDescription>
-										Describe the system and let the generator draft the structure.
+										Describe the system and let the generator draft the
+										structure.
 									</CardDescription>
 								</CardHeader>
 								<CardContent>
@@ -144,7 +160,8 @@ export function ModelerHome() {
 									<LayoutDashboard className="h-5 w-5 text-primary" />
 									<CardTitle className="text-lg">Workspace Setup</CardTitle>
 									<CardDescription>
-										Spin up a workspace to iterate diagrams and documentation together.
+										Spin up a workspace to iterate diagrams and documentation
+										together.
 									</CardDescription>
 								</CardHeader>
 								<CardContent>
@@ -162,7 +179,8 @@ export function ModelerHome() {
 									<PlayCircle className="h-5 w-5 text-primary" />
 									<CardTitle className="text-lg">DEVS Editor</CardTitle>
 									<CardDescription>
-										Open the online editor to refine behavior, ports, and transitions.
+										Open the online editor to refine behavior, ports, and
+										transitions.
 									</CardDescription>
 								</CardHeader>
 								<CardContent>
@@ -191,16 +209,20 @@ export function ModelerHome() {
 											<span className="font-medium">Define atomic logic</span>
 										</div>
 										<p className="text-sm text-muted-foreground">
-											Set ports, state variables, and internal/external transitions.
+											Set ports, state variables, and internal/external
+											transitions.
 										</p>
 									</div>
 									<div className="space-y-2">
 										<div className="flex items-center gap-2">
 											<Badge variant="secondary">02</Badge>
-											<span className="font-medium">Compose coupled structures</span>
+											<span className="font-medium">
+												Compose coupled structures
+											</span>
 										</div>
 										<p className="text-sm text-muted-foreground">
-											Wire atomic and coupled models into a coherent system topology.
+											Wire atomic and coupled models into a coherent system
+											topology.
 										</p>
 									</div>
 									<div className="space-y-2">
@@ -209,7 +231,8 @@ export function ModelerHome() {
 											<span className="font-medium">Simulate and iterate</span>
 										</div>
 										<p className="text-sm text-muted-foreground">
-											Run scenarios, validate assumptions, and refine behavior quickly.
+											Run scenarios, validate assumptions, and refine behavior
+											quickly.
 										</p>
 									</div>
 								</div>
@@ -219,9 +242,9 @@ export function ModelerHome() {
 								<div className="grid gap-4 md:grid-cols-[1.1fr_0.9fr]">
 									<div className="space-y-3">
 										<p className="text-sm text-muted-foreground">
-											Use the sidebar to open existing libraries and workspaces. Every
-											action stays close to the modeler flow so you can iterate without
-											context switching.
+											Use the sidebar to open existing libraries and workspaces.
+											Every action stays close to the modeler flow so you can
+											iterate without context switching.
 										</p>
 										<div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
 											<Badge variant="outline">Atomic</Badge>
@@ -233,7 +256,9 @@ export function ModelerHome() {
 									</div>
 									<Card className="bg-muted/30">
 										<CardHeader className="space-y-2">
-											<CardTitle className="text-base">Suggested Next Step</CardTitle>
+											<CardTitle className="text-base">
+												Suggested Next Step
+											</CardTitle>
 											<CardDescription>
 												Start with a library, then generate your first diagram.
 											</CardDescription>
@@ -269,22 +294,22 @@ export function ModelerHome() {
 									<AccordionItem value="ports">
 										<AccordionTrigger>Keep ports intentional</AccordionTrigger>
 										<AccordionContent>
-											Prefer a small set of expressive ports over many loosely defined ones.
-											It keeps transitions easier to reason about.
+											Prefer a small set of expressive ports over many loosely
+											defined ones. It keeps transitions easier to reason about.
 										</AccordionContent>
 									</AccordionItem>
 									<AccordionItem value="coupling">
 										<AccordionTrigger>Document coupling rules</AccordionTrigger>
 										<AccordionContent>
-											Write down why each connection exists so future updates stay safe and
-											consistent.
+											Write down why each connection exists so future updates
+											stay safe and consistent.
 										</AccordionContent>
 									</AccordionItem>
 									<AccordionItem value="simulation">
 										<AccordionTrigger>Plan simulations early</AccordionTrigger>
 										<AccordionContent>
-											Define your validation scenarios while modeling. It saves time when you
-											run the first simulation pass.
+											Define your validation scenarios while modeling. It saves
+											time when you run the first simulation pass.
 										</AccordionContent>
 									</AccordionItem>
 								</Accordion>

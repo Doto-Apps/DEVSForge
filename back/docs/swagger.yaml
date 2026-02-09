@@ -344,6 +344,16 @@ definitions:
     - name
     - workspaceId
     type: object
+  request.ExperimentalFrameRequest:
+    properties:
+      frameModelId:
+        type: string
+      targetModelId:
+        type: string
+    required:
+    - frameModelId
+    - targetModelId
+    type: object
   request.GenerateDiagramRequest:
     type: object
   request.GenerateDocumentationRequest:
@@ -573,6 +583,21 @@ definitions:
         type: string
       port:
         description: required
+        type: string
+    type: object
+  response.ExperimentalFrameResponse:
+    properties:
+      createdAt:
+        type: string
+      frameModelId:
+        type: string
+      id:
+        type: string
+      targetModelId:
+        type: string
+      updatedAt:
+        type: string
+      userId:
         type: string
     type: object
   response.GeneratedDocumentationResponse:
@@ -1229,6 +1254,121 @@ paths:
       summary: Update a diagram
       tags:
       - diagrams
+  /experimental-frame:
+    post:
+      consumes:
+      - application/json
+      description: Create an experimental frame association (target model -> coupled
+        frame model)
+      parameters:
+      - description: Experimental frame data
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.ExperimentalFrameRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.ExperimentalFrameResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create an experimental frame
+      tags:
+      - experimental-frames
+  /experimental-frame/{id}:
+    delete:
+      description: Delete an experimental frame by its ID
+      parameters:
+      - description: Experimental frame ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Delete an experimental frame
+      tags:
+      - experimental-frames
+    get:
+      description: Retrieve a single experimental frame by its ID
+      parameters:
+      - description: Experimental frame ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ExperimentalFrameResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get an experimental frame
+      tags:
+      - experimental-frames
+  /experimental-frame/model/{modelId}:
+    get:
+      description: Retrieve all experimental frames linked to a target model
+      parameters:
+      - description: Target model ID
+        in: path
+        name: modelId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.ExperimentalFrameResponse'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get experimental frames by model
+      tags:
+      - experimental-frames
   /health:
     get:
       consumes:

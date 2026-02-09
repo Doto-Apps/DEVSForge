@@ -25,6 +25,7 @@ import { CreateModel } from "./pages/model/CreateModel";
 import { EditModel } from "./pages/model/EditModel";
 import { SimulateModel } from "./pages/model/SimulateModel";
 import { TestModel } from "./pages/model/TestModel";
+import { ValidationModel } from "./pages/model/ValidationModel";
 import { CreateWorkspace } from "./pages/workspace/CreateWorkspace";
 import { DnDProvider } from "./providers/DnDContext";
 
@@ -85,6 +86,10 @@ const Main = () => {
 				<Route
 					path="/library/:libraryId/model/:modelId/simulate"
 					element={<SimulateModel />}
+				/>
+				<Route
+					path="/library/:libraryId/model/:modelId/validate"
+					element={<ValidationModel />}
 				/>
 
 				<Route path="/workspace/new" element={<CreateWorkspace />} />

@@ -18,6 +18,7 @@ import { reactflowToModel } from "@/lib/reactflowToModel";
 import { updateCodeBasedOnProperties } from "@/lib/updateCodeBasedOnProperties";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelByIdRecursive } from "@/queries/model/useGetModelByIdRecursive";
+import { useGetModels } from "@/queries/model/useGetModels";
 import type { ReactFlowInput, ReactFlowModelData } from "@/types";
 import type { Node } from "@xyflow/react";
 import { type Options, useHotkeys } from "react-hotkeys-hook";
@@ -52,6 +53,7 @@ export function EditModel() {
 				}
 			: null,
 	);
+	const { mutate: mutateModels } = useGetModels();
 	const { toast } = useToast();
 	const [structureState, { set: setStructure, undo, redo }] = useUndo<
 		ReactFlowInput | undefined
@@ -144,7 +146,7 @@ export function EditModel() {
 				title: "Modèle sauvegardé avec succès",
 			});
 
-			await mutate();
+			await Promise.all([mutate(), mutateModels()]);
 		} catch (error) {
 			toast({
 				title: "Erreur lors de la sauvegarde",
@@ -157,6 +159,10 @@ export function EditModel() {
 	const simulateModel = async (): Promise<void> => {
 		if (!modelId || !libraryId) return;
 		navigate(`/library/${libraryId}/model/${modelId}/simulate`);
+	};
+	const validateModel = async (): Promise<void> => {
+		if (!modelId || !libraryId) return;
+		navigate(`/library/${libraryId}/model/${modelId}/validate`);
 	};
 	const onChangeProperty = (updatedNode: Node<ReactFlowModelData>) => {
 		// Structure actuel : structureState.present ou structure (comme dans la réponse précédente)
@@ -228,6 +234,7 @@ export function EditModel() {
 				showModeToggle
 				saveFunction={saveModelChange}
 				simulateFunction={simulateModel}
+				validateFunction={validateModel}
 			/>
 
 			{mainModel?.data.modelType === "atomic" ? (

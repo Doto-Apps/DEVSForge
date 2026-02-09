@@ -33,6 +33,9 @@ func SetupRoutes(app *fiber.App) {
 	// Simulation
 	handler.SetupSimulationRoutes(app)
 
+	// Experimental Frame
+	handler.SetupExperimentalFrameRoutes(app)
+
 	// Languages
 	handler.SetupLanguageRoutes(app)
 

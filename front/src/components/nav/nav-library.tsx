@@ -147,7 +147,7 @@ export function NavLibrary() {
 															<Popover open={hoveredId === subItem.id}>
 																<PopoverTrigger asChild>
 																	<Link
-																		className="flex h-6 text-xs items-center"
+																		className="flex h-6 text-xs items-center gap-2"
 																		onMouseEnter={() =>
 																			onHoverModel(subItem.id ?? null)
 																		}
@@ -158,7 +158,9 @@ export function NavLibrary() {
 																		}
 																		to={`/library/${item.id}/model/${subItem.id}`}
 																	>
-																		{subItem.icon && <subItem.icon />}
+																		{subItem.icon && (
+																			<subItem.icon className="h-5 w-5 shrink-0" />
+																		)}
 																		<span>{subItem.title}</span>
 																	</Link>
 																</PopoverTrigger>

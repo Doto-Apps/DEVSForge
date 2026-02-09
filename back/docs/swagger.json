@@ -622,6 +622,175 @@
                 }
             }
         },
+        "/experimental-frame": {
+            "post": {
+                "description": "Create an experimental frame association (target model -\u003e coupled frame model)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experimental-frames"
+                ],
+                "summary": "Create an experimental frame",
+                "parameters": [
+                    {
+                        "description": "Experimental frame data",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ExperimentalFrameRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.ExperimentalFrameResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/experimental-frame/model/{modelId}": {
+            "get": {
+                "description": "Retrieve all experimental frames linked to a target model",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experimental-frames"
+                ],
+                "summary": "Get experimental frames by model",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Target model ID",
+                        "name": "modelId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.ExperimentalFrameResponse"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/experimental-frame/{id}": {
+            "get": {
+                "description": "Retrieve a single experimental frame by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experimental-frames"
+                ],
+                "summary": "Get an experimental frame",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Experimental frame ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ExperimentalFrameResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete an experimental frame by its ID",
+                "tags": [
+                    "experimental-frames"
+                ],
+                "summary": "Delete an experimental frame",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Experimental frame ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "Returns the status of the API to confirm it is running",
@@ -2329,6 +2498,21 @@
                 }
             }
         },
+        "request.ExperimentalFrameRequest": {
+            "type": "object",
+            "required": [
+                "frameModelId",
+                "targetModelId"
+            ],
+            "properties": {
+                "frameModelId": {
+                    "type": "string"
+                },
+                "targetModelId": {
+                    "type": "string"
+                }
+            }
+        },
         "request.GenerateDiagramRequest": {
             "type": "object"
         },
@@ -2663,6 +2847,29 @@
                 },
                 "port": {
                     "description": "required",
+                    "type": "string"
+                }
+            }
+        },
+        "response.ExperimentalFrameResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "frameModelId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "targetModelId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
                     "type": "string"
                 }
             }

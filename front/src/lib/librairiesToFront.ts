@@ -1,5 +1,16 @@
 import type { components } from "@/api/v1";
-import { LayoutDashboard, type LucideIcon, Square } from "lucide-react";
+import {
+	CheckCircle2,
+	GaugeCircle,
+	LayoutDashboard,
+	Square,
+	ShieldCheck,
+	Shuffle,
+	type LucideIcon,
+} from "lucide-react";
+import type { ComponentType } from "react";
+
+type SidebarIcon = ComponentType<{ className?: string }>;
 
 type Library = {
 	items: {
@@ -8,12 +19,27 @@ type Library = {
 		id?: string;
 		isActive?: boolean;
 		items?: {
-			icon?: LucideIcon;
+			icon?: SidebarIcon;
 			title: string;
 			id?: string;
 			url: string;
 		}[];
 	}[];
+};
+
+const roleIconMap: Record<string, LucideIcon> = {
+	generator: GaugeCircle,
+	transducer: Shuffle,
+	acceptor: CheckCircle2,
+	"experimental-frame": ShieldCheck,
+};
+
+const getModelIcon = (
+	model: components["schemas"]["response.ModelResponse"],
+): SidebarIcon => {
+	const role = model.metadata.modelRole?.toLowerCase?.();
+	if (role && roleIconMap[role]) return roleIconMap[role];
+	return model.type === "atomic" ? Square : LayoutDashboard;
 };
 
 export function librairiesToFront(
@@ -28,8 +54,8 @@ export function librairiesToFront(
 		items: modelData
 			.filter((model) => model.libId === lib.id)
 			.map((model) => ({
-				icon: model.type === "atomic" ? Square : LayoutDashboard,
-				title: model.name ?? "Modèle sans titre",
+				icon: getModelIcon(model),
+				title: model.name ?? "Modele sans titre",
 				id: model.id,
 				url: `/model/${model.id}`,
 			})),

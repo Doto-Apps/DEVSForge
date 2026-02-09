@@ -25,7 +25,14 @@ import { Textarea } from "../ui/textarea";
 import { ModelParameterEditor } from "./ModelParameterEditor";
 import { PortEditor } from "./reactFlow/PortEditor";
 
-const MODEL_ROLES = ["generator", "transducer", "observer"] as const;
+const MODEL_ROLES = [
+	"atomic",
+	"coupled",
+	"generator",
+	"transducer",
+	"acceptor",
+	"experimental-frame",
+] as const;
 
 type Props = {
 	model: Node<ReactFlowModelData>;
