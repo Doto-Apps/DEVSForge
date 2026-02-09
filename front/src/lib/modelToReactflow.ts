@@ -84,10 +84,10 @@ const createReactflowModel = (
 			description: model.description,
 			inputPorts: model.ports
 				.filter((p) => p.type === "in")
-				.map((p) => ({ id: p.id })),
+				.map((p) => ({ id: p.id, name: p.name })),
 			outputPorts: model.ports
 				.filter((p) => p.type === "out")
-				.map((p) => ({ id: p.id })),
+				.map((p) => ({ id: p.id, name: p.name })),
 			...(model.metadata.modelColors
 				? { reactFlowModelGraphicalData: model.metadata.modelColors }
 				: {}),

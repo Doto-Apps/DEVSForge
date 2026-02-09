@@ -22,7 +22,8 @@ export const useGenerateModelCode = (): UseGenerateModelCodeResult => {
 			const response = await client.POST("/ai/generate-model", {
 				body: {
 					modelName: request.modelName,
-					modelType: request.modelType,
+					language: request.language,
+					ports: request.ports,
 					previousModelsCode: request.previousModelsCode,
 					userPrompt: request.userPrompt,
 				},

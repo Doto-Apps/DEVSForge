@@ -59,16 +59,17 @@ func GenerateSchema[T any]() interface{} {
 }
 
 // GenerateDiagram godoc
-// @Summary Generate a diagram
-// @Description Sends a prompt to OpenAI to generate a diagram in JSON format based on a strict schema.
-// @Tags AI
-// @Accept json
-// @Produce json
-// @Param body body request.GenerateDiagramRequest true "Data required to generate a diagram"
-// @Success 200 {object} response.DiagramResponse "Generated diagram"
-// @Failure 400 {object} map[string]string "Invalid request"
-// @Failure 500 {object} map[string]string "AI processing error"
-// @Router /ai/generate-diagram [post]
+//
+//	@Summary		Generate a diagram
+//	@Description	Sends a prompt to OpenAI to generate a diagram in JSON format based on a strict schema.
+//	@Tags			AI
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		request.GenerateDiagramRequest	true	"Data required to generate a diagram"
+//	@Success		200		{object}	response.DiagramResponse		"Generated diagram"
+//	@Failure		400		{object}	map[string]string				"Invalid request"
+//	@Failure		500		{object}	map[string]string				"AI processing error"
+//	@Router			/ai/generate-diagram [post]
 func generateDiagram(c *fiber.Ctx) error {
 	var request request.GenerateDiagramRequest
 
@@ -148,16 +149,17 @@ func generateDiagram(c *fiber.Ctx) error {
 }
 
 // GenerateModel godoc
-// @Summary Generate a model
-// @Description Sends a prompt to OpenAI to generate a DEVS model code.
-// @Tags AI
-// @Accept json
-// @Produce json
-// @Param body body request.GenerateModelRequest true "Data required to generate a model"
-// @Success 200 {object} response.GeneratedModelResponse "Generated model code"
-// @Failure 400 {object} map[string]string "Invalid request"
-// @Failure 500 {object} map[string]string "AI processing error"
-// @Router /ai/generate-model [post]
+//
+//	@Summary		Generate a model
+//	@Description	Sends a prompt to OpenAI to generate a DEVS model code in Python or Go.
+//	@Tags			AI
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		request.GenerateModelRequest	true	"Data required to generate a model"
+//	@Success		200		{object}	response.GeneratedModelResponse	"Generated model code"
+//	@Failure		400		{object}	map[string]string				"Invalid request"
+//	@Failure		500		{object}	map[string]string				"AI processing error"
+//	@Router			/ai/generate-model [post]
 func generateModel(c *fiber.Ctx) error {
 	var request request.GenerateModelRequest
 
@@ -165,21 +167,43 @@ func generateModel(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
-	if request.ModelName == "" || request.ModelType == "" || request.PreviousModelsCode == "" || request.UserPrompt == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "All fields are required"})
+	if request.ModelName == "" || request.Language == "" || request.UserPrompt == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ModelName, Language, and UserPrompt are required"})
+	}
+
+	// Validate language
+	if request.Language != "python" && request.Language != "go" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Language must be 'python' or 'go'"})
+	}
+
+	// Build ports context
+	var portsContext strings.Builder
+	portsContext.WriteString("## Model Ports\n")
+	for _, port := range request.Ports {
+		portsContext.WriteString(fmt.Sprintf("- %s (%s): %s\n", port.Name, port.Type, port.ID))
+	}
+
+	// Get the appropriate prompt with template
+	systemPrompt, err := prompt.BuildModelPromptWithContext(request.Language)
+	if err != nil {
+		log.Println("Failed to build model prompt:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to prepare prompt"})
 	}
 
 	fullPrompt := fmt.Sprintf(`
-		[MODEL REQUEST]
-		Model Name: %s
-		Model Type: %s
+[MODEL REQUEST]
+Model Name: %s
+Language: %s
 
-		Previous Models Code:
-		%s
+%s
 
-		User Description: %s
-		Respond ONLY with the Python code in JSON as { "code": "your_code_here" }
-	`, request.ModelName, request.ModelType, request.PreviousModelsCode, request.UserPrompt)
+Previous Models Code:
+%s
+
+User Description: %s
+
+Respond ONLY with the %s code in JSON as { "code": "your_code_here" }
+`, request.ModelName, request.Language, portsContext.String(), request.PreviousModelsCode, request.UserPrompt, request.Language)
 
 	client, err := getOpenAIClient()
 	if err != nil {
@@ -196,7 +220,7 @@ func generateModel(c *fiber.Ctx) error {
 
 	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
 		Messages: openai.F([]openai.ChatCompletionMessageParamUnion{
-			openai.SystemMessage(prompt.ModelPrompt),
+			openai.SystemMessage(systemPrompt),
 			openai.UserMessage(fullPrompt),
 		}),
 		MaxCompletionTokens: openai.Int(4000),
@@ -231,17 +255,18 @@ func generateModel(c *fiber.Ctx) error {
 }
 
 // GenerateDocumentation godoc
-// @Summary Generate model documentation
-// @Description Analyzes a DEVS model and generates description, keywords, and role using AI.
-// @Tags AI
-// @Accept json
-// @Produce json
-// @Param body body request.GenerateDocumentationRequest true "Model ID to generate documentation for"
-// @Success 200 {object} response.GeneratedDocumentationResponse "Generated documentation"
-// @Failure 400 {object} map[string]string "Invalid request"
-// @Failure 404 {object} map[string]string "Model not found"
-// @Failure 500 {object} map[string]string "AI processing error"
-// @Router /ai/generate-documentation [post]
+//
+//	@Summary		Generate model documentation
+//	@Description	Analyzes a DEVS model and generates description, keywords, and role using AI.
+//	@Tags			AI
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		request.GenerateDocumentationRequest	true	"Model ID to generate documentation for"
+//	@Success		200		{object}	response.GeneratedDocumentationResponse	"Generated documentation"
+//	@Failure		400		{object}	map[string]string						"Invalid request"
+//	@Failure		404		{object}	map[string]string						"Model not found"
+//	@Failure		500		{object}	map[string]string						"AI processing error"
+//	@Router			/ai/generate-documentation [post]
 func generateDocumentation(c *fiber.Ctx) error {
 	var req request.GenerateDocumentationRequest
 

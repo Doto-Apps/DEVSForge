@@ -66,11 +66,12 @@ const getModelPorts = (
 	const portIn =
 		node.data.inputPorts?.map<components["schemas"]["json.ModelPort"]>((p) => ({
 			id: p.id,
+			name: p.name,
 			type: "in",
 		})) ?? [];
 	const portOut =
 		node.data.outputPorts?.map<components["schemas"]["json.ModelPort"]>(
-			(p) => ({ id: p.id, type: "out" }),
+			(p) => ({ id: p.id, name: p.name, type: "out" }),
 		) ?? [];
 
 	return [...portIn, ...portOut];

@@ -11,11 +11,18 @@ type GenerateDiagramRequest struct {
 	PastResponses []PastMessages `json:"pastMessages,omitempty" example:"[]"`
 }
 
+type PortInfo struct {
+	ID   string `json:"id" validate:"required" example:"port-1"`
+	Name string `json:"name" validate:"required" example:"input"`
+	Type string `json:"type" validate:"required,oneof=in out" example:"in"`
+}
+
 type GenerateModelRequest struct {
-	ModelName          string `json:"modelName" validate:"required" example:"MyModel"`
-	ModelType          string `json:"modelType" validate:"required" example:"DEVS"`
-	PreviousModelsCode string `json:"previousModelsCode" validate:"required" example:"Existing model code"`
-	UserPrompt         string `json:"userPrompt" validate:"required" example:"Generate a model based on the previous code"`
+	ModelName          string     `json:"modelName" validate:"required" example:"MyModel"`
+	Language           string     `json:"language" validate:"required,oneof=python go" example:"python"`
+	Ports              []PortInfo `json:"ports" validate:"required"`
+	PreviousModelsCode string     `json:"previousModelsCode" validate:"required" example:"Existing model code"`
+	UserPrompt         string     `json:"userPrompt" validate:"required" example:"Generate a model based on the previous code"`
 }
 
 type GenerateDocumentationRequest struct {

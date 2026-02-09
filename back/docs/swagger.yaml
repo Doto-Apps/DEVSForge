@@ -1,5 +1,13 @@
 basePath: /
 definitions:
+  enum.ModelLanguage:
+    enum:
+    - go
+    - python
+    type: string
+    x-enum-varnames:
+    - ModelLanguageGo
+    - ModelLanguagePython
   enum.ModelPortDirection:
     enum:
     - in
@@ -109,10 +117,13 @@ definitions:
     properties:
       id:
         type: string
+      name:
+        type: string
       type:
         $ref: '#/definitions/enum.ModelPortDirection'
     required:
     - id
+    - name
     - type
     type: object
   json.ModelPosition:
@@ -227,6 +238,8 @@ definitions:
         type: string
       id:
         type: string
+      language:
+        $ref: '#/definitions/enum.ModelLanguage'
       libId:
         type: string
       metadata:
@@ -244,6 +257,18 @@ definitions:
       userId:
         type: string
     type: object
+  model.SimulationStatus:
+    enum:
+    - pending
+    - running
+    - completed
+    - failed
+    type: string
+    x-enum-varnames:
+    - SimulationStatusPending
+    - SimulationStatusRunning
+    - SimulationStatusCompleted
+    - SimulationStatusFailed
   model.User:
     properties:
       createdAt:
@@ -331,12 +356,19 @@ definitions:
     type: object
   request.GenerateModelRequest:
     properties:
+      language:
+        enum:
+        - python
+        - go
+        example: python
+        type: string
       modelName:
         example: MyModel
         type: string
-      modelType:
-        example: DEVS
-        type: string
+      ports:
+        items:
+          $ref: '#/definitions/request.PortInfo'
+        type: array
       previousModelsCode:
         example: Existing model code
         type: string
@@ -344,8 +376,9 @@ definitions:
         example: Generate a model based on the previous code
         type: string
     required:
+    - language
     - modelName
-    - modelType
+    - ports
     - previousModelsCode
     - userPrompt
     type: object
@@ -392,6 +425,8 @@ definitions:
         type: string
       id:
         type: string
+      language:
+        $ref: '#/definitions/enum.ModelLanguage'
       libId:
         type: string
       metadata:
@@ -431,6 +466,25 @@ definitions:
     - content
     - role
     type: object
+  request.PortInfo:
+    properties:
+      id:
+        example: port-1
+        type: string
+      name:
+        example: input
+        type: string
+      type:
+        enum:
+        - in
+        - out
+        example: in
+        type: string
+    required:
+    - id
+    - name
+    - type
+    type: object
   request.RefreshRequest:
     properties:
       refreshToken:
@@ -455,6 +509,12 @@ definitions:
     - password
     - username
     type: object
+  request.SimulationStartRequest:
+    properties:
+      maxTime:
+        description: Maximum simulation time (0 = no limit)
+        type: number
+    type: object
   request.UpdateUserRequest:
     properties:
       names:
@@ -477,30 +537,24 @@ definitions:
       from:
         allOf:
         - $ref: '#/definitions/response.Endpoint'
-        description: obligatoire
+        description: required
       to:
         allOf:
         - $ref: '#/definitions/response.Endpoint'
-        description: obligatoire
-    required:
-    - from
-    - to
+        description: required
     type: object
   response.DiagramResponse:
     properties:
       connections:
-        description: obligatoire
+        description: required
         items:
           $ref: '#/definitions/response.Connection'
         type: array
       models:
-        description: obligatoire
+        description: required
         items:
           $ref: '#/definitions/response.Model'
         type: array
-    required:
-    - connections
-    - models
     type: object
   response.DocumentationRole:
     enum:
@@ -515,14 +569,11 @@ definitions:
   response.Endpoint:
     properties:
       model:
-        description: obligatoire
+        description: required
         type: string
       port:
-        description: obligatoire
+        description: required
         type: string
-    required:
-    - model
-    - port
     type: object
   response.GeneratedDocumentationResponse:
     properties:
@@ -541,6 +592,31 @@ definitions:
         type: string
     required:
     - code
+    type: object
+  response.LanguageInfo:
+    properties:
+      description:
+        type: string
+      extension:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  response.LanguageListResponse:
+    properties:
+      languages:
+        items:
+          $ref: '#/definitions/response.LanguageInfo'
+        type: array
+    type: object
+  response.LanguageTemplateResponse:
+    properties:
+      code:
+        type: string
+      language:
+        type: string
     type: object
   response.LoginResponse:
     properties:
@@ -569,9 +645,10 @@ definitions:
         description: required
         type: string
       ports:
-        allOf:
-        - $ref: '#/definitions/response.Ports'
-        description: required
+        description: required (can be empty array)
+        items:
+          $ref: '#/definitions/response.PortResponse'
+        type: array
       type:
         allOf:
         - $ref: '#/definitions/response.ModelType'
@@ -627,18 +704,26 @@ definitions:
     x-enum-varnames:
     - ModelTypeAtomic
     - ModelTypeCoupled
-  response.Ports:
+  response.PortDirection:
+    enum:
+    - in
+    - out
+    type: string
+    x-enum-varnames:
+    - PortDirectionIn
+    - PortDirectionOut
+  response.PortResponse:
     properties:
-      in:
-        description: required (can be empty array)
-        items:
-          type: string
-        type: array
-      out:
-        description: required (can be empty array)
-        items:
-          type: string
-        type: array
+      id:
+        description: unique port identifier
+        type: string
+      name:
+        description: logical port name
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/response.PortDirection'
+        description: '"in" or "out"'
     type: object
   response.RefreshResponse:
     properties:
@@ -659,6 +744,58 @@ definitions:
     - accessToken
     - refreshToken
     - user
+    type: object
+  response.SimulationEventResponse:
+    properties:
+      createdAt:
+        type: string
+      devsType:
+        type: string
+      id:
+        type: string
+      payload: {}
+      sender:
+        type: string
+      simulationId:
+        type: string
+      simulationTime:
+        type: number
+      target:
+        type: string
+    type: object
+  response.SimulationEventsResponse:
+    properties:
+      events:
+        items:
+          $ref: '#/definitions/response.SimulationEventResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      simulation:
+        $ref: '#/definitions/response.SimulationResponse'
+      total:
+        type: integer
+    type: object
+  response.SimulationResponse:
+    properties:
+      completedAt:
+        type: string
+      createdAt:
+        type: string
+      errorMessage:
+        type: string
+      id:
+        type: string
+      modelId:
+        type: string
+      startedAt:
+        type: string
+      status:
+        $ref: '#/definitions/model.SimulationStatus'
+      userId:
+        type: string
     type: object
   response.UserResponse:
     properties:
@@ -757,7 +894,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Sends a prompt to OpenAI to generate a DEVS model code.
+      description: Sends a prompt to OpenAI to generate a DEVS model code in Python
+        or Go.
       parameters:
       - description: Data required to generate a model
         in: body
@@ -1107,6 +1245,53 @@ paths:
       summary: API health check
       tags:
       - Health
+  /languages:
+    get:
+      description: Returns the list of programming languages available for DEVS models
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LanguageListResponse'
+      summary: Get available languages
+      tags:
+      - Languages
+  /languages/{lang}/template:
+    get:
+      description: Returns the atomic model code template for the specified language
+      parameters:
+      - description: Language ID (go, python)
+        in: path
+        name: lang
+        required: true
+        type: string
+      - default: MyModel
+        description: Model name to inject in template
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LanguageTemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get language template
+      tags:
+      - Languages
   /library:
     get:
       description: Retrieve a list of all libraries
@@ -1435,6 +1620,180 @@ paths:
       summary: Generate simulations files
       tags:
       - models
+  /simulation:
+    get:
+      description: Retrieve all simulations for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.SimulationResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user simulations
+      tags:
+      - simulations
+  /simulation/{modelId}:
+    post:
+      consumes:
+      - application/json
+      description: Create a new simulation for the specified model (does not start
+        it)
+      parameters:
+      - description: Model ID
+        in: path
+        name: modelId
+        required: true
+        type: string
+      - description: Simulation parameters
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/request.SimulationStartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SimulationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a simulation
+      tags:
+      - simulations
+  /simulation/{simId}:
+    get:
+      description: Retrieve a simulation by its ID
+      parameters:
+      - description: Simulation ID
+        in: path
+        name: simId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SimulationResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a simulation
+      tags:
+      - simulations
+  /simulation/{simId}/events:
+    get:
+      description: Retrieve all DEVS messages that transited during a simulation (includes
+        simulation status for polling)
+      parameters:
+      - description: Simulation ID
+        in: path
+        name: simId
+        required: true
+        type: string
+      - description: 'Maximum number of events (default: 1000)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Offset for pagination (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SimulationEventsResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get simulation events
+      tags:
+      - simulations
+  /simulation/{simId}/start:
+    post:
+      description: Start an existing simulation (call after WebSocket is connected)
+      parameters:
+      - description: Simulation ID
+        in: path
+        name: simId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SimulationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Start a simulation
+      tags:
+      - simulations
+  /simulation/model/{modelId}:
+    get:
+      description: Retrieve all simulations for a specific model
+      parameters:
+      - description: Model ID
+        in: path
+        name: modelId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.SimulationResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get simulations by model
+      tags:
+      - simulations
   /user:
     get:
       description: Retrieve a list of all user

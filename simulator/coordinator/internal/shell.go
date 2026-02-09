@@ -52,12 +52,13 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 				return
 			}
 
-			// Run from simulator root so relative paths are stable.
-			cmd := exec.Command("go", "run", "./runner/main.go",
+			// Run from runner directory so Go can find the module
+			runnerDir := filepath.Join(simDir, "runner")
+			cmd := exec.Command("go", "run", ".",
 				"--file", tmpFile.Name(),
 				"--config", configFile.Name(),
 			)
-			cmd.Dir = simDir
+			cmd.Dir = runnerDir
 			cmd.Env = append(os.Environ(), utils.EnvSimulatorRoot+"="+simDir)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr

@@ -1,8 +1,8 @@
 package response
 
 type DiagramResponse struct {
-	Models      []Model      `json:"models" validate:"required"`      // obligatoire
-	Connections []Connection `json:"connections" validate:"required"` // obligatoire
+	Models      []Model      `json:"models" jsonschema:"required"`      // required
+	Connections []Connection `json:"connections" jsonschema:"required"` // required
 }
 
 type ModelType string
@@ -13,25 +13,33 @@ const (
 )
 
 type Model struct {
-	ID         string    `json:"id" jsonschema:"required"`         // required
-	Type       ModelType `json:"type" jsonschema:"required"`       // required enum
-	Ports      Ports     `json:"ports" jsonschema:"required"`      // required
-	Components []string  `json:"components" jsonschema:"required"` // required (can be empty array)
+	ID         string         `json:"id" jsonschema:"required"`         // required
+	Type       ModelType      `json:"type" jsonschema:"required"`       // required enum
+	Ports      []PortResponse `json:"ports" jsonschema:"required"`      // required (can be empty array)
+	Components []string       `json:"components" jsonschema:"required"` // required (can be empty array)
 }
 
-type Ports struct {
-	In  []string `json:"in" jsonschema:"required"`  // required (can be empty array)
-	Out []string `json:"out" jsonschema:"required"` // required (can be empty array)
+type PortDirection string
+
+const (
+	PortDirectionIn  PortDirection = "in"
+	PortDirectionOut PortDirection = "out"
+)
+
+type PortResponse struct {
+	ID   string        `json:"id" jsonschema:"required"`                    // unique port identifier
+	Name string        `json:"name" jsonschema:"required"`                  // logical port name
+	Type PortDirection `json:"type" jsonschema:"required,enum=in,enum=out"` // "in" or "out"
 }
 
 type Connection struct {
-	From Endpoint `json:"from" validate:"required"` // obligatoire
-	To   Endpoint `json:"to" validate:"required"`   // obligatoire
+	From Endpoint `json:"from" jsonschema:"required"` // required
+	To   Endpoint `json:"to" jsonschema:"required"`   // required
 }
 
 type Endpoint struct {
-	Model string `json:"model" validate:"required"` // obligatoire
-	Port  string `json:"port" validate:"required"`  // obligatoire
+	Model string `json:"model" jsonschema:"required"` // required
+	Port  string `json:"port" jsonschema:"required"`  // required
 }
 
 type GeneratedModelResponse struct {

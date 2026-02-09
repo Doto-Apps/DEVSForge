@@ -30,6 +30,12 @@ func SetupRoutes(app *fiber.App) {
 	// Workspace
 	handler.SetupWorkspaceRoutes(app)
 
+	// Simulation
+	handler.SetupSimulationRoutes(app)
+
+	// Languages
+	handler.SetupLanguageRoutes(app)
+
 	// AI
 	handler.SetupAiRoutes(app)
 }

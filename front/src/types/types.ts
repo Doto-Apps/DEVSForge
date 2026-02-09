@@ -6,7 +6,7 @@ export type ReactFlowInput = {
 	edges: Edge<EdgeData>[];
 };
 
-export type ReactFlowPort = { id: string };
+export type ReactFlowPort = { id: string; name: string };
 
 export type ReactFlowModelData = {
 	id: string;

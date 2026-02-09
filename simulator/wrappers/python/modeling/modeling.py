@@ -281,7 +281,8 @@ class Atomic(Component, ABC):
 
 @dataclass
 class RunnableModelPortCfg:
-    id: str        # ID du port (servira pour id + name du Port)
+    id: str        # ID unique du port
+    name: str      # Nom du port (utilisé par get_port_by_name)
     type: str      # "in" / "out"
 
 
@@ -295,11 +296,11 @@ class RunnableModelCfg:
 def new_atomic_from_cfg(cfg: RunnableModelCfg, atomic_cls: type[Atomic]) -> Atomic:
     """
     Équivalent de NewAtomic(cfg) côté Python :
-    - crée les Ports à partir du cfg (id & name = cfg.Ports[i].ID, type = "in"/"out")
+    - crée les Ports à partir du cfg
     - instancie la classe Atomic avec id/name/ports.
     """
     ports = [
-        Port(id=p.id, name=p.id, port_type=p.type, values=[])
+        Port(id=p.id, name=p.name, port_type=p.type, values=[])
         for p in cfg.ports
     ]
     return atomic_cls(id=cfg.id, name=cfg.name, ports=ports)

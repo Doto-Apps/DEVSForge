@@ -1,0 +1,58 @@
+package main
+
+import (
+	modeling "devsforge-wrapper/modeling"
+	"encoding/json"
+)
+
+type {{.Name}} struct {
+	modeling.Atomic
+	// Ajoutez vos paramètres ici
+}
+
+func NewModel(cfg modeling.RunnableModel) modeling.Atomic {
+	return &{{.Name}}{
+		Atomic: modeling.NewAtomic(cfg),
+	}
+}
+
+// Initialize est appelée avant la simulation.
+func (m *{{.Name}}) Initialize() {
+	m.HoldIn("active", 1.0)
+}
+
+// Exit est appelée après la simulation.
+func (m *{{.Name}}) Exit() {
+	// Nettoyage si nécessaire
+}
+
+// DeltInt : transition interne
+func (m *{{.Name}}) DeltInt() {
+	m.Passivate()
+}
+
+// DeltExt : transition externe
+func (m *{{.Name}}) DeltExt(e float64) {
+	m.Continue(e)
+}
+
+// DeltCon : transition confluente (interne + externe simultanées)
+func (m *{{.Name}}) DeltCon(e float64) {
+	m.DeltInt()
+}
+
+// Lambda : fonction de sortie
+func (m *{{.Name}}) Lambda() {
+	outPort, err := m.GetPortByName("out")
+	if err != nil {
+		return
+	}
+
+	payload, err := json.Marshal(map[string]string{
+		"msg": "hello",
+	})
+	if err != nil {
+		return
+	}
+	outPort.AddValue(payload)
+}

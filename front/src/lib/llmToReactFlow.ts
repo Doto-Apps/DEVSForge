@@ -20,19 +20,32 @@ export const llmResponseToGeneratedDiagram = (
 	// Build dependency graph to determine order
 	const dependencyGraph = buildDependencyGraph(response);
 
-	const models: GeneratedModelData[] = response.models.map((model) => ({
-		id: model.id,
-		name: model.id, // Name is ID in LLM response
-		type: model.type,
-		ports: {
-			in: model.ports?.in ?? [],
-			out: model.ports?.out ?? [],
-		},
-		components: model.components,
-		code: undefined,
-		codeGenerated: false,
-		dependencies: dependencyGraph.get(model.id) ?? [],
-	}));
+	const models: GeneratedModelData[] = response.models.map((model) => {
+		// Convert new port format [{id, name, type}] to old format {in: [], out: []}
+		const inPorts: string[] = [];
+		const outPorts: string[] = [];
+		for (const port of model.ports ?? []) {
+			if (port.type === "in") {
+				inPorts.push(port.name);
+			} else if (port.type === "out") {
+				outPorts.push(port.name);
+			}
+		}
+
+		return {
+			id: model.id,
+			name: model.id, // Name is ID in LLM response
+			type: model.type,
+			ports: {
+				in: inPorts,
+				out: outPorts,
+			},
+			components: model.components,
+			code: undefined,
+			codeGenerated: false,
+			dependencies: dependencyGraph.get(model.id) ?? [],
+		};
+	});
 
 	// Sort models by topological order (models without dependencies first)
 	const sortedModels = topologicalSort(models);

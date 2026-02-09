@@ -23,13 +23,13 @@ func SetupDiagramRoutes(app *fiber.App) {
 }
 
 // getAllDiagrams retrieves all diagrams
-// @Summary Get all diagrams
-// @Description Retrieve a list of all diagrams
-// @Tags diagrams
-// @Produce json
-// @Success 200 {array} model.Diagram
-// @Failure 500 {object} map[string]interface{}
-// @Router /diagram [get]
+//	@Summary		Get all diagrams
+//	@Description	Retrieve a list of all diagrams
+//	@Tags			diagrams
+//	@Produce		json
+//	@Success		200	{array}		model.Diagram
+//	@Failure		500	{object}	map[string]interface{}
+//	@Router			/diagram [get]
 func getAllDiagrams(c *fiber.Ctx) error {
 	db := database.DB
 	var Diagrams []model.Diagram
@@ -38,14 +38,14 @@ func getAllDiagrams(c *fiber.Ctx) error {
 }
 
 // getDiagram retrieves a diagram by ID
-// @Summary Get a diagram by ID
-// @Description Retrieve a single diagram by its ID
-// @Tags diagrams
-// @Produce json
-// @Param id path string true "Diagram ID"
-// @Success 200 {object} model.Diagram
-// @Failure 404 {object} map[string]interface{}
-// @Router /diagram/{id} [get]
+//	@Summary		Get a diagram by ID
+//	@Description	Retrieve a single diagram by its ID
+//	@Tags			diagrams
+//	@Produce		json
+//	@Param			id	path		string	true	"Diagram ID"
+//	@Success		200	{object}	model.Diagram
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/diagram/{id} [get]
 func getDiagram(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB
@@ -58,16 +58,16 @@ func getDiagram(c *fiber.Ctx) error {
 }
 
 // createDiagram creates a new diagram
-// @Summary Create a diagram
-// @Description Create a new diagram entry
-// @Tags diagrams
-// @Accept json
-// @Produce json
-// @Param diagram body request.DiagramRequest true "Diagram data"
-// @Success 201 {object} model.Diagram
-// @Failure 400 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /diagram [post]
+//	@Summary		Create a diagram
+//	@Description	Create a new diagram entry
+//	@Tags			diagrams
+//	@Accept			json
+//	@Produce		json
+//	@Param			diagram	body		request.DiagramRequest	true	"Diagram data"
+//	@Success		201		{object}	model.Diagram
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Router			/diagram [post]
 func createDiagram(c *fiber.Ctx) error {
 	db := database.DB
 	req := new(request.DiagramRequest)
@@ -118,17 +118,17 @@ func createDiagram(c *fiber.Ctx) error {
 }
 
 // patchDiagram updates an existing diagram by ID
-// @Summary Update a diagram
-// @Description Update an existing diagram with partial data
-// @Tags diagrams
-// @Accept json
-// @Produce json
-// @Param id path string true "Diagram ID"
-// @Param updateData body request.DiagramRequest true "Fields to update"
-// @Success 200 {object} model.Diagram
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Router /diagram/{id} [patch]
+//	@Summary		Update a diagram
+//	@Description	Update an existing diagram with partial data
+//	@Tags			diagrams
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string					true	"Diagram ID"
+//	@Param			updateData	body		request.DiagramRequest	true	"Fields to update"
+//	@Success		200			{object}	model.Diagram
+//	@Failure		400			{object}	map[string]interface{}
+//	@Failure		404			{object}	map[string]interface{}
+//	@Router			/diagram/{id} [patch]
 func patchDiagram(c *fiber.Ctx) error {
 	db := database.DB
 	id := c.Params("id")
@@ -149,13 +149,13 @@ func patchDiagram(c *fiber.Ctx) error {
 }
 
 // deleteDiagram deletes a diagram by ID
-// @Summary Delete a diagram
-// @Description Delete a diagram by its ID
-// @Tags diagrams
-// @Param id path string true "Diagram ID"
-// @Success 204 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Router /diagram/{id} [delete]
+//	@Summary		Delete a diagram
+//	@Description	Delete a diagram by its ID
+//	@Tags			diagrams
+//	@Param			id	path		string	true	"Diagram ID"
+//	@Success		204	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/diagram/{id} [delete]
 func deleteDiagram(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB

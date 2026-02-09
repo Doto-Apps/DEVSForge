@@ -51,7 +51,7 @@ func ConnectDB() {
 
 	DB.Session(&gorm.Session{
 		Logger: logger.Default.LogMode(logger.Warn),
-	}).AutoMigrate(&model.User{}, &model.Library{}, &model.Diagram{}, &model.Workspace{}, &model.Model{})
+	}).AutoMigrate(&model.User{}, &model.Library{}, &model.Diagram{}, &model.Workspace{}, &model.Model{}, &model.Simulation{}, &model.SimulationEvent{})
 
 	DB.Config.Logger = currentLogger
 }

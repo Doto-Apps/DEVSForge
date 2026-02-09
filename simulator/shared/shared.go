@@ -12,6 +12,7 @@ const (
 
 type RunnableModelPort struct {
 	ID   string                  `json:"id" validate:"required"`
+	Name string                  `json:"name" validate:"required"`
 	Type enum.ModelPortDirection `json:"type" validate:"required"`
 }
 
@@ -56,4 +57,5 @@ type RunnableManifest struct {
 	Models       []*RunnableModel
 	Count        int
 	SimulationID string
+	MaxTime      float64 `json:"maxTime,omitempty"` // Maximum simulation time (0 = no limit)
 }

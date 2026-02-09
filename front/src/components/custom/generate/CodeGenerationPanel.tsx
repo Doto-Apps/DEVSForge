@@ -11,6 +11,13 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
 import { useToast } from "@/hooks/use-toast";
@@ -43,6 +50,7 @@ export function CodeGenerationPanel({
 	const { generateCode, isLoading, error } = useGenerateModelCode();
 	const { toast } = useToast();
 	const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+	const [selectedLanguage, setSelectedLanguage] = useState<"python" | "go">("python");
 
 	// Only atomic models need code generation
 	const atomicModels = diagram.models.filter((m) => m.type === "atomic");
@@ -73,12 +81,26 @@ export function CodeGenerationPanel({
 		return dependencyCodes || "# No previous models";
 	};
 
+	// Convert ports from old format {in: [], out: []} to new format [{id, name, type}]
+	const convertPorts = (model: typeof currentModel) => {
+		if (!model) return [];
+		const ports: { id: string; name: string; type: "in" | "out" }[] = [];
+		for (const portName of model.ports.in) {
+			ports.push({ id: `${model.id}-${portName}`, name: portName, type: "in" });
+		}
+		for (const portName of model.ports.out) {
+			ports.push({ id: `${model.id}-${portName}`, name: portName, type: "out" });
+		}
+		return ports;
+	};
+
 	const handleGenerateCode = async (values: z.infer<typeof promptSchema>) => {
 		if (!currentModel) return;
 
 		const code = await generateCode({
 			modelName: currentModel.name,
-			modelType: currentModel.type,
+			language: selectedLanguage,
+			ports: convertPorts(currentModel),
 			previousModelsCode: getPreviousModelsCode(),
 			userPrompt: values.prompt,
 		});
@@ -272,6 +294,22 @@ export function CodeGenerationPanel({
 							onSubmit={form.handleSubmit(handleGenerateCode)}
 							className="flex-1 flex flex-col"
 						>
+							<div className="mb-4">
+								<FormLabel>Language</FormLabel>
+								<Select
+									value={selectedLanguage}
+									onValueChange={(value: "python" | "go") => setSelectedLanguage(value)}
+								>
+									<SelectTrigger className="mt-1.5">
+										<SelectValue placeholder="Select language" />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="python">Python</SelectItem>
+										<SelectItem value="go">Go</SelectItem>
+									</SelectContent>
+								</Select>
+							</div>
+
 							<FormField
 								control={form.control}
 								name="prompt"

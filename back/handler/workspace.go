@@ -21,12 +21,12 @@ func SetupWorkspaceRoutes(app *fiber.App) {
 }
 
 // getAllWorkspaces retrieves a list of all workspace
-// @Summary Get all workspace
-// @Description Retrieve a list of all workspace
-// @Tags workspace
-// @Produce json
-// @Success 200 {array} model.Workspace
-// @Router /workspace [get]
+//	@Summary		Get all workspace
+//	@Description	Retrieve a list of all workspace
+//	@Tags			workspace
+//	@Produce		json
+//	@Success		200	{array}	model.Workspace
+//	@Router			/workspace [get]
 func getAllWorkspaces(c *fiber.Ctx) error {
 	db := database.DB
 	var Workspaces []model.Workspace
@@ -35,14 +35,14 @@ func getAllWorkspaces(c *fiber.Ctx) error {
 }
 
 // getWorkspace retrieves a single workspace by its ID
-// @Summary Get a workspace by ID
-// @Description Retrieve a single workspace by its ID
-// @Tags workspace
-// @Produce json
-// @Param id path string true "Workspace ID"
-// @Success 200 {object} model.Workspace
-// @Failure 404 {object} map[string]interface{}
-// @Router /workspace/{id} [get]
+//	@Summary		Get a workspace by ID
+//	@Description	Retrieve a single workspace by its ID
+//	@Tags			workspace
+//	@Produce		json
+//	@Param			id	path		string	true	"Workspace ID"
+//	@Success		200	{object}	model.Workspace
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/workspace/{id} [get]
 func getWorkspace(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB
@@ -55,15 +55,15 @@ func getWorkspace(c *fiber.Ctx) error {
 }
 
 // createWorkspace creates a new workspace
-// @Summary Create a new workspace
-// @Description Create a new workspace and store it in the database
-// @Tags workspace
-// @Accept json
-// @Produce json
-// @Param workspace body request.WorkspaceRequest true "Workspace object"
-// @Success 201 {object} model.Workspace
-// @Failure 500 {object} map[string]interface{}
-// @Router /workspace [post]
+//	@Summary		Create a new workspace
+//	@Description	Create a new workspace and store it in the database
+//	@Tags			workspace
+//	@Accept			json
+//	@Produce		json
+//	@Param			workspace	body		request.WorkspaceRequest	true	"Workspace object"
+//	@Success		201			{object}	model.Workspace
+//	@Failure		500			{object}	map[string]interface{}
+//	@Router			/workspace [post]
 func createWorkspace(c *fiber.Ctx) error {
 	db := database.DB
 	req := new(request.WorkspaceRequest)
@@ -82,13 +82,13 @@ func createWorkspace(c *fiber.Ctx) error {
 }
 
 // deleteWorkspace deletes a workspace by its ID
-// @Summary Delete a workspace by ID
-// @Description Delete an existing workspace by its ID
-// @Tags workspace
-// @Param id path string true "Workspace ID"
-// @Success 204 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Router /workspace/{id} [delete]
+//	@Summary		Delete a workspace by ID
+//	@Description	Delete an existing workspace by its ID
+//	@Tags			workspace
+//	@Param			id	path		string	true	"Workspace ID"
+//	@Success		204	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/workspace/{id} [delete]
 func deleteWorkspace(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB
@@ -103,17 +103,17 @@ func deleteWorkspace(c *fiber.Ctx) error {
 }
 
 // patchWorkspace updates an existing workspace by its ID
-// @Summary Update a workspace
-// @Description Update an existing workspace with partial data
-// @Tags workspace
-// @Accept json
-// @Produce json
-// @Param id path string true "Workspace ID"
-// @Param workspace body request.WorkspaceRequest true "Partial workspace update"
-// @Success 200 {object} model.Workspace
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Router /workspace/{id} [patch]
+//	@Summary		Update a workspace
+//	@Description	Update an existing workspace with partial data
+//	@Tags			workspace
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string						true	"Workspace ID"
+//	@Param			workspace	body		request.WorkspaceRequest	true	"Partial workspace update"
+//	@Success		200			{object}	model.Workspace
+//	@Failure		400			{object}	map[string]interface{}
+//	@Failure		404			{object}	map[string]interface{}
+//	@Router			/workspace/{id} [patch]
 func patchWorkspace(c *fiber.Ctx) error {
 	db := database.DB
 	id := c.Params("id")

@@ -20,8 +20,11 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - ./back:/app
-      - .env.back:/app/.env.back
+      - ./back:/app/back
+      - ./simulator/shared:/app/simulator/shared
+      - ./go.work:/app/go.work
+      - .env.back:/app/back/.env.back
+    working_dir: /app/back
     command: air
     depends_on:
       db:
@@ -30,7 +33,7 @@ services:
       watch:
         - action: sync
           path: ./back
-          target: /app
+          target: /app/back
   db:
     image: postgres:alpine
     env_file:

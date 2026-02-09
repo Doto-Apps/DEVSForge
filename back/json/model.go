@@ -6,6 +6,7 @@ import (
 
 type ModelPort struct {
 	ID   string                  `json:"id" validate:"required"`
+	Name string                  `json:"name" validate:"required"`
 	Type enum.ModelPortDirection `json:"type" validate:"required"`
 }
 

@@ -11,6 +11,7 @@ type ModelRequest struct {
 	LibID       *string                `json:"libId"`
 	Name        string                 `json:"name" validate:"required"`
 	Type        enum.ModelType         `json:"type" validate:"required"`
+	Language    enum.ModelLanguage     `json:"language"`
 	Description string                 `json:"description" validate:"required"`
 	Code        string                 `json:"code" validate:"required"`
 	Components  []json.ModelComponent  `json:"components" validate:"required"`
@@ -34,6 +35,7 @@ func (req ModelRequest) ToModel(userId string) model.Model {
 		Name:        req.Name,
 		Description: req.Description,
 		Type:        req.Type,
+		Language:    req.Language,
 		Code:        req.Code,
 		UserID:      userId,
 		Components:  components,

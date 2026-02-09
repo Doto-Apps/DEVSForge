@@ -1,6 +1,6 @@
 import { Loader } from "lucide-react";
 import { useCallback, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { client } from "@/api/client.ts";
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
@@ -36,6 +36,7 @@ export function EditModel() {
 		libraryId: string;
 		modelId: string;
 	}>();
+	const navigate = useNavigate();
 
 	const { data, error, isLoading, mutate } = useGetModelByIdRecursive(
 		modelId
@@ -154,25 +155,8 @@ export function EditModel() {
 	};
 
 	const simulateModel = async (): Promise<void> => {
-		if (!structure || !modelId) return;
-
-		try {
-			const response = await client.GET("/model/{id}/simulate", {
-				params: { path: { id: modelId } },
-			});
-
-			if (!response.data) {
-				throw new Error("No data received from API");
-			}
-
-			console.log(response.data);
-		} catch (error) {
-			toast({
-				title: "Erreur lors de la simulation",
-				description: (error as Error).message,
-				variant: "destructive",
-			});
-		}
+		if (!modelId || !libraryId) return;
+		navigate(`/library/${libraryId}/model/${modelId}/simulate`);
 	};
 	const onChangeProperty = (updatedNode: Node<ReactFlowModelData>) => {
 		// Structure actuel : structureState.present ou structure (comme dans la réponse précédente)

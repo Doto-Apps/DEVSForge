@@ -9,19 +9,35 @@ import { Form } from "@/components/form/Form";
 import { FormSubmitError } from "@/components/form/FormSubmitError";
 import { InputField } from "@/components/form/InputField";
 import { RadioGroupField } from "@/components/form/RadioGroupField";
+import { SelectField } from "@/components/form/SelectField";
 import { Submit } from "@/components/form/Submit";
 import { TextareaField } from "@/components/form/TextareaField";
+import { SelectItem } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { fetchLanguageTemplate, useGetLanguages } from "@/hooks/useLanguages";
 import { useGetModels } from "@/queries/model/useGetModels";
-import { defaultPythonCode } from "@/staticModel/defaultPythonCode";
 
-const formSchema = z.object({
-	name: z.string().min(3, {
-		message: "The name must be at least 3 characters long.",
-	}),
-	description: z.string().optional(),
-	type: z.enum(["atomic", "coupled"]),
-});
+const formSchema = z
+	.object({
+		name: z.string().min(3, {
+			message: "The name must be at least 3 characters long.",
+		}),
+		description: z.string().optional(),
+		type: z.enum(["atomic", "coupled"]),
+		language: z.string().optional(),
+	})
+	.refine(
+		(data) => {
+			if (data.type === "atomic") {
+				return data.language && data.language.length > 0;
+			}
+			return true;
+		},
+		{
+			message: "Please select a language.",
+			path: ["language"],
+		},
+	);
 
 const defaultSize = 200;
 
@@ -33,6 +49,7 @@ export default function ModelForm({
 	libId: string;
 }) {
 	const { toast } = useToast();
+	const { data: languagesData } = useGetLanguages();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -40,18 +57,29 @@ export default function ModelForm({
 			name: "",
 			description: "",
 			type: "atomic",
+			language: "",
 		},
 	});
 
 	const { mutate } = useGetModels();
+
+	const selectedType = form.watch("type");
+
 	const onSubmit = async (values: z.infer<typeof formSchema>) => {
 		try {
+			// Fetch the code template based on the selected language
+			let code = "";
+			if (values.type === "atomic" && values.language) {
+				code = await fetchLanguageTemplate(values.language, values.name);
+			}
+
 			const response = await client.POST("/model", {
 				body: {
 					name: values.name,
 					description: values.description ?? "",
-					code: values.type === "atomic" ? defaultPythonCode(values.name) : "",
+					code: code,
 					type: values.type,
+					language: values.type === "coupled" ? "python" : values.language ?? "python",
 					libId: libId,
 					metadata: {
 						style: {
@@ -120,6 +148,21 @@ export default function ModelForm({
 						{ value: "coupled", label: "Coupled" },
 					]}
 				/>
+				{selectedType === "atomic" && (
+					<SelectField
+						control={form.control}
+						name="language"
+						label="Language"
+						description="Choose the programming language for your model."
+						placeholder="Select a language"
+					>
+						{languagesData?.languages.map((lang) => (
+							<SelectItem key={lang.id} value={lang.id}>
+								{lang.name} - {lang.description}
+							</SelectItem>
+						))}
+					</SelectField>
+				)}
 				<FormSubmitError />
 				<Submit>Create model</Submit>
 			</Form>

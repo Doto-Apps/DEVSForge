@@ -1,8 +1,8 @@
-// @title Easy DEVS API
-// @version 1.0
-// @description This is the API documentation for Easy DEVS.
-// @host localhost:3000
-// @BasePath /
+//	@title			Easy DEVS API
+//	@version		1.0
+//	@description	This is the API documentation for Easy DEVS.
+//	@host			localhost:3000
+//	@BasePath		/
 
 package main
 

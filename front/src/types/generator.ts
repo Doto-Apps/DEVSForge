@@ -6,7 +6,7 @@ export type LLMDiagramResponse = components["schemas"]["response.DiagramResponse
 export type LLMModel = components["schemas"]["response.Model"];
 export type LLMConnection = components["schemas"]["response.Connection"];
 export type LLMEndpoint = components["schemas"]["response.Endpoint"];
-export type LLMPorts = components["schemas"]["response.Ports"];
+export type LLMPortResponse = components["schemas"]["response.PortResponse"];
 
 // Request types
 export type GenerateDiagramRequest = {
@@ -14,9 +14,16 @@ export type GenerateDiagramRequest = {
 	userPrompt: string;
 };
 
+export type PortInfo = {
+	id: string;
+	name: string;
+	type: "in" | "out";
+};
+
 export type GenerateModelCodeRequest = {
 	modelName: string;
-	modelType: "atomic" | "coupled";
+	language: "python" | "go";
+	ports: PortInfo[];
 	previousModelsCode: string;
 	userPrompt: string;
 };
