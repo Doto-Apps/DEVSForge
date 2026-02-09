@@ -16,25 +16,25 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useGenerateEFStructure } from "@/hooks/useGenerateEFStructure";
 import { useToast } from "@/hooks/use-toast";
+import { useGenerateEFStructure } from "@/hooks/useGenerateEFStructure";
 import {
 	replaceGeneratedMutPlaceholder,
 	validateGeneratedMutConnections,
 } from "@/lib/llmToReactFlow";
-import type { GeneratedDiagram } from "@/types";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetExperimentalFramesByModel } from "@/queries/model/useGetExperimentalFramesByModel";
 import { useGetModelById } from "@/queries/model/useGetModelById";
 import { useGetModels } from "@/queries/model/useGetModels";
+import type { GeneratedDiagram } from "@/types";
 import {
 	CheckCircle2,
 	GaugeCircle,
 	Loader,
 	Plus,
 	ShieldCheck,
-	Sparkles,
 	Shuffle,
+	Sparkles,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -298,7 +298,9 @@ export function ValidationModel() {
 			return {
 				...previousDiagram,
 				models: previousDiagram.models.map((model) =>
-					model.id === modelId ? { ...model, code, codeGenerated: true } : model,
+					model.id === modelId
+						? { ...model, code, codeGenerated: true }
+						: model,
 				),
 			};
 		});
@@ -532,9 +534,7 @@ export function ValidationModel() {
 										</Button>
 										<Button
 											onClick={handleSaveAssistedExperimentalFrame}
-											disabled={
-												isSavingAssisted || !isAICodeGenerationComplete
-											}
+											disabled={isSavingAssisted || !isAICodeGenerationComplete}
 										>
 											{isSavingAssisted ? "Saving..." : "Save assisted EF"}
 										</Button>

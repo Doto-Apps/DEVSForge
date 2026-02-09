@@ -155,7 +155,10 @@ const recomputeGeneratedModelDependencies = (
 		if (!sourceModelID || !targetModelID || sourceModelID === targetModelID) {
 			continue;
 		}
-		if (!knownModelIDs.has(sourceModelID) || !knownModelIDs.has(targetModelID)) {
+		if (
+			!knownModelIDs.has(sourceModelID) ||
+			!knownModelIDs.has(targetModelID)
+		) {
 			continue;
 		}
 
@@ -185,7 +188,9 @@ export const validateGeneratedMutConnections = (
 
 	const modelIDs = new Set(diagram.models.map((model) => model.id));
 	if (!modelIDs.has(modelUnderTestID)) {
-		errors.push(`MUT validation failed: model "${modelUnderTestID}" not found.`);
+		errors.push(
+			`MUT validation failed: model "${modelUnderTestID}" not found.`,
+		);
 	}
 
 	const { inPorts, outPorts } = getTargetPortsByDirection(targetModel);
@@ -247,11 +252,15 @@ export const replaceGeneratedMutPlaceholder = (
 	if (!mutPlaceholderID) {
 		return {
 			diagram,
-			errors: ["Unable to replace MUT: modelUnderTestId is missing in AI output."],
+			errors: [
+				"Unable to replace MUT: modelUnderTestId is missing in AI output.",
+			],
 		};
 	}
 
-	const mutExists = diagram.models.some((model) => model.id === mutPlaceholderID);
+	const mutExists = diagram.models.some(
+		(model) => model.id === mutPlaceholderID,
+	);
 	if (!mutExists) {
 		return {
 			diagram,
@@ -284,7 +293,8 @@ export const replaceGeneratedMutPlaceholder = (
 			.map((component) => remapModelID(component.modelId))
 			.filter(
 				(componentModelID) =>
-					knownModelIDs.has(componentModelID) && componentModelID !== targetModelID,
+					knownModelIDs.has(componentModelID) &&
+					componentModelID !== targetModelID,
 			),
 	);
 
