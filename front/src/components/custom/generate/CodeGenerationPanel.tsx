@@ -46,6 +46,8 @@ export function CodeGenerationPanel({
 	onCodeGenerated,
 	onModelValidated,
 	onCodeChange,
+	atomicModelFilter,
+	excludeFromContextModelIds = [],
 }: CodeGenerationPanelProps) {
 	const { generateCode, isLoading, error } = useGenerateModelCode();
 	const { toast } = useToast();
@@ -53,9 +55,12 @@ export function CodeGenerationPanel({
 	const [selectedLanguage, setSelectedLanguage] = useState<"python" | "go">(
 		"python",
 	);
+	const excludedFromContext = new Set(excludeFromContextModelIds);
 
 	// Only atomic models need code generation
-	const atomicModels = diagram.models.filter((m) => m.type === "atomic");
+	const atomicModels = diagram.models.filter(
+		(m) => m.type === "atomic" && (atomicModelFilter?.(m) ?? true),
+	);
 	const coupledModels = diagram.models.filter((m) => m.type === "coupled");
 	const currentModel = atomicModels[currentModelIndex];
 
@@ -76,7 +81,12 @@ export function CodeGenerationPanel({
 	const getPreviousModelsCode = (): string => {
 		const dependencyIds = currentModel?.dependencies ?? [];
 		const dependencyCodes = diagram.models
-			.filter((m) => dependencyIds.includes(m.id) && m.code)
+			.filter(
+				(m) =>
+					dependencyIds.includes(m.id) &&
+					!excludedFromContext.has(m.id) &&
+					m.code,
+			)
 			.map((m) => `# === ${m.name} ===\n${m.code}`)
 			.join("\n\n");
 
@@ -143,6 +153,10 @@ export function CodeGenerationPanel({
 	const isSelectedAtomic = selectedModel?.type === "atomic";
 	const canValidate = currentModel?.codeGenerated && currentModel?.code;
 	const isComplete = currentModelIndex >= atomicModels.length;
+	const progressPercent =
+		atomicModels.length === 0
+			? 100
+			: Math.min((currentModelIndex / atomicModels.length) * 100, 100);
 
 	if (isComplete) {
 		return (
@@ -150,7 +164,9 @@ export function CodeGenerationPanel({
 				<CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
 				<h2 className="text-2xl font-bold mb-2">Generation complete!</h2>
 				<p className="text-muted-foreground text-center max-w-md mb-6">
-					All models have been generated. You can now save them to your library.
+					{atomicModels.length === 0
+						? "No eligible atomic models for code generation."
+						: "All models have been generated. You can now save them to your library."}
 				</p>
 			</div>
 		);
@@ -169,7 +185,7 @@ export function CodeGenerationPanel({
 						<div
 							className="bg-primary h-2 rounded-full transition-all"
 							style={{
-								width: `${(currentModelIndex / atomicModels.length) * 100}%`,
+								width: `${progressPercent}%`,
 							}}
 						/>
 					</div>

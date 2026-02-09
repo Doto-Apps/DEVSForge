@@ -147,6 +147,83 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/ai/generate-ef-structure": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate an experimental frame structure
+         * @description Generates an Experimental Frame (EF) structure around a target model for validation scenarios.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Data required to generate EF structure */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["request.GenerateEFStructureRequest"];
+                };
+            };
+            responses: {
+                /** @description Generated EF structure */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.ExperimentalFrameStructureResponse"];
+                    };
+                };
+                /** @description Invalid request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Target model not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description AI processing error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/ai/generate-model": {
         parameters: {
             query?: never;
@@ -2785,6 +2862,7 @@ export interface components {
             /** @example uuid-of-model */
             modelId: string;
         };
+        "request.GenerateEFStructureRequest": Record<string, never>;
         "request.GenerateModelRequest": {
             /**
              * @example python
@@ -2880,6 +2958,14 @@ export interface components {
             /** @description required */
             port?: string;
         };
+        "response.ExperimentalFrameModel": {
+            components?: string[];
+            id?: string;
+            name?: string;
+            ports?: components["schemas"]["response.PortResponse"][];
+            role?: components["schemas"]["response.ExperimentalFrameRole"];
+            type?: components["schemas"]["response.ModelType"];
+        };
         "response.ExperimentalFrameResponse": {
             createdAt?: string;
             frameModelId?: string;
@@ -2887,6 +2973,16 @@ export interface components {
             targetModelId?: string;
             updatedAt?: string;
             userId?: string;
+        };
+        /** @enum {string} */
+        "response.ExperimentalFrameRole": "experimental-frame" | "model-under-test" | "generator" | "transducer" | "acceptor";
+        "response.ExperimentalFrameStructureResponse": {
+            connections?: components["schemas"]["response.Connection"][];
+            modelUnderTestId?: string;
+            models?: components["schemas"]["response.ExperimentalFrameModel"][];
+            roomName?: string;
+            rootModelId?: string;
+            targetModelId?: string;
         };
         "response.GeneratedDocumentationResponse": {
             description?: string;

@@ -25,6 +25,7 @@ func SetupAiRoutes(app *fiber.App) {
 	group := app.Group("/ai", middleware.Protected())
 
 	group.Post("/generate-diagram", generateDiagram)
+	group.Post("/generate-ef-structure", generateEFStructure)
 	group.Post("/generate-model", generateModel)
 	group.Post("/generate-documentation", generateDocumentation)
 }
@@ -146,6 +147,127 @@ func generateDiagram(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(response)
+}
+
+// GenerateEFStructure godoc
+//
+//	@Summary		Generate an experimental frame structure
+//	@Description	Generates an Experimental Frame (EF) structure around a target model for validation scenarios.
+//	@Tags			AI
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		request.GenerateEFStructureRequest			true	"Data required to generate EF structure"
+//	@Success		200		{object}	response.ExperimentalFrameStructureResponse	"Generated EF structure"
+//	@Failure		400		{object}	map[string]string							"Invalid request"
+//	@Failure		404		{object}	map[string]string							"Target model not found"
+//	@Failure		500		{object}	map[string]string							"AI processing error"
+//	@Router			/ai/generate-ef-structure [post]
+func generateEFStructure(c *fiber.Ctx) error {
+	var request request.GenerateEFStructureRequest
+
+	if err := c.BodyParser(&request); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+	}
+
+	if request.TargetModelID == "" || request.UserPrompt == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "TargetModelID and UserPrompt are required"})
+	}
+
+	db := database.DB
+	var target model.Model
+	if err := db.First(&target, "user_id = ? AND id = ?", c.Locals("user_id").(string), request.TargetModelID).Error; err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Target model not found"})
+	}
+
+	roomName := strings.TrimSpace(request.RoomName)
+	if roomName == "" {
+		roomName = fmt.Sprintf("Room - %s", target.Name)
+	}
+
+	targetPortsContext := buildTargetPortsContext(target)
+	targetComponentsContext := buildTargetComponentsContext(target)
+
+	fullPrompt := fmt.Sprintf(`
+[EXPERIMENTAL FRAME REQUEST]
+Room Name: %s
+Target Model ID: %s
+Target Model Name: %s
+Target Model Type: %s
+Target Model Ports:
+%s
+%s
+Validation Intent:
+%s
+
+Please respond ONLY in JSON following the provided schema.
+`, roomName, target.ID, target.Name, target.Type, targetPortsContext, targetComponentsContext, request.UserPrompt)
+
+	client, err := getOpenAIClient()
+	if err != nil {
+		log.Println("OpenAI error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	schemaParam := openai.ResponseFormatJSONSchemaJSONSchemaParam{
+		Name:        openai.F("ExperimentalFrameStructure"),
+		Description: openai.F("Experimental frame structure around a model-under-test"),
+		Schema:      openai.F(GenerateSchema[response.ExperimentalFrameStructureResponse]()),
+		Strict:      openai.Bool(true),
+	}
+
+	messages := []openai.ChatCompletionMessageParamUnion{
+		openai.SystemMessage(prompt.ExperimentalFrameStructurePrompt),
+	}
+	for _, message := range request.PastResponses {
+		if message.Role == "user" {
+			messages = append(messages, openai.UserMessage(message.Content))
+		}
+		if message.Role == "assistant" {
+			messages = append(messages, openai.AssistantMessage(message.Content))
+		}
+	}
+	messages = append(messages, openai.UserMessage(fullPrompt))
+
+	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+		Messages:            openai.F(messages),
+		MaxCompletionTokens: openai.Int(4000),
+		TopP:                openai.Float(0.7),
+		Temperature:         openai.Float(0.9),
+		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
+			openai.ResponseFormatJSONSchemaParam{
+				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
+				JSONSchema: openai.F(schemaParam),
+			},
+		),
+		Model: openai.F(os.Getenv("AI_MODEL")),
+	})
+
+	if err != nil {
+		log.Println("OpenAI Chat Completion error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
+	}
+
+	if chat == nil || len(chat.Choices) == 0 {
+		log.Println("OpenAI returned empty response")
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
+	}
+
+	efResponse := response.ExperimentalFrameStructureResponse{}
+	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &efResponse); err != nil {
+		log.Println("JSON Unmarshal error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
+	}
+
+	// Server-side normalization and validation guardrails.
+	efResponse.RoomName = roomName
+	efResponse.TargetModelID = target.ID
+
+	if err := validateEFStructureResponse(&efResponse, target); err != nil {
+		log.Println("EF structure validation error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned invalid EF structure: " + err.Error()})
+	}
+
+	return c.JSON(efResponse)
 }
 
 // GenerateModel godoc
@@ -371,4 +493,176 @@ Respond ONLY in JSON following the provided schema.
 	}
 
 	return c.JSON(docResponse)
+}
+
+func buildTargetPortsContext(target model.Model) string {
+	if len(target.Ports) == 0 {
+		return "- none"
+	}
+
+	var b strings.Builder
+	for _, port := range target.Ports {
+		b.WriteString(fmt.Sprintf("- %s (%s) [id=%s]\n", port.Name, port.Type, port.ID))
+	}
+	return b.String()
+}
+
+func buildTargetComponentsContext(target model.Model) string {
+	if target.Type != "coupled" || len(target.Components) == 0 {
+		return "Target Components: none"
+	}
+
+	componentIDs := make([]string, 0, len(target.Components))
+	for _, component := range target.Components {
+		componentIDs = append(componentIDs, component.ModelID)
+	}
+	return fmt.Sprintf("Target Components: %s", strings.Join(componentIDs, ", "))
+}
+
+func validateEFStructureResponse(ef *response.ExperimentalFrameStructureResponse, target model.Model) error {
+	if len(ef.Models) == 0 {
+		return fmt.Errorf("models cannot be empty")
+	}
+
+	modelByID := make(map[string]response.ExperimentalFrameModel, len(ef.Models))
+	rootID := ""
+	mutID := ""
+
+	for _, m := range ef.Models {
+		if strings.TrimSpace(m.ID) == "" {
+			return fmt.Errorf("model id cannot be empty")
+		}
+		if _, exists := modelByID[m.ID]; exists {
+			return fmt.Errorf("duplicate model id: %s", m.ID)
+		}
+
+		modelByID[m.ID] = m
+
+		if m.Role == response.ExperimentalFrameRoleExperimentalFrame {
+			if rootID != "" {
+				return fmt.Errorf("exactly one model with role experimental-frame is required")
+			}
+			if m.Type != response.ModelTypeCoupled {
+				return fmt.Errorf("experimental-frame root must be coupled")
+			}
+			rootID = m.ID
+		}
+
+		if m.Role == response.ExperimentalFrameRoleModelUnderTest {
+			if mutID != "" {
+				return fmt.Errorf("exactly one model with role model-under-test is required")
+			}
+			mutID = m.ID
+		}
+
+		if m.Type == response.ModelTypeAtomic && len(m.Components) > 0 {
+			return fmt.Errorf("atomic model %s cannot declare components", m.ID)
+		}
+	}
+
+	if rootID == "" {
+		return fmt.Errorf("missing experimental-frame root model")
+	}
+	if mutID == "" {
+		return fmt.Errorf("missing model-under-test model")
+	}
+
+	if ef.RootModelID == "" {
+		ef.RootModelID = rootID
+	}
+	if ef.ModelUnderTestID == "" {
+		ef.ModelUnderTestID = mutID
+	}
+
+	if ef.RootModelID != rootID {
+		return fmt.Errorf("rootModelId must reference the experimental-frame model")
+	}
+	if ef.ModelUnderTestID != mutID {
+		return fmt.Errorf("modelUnderTestId must reference the model-under-test model")
+	}
+
+	rootModel := modelByID[rootID]
+	if !containsString(rootModel.Components, mutID) {
+		return fmt.Errorf("experimental-frame root must include model-under-test as component")
+	}
+
+	for _, m := range ef.Models {
+		if m.Type == response.ModelTypeCoupled {
+			for _, componentID := range m.Components {
+				if _, exists := modelByID[componentID]; !exists {
+					return fmt.Errorf("model %s references unknown component %s", m.ID, componentID)
+				}
+			}
+		}
+	}
+
+	mutModel := modelByID[mutID]
+	if string(mutModel.Type) != string(target.Type) {
+		return fmt.Errorf("model-under-test type (%s) must match target type (%s)", mutModel.Type, target.Type)
+	}
+
+	if err := validateMutPorts(mutModel.Ports, target); err != nil {
+		return err
+	}
+
+	for _, conn := range ef.Connections {
+		fromModel, exists := modelByID[conn.From.Model]
+		if !exists {
+			return fmt.Errorf("connection references unknown source model %s", conn.From.Model)
+		}
+		toModel, exists := modelByID[conn.To.Model]
+		if !exists {
+			return fmt.Errorf("connection references unknown target model %s", conn.To.Model)
+		}
+
+		if !hasPortByNameAndDirection(fromModel.Ports, conn.From.Port, response.PortDirectionOut) {
+			return fmt.Errorf("source port %s does not exist as out port on model %s", conn.From.Port, conn.From.Model)
+		}
+		if !hasPortByNameAndDirection(toModel.Ports, conn.To.Port, response.PortDirectionIn) {
+			return fmt.Errorf("target port %s does not exist as in port on model %s", conn.To.Port, conn.To.Model)
+		}
+	}
+
+	return nil
+}
+
+func validateMutPorts(mutPorts []response.PortResponse, target model.Model) error {
+	if len(mutPorts) != len(target.Ports) {
+		return fmt.Errorf("model-under-test ports must match target model interface")
+	}
+
+	expected := make(map[string]string, len(target.Ports))
+	for _, port := range target.Ports {
+		expected[port.Name] = string(port.Type)
+	}
+
+	for _, port := range mutPorts {
+		expectedDirection, exists := expected[port.Name]
+		if !exists {
+			return fmt.Errorf("model-under-test has unexpected port name %s", port.Name)
+		}
+		if expectedDirection != string(port.Type) {
+			return fmt.Errorf("model-under-test port %s has wrong direction %s", port.Name, port.Type)
+		}
+	}
+
+	return nil
+}
+
+func hasPortByNameAndDirection(ports []response.PortResponse, name string, direction response.PortDirection) bool {
+	for _, port := range ports {
+		if port.Name == name && port.Type == direction {
+			return true
+		}
+	}
+	return false
+}
+
+func containsString(values []string, needle string) bool {
+	for _, value := range values {
+		if value == needle {
+			return true
+		}
+	}
+	return false
 }

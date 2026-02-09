@@ -3,10 +3,10 @@ import {
 	CheckCircle2,
 	GaugeCircle,
 	LayoutDashboard,
-	Square,
+	type LucideIcon,
 	ShieldCheck,
 	Shuffle,
-	type LucideIcon,
+	Square,
 } from "lucide-react";
 import type { ComponentType } from "react";
 

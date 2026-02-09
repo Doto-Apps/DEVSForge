@@ -128,6 +128,67 @@ const docTemplate = `{
                 }
             }
         },
+        "/ai/generate-ef-structure": {
+            "post": {
+                "description": "Generates an Experimental Frame (EF) structure around a target model for validation scenarios.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Generate an experimental frame structure",
+                "parameters": [
+                    {
+                        "description": "Data required to generate EF structure",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GenerateEFStructureRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Generated EF structure",
+                        "schema": {
+                            "$ref": "#/definitions/response.ExperimentalFrameStructureResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Target model not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "AI processing error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/ai/generate-model": {
             "post": {
                 "description": "Sends a prompt to OpenAI to generate a DEVS model code in Python or Go.",
@@ -2534,6 +2595,9 @@ const docTemplate = `{
                 }
             }
         },
+        "request.GenerateEFStructureRequest": {
+            "type": "object"
+        },
         "request.GenerateModelRequest": {
             "type": "object",
             "required": [
@@ -2857,6 +2921,35 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ExperimentalFrameModel": {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.PortResponse"
+                    }
+                },
+                "role": {
+                    "$ref": "#/definitions/response.ExperimentalFrameRole"
+                },
+                "type": {
+                    "$ref": "#/definitions/response.ModelType"
+                }
+            }
+        },
         "response.ExperimentalFrameResponse": {
             "type": "object",
             "properties": {
@@ -2876,6 +2969,52 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ExperimentalFrameRole": {
+            "type": "string",
+            "enum": [
+                "experimental-frame",
+                "model-under-test",
+                "generator",
+                "transducer",
+                "acceptor"
+            ],
+            "x-enum-varnames": [
+                "ExperimentalFrameRoleExperimentalFrame",
+                "ExperimentalFrameRoleModelUnderTest",
+                "ExperimentalFrameRoleGenerator",
+                "ExperimentalFrameRoleTransducer",
+                "ExperimentalFrameRoleAcceptor"
+            ]
+        },
+        "response.ExperimentalFrameStructureResponse": {
+            "type": "object",
+            "properties": {
+                "connections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Connection"
+                    }
+                },
+                "modelUnderTestId": {
+                    "type": "string"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ExperimentalFrameModel"
+                    }
+                },
+                "roomName": {
+                    "type": "string"
+                },
+                "rootModelId": {
+                    "type": "string"
+                },
+                "targetModelId": {
                     "type": "string"
                 }
             }

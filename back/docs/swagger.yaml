@@ -364,6 +364,8 @@ definitions:
     required:
     - modelId
     type: object
+  request.GenerateEFStructureRequest:
+    type: object
   request.GenerateModelRequest:
     properties:
       language:
@@ -585,6 +587,25 @@ definitions:
         description: required
         type: string
     type: object
+  response.ExperimentalFrameModel:
+    properties:
+      components:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      ports:
+        items:
+          $ref: '#/definitions/response.PortResponse'
+        type: array
+      role:
+        $ref: '#/definitions/response.ExperimentalFrameRole'
+      type:
+        $ref: '#/definitions/response.ModelType'
+    type: object
   response.ExperimentalFrameResponse:
     properties:
       createdAt:
@@ -598,6 +619,39 @@ definitions:
       updatedAt:
         type: string
       userId:
+        type: string
+    type: object
+  response.ExperimentalFrameRole:
+    enum:
+    - experimental-frame
+    - model-under-test
+    - generator
+    - transducer
+    - acceptor
+    type: string
+    x-enum-varnames:
+    - ExperimentalFrameRoleExperimentalFrame
+    - ExperimentalFrameRoleModelUnderTest
+    - ExperimentalFrameRoleGenerator
+    - ExperimentalFrameRoleTransducer
+    - ExperimentalFrameRoleAcceptor
+  response.ExperimentalFrameStructureResponse:
+    properties:
+      connections:
+        items:
+          $ref: '#/definitions/response.Connection'
+        type: array
+      modelUnderTestId:
+        type: string
+      models:
+        items:
+          $ref: '#/definitions/response.ExperimentalFrameModel'
+        type: array
+      roomName:
+        type: string
+      rootModelId:
+        type: string
+      targetModelId:
         type: string
     type: object
   response.GeneratedDocumentationResponse:
@@ -913,6 +967,47 @@ paths:
               type: string
             type: object
       summary: Generate model documentation
+      tags:
+      - AI
+  /ai/generate-ef-structure:
+    post:
+      consumes:
+      - application/json
+      description: Generates an Experimental Frame (EF) structure around a target
+        model for validation scenarios.
+      parameters:
+      - description: Data required to generate EF structure
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.GenerateEFStructureRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Generated EF structure
+          schema:
+            $ref: '#/definitions/response.ExperimentalFrameStructureResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Target model not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: AI processing error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate an experimental frame structure
       tags:
       - AI
   /ai/generate-model:

@@ -11,6 +11,13 @@ type GenerateDiagramRequest struct {
 	PastResponses []PastMessages `json:"pastMessages,omitempty" example:"[]"`
 }
 
+type GenerateEFStructureRequest struct {
+	TargetModelID string         `json:"targetModelId" validate:"required" example:"uuid-of-target-model"`
+	RoomName      string         `json:"roomName,omitempty" example:"Room - NomDuEF"`
+	UserPrompt    string         `json:"userPrompt" validate:"required" example:"I want 2 generators and 1 acceptor to validate latency"`
+	PastResponses []PastMessages `json:"pastMessages,omitempty" example:"[]"`
+}
+
 type PortInfo struct {
 	ID   string `json:"id" validate:"required" example:"port-1"`
 	Name string `json:"name" validate:"required" example:"input"`

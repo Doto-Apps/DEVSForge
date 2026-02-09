@@ -8,10 +8,18 @@ export type LLMModel = components["schemas"]["response.Model"];
 export type LLMConnection = components["schemas"]["response.Connection"];
 export type LLMEndpoint = components["schemas"]["response.Endpoint"];
 export type LLMPortResponse = components["schemas"]["response.PortResponse"];
+export type ExperimentalFrameRole =
+	components["schemas"]["response.ExperimentalFrameRole"];
 
 // Request types
 export type GenerateDiagramRequest = {
 	diagramName: string;
+	userPrompt: string;
+};
+
+export type GenerateEFStructureRequest = {
+	targetModelId: string;
+	roomName?: string;
 	userPrompt: string;
 };
 
@@ -37,6 +45,7 @@ export type GeneratedModelData = {
 	id: string;
 	name: string;
 	type: "atomic" | "coupled";
+	role?: ExperimentalFrameRole;
 	ports: {
 		in: string[];
 		out: string[];
@@ -52,6 +61,9 @@ export type GeneratedDiagram = {
 	name: string;
 	models: GeneratedModelData[];
 	connections: LLMConnection[];
+	rootModelId?: string;
+	modelUnderTestId?: string;
+	targetModelId?: string;
 	reactFlowData?: ReactFlowInput;
 };
 
@@ -87,4 +99,6 @@ export type CodeGenerationPanelProps = {
 	onCodeGenerated: (modelId: string, code: string) => void;
 	onModelValidated: () => void;
 	onCodeChange: (modelId: string, code: string) => void;
+	atomicModelFilter?: (model: GeneratedModelData) => boolean;
+	excludeFromContextModelIds?: string[];
 };

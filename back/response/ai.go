@@ -42,6 +42,34 @@ type Endpoint struct {
 	Port  string `json:"port" jsonschema:"required"`  // required
 }
 
+type ExperimentalFrameRole string
+
+const (
+	ExperimentalFrameRoleExperimentalFrame ExperimentalFrameRole = "experimental-frame"
+	ExperimentalFrameRoleModelUnderTest    ExperimentalFrameRole = "model-under-test"
+	ExperimentalFrameRoleGenerator         ExperimentalFrameRole = "generator"
+	ExperimentalFrameRoleTransducer        ExperimentalFrameRole = "transducer"
+	ExperimentalFrameRoleAcceptor          ExperimentalFrameRole = "acceptor"
+)
+
+type ExperimentalFrameModel struct {
+	ID         string                `json:"id" jsonschema:"required"`
+	Name       string                `json:"name" jsonschema:"required"`
+	Type       ModelType             `json:"type" jsonschema:"required,enum=atomic,enum=coupled"`
+	Role       ExperimentalFrameRole `json:"role" jsonschema:"required,enum=experimental-frame,enum=model-under-test,enum=generator,enum=transducer,enum=acceptor"`
+	Ports      []PortResponse        `json:"ports" jsonschema:"required"`
+	Components []string              `json:"components" jsonschema:"required"`
+}
+
+type ExperimentalFrameStructureResponse struct {
+	RoomName         string                   `json:"roomName" jsonschema:"required"`
+	TargetModelID    string                   `json:"targetModelId" jsonschema:"required"`
+	RootModelID      string                   `json:"rootModelId" jsonschema:"required"`
+	ModelUnderTestID string                   `json:"modelUnderTestId" jsonschema:"required"`
+	Models           []ExperimentalFrameModel `json:"models" jsonschema:"required"`
+	Connections      []Connection             `json:"connections" jsonschema:"required"`
+}
+
 type GeneratedModelResponse struct {
 	Code string `json:"code" validate:"required"`
 }
