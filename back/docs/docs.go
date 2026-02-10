@@ -2546,6 +2546,104 @@ const docTemplate = `{
                 }
             }
         },
+        "request.AssistedExperimentalFrameConnection": {
+            "type": "object",
+            "required": [
+                "from",
+                "to"
+            ],
+            "properties": {
+                "from": {
+                    "$ref": "#/definitions/request.AssistedExperimentalFrameEndpoint"
+                },
+                "to": {
+                    "$ref": "#/definitions/request.AssistedExperimentalFrameEndpoint"
+                }
+            }
+        },
+        "request.AssistedExperimentalFrameEndpoint": {
+            "type": "object",
+            "required": [
+                "model",
+                "port"
+            ],
+            "properties": {
+                "model": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.AssistedExperimentalFrameModel": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "components": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.AssistedExperimentalFrameModelPort"
+                    }
+                },
+                "role": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "atomic",
+                        "coupled"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/enum.ModelType"
+                        }
+                    ]
+                }
+            }
+        },
+        "request.AssistedExperimentalFrameModelPort": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "in",
+                        "out"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/enum.ModelPortDirection"
+                        }
+                    ]
+                }
+            }
+        },
         "request.DiagramRequest": {
             "type": "object",
             "required": [
@@ -2568,11 +2666,34 @@ const docTemplate = `{
         "request.ExperimentalFrameRequest": {
             "type": "object",
             "required": [
-                "frameModelId",
                 "targetModelId"
             ],
             "properties": {
+                "connections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.AssistedExperimentalFrameConnection"
+                    }
+                },
                 "frameModelId": {
+                    "type": "string"
+                },
+                "libraryId": {
+                    "type": "string"
+                },
+                "modelUnderTestId": {
+                    "type": "string"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.AssistedExperimentalFrameModel"
+                    }
+                },
+                "roomName": {
+                    "type": "string"
+                },
+                "rootModelId": {
                     "type": "string"
                 },
                 "targetModelId": {
@@ -2608,6 +2729,10 @@ const docTemplate = `{
                 "userPrompt"
             ],
             "properties": {
+                "forceScratch": {
+                    "type": "boolean",
+                    "example": false
+                },
                 "language": {
                     "type": "string",
                     "enum": [
@@ -2629,6 +2754,10 @@ const docTemplate = `{
                 "previousModelsCode": {
                     "type": "string",
                     "example": "Existing model code"
+                },
+                "reuseModelId": {
+                    "type": "string",
+                    "example": "uuid-of-reuse-candidate"
                 },
                 "userPrompt": {
                     "type": "string",
@@ -3044,6 +3173,24 @@ const docTemplate = `{
             "properties": {
                 "code": {
                     "type": "string"
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "reuseCandidates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ReuseCandidateResponse"
+                    }
+                },
+                "reuseMode": {
+                    "type": "string"
+                },
+                "reuseUsed": {
+                    "$ref": "#/definitions/response.ReuseCandidateResponse"
                 }
             }
         },
@@ -3269,6 +3416,29 @@ const docTemplate = `{
                 },
                 "user": {
                     "$ref": "#/definitions/response.UserResponse"
+                }
+            }
+        },
+        "response.ReuseCandidateResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "number"
                 }
             }
         },

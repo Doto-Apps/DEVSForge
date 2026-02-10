@@ -12,6 +12,49 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(
 	"",
 );
 
+const asRecord = (value: unknown): Record<string, unknown> | null => {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+	return value as Record<string, unknown>;
+};
+
+const asString = (value: unknown): string | null => {
+	if (typeof value !== "string") return null;
+	const trimmed = value.trim();
+	return trimmed.length > 0 ? trimmed : null;
+};
+
+const extractErrorReportMessage = (
+	event: SimulationEventResponse,
+): string | null => {
+	const devsType = event.devsType ?? "";
+	const payload = asRecord(event.payload);
+	const messageType = asString(payload?.messageType);
+	const isErrorReport =
+		devsType.includes("ErrorReport") || messageType === "ErrorReport";
+	if (!isErrorReport) return null;
+
+	const reportPayload = asRecord(payload?.payload);
+	const severity = asString(reportPayload?.severity)?.toLowerCase();
+	if (severity === "warning" || severity === "info") {
+		return null;
+	}
+
+	const message =
+		asString(reportPayload?.message) ??
+		asString(payload?.errorMessage) ??
+		"Simulation error report received";
+	const originRole = asString(reportPayload?.originRole);
+	const originID = asString(reportPayload?.originId);
+
+	if (originRole && originID) {
+		return `[${originRole}:${originID}] ${message}`;
+	}
+	if (originRole) {
+		return `[${originRole}] ${message}`;
+	}
+	return message;
+};
+
 type UseSimulationPollingOptions = {
 	/** Polling interval in ms (default: 500) */
 	interval?: number;
@@ -55,6 +98,14 @@ export const useSimulationPolling = (
 	const lastEventCountRef = useRef(0);
 	const previousStatusRef = useRef<SimulationResponse["status"] | null>(null);
 
+	const stopPolling = useCallback(() => {
+		if (intervalRef.current) {
+			clearInterval(intervalRef.current);
+			intervalRef.current = null;
+		}
+		setIsPolling(false);
+	}, []);
+
 	const fetchEvents = useCallback(async () => {
 		if (!simulationIdRef.current) return;
 
@@ -89,6 +140,9 @@ export const useSimulationPolling = (
 					data.simulation.status === "completed" ||
 					data.simulation.status === "failed"
 				) {
+					if (data.simulation.status === "failed" && data.simulation.errorMessage) {
+						setError(data.simulation.errorMessage);
+					}
 					stopPolling();
 				}
 			}
@@ -99,13 +153,31 @@ export const useSimulationPolling = (
 				setEvents((prev) => [...prev, ...newEvents]);
 				lastEventCountRef.current += newEvents.length;
 				onEvents?.(newEvents);
+
+				const blockingError = newEvents
+					.map((event) => extractErrorReportMessage(event))
+					.find((message): message is string => Boolean(message));
+				if (blockingError) {
+					setError(blockingError);
+					setSimulation((prev) =>
+						prev
+							? {
+									...prev,
+									status: "failed",
+									errorMessage: blockingError,
+								}
+							: prev,
+					);
+					onStatusChange?.("failed");
+					stopPolling();
+				}
 			}
 		} catch (err) {
 			const errorMessage =
 				err instanceof Error ? err.message : "An error occurred";
 			setError(errorMessage);
 		}
-	}, [onEvents, onStatusChange]);
+	}, [onEvents, onStatusChange, stopPolling]);
 
 	const startPolling = useCallback(
 		(simulationId: string) => {
@@ -125,14 +197,6 @@ export const useSimulationPolling = (
 		},
 		[fetchEvents, interval],
 	);
-
-	const stopPolling = useCallback(() => {
-		if (intervalRef.current) {
-			clearInterval(intervalRef.current);
-			intervalRef.current = null;
-		}
-		setIsPolling(false);
-	}, []);
 
 	const clearEvents = useCallback(() => {
 		setEvents([]);

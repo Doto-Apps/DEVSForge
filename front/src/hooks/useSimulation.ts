@@ -105,7 +105,7 @@ export const useStartSimulation = (): StartSimulationResult => {
 		startSimulation,
 		simulation,
 		isLoading,
-		error,
+		error: error ?? polling.error,
 		isPolling: polling.isPolling,
 		events: polling.events,
 		stopPolling: polling.stopPolling,

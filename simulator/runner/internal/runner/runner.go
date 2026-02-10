@@ -41,6 +41,36 @@ func (r *Runner) SendMessage(msg kafka.KafkaMessageI) error {
 	return r.Config.KafkaClient.ProduceSync(r.Context, &kgo.Record{Value: data}).FirstErr()
 }
 
+func (r *Runner) SendErrorReport(errorCode string, severity string, sourceErr error) error {
+	if sourceErr == nil {
+		return nil
+	}
+	if r.Config == nil || r.Config.Model == nil {
+		return fmt.Errorf("runner config is missing; cannot emit ErrorReport")
+	}
+	if severity == "" {
+		severity = "error"
+	}
+	if errorCode == "" {
+		errorCode = "RUNNER_ERROR"
+	}
+
+	report := kafka.NewErrorReportMessage(
+		r.Config.SimulationID,
+		r.Config.ID,
+		"Coordinator",
+		"Runner",
+		r.Config.Model.ID,
+		severity,
+		errorCode,
+		sourceErr.Error(),
+		nil,
+		nil,
+	)
+
+	return r.SendMessage(report)
+}
+
 func (r *Runner) StartReceiveLoop(handler func(*kafka.BaseKafkaMessage) error) error {
 	client := r.Config.KafkaClient
 	for {
@@ -48,7 +78,7 @@ func (r *Runner) StartReceiveLoop(handler func(*kafka.BaseKafkaMessage) error) e
 		if errs := fetches.Errors(); len(errs) > 0 {
 			// All errors are retried internally when fetching, but non-retriable errors are
 			// returned from polls so that users can notice and take action.
-			panic(fmt.Sprint(errs))
+			return fmt.Errorf("kafka poll error: %v", errs)
 		}
 
 		// We can iterate through a record iterator...

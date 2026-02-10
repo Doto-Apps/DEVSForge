@@ -283,30 +283,84 @@ Please respond ONLY in JSON following the provided schema.
 //	@Failure		500		{object}	map[string]string				"AI processing error"
 //	@Router			/ai/generate-model [post]
 func generateModel(c *fiber.Ctx) error {
-	var request request.GenerateModelRequest
+	var req request.GenerateModelRequest
 
-	if err := c.BodyParser(&request); err != nil {
+	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
-	if request.ModelName == "" || request.Language == "" || request.UserPrompt == "" {
+	if req.ModelName == "" || req.Language == "" || req.UserPrompt == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ModelName, Language, and UserPrompt are required"})
 	}
 
 	// Validate language
-	if request.Language != "python" && request.Language != "go" {
+	if req.Language != "python" && req.Language != "go" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Language must be 'python' or 'go'"})
 	}
+
+	client, err := getOpenAIClient()
+	if err != nil {
+		log.Println("OpenAI error:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
+	}
+
+	userID := c.Locals("user_id").(string)
+
+	// Reuse-first: extract keywords and rank existing models with simple Jaccard.
+	promptKeywords, kwErr := extractPromptKeywords(client, req.UserPrompt)
+	if kwErr != nil {
+		log.Printf("keyword extraction warning: %v", kwErr)
+	}
+	candidates, candidateErr := getReuseCandidates(
+		database.DB,
+		userID,
+		req.Language,
+		promptKeywords,
+		reuseTopK,
+		reuseLowThreshold,
+	)
+	if candidateErr != nil {
+		log.Printf("reuse candidate ranking warning: %v", candidateErr)
+		candidates = nil
+	}
+	reuseModelID := ""
+	if req.ReuseModelID != nil {
+		reuseModelID = strings.TrimSpace(*req.ReuseModelID)
+	}
+	hasReuseChoice := req.ForceScratch || reuseModelID != ""
+
+	if len(candidates) > 0 && !hasReuseChoice {
+		return c.JSON(response.GeneratedModelResponse{
+			Code:            "",
+			Keywords:        promptKeywords,
+			ReuseCandidates: toReuseCandidatesResponse(candidates),
+			ReuseMode:       "selection-required",
+		})
+	}
+
+	selectedCandidate := pickReuseCandidate(candidates, req.ReuseModelID, req.ForceScratch)
+	if reuseModelID != "" && selectedCandidate == nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid reuseModelId. Choose one candidate from the provided shortlist.",
+		})
+	}
+
+	contextCandidates := candidates
+	if req.ForceScratch {
+		contextCandidates = nil
+	}
+	reuseContext := buildReuseContext(promptKeywords, contextCandidates, selectedCandidate)
+	previousModelsCode := buildPreviousCodeWithReuse(req.PreviousModelsCode, selectedCandidate)
 
 	// Build ports context
 	var portsContext strings.Builder
 	portsContext.WriteString("## Model Ports\n")
-	for _, port := range request.Ports {
+	for _, port := range req.Ports {
 		portsContext.WriteString(fmt.Sprintf("- %s (%s): %s\n", port.Name, port.Type, port.ID))
 	}
 
 	// Get the appropriate prompt with template
-	systemPrompt, err := prompt.BuildModelPromptWithContext(request.Language)
+	systemPrompt, err := prompt.BuildModelPromptWithContext(req.Language)
 	if err != nil {
 		log.Println("Failed to build model prompt:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to prepare prompt"})
@@ -319,24 +373,20 @@ Language: %s
 
 %s
 
+%s
+
 Previous Models Code:
 %s
 
 User Description: %s
 
 Respond ONLY with the %s code in JSON as { "code": "your_code_here" }
-`, request.ModelName, request.Language, portsContext.String(), request.PreviousModelsCode, request.UserPrompt, request.Language)
-
-	client, err := getOpenAIClient()
-	if err != nil {
-		log.Println("OpenAI error:", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
-	}
+`, req.ModelName, req.Language, portsContext.String(), reuseContext, previousModelsCode, req.UserPrompt, req.Language)
 
 	schemaParam := openai.ResponseFormatJSONSchemaJSONSchemaParam{
 		Name:        openai.F("Model"),
 		Description: openai.F("Model code"),
-		Schema:      openai.F(GenerateSchema[response.GeneratedModelResponse]()),
+		Schema:      openai.F(GenerateSchema[response.GeneratedModelLLMResponse]()),
 		Strict:      openai.Bool(true),
 	}
 
@@ -367,13 +417,25 @@ Respond ONLY with the %s code in JSON as { "code": "your_code_here" }
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
 	}
 
-	response := response.GeneratedModelResponse{}
-	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &response); err != nil {
+	llmResponse := response.GeneratedModelLLMResponse{}
+	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &llmResponse); err != nil {
 		log.Println("JSON Unmarshal error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
 	}
 
-	return c.JSON(response)
+	apiResponse := response.GeneratedModelResponse{
+		Code:            llmResponse.Code,
+		Keywords:        promptKeywords,
+		ReuseCandidates: toReuseCandidatesResponse(candidates),
+		ReuseMode:       "scratch",
+	}
+	if selectedCandidate != nil {
+		selected := toReuseCandidateResponse(*selectedCandidate)
+		apiResponse.ReuseUsed = &selected
+		apiResponse.ReuseMode = "reuse-first"
+	}
+
+	return c.JSON(apiResponse)
 }
 
 // GenerateDocumentation godoc

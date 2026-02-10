@@ -331,6 +331,69 @@ definitions:
       userId:
         type: string
     type: object
+  request.AssistedExperimentalFrameConnection:
+    properties:
+      from:
+        $ref: '#/definitions/request.AssistedExperimentalFrameEndpoint'
+      to:
+        $ref: '#/definitions/request.AssistedExperimentalFrameEndpoint'
+    required:
+    - from
+    - to
+    type: object
+  request.AssistedExperimentalFrameEndpoint:
+    properties:
+      model:
+        type: string
+      port:
+        type: string
+    required:
+    - model
+    - port
+    type: object
+  request.AssistedExperimentalFrameModel:
+    properties:
+      code:
+        type: string
+      components:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      ports:
+        items:
+          $ref: '#/definitions/request.AssistedExperimentalFrameModelPort'
+        type: array
+      role:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/enum.ModelType'
+        enum:
+        - atomic
+        - coupled
+    required:
+    - id
+    - name
+    - type
+    type: object
+  request.AssistedExperimentalFrameModelPort:
+    properties:
+      name:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/enum.ModelPortDirection'
+        enum:
+        - in
+        - out
+    required:
+    - name
+    - type
+    type: object
   request.DiagramRequest:
     properties:
       description:
@@ -346,12 +409,27 @@ definitions:
     type: object
   request.ExperimentalFrameRequest:
     properties:
+      connections:
+        items:
+          $ref: '#/definitions/request.AssistedExperimentalFrameConnection'
+        type: array
       frameModelId:
+        type: string
+      libraryId:
+        type: string
+      modelUnderTestId:
+        type: string
+      models:
+        items:
+          $ref: '#/definitions/request.AssistedExperimentalFrameModel'
+        type: array
+      roomName:
+        type: string
+      rootModelId:
         type: string
       targetModelId:
         type: string
     required:
-    - frameModelId
     - targetModelId
     type: object
   request.GenerateDiagramRequest:
@@ -368,6 +446,9 @@ definitions:
     type: object
   request.GenerateModelRequest:
     properties:
+      forceScratch:
+        example: false
+        type: boolean
       language:
         enum:
         - python
@@ -383,6 +464,9 @@ definitions:
         type: array
       previousModelsCode:
         example: Existing model code
+        type: string
+      reuseModelId:
+        example: uuid-of-reuse-candidate
         type: string
       userPrompt:
         example: Generate a model based on the previous code
@@ -669,6 +753,18 @@ definitions:
     properties:
       code:
         type: string
+      keywords:
+        items:
+          type: string
+        type: array
+      reuseCandidates:
+        items:
+          $ref: '#/definitions/response.ReuseCandidateResponse'
+        type: array
+      reuseMode:
+        type: string
+      reuseUsed:
+        $ref: '#/definitions/response.ReuseCandidateResponse'
     required:
     - code
     type: object
@@ -823,6 +919,21 @@ definitions:
     - accessToken
     - refreshToken
     - user
+    type: object
+  response.ReuseCandidateResponse:
+    properties:
+      description:
+        type: string
+      keywords:
+        items:
+          type: string
+        type: array
+      modelId:
+        type: string
+      name:
+        type: string
+      score:
+        type: number
     type: object
   response.SimulationEventResponse:
     properties:

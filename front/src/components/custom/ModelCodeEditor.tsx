@@ -1,7 +1,7 @@
 import { examplePythonCode } from "@/staticModel/examplePythonCode";
 import type { WorkerResponse } from "@/types";
 import { Editor, useMonaco } from "@monaco-editor/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 
 type ModelCodeEditorProps = {
 	code: string;
@@ -15,15 +15,6 @@ export const ModelCodeEditor = ({
 	modelId,
 }: ModelCodeEditorProps) => {
 	const monaco = useMonaco();
-	const containerRef = useRef<HTMLDivElement>(null);
-	const [height, setHeight] = useState<string>("100vsh");
-
-	useEffect(() => {
-		if (containerRef.current) {
-			const { top } = containerRef.current.getBoundingClientRect();
-			setHeight(`calc(100vh - ${top}px)`);
-		}
-	}, []);
 
 	useEffect(() => {
 		if (monaco) {
@@ -48,16 +39,13 @@ export const ModelCodeEditor = ({
 	}, [monaco]);
 
 	return (
-		<div
-			ref={containerRef}
-			className="overflow-hidden flex flex-col relative max-h-full"
-		>
+		<div className="h-full min-h-0 overflow-hidden">
 			<Editor
-				height={height}
+				height="100%"
 				language="python"
 				value={code}
 				onChange={(newCode) => {
-					if (newCode) {
+					if (newCode !== undefined) {
 						onCodeChange(newCode, modelId);
 					}
 				}}
@@ -66,6 +54,7 @@ export const ModelCodeEditor = ({
 					minimap: { enabled: false },
 					fontSize: 14,
 					automaticLayout: true,
+					scrollBeyondLastLine: false,
 				}}
 			/>
 		</div>

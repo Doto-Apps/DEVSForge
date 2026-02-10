@@ -1,6 +1,7 @@
 "use client";
 
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,10 +19,12 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
-import type { CodeGenerationPanelProps } from "@/types";
+import type { CodeGenerationPanelProps, ReuseCandidate } from "@/types";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	CheckCircle2,
@@ -55,6 +58,10 @@ export function CodeGenerationPanel({
 	const [selectedLanguage, setSelectedLanguage] = useState<"python" | "go">(
 		"python",
 	);
+	const [reuseCandidates, setReuseCandidates] = useState<ReuseCandidate[]>([]);
+	const [selectedReuse, setSelectedReuse] = useState<string>("__pending__");
+	const [awaitingReuseSelection, setAwaitingReuseSelection] =
+		useState<boolean>(false);
 	const excludedFromContext = new Set(excludeFromContextModelIds);
 
 	// Only atomic models need code generation
@@ -74,8 +81,11 @@ export function CodeGenerationPanel({
 	useEffect(() => {
 		if (currentModel) {
 			setSelectedModelId(currentModel.id);
+			setReuseCandidates([]);
+			setSelectedReuse("__pending__");
+			setAwaitingReuseSelection(false);
 		}
-	}, [currentModel]);
+	}, [currentModel?.id]);
 
 	// Get code from models that current model depends on
 	const getPreviousModelsCode = (): string => {
@@ -113,19 +123,63 @@ export function CodeGenerationPanel({
 	const handleGenerateCode = async (values: z.infer<typeof promptSchema>) => {
 		if (!currentModel) return;
 
-		const code = await generateCode({
+		const forceScratch = selectedReuse === "__scratch__";
+		const hasSelectedCandidate =
+			selectedReuse !== "__pending__" && selectedReuse !== "__scratch__";
+		const reuseModelId = hasSelectedCandidate ? selectedReuse : undefined;
+
+		if (awaitingReuseSelection && !forceScratch && !hasSelectedCandidate) {
+			toast({
+				title: "Selection required",
+				description:
+					"Choose one reuse candidate or force scratch before generating code.",
+				variant: "destructive",
+			});
+			return;
+		}
+
+		const generated = await generateCode({
 			modelName: currentModel.name,
 			language: selectedLanguage,
 			ports: convertPorts(currentModel),
 			previousModelsCode: getPreviousModelsCode(),
 			userPrompt: values.prompt,
+			reuseModelId,
+			forceScratch,
 		});
 
-		if (code) {
-			onCodeGenerated(currentModel.id, code);
+		if (generated) {
+			setReuseCandidates(generated.reuseCandidates ?? []);
+
+			if (generated.reuseMode === "selection-required") {
+				setAwaitingReuseSelection(true);
+				setSelectedReuse("__pending__");
+				toast({
+					title: "Reuse candidates found",
+					description:
+						"Select one of the proposed candidates (top 4) or choose scratch, then generate again.",
+				});
+				return;
+			}
+
+			if (!generated.code?.trim()) {
+				toast({
+					title: "Generation error",
+					description: "No code was returned by the generation service.",
+					variant: "destructive",
+				});
+				return;
+			}
+
+			setAwaitingReuseSelection(false);
+			onCodeGenerated(currentModel.id, generated.code);
+
+			const reuseNote = generated.reuseUsed
+				? ` (reuse: ${generated.reuseUsed.name})`
+				: " (scratch)";
 			toast({
 				title: "Code generated successfully",
-				description: `Code for ${currentModel.name} has been generated.`,
+				description: `Code for ${currentModel.name} has been generated${reuseNote}.`,
 			});
 		} else if (error) {
 			toast({
@@ -173,9 +227,9 @@ export function CodeGenerationPanel({
 	}
 
 	return (
-		<div className="h-full flex">
+		<div className="h-full min-h-0 flex overflow-hidden">
 			{/* Left panel: models list with progress */}
-			<div className="w-72 border-r bg-muted/30 flex flex-col">
+			<div className="w-72 border-r bg-muted/30 flex flex-col min-h-0">
 				<div className="p-4 border-b">
 					<h3 className="font-semibold">Progress</h3>
 					<p className="text-xs text-muted-foreground mt-1">
@@ -271,7 +325,7 @@ export function CodeGenerationPanel({
 			</div>
 
 			{/* Center panel: prompt generator */}
-			<div className="w-80 border-r p-4 flex flex-col">
+			<div className="w-80 border-r p-4 flex flex-col min-h-0">
 				<Card className="mb-4">
 					<CardHeader className="pb-2">
 						<CardTitle className="text-lg flex items-center gap-2">
@@ -308,7 +362,7 @@ export function CodeGenerationPanel({
 					<Form {...form}>
 						<form
 							onSubmit={form.handleSubmit(handleGenerateCode)}
-							className="flex-1 flex flex-col"
+							className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1"
 						>
 							<div className="mb-4">
 								<FormLabel>Language</FormLabel>
@@ -328,23 +382,96 @@ export function CodeGenerationPanel({
 								</Select>
 							</div>
 
-							<FormField
-								control={form.control}
-								name="prompt"
-								render={({ field }) => (
-									<FormItem className="flex-1 flex flex-col">
-										<FormLabel>Describe the model behavior</FormLabel>
-										<FormControl>
-											<Textarea
-												placeholder={`Describe how ${selectedModel?.name} should behave. e.g., This model should alternate between ON and OFF states every 10 seconds...`}
-												className="flex-1 resize-none min-h-[150px]"
-												{...field}
+							<div className="mb-4 space-y-2">
+							<FormLabel>Reuse strategy</FormLabel>
+								<div className="rounded-md border bg-muted/20 p-2">
+									<RadioGroup
+										value={selectedReuse}
+										onValueChange={setSelectedReuse}
+										className="gap-2"
+									>
+										{reuseCandidates.length === 0 && (
+											<div className="text-xs text-muted-foreground px-1 py-1">
+												Run analysis first to load reuse candidates.
+											</div>
+										)}
+
+										<div className="max-h-36 overflow-y-auto space-y-2 pr-1">
+											{reuseCandidates.map((candidate, index) => {
+												const optionId = `reuse-${index}-${candidate.modelId}`;
+												const isActive = selectedReuse === candidate.modelId;
+												return (
+													<div
+														key={candidate.modelId}
+														className={`flex items-start gap-2 rounded-md border p-2 ${
+															isActive
+																? "border-primary bg-background"
+																: "border-border bg-background/70"
+														}`}
+													>
+														<RadioGroupItem
+															value={candidate.modelId}
+															id={optionId}
+															className="mt-0.5 shrink-0"
+														/>
+														<Label
+															htmlFor={optionId}
+															className="flex-1 min-w-0 cursor-pointer"
+														>
+															<div className="flex items-center justify-between gap-2">
+																<span className="truncate text-xs font-medium">
+																	{candidate.name}
+																</span>
+																<Badge variant="outline" className="shrink-0">
+																	{candidate.score.toFixed(3)}
+																</Badge>
+															</div>
+															{candidate.keywords && candidate.keywords.length > 0 && (
+																<p className="mt-1 text-[11px] text-muted-foreground truncate">
+																	{candidate.keywords.join(", ")}
+																</p>
+															)}
+														</Label>
+													</div>
+												);
+											})}
+										</div>
+
+										<div
+											className={`flex items-start gap-2 rounded-md border p-2 ${
+												selectedReuse === "__scratch__"
+													? "border-primary bg-background"
+													: "border-border bg-background/70"
+											}`}
+										>
+											<RadioGroupItem
+												value="__scratch__"
+												id="reuse-force-scratch"
+												className="mt-0.5 shrink-0"
 											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
+											<Label htmlFor="reuse-force-scratch" className="cursor-pointer">
+												<span className="text-xs font-medium">Force scratch</span>
+											</Label>
+										</div>
+									</RadioGroup>
+								</div>
+								{selectedReuse !== "__pending__" && (
+									<p className="text-xs text-muted-foreground">
+										Selected:{" "}
+										<span className="font-medium text-foreground inline-block max-w-full align-bottom truncate">
+											{selectedReuse === "__scratch__"
+												? "Force scratch"
+												: (reuseCandidates.find(
+														(candidate) => candidate.modelId === selectedReuse,
+												  )?.name ?? "Reuse candidate")}
+										</span>
+									</p>
 								)}
-							/>
+								<p className="text-xs text-muted-foreground">
+									The system proposes up to 4 candidates. You choose one, or force
+									scratch.
+								</p>
+							</div>
 
 							<div className="space-y-2 mt-4">
 								<Button type="submit" className="w-full" disabled={isLoading}>
@@ -356,9 +483,11 @@ export function CodeGenerationPanel({
 									) : (
 										<>
 											<Sparkles className="w-4 h-4 mr-2" />
-											{currentModel?.codeGenerated
+											{awaitingReuseSelection
+												? "Generate with Selected Strategy"
+												: currentModel?.codeGenerated
 												? "Regenerate"
-												: "Generate Code"}
+												: "Analyze Reuse & Generate"}
 										</>
 									)}
 								</Button>
@@ -375,6 +504,24 @@ export function CodeGenerationPanel({
 									</Button>
 								)}
 							</div>
+
+							<FormField
+								control={form.control}
+								name="prompt"
+								render={({ field }) => (
+									<FormItem className="mt-4">
+										<FormLabel>Describe the model behavior</FormLabel>
+										<FormControl>
+											<Textarea
+												placeholder={`Describe how ${selectedModel?.name} should behave. e.g., This model should alternate between ON and OFF states every 10 seconds...`}
+												className="resize-none min-h-[110px] max-h-[170px]"
+												{...field}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
 						</form>
 					</Form>
 				)}
@@ -406,7 +553,7 @@ export function CodeGenerationPanel({
 			</div>
 
 			{/* Right panel: code editor */}
-			<div className="flex-1 flex flex-col">
+			<div className="flex-1 min-w-0 min-h-0 flex flex-col">
 				<div className="p-2 border-b bg-muted/30 flex items-center justify-between">
 					<span className="text-sm font-medium">
 						{isSelectedAtomic
@@ -425,7 +572,7 @@ export function CodeGenerationPanel({
 						</span>
 					)}
 				</div>
-				<div className="flex-1">
+				<div className="flex-1 min-h-0">
 					{isSelectedAtomic && selectedModel?.code ? (
 						<ModelCodeEditor
 							code={selectedModel.code}

@@ -81,6 +81,7 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	for range manifest.Models {
 		if err := <-errCh; err != nil {
 			fmt.Println("Runner failed:", err)
+			return fmt.Errorf("runner failure: %w", err)
 		}
 	}
 

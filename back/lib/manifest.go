@@ -4,6 +4,7 @@ import (
 	"devsforge/json"
 	"devsforge/model"
 	"errors"
+	"strings"
 
 	shared "devsforge-shared"
 	sharedEnum "devsforge-shared/enum"
@@ -210,12 +211,13 @@ func resolveEndpointToAtomics(link json.ModelLink, context *model.Model, modelMa
 	}
 
 	childPath := append(append([]string{}, currentPath...), comp.InstanceID)
+	normalizedLinkPort := normalizePortIdentifier(childModel, link.Port)
 
 	if childModel.Type == "atomic" {
 		// Direct atomic - we found our endpoint
 		result = append(result, resolvedEndpoint{
 			modelID: childModel.ID,
-			port:    link.Port,
+			port:    normalizedLinkPort,
 		})
 		return result
 	}
@@ -224,10 +226,10 @@ func resolveEndpointToAtomics(link json.ModelLink, context *model.Model, modelMa
 	// Find connections that go from/to the coupled model's port
 	if portDirection == "out" {
 		// We're looking for the source of output: find what's connected to this output port inside
-		result = append(result, traceOutputPortSources(childModel, link.Port, modelMap, childPath, pathToAtomic)...)
+		result = append(result, traceOutputPortSources(childModel, normalizedLinkPort, modelMap, childPath, pathToAtomic)...)
 	} else {
 		// We're looking for the destination of input: find what this input port connects to inside
-		result = append(result, traceInputPortDestinations(childModel, link.Port, modelMap, childPath, pathToAtomic)...)
+		result = append(result, traceInputPortDestinations(childModel, normalizedLinkPort, modelMap, childPath, pathToAtomic)...)
 	}
 
 	return result
@@ -236,10 +238,12 @@ func resolveEndpointToAtomics(link json.ModelLink, context *model.Model, modelMa
 // traceOutputPortSources finds all atomic sources that output to a coupled model's output port (EOC tracing)
 func traceOutputPortSources(coupled *model.Model, outputPort string, modelMap map[string]*model.Model, currentPath []string, pathToAtomic map[string]*flatNode) []resolvedEndpoint {
 	result := make([]resolvedEndpoint, 0)
+	normalizedOutputPort := normalizePortIdentifier(coupled, outputPort)
 
 	// Find connections where To is root (the coupled model) with the specified port
 	for _, conn := range coupled.Connections {
-		if conn.To.InstanceID == "root" && conn.To.Port == outputPort {
+		if conn.To.InstanceID == "root" &&
+			normalizePortIdentifier(coupled, conn.To.Port) == normalizedOutputPort {
 			// Found an EOC: From connects to this output port
 			fromEndpoints := resolveEndpointToAtomics(conn.From, coupled, modelMap, currentPath, pathToAtomic, "out")
 			result = append(result, fromEndpoints...)
@@ -252,10 +256,12 @@ func traceOutputPortSources(coupled *model.Model, outputPort string, modelMap ma
 // traceInputPortDestinations finds all atomic destinations from a coupled model's input port (EIC tracing)
 func traceInputPortDestinations(coupled *model.Model, inputPort string, modelMap map[string]*model.Model, currentPath []string, pathToAtomic map[string]*flatNode) []resolvedEndpoint {
 	result := make([]resolvedEndpoint, 0)
+	normalizedInputPort := normalizePortIdentifier(coupled, inputPort)
 
 	// Find connections where From is root (the coupled model) with the specified port
 	for _, conn := range coupled.Connections {
-		if conn.From.InstanceID == "root" && conn.From.Port == inputPort {
+		if conn.From.InstanceID == "root" &&
+			normalizePortIdentifier(coupled, conn.From.Port) == normalizedInputPort {
 			// Found an EIC: this input port connects To something
 			toEndpoints := resolveEndpointToAtomics(conn.To, coupled, modelMap, currentPath, pathToAtomic, "in")
 			result = append(result, toEndpoints...)
@@ -276,9 +282,17 @@ func buildRunnableModel(node *flatNode, allConnections []flatConnection) *shared
 	// Convert ports
 	ports := make([]shared.RunnableModelPort, 0, len(m.Ports))
 	for _, p := range m.Ports {
+		portID := strings.TrimSpace(p.ID)
+		portName := strings.TrimSpace(p.Name)
+		if portName == "" {
+			portName = portID
+		}
+		if portID == "" {
+			portID = portName
+		}
 		ports = append(ports, shared.RunnableModelPort{
-			ID:   p.ID,
-			Name: p.Name,
+			ID:   portID,
+			Name: portName,
 			Type: sharedEnum.ModelPortDirection(p.Type),
 		})
 	}
@@ -338,4 +352,28 @@ func pathToString(path []string) string {
 		result += "/" + path[i]
 	}
 	return result
+}
+
+func normalizePortIdentifier(m *model.Model, rawPort string) string {
+	port := strings.TrimSpace(rawPort)
+	if m == nil || port == "" {
+		return port
+	}
+
+	for _, candidate := range m.Ports {
+		candidateID := strings.TrimSpace(candidate.ID)
+		candidateName := strings.TrimSpace(candidate.Name)
+
+		if candidateName != "" && candidateName == port {
+			return candidateName
+		}
+		if candidateID != "" && candidateID == port {
+			if candidateName != "" {
+				return candidateName
+			}
+			return candidateID
+		}
+	}
+
+	return port
 }

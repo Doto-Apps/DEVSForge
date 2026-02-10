@@ -71,7 +71,23 @@ type ExperimentalFrameStructureResponse struct {
 }
 
 type GeneratedModelResponse struct {
+	Code            string                   `json:"code" validate:"required"`
+	Keywords        []string                 `json:"keywords,omitempty"`
+	ReuseCandidates []ReuseCandidateResponse `json:"reuseCandidates,omitempty"`
+	ReuseUsed       *ReuseCandidateResponse  `json:"reuseUsed,omitempty"`
+	ReuseMode       string                   `json:"reuseMode,omitempty"`
+}
+
+type GeneratedModelLLMResponse struct {
 	Code string `json:"code" validate:"required"`
+}
+
+type ReuseCandidateResponse struct {
+	ModelID     string   `json:"modelId"`
+	Name        string   `json:"name"`
+	Score       float64  `json:"score"`
+	Keywords    []string `json:"keywords,omitempty"`
+	Description string   `json:"description,omitempty"`
 }
 
 type DocumentationRole string

@@ -153,19 +153,34 @@ func (s *SimulationService) runCoordinator(simulationID string, manifestFile str
 	// Clean up manifest file
 	os.Remove(manifestFile)
 
-	// Update simulation status
+	// Update simulation status.
+	// If the event consumer already marked the run as failed from an ErrorReport,
+	// do not override it with "completed".
 	now := time.Now()
-	simulation.CompletedAt = &now
-
 	if err != nil {
 		errMsg := err.Error()
-		simulation.Status = model.SimulationStatusFailed
-		simulation.ErrorMessage = &errMsg
-	} else {
-		simulation.Status = model.SimulationStatusCompleted
+		result := db.Model(&model.Simulation{}).
+			Where("id = ?", simulationID).
+			Updates(map[string]interface{}{
+				"status":        model.SimulationStatusFailed,
+				"error_message": errMsg,
+				"completed_at":  now,
+			})
+		if result.Error != nil {
+			fmt.Printf("[SimulationService] failed to mark simulation as failed: %v\n", result.Error)
+		}
+		return
 	}
 
-	db.Save(&simulation)
+	result := db.Model(&model.Simulation{}).
+		Where("id = ? AND status <> ?", simulationID, model.SimulationStatusFailed).
+		Updates(map[string]interface{}{
+			"status":       model.SimulationStatusCompleted,
+			"completed_at": now,
+		})
+	if result.Error != nil {
+		fmt.Printf("[SimulationService] failed to mark simulation as completed: %v\n", result.Error)
+	}
 }
 
 // markSimulationFailed marks a simulation as failed

@@ -86,6 +86,7 @@ func RunSimulation(args []string) error {
 		// TODO: Docker path should also rely on simRoot / rootDir if needed.
 	} else {
 		if err := RunShellSimulation(manifest, configFile, cfg); err != nil {
+			sendCoordinatorErrorReport(cfg, manifest.SimulationID, "COORDINATOR_SIMULATION_ERROR", err)
 			return err
 		}
 	}

@@ -5,6 +5,36 @@ import type { ReactFlowInput } from "@/types";
 const cleanHandleId = (str: string | undefined | null) =>
 	str?.replace(/^(in-internal-|out-internal-|out-|in-)/, "");
 
+const getPortIdentifierFromHandle = (handle: string | undefined | null) =>
+	cleanHandleId(handle)?.split(":")[1] ?? "";
+
+const resolvePortNameFromNode = (
+	node: ReactFlowInput["nodes"][number] | undefined,
+	rawPortIdentifier: string,
+	direction: "in" | "out",
+): string => {
+	if (!node || !rawPortIdentifier) return rawPortIdentifier;
+
+	const ports =
+		direction === "in"
+			? (node.data.inputPorts ?? [])
+			: (node.data.outputPorts ?? []);
+
+	const byName = ports.find(
+		(port) => (port.name?.trim() || port.id) === rawPortIdentifier,
+	);
+	if (byName) {
+		return byName.name?.trim() || byName.id;
+	}
+
+	const byID = ports.find((port) => port.id === rawPortIdentifier);
+	if (byID) {
+		return byID.name?.trim() || byID.id;
+	}
+
+	return rawPortIdentifier;
+};
+
 const getModelComponent = (
 	parentNode: ReactFlowInput["nodes"][number],
 	nodes: ReactFlowInput["nodes"],
@@ -45,14 +75,22 @@ const getModelConnection = (
 					anEdge.source === node.id
 						? "root"
 						: (anEdge.source.split("/").pop() ?? ""),
-				port: cleanHandleId(anEdge.sourceHandle)?.split(":")[1] ?? "",
+				port: resolvePortNameFromNode(
+					nodesAndEdges.nodes.find((candidate) => candidate.id === anEdge.source),
+					getPortIdentifierFromHandle(anEdge.sourceHandle),
+					"out",
+				),
 			},
 			to: {
 				instanceId:
 					anEdge.target === node.id
 						? "root"
 						: (anEdge.target.split("/").pop() ?? ""),
-				port: cleanHandleId(anEdge.targetHandle)?.split(":")[1] ?? "",
+				port: resolvePortNameFromNode(
+					nodesAndEdges.nodes.find((candidate) => candidate.id === anEdge.target),
+					getPortIdentifierFromHandle(anEdge.targetHandle),
+					"in",
+				),
 			},
 		},
 	]);
@@ -66,12 +104,12 @@ const getModelPorts = (
 	const portIn =
 		node.data.inputPorts?.map<components["schemas"]["json.ModelPort"]>((p) => ({
 			id: p.id,
-			name: p.name,
+			name: p.name?.trim() || p.id,
 			type: "in",
 		})) ?? [];
 	const portOut =
 		node.data.outputPorts?.map<components["schemas"]["json.ModelPort"]>(
-			(p) => ({ id: p.id, name: p.name, type: "out" }),
+			(p) => ({ id: p.id, name: p.name?.trim() || p.id, type: "out" }),
 		) ?? [];
 
 	return [...portIn, ...portOut];

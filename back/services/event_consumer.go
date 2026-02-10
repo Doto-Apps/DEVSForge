@@ -16,15 +16,33 @@ import (
 	"gorm.io/datatypes"
 )
 
-// DevsMessage represents the structure of a DEVS message from Kafka
-type DevsMessage struct {
-	DevsType string `json:"devsType"`
-	Time     *struct {
+type ErrorReportPayload struct {
+	OriginRole string      `json:"originRole"`
+	OriginID   string      `json:"originId"`
+	Severity   string      `json:"severity"`
+	ErrorCode  interface{} `json:"errorCode"`
+	Message    string      `json:"message"`
+}
+
+// KafkaMessage represents a DEVS or ISO-like message from Kafka
+type KafkaMessage struct {
+	DevsType      string `json:"devsType"`
+	MessageType   string `json:"messageType"`
+	SimulationRun string `json:"simulationRunId"`
+	MessageID     string `json:"messageId"`
+	SenderID      string `json:"senderId"`
+	ReceiverID    string `json:"receiverId"`
+	Time          *struct {
 		TimeType string   `json:"timeType"`
 		T        *float64 `json:"t"`
 	} `json:"time"`
-	Sender *string `json:"sender"`
-	Target *string `json:"target"`
+	EventTime *struct {
+		TimeType string   `json:"timeType"`
+		T        *float64 `json:"t"`
+	} `json:"eventTime"`
+	Sender  *string             `json:"sender"`
+	Target  *string             `json:"target"`
+	Payload *ErrorReportPayload `json:"payload"`
 }
 
 // EventConsumer consumes Kafka messages and stores them in the database
@@ -122,14 +140,20 @@ func (ec *EventConsumer) consumeLoop() {
 			}
 
 			simulationDone := false
+			simulationFailed := false
+			failureMessage := ""
 			fetches.EachRecord(func(record *kgo.Record) {
-				event := ec.parseMessage(record.Value)
+				event, done, failed, errorMessage := ec.parseMessage(record.Value)
 				if event != nil {
 					events = append(events, *event)
-
-					// Check if simulation is done
-					if event.DevsType == "devs.msg.SimulationDone" {
-						simulationDone = true
+				}
+				if done {
+					simulationDone = true
+				}
+				if failed {
+					simulationFailed = true
+					if errorMessage != "" {
+						failureMessage = errorMessage
 					}
 				}
 
@@ -137,6 +161,13 @@ func (ec *EventConsumer) consumeLoop() {
 					flushEvents()
 				}
 			})
+
+			// ErrorReport with severity error/fatal wins over SimulationDone.
+			if simulationFailed {
+				flushEvents()
+				ec.markSimulationFailed(failureMessage)
+				return
+			}
 
 			// If we saw SimulationDone, flush, update status and exit
 			if simulationDone {
@@ -148,31 +179,61 @@ func (ec *EventConsumer) consumeLoop() {
 	}
 }
 
-func (ec *EventConsumer) parseMessage(data []byte) *model.SimulationEvent {
-	var msg DevsMessage
+func (ec *EventConsumer) parseMessage(data []byte) (*model.SimulationEvent, bool, bool, string) {
+	var msg KafkaMessage
 	if err := json.Unmarshal(data, &msg); err != nil {
 		log.Printf("[EventConsumer] Error parsing message: %v", err)
-		return nil
+		return nil, false, false, ""
 	}
 
-	// Skip empty messages
-	if msg.DevsType == "" {
-		return nil
+	eventType := msg.DevsType
+	if eventType == "" && msg.MessageType != "" {
+		eventType = "iso.msg." + msg.MessageType
+	}
+	if eventType == "" {
+		return nil, false, false, ""
+	}
+
+	sender := msg.Sender
+	if sender == nil && strings.TrimSpace(msg.SenderID) != "" {
+		sender = strPtr(msg.SenderID)
+	}
+
+	target := msg.Target
+	if target == nil && strings.TrimSpace(msg.ReceiverID) != "" {
+		target = strPtr(msg.ReceiverID)
 	}
 
 	event := &model.SimulationEvent{
 		SimulationID: ec.simulationID,
-		DevsType:     msg.DevsType,
-		Sender:       msg.Sender,
-		Target:       msg.Target,
+		DevsType:     eventType,
+		Sender:       sender,
+		Target:       target,
 		Payload:      datatypes.JSON(data),
 	}
 
 	if msg.Time != nil && msg.Time.T != nil {
 		event.SimulationTime = msg.Time.T
+	} else if msg.EventTime != nil && msg.EventTime.T != nil {
+		event.SimulationTime = msg.EventTime.T
 	}
 
-	return event
+	isDone := eventType == "devs.msg.SimulationDone"
+
+	isFatalErrorReport := false
+	errorMessage := ""
+	if msg.MessageType == "ErrorReport" && msg.Payload != nil {
+		severity := strings.ToLower(strings.TrimSpace(msg.Payload.Severity))
+		if severity == "error" || severity == "fatal" {
+			isFatalErrorReport = true
+			errorMessage = strings.TrimSpace(msg.Payload.Message)
+			if errorMessage == "" {
+				errorMessage = "Error report received from simulator"
+			}
+		}
+	}
+
+	return event, isDone, isFatalErrorReport, errorMessage
 }
 
 // markSimulationCompleted updates the simulation status in DB
@@ -191,6 +252,31 @@ func (ec *EventConsumer) markSimulationCompleted() {
 	if result.Error != nil {
 		log.Printf("[EventConsumer] Error updating simulation status: %v", result.Error)
 	}
+}
+
+func (ec *EventConsumer) markSimulationFailed(message string) {
+	db := database.DB
+	now := time.Now()
+
+	if strings.TrimSpace(message) == "" {
+		message = "Simulation failed (ErrorReport)"
+	}
+
+	result := db.Model(&model.Simulation{}).
+		Where("id = ?", ec.simulationID).
+		Updates(map[string]interface{}{
+			"status":        model.SimulationStatusFailed,
+			"error_message": message,
+			"completed_at":  now,
+		})
+
+	if result.Error != nil {
+		log.Printf("[EventConsumer] Error updating failed simulation status: %v", result.Error)
+	}
+}
+
+func strPtr(v string) *string {
+	return &v
 }
 
 // EventConsumerManager manages event consumers for all simulations

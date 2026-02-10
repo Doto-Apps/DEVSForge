@@ -112,7 +112,7 @@ func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessag
 		if errs := fetches.Errors(); len(errs) > 0 {
 			// All errors are retried internally when fetching, but non-retriable errors are
 			// returned from polls so that users can notice and take action.
-			panic(fmt.Sprint(errs))
+			return fmt.Errorf("kafka poll error: %v", errs)
 		}
 
 		// We can iterate through a record iterator...

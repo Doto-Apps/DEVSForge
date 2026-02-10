@@ -23,18 +23,24 @@ export type GenerateEFStructureRequest = {
 	userPrompt: string;
 };
 
-export type PortInfo = {
-	id: string;
+export type PortInfo = components["schemas"]["request.PortInfo"];
+export type GenerateModelCodeRequest =
+	components["schemas"]["request.GenerateModelRequest"];
+
+export type ReuseCandidate = {
+	modelId: string;
 	name: string;
-	type: "in" | "out";
+	score: number;
+	keywords?: string[];
+	description?: string;
 };
 
-export type GenerateModelCodeRequest = {
-	modelName: string;
-	language: "python" | "go";
-	ports: PortInfo[];
-	previousModelsCode: string;
-	userPrompt: string;
+export type GenerateModelCodeResult = {
+	code: string;
+	keywords?: string[];
+	reuseCandidates?: ReuseCandidate[];
+	reuseUsed?: ReuseCandidate;
+	reuseMode?: string;
 };
 
 // Generator states

@@ -1,10 +1,12 @@
 import { Loader } from "lucide-react";
+import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 
 import { SimulationPanel } from "@/components/custom/SimulationPanel";
 import NavHeader from "@/components/nav/nav-header";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelById } from "@/queries/model/useGetModelById";
+import { useGetModelByIdRecursive } from "@/queries/model/useGetModelByIdRecursive";
 
 export function SimulateModel() {
 	const { libraryId, modelId } = useParams<{
@@ -20,6 +22,14 @@ export function SimulateModel() {
 			: null,
 	);
 
+	const { data: recursiveModels } = useGetModelByIdRecursive(
+		modelId
+			? {
+					params: { path: { id: modelId } },
+				}
+			: null,
+	);
+
 	const { data: library, isLoading: isLoadingLib } = useGetLibraryById(
 		libraryId
 			? {
@@ -27,6 +37,19 @@ export function SimulateModel() {
 				}
 			: null,
 	);
+
+	const modelNameById = useMemo(() => {
+		const map: Record<string, string> = {};
+		for (const item of recursiveModels ?? []) {
+			if (item.id && item.name) {
+				map[item.id] = item.name;
+			}
+		}
+		if (model?.id && model?.name) {
+			map[model.id] = model.name;
+		}
+		return map;
+	}, [recursiveModels, model?.id, model?.name]);
 
 	if (isLoadingModel || isLoadingLib) {
 		return (
@@ -37,7 +60,7 @@ export function SimulateModel() {
 	}
 
 	if (!model || !modelId) {
-		return <div>Modèle non trouvé</div>;
+		return <div>Model not found</div>;
 	}
 
 	return (
@@ -46,11 +69,11 @@ export function SimulateModel() {
 				breadcrumbs={[
 					{ label: "Libraries", href: "/library" },
 					{
-						label: library?.title ?? "Bibliothèque",
+						label: library?.title ?? "Library",
 						href: `/library/${libraryId}`,
 					},
 					{
-						label: model.name ?? "Modèle",
+						label: model.name ?? "Model",
 						href: `/library/${libraryId}/model/${modelId}`,
 					},
 					{ label: "Simulation" },
@@ -60,7 +83,11 @@ export function SimulateModel() {
 			/>
 
 			<div className="flex-1 p-6 overflow-auto">
-				<SimulationPanel modelId={modelId} modelName={model.name} />
+				<SimulationPanel
+					modelId={modelId}
+					modelName={model.name}
+					modelNameById={modelNameById}
+				/>
 			</div>
 		</div>
 	);

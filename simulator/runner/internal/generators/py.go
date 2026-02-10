@@ -2,18 +2,21 @@
 package generators
 
 import (
+	"bytes"
 	"context"
 	"devsforge-runner/internal/config"
 	shared "devsforge-shared"
 	devspb "devsforge-wrapper/proto"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc"
@@ -69,8 +72,10 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 	)
 	cmd.Env = env
 
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
+	var stdoutBuf bytes.Buffer
+	var stderrBuf bytes.Buffer
+	cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
+	cmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
 
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("failed to start python model process: %w", err)
@@ -103,6 +108,10 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 
 		case perr := <-procErrCh:
 			if perr != nil {
+				diagnostic := compactTailLog(stderrBuf.String(), stdoutBuf.String(), 12, 1200)
+				if diagnostic != "" {
+					return fmt.Errorf("python model process exited before gRPC was ready: %w | %s", perr, diagnostic)
+				}
 				return fmt.Errorf("python model process exited before gRPC was ready: %w", perr)
 			}
 			return fmt.Errorf("python model process exited before gRPC was ready (no error from Wait)")
@@ -186,4 +195,44 @@ def main() -> None:
 if __name__ == "__main__":
     main()
 `, cfg.Model.Name, cfg.GRPC.Port)
+}
+
+func compactTailLog(stderr string, stdout string, maxLines int, maxChars int) string {
+	trimmedErr := summarizeLog(stderr, maxLines, maxChars)
+	if trimmedErr != "" {
+		return "stderr tail: " + trimmedErr
+	}
+	trimmedOut := summarizeLog(stdout, maxLines, maxChars)
+	if trimmedOut != "" {
+		return "stdout tail: " + trimmedOut
+	}
+	return ""
+}
+
+func summarizeLog(raw string, maxLines int, maxChars int) string {
+	if maxLines <= 0 {
+		maxLines = 12
+	}
+	if maxChars <= 0 {
+		maxChars = 1200
+	}
+
+	s := strings.ReplaceAll(raw, "\r\n", "\n")
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return ""
+	}
+
+	lines := strings.Split(s, "\n")
+	if len(lines) > maxLines {
+		lines = lines[len(lines)-maxLines:]
+	}
+
+	out := strings.Join(lines, " || ")
+	out = strings.TrimSpace(out)
+	if len(out) > maxChars {
+		out = out[len(out)-maxChars:]
+		out = "... " + out
+	}
+	return out
 }

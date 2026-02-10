@@ -30,6 +30,8 @@ type GenerateModelRequest struct {
 	Ports              []PortInfo `json:"ports" validate:"required"`
 	PreviousModelsCode string     `json:"previousModelsCode" validate:"required" example:"Existing model code"`
 	UserPrompt         string     `json:"userPrompt" validate:"required" example:"Generate a model based on the previous code"`
+	ReuseModelID       *string    `json:"reuseModelId,omitempty" example:"uuid-of-reuse-candidate"`
+	ForceScratch       bool       `json:"forceScratch,omitempty" example:"false"`
 }
 
 type GenerateDocumentationRequest struct {
