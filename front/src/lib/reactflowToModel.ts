@@ -76,7 +76,9 @@ const getModelConnection = (
 						? "root"
 						: (anEdge.source.split("/").pop() ?? ""),
 				port: resolvePortNameFromNode(
-					nodesAndEdges.nodes.find((candidate) => candidate.id === anEdge.source),
+					nodesAndEdges.nodes.find(
+						(candidate) => candidate.id === anEdge.source,
+					),
 					getPortIdentifierFromHandle(anEdge.sourceHandle),
 					"out",
 				),
@@ -87,7 +89,9 @@ const getModelConnection = (
 						? "root"
 						: (anEdge.target.split("/").pop() ?? ""),
 				port: resolvePortNameFromNode(
-					nodesAndEdges.nodes.find((candidate) => candidate.id === anEdge.target),
+					nodesAndEdges.nodes.find(
+						(candidate) => candidate.id === anEdge.target,
+					),
 					getPortIdentifierFromHandle(anEdge.targetHandle),
 					"in",
 				),

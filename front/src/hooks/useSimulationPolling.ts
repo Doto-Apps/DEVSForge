@@ -140,7 +140,10 @@ export const useSimulationPolling = (
 					data.simulation.status === "completed" ||
 					data.simulation.status === "failed"
 				) {
-					if (data.simulation.status === "failed" && data.simulation.errorMessage) {
+					if (
+						data.simulation.status === "failed" &&
+						data.simulation.errorMessage
+					) {
 						setError(data.simulation.errorMessage);
 					}
 					stopPolling();

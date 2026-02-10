@@ -13,7 +13,9 @@ const resolvePortName = (
 		| components["schemas"]["request.ModelRequest"],
 	rawPort: string,
 ): string => {
-	const match = model.ports.find((port) => port.id === rawPort || port.name === rawPort);
+	const match = model.ports.find(
+		(port) => port.id === rawPort || port.name === rawPort,
+	);
 	if (!match) return rawPort;
 	return match.name || match.id || rawPort;
 };
@@ -26,7 +28,10 @@ const getComponentModel = (
 		| components["schemas"]["response.ModelResponse"]
 		| components["schemas"]["request.ModelRequest"],
 	instanceID: string,
-): components["schemas"]["response.ModelResponse"] | components["schemas"]["request.ModelRequest"] | undefined => {
+):
+	| components["schemas"]["response.ModelResponse"]
+	| components["schemas"]["request.ModelRequest"]
+	| undefined => {
 	const component = parentModel.components.find(
 		(modelComponent) => modelComponent.instanceId === instanceID,
 	);

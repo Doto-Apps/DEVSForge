@@ -12,6 +12,8 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
 	Select,
 	SelectContent,
@@ -19,8 +21,6 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
@@ -383,7 +383,7 @@ export function CodeGenerationPanel({
 							</div>
 
 							<div className="mb-4 space-y-2">
-							<FormLabel>Reuse strategy</FormLabel>
+								<FormLabel>Reuse strategy</FormLabel>
 								<div className="rounded-md border bg-muted/20 p-2">
 									<RadioGroup
 										value={selectedReuse}
@@ -426,11 +426,12 @@ export function CodeGenerationPanel({
 																	{candidate.score.toFixed(3)}
 																</Badge>
 															</div>
-															{candidate.keywords && candidate.keywords.length > 0 && (
-																<p className="mt-1 text-[11px] text-muted-foreground truncate">
-																	{candidate.keywords.join(", ")}
-																</p>
-															)}
+															{candidate.keywords &&
+																candidate.keywords.length > 0 && (
+																	<p className="mt-1 text-[11px] text-muted-foreground truncate">
+																		{candidate.keywords.join(", ")}
+																	</p>
+																)}
 														</Label>
 													</div>
 												);
@@ -449,8 +450,13 @@ export function CodeGenerationPanel({
 												id="reuse-force-scratch"
 												className="mt-0.5 shrink-0"
 											/>
-											<Label htmlFor="reuse-force-scratch" className="cursor-pointer">
-												<span className="text-xs font-medium">Force scratch</span>
+											<Label
+												htmlFor="reuse-force-scratch"
+												className="cursor-pointer"
+											>
+												<span className="text-xs font-medium">
+													Force scratch
+												</span>
 											</Label>
 										</div>
 									</RadioGroup>
@@ -463,13 +469,13 @@ export function CodeGenerationPanel({
 												? "Force scratch"
 												: (reuseCandidates.find(
 														(candidate) => candidate.modelId === selectedReuse,
-												  )?.name ?? "Reuse candidate")}
+													)?.name ?? "Reuse candidate")}
 										</span>
 									</p>
 								)}
 								<p className="text-xs text-muted-foreground">
-									The system proposes up to 4 candidates. You choose one, or force
-									scratch.
+									The system proposes up to 4 candidates. You choose one, or
+									force scratch.
 								</p>
 							</div>
 
@@ -486,8 +492,8 @@ export function CodeGenerationPanel({
 											{awaitingReuseSelection
 												? "Generate with Selected Strategy"
 												: currentModel?.codeGenerated
-												? "Regenerate"
-												: "Analyze Reuse & Generate"}
+													? "Regenerate"
+													: "Analyze Reuse & Generate"}
 										</>
 									)}
 								</Button>

@@ -1,5 +1,8 @@
 import { client } from "@/api/client";
-import type { GenerateModelCodeRequest, GenerateModelCodeResult } from "@/types";
+import type {
+	GenerateModelCodeRequest,
+	GenerateModelCodeResult,
+} from "@/types";
 import { useState } from "react";
 
 type UseGenerateModelCodeResult = {

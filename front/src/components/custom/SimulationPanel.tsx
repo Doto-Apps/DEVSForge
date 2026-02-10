@@ -74,7 +74,12 @@ type TransitMessage = {
 	matched: boolean;
 };
 
-type EventTypeFilter = "all" | "message" | "transition" | "lifecycle" | "payload";
+type EventTypeFilter =
+	| "all"
+	| "message"
+	| "transition"
+	| "lifecycle"
+	| "payload";
 
 type SimulationPanelProps = {
 	modelId: string;
@@ -175,9 +180,7 @@ const getEventTime = (event: SimulationEventResponse): number | null => {
 };
 
 const shortDevsType = (devsType?: string): string =>
-	(devsType ?? "Unknown")
-		.replace("devs.msg.", "")
-		.replace("iso.msg.", "");
+	(devsType ?? "Unknown").replace("devs.msg.", "").replace("iso.msg.", "");
 
 const getEventCategory = (event: SimulationEventResponse): EventTypeFilter => {
 	const shortType = shortDevsType(event.devsType);
@@ -233,7 +236,8 @@ const getEventIcon = (devsType?: string) => {
 
 const getEventBadgeClass = (devsType?: string) => {
 	const shortType = shortDevsType(devsType);
-	if (shortType.includes("Message")) return "bg-blue-500/10 text-blue-700 border-blue-200";
+	if (shortType.includes("Message"))
+		return "bg-blue-500/10 text-blue-700 border-blue-200";
 	if (shortType.includes("ErrorReport")) {
 		return "bg-red-500/10 text-red-700 border-red-200";
 	}
@@ -431,8 +435,7 @@ export function SimulationPanel({
 		);
 		const others = events.filter(
 			(e) =>
-				!e.devsType?.includes("Message") &&
-				!e.devsType?.includes("Transition"),
+				!e.devsType?.includes("Message") && !e.devsType?.includes("Transition"),
 		);
 
 		return {
@@ -510,7 +513,11 @@ export function SimulationPanel({
 									</>
 								)}
 							</Button>
-							<Button variant="outline" onClick={handleStop} disabled={!isPolling}>
+							<Button
+								variant="outline"
+								onClick={handleStop}
+								disabled={!isPolling}
+							>
 								<Square className="mr-2 h-4 w-4" />
 								Stop
 							</Button>
@@ -527,22 +534,30 @@ export function SimulationPanel({
 					<div className="grid grid-cols-2 gap-2 md:grid-cols-5">
 						<div className="rounded-md bg-background p-3 border">
 							<div className="text-xs text-muted-foreground">Messages</div>
-							<div className="text-lg font-semibold">{eventSummary.messages}</div>
+							<div className="text-lg font-semibold">
+								{eventSummary.messages}
+							</div>
 						</div>
 						<div className="rounded-md bg-background p-3 border">
 							<div className="text-xs text-muted-foreground">Transitions</div>
-							<div className="text-lg font-semibold">{eventSummary.transitions}</div>
+							<div className="text-lg font-semibold">
+								{eventSummary.transitions}
+							</div>
 						</div>
 						<div className="rounded-md bg-background p-3 border">
 							<div className="text-xs text-muted-foreground">Transits</div>
-							<div className="text-lg font-semibold">{eventSummary.transits}</div>
+							<div className="text-lg font-semibold">
+								{eventSummary.transits}
+							</div>
 						</div>
 						<div className="rounded-md bg-background p-3 border">
 							<div className="text-xs text-muted-foreground">Others</div>
 							<div className="text-lg font-semibold">{eventSummary.others}</div>
 						</div>
 						<div className="rounded-md bg-background p-3 border">
-							<div className="text-xs text-muted-foreground">Max observed time</div>
+							<div className="text-xs text-muted-foreground">
+								Max observed time
+							</div>
 							<div className="text-lg font-semibold">
 								{maxSimTime === null ? "-" : `t=${maxSimTime}`}
 							</div>
@@ -603,7 +618,9 @@ export function SimulationPanel({
 										Routed messages: source model/port to target model/port
 									</CardDescription>
 								</div>
-								<Badge variant="outline">{filteredTransitMessages.length}</Badge>
+								<Badge variant="outline">
+									{filteredTransitMessages.length}
+								</Badge>
 							</div>
 						</CardHeader>
 						<CardContent className="space-y-3">
@@ -646,11 +663,13 @@ export function SimulationPanel({
 												</div>
 												<div className="font-mono text-xs flex items-center gap-2 break-all">
 													<span className="rounded bg-muted px-1.5 py-0.5">
-														{formatModelIdentity(message.fromModel)}:{message.fromPort ?? "?"}
+														{formatModelIdentity(message.fromModel)}:
+														{message.fromPort ?? "?"}
 													</span>
 													<ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
 													<span className="rounded bg-muted px-1.5 py-0.5">
-														{formatModelIdentity(message.toModel)}:{message.toPort}
+														{formatModelIdentity(message.toModel)}:
+														{message.toPort}
 													</span>
 												</div>
 												<div className="text-xs text-muted-foreground font-mono break-all">
@@ -746,7 +765,8 @@ export function SimulationPanel({
 														</span>
 													</div>
 
-													{(inputValues.length > 0 || outputValues.length > 0) && (
+													{(inputValues.length > 0 ||
+														outputValues.length > 0) && (
 														<div className="space-y-1">
 															{outputValues.map((item, itemIndex) => (
 																<div
@@ -754,7 +774,8 @@ export function SimulationPanel({
 																	className="text-xs font-mono text-muted-foreground"
 																>
 																	<Send className="inline h-3.5 w-3.5 mr-1" />
-																	out.{item.portIdentifier} = {formatValueCompact(item.value)}
+																	out.{item.portIdentifier} ={" "}
+																	{formatValueCompact(item.value)}
 																</div>
 															))}
 															{inputValues.map((item, itemIndex) => (
@@ -763,7 +784,8 @@ export function SimulationPanel({
 																	className="text-xs font-mono text-muted-foreground"
 																>
 																	<Activity className="inline h-3.5 w-3.5 mr-1" />
-																	in.{item.portIdentifier} = {formatValueCompact(item.value)}
+																	in.{item.portIdentifier} ={" "}
+																	{formatValueCompact(item.value)}
 																</div>
 															))}
 														</div>
