@@ -1,5 +1,5 @@
-import type { components } from "@/api/v1";
 import { client } from "@/api/client";
+import type { components } from "@/api/v1";
 import NavHeader from "@/components/nav/nav-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -31,9 +31,8 @@ export function AccountSettings() {
 
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSaving, setIsSaving] = useState(false);
-	const [settings, setSettings] = useState<UserAISettingsResponse>(
-		DEFAULT_SETTINGS,
-	);
+	const [settings, setSettings] =
+		useState<UserAISettingsResponse>(DEFAULT_SETTINGS);
 	const [apiUrl, setApiUrl] = useState("");
 	const [apiModel, setApiModel] = useState("");
 	const [apiKey, setApiKey] = useState("");

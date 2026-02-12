@@ -36,34 +36,35 @@ type ChartContainerProps = React.ComponentProps<"div"> & {
 	>["children"];
 };
 
-export const ChartContainer = React.forwardRef<HTMLDivElement, ChartContainerProps>(
-	({ id, className, children, config, ...props }, ref) => {
-		const uniqueId = React.useId();
-		const chartId = `chart-${id ?? uniqueId.replace(/:/g, "")}`;
+export const ChartContainer = React.forwardRef<
+	HTMLDivElement,
+	ChartContainerProps
+>(({ id, className, children, config, ...props }, ref) => {
+	const uniqueId = React.useId();
+	const chartId = `chart-${id ?? uniqueId.replace(/:/g, "")}`;
 
-		return (
-			<ChartContext.Provider value={{ config }}>
-				<div
-					ref={ref}
-					data-chart={chartId}
-					className={cn(
-						"flex aspect-video justify-center text-xs",
-						"[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
-						"[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border",
-						"[&_.recharts-radial-bar-background-sector]:fill-muted",
-						className,
-					)}
-					{...props}
-				>
-					<ChartStyle id={chartId} config={config} />
-					<RechartsPrimitive.ResponsiveContainer>
-						{children}
-					</RechartsPrimitive.ResponsiveContainer>
-				</div>
-			</ChartContext.Provider>
-		);
-	},
-);
+	return (
+		<ChartContext.Provider value={{ config }}>
+			<div
+				ref={ref}
+				data-chart={chartId}
+				className={cn(
+					"flex aspect-video justify-center text-xs",
+					"[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
+					"[&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border",
+					"[&_.recharts-radial-bar-background-sector]:fill-muted",
+					className,
+				)}
+				{...props}
+			>
+				<ChartStyle id={chartId} config={config} />
+				<RechartsPrimitive.ResponsiveContainer>
+					{children}
+				</RechartsPrimitive.ResponsiveContainer>
+			</div>
+		</ChartContext.Provider>
+	);
+});
 
 ChartContainer.displayName = "ChartContainer";
 
@@ -95,4 +96,3 @@ function ChartStyle({ id, config }: { id: string; config: ChartConfig }) {
 		/>
 	);
 }
-

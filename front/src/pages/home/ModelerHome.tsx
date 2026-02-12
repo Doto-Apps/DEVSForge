@@ -8,7 +8,7 @@ import {
 	CardHeader,
 	CardTitle,
 } from "@/components/ui/card";
-import { ChartContainer, type ChartConfig } from "@/components/ui/chart";
+import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useGetLibraries } from "@/queries/library/useGetLibraries";
 import { useGetModels } from "@/queries/model/useGetModels";
@@ -20,6 +20,7 @@ import {
 	Sparkles,
 	Workflow,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
 	Label,
 	PolarAngleAxis,
@@ -28,7 +29,6 @@ import {
 	RadialBar,
 	RadialBarChart,
 } from "recharts";
-import { Link } from "react-router-dom";
 
 type RadialMetricCardProps = {
 	title: string;
@@ -153,7 +153,9 @@ function formatModelUpdate(value?: string) {
 	return date.toLocaleString();
 }
 
-function getModelUpdatedAt(model: { [key: string]: unknown }): string | undefined {
+function getModelUpdatedAt(model: { [key: string]: unknown }):
+	| string
+	| undefined {
 	if (!("updatedAt" in model)) return undefined;
 	const maybe = model.updatedAt;
 	return typeof maybe === "string" ? maybe : undefined;
@@ -196,8 +198,8 @@ export function ModelerHome() {
 
 	const librariesPreview = [...libraries]
 		.sort((a, b) => {
-			const aCount = a.id ? modelCountByLibraryId.get(a.id) ?? 0 : 0;
-			const bCount = b.id ? modelCountByLibraryId.get(b.id) ?? 0 : 0;
+			const aCount = a.id ? (modelCountByLibraryId.get(a.id) ?? 0) : 0;
+			const bCount = b.id ? (modelCountByLibraryId.get(b.id) ?? 0) : 0;
 			return bCount - aCount;
 		})
 		.slice(0, 6);
@@ -316,7 +318,7 @@ export function ModelerHome() {
 									<div className="divide-y rounded-md border">
 										{librariesPreview.map((library) => {
 											const libraryModels = library.id
-												? modelCountByLibraryId.get(library.id) ?? 0
+												? (modelCountByLibraryId.get(library.id) ?? 0)
 												: 0;
 											return (
 												<div
@@ -375,7 +377,9 @@ export function ModelerHome() {
 												</div>
 												{model.libId && model.id ? (
 													<Button asChild variant="ghost" size="sm">
-														<Link to={`/library/${model.libId}/model/${model.id}`}>
+														<Link
+															to={`/library/${model.libId}/model/${model.id}`}
+														>
 															Open
 															<ChevronRight />
 														</Link>

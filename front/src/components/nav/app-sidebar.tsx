@@ -1,11 +1,6 @@
 "use client";
 
-import {
-	BookOpenText,
-	House,
-	Sparkles,
-	Workflow,
-} from "lucide-react";
+import { BookOpenText, House, Sparkles, Workflow } from "lucide-react";
 import type * as React from "react";
 
 import { NavLibrary } from "./nav-library";
@@ -56,9 +51,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { user } = useAuth();
 	const sidebarUser = {
 		name:
-			user?.username?.trim() ||
-			user?.email?.split("@")[0] ||
-			data.user.name,
+			user?.username?.trim() || user?.email?.split("@")[0] || data.user.name,
 		email: user?.email ?? data.user.email,
 		avatar: data.user.avatar,
 	};

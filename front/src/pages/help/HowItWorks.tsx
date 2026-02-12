@@ -64,10 +64,7 @@ export function HowItWorks() {
 	return (
 		<div className="flex flex-col h-screen w-full">
 			<NavHeader
-				breadcrumbs={[
-					{ label: "Home", href: "/" },
-					{ label: "How It Works" },
-				]}
+				breadcrumbs={[{ label: "Home", href: "/" }, { label: "How It Works" }]}
 				showNavActions={false}
 				showModeToggle
 			/>
@@ -102,8 +99,8 @@ export function HowItWorks() {
 									<p className="font-medium">Frontend</p>
 								</div>
 								<p className="text-sm text-muted-foreground">
-									React + shadcn/ui + React Flow. Users model manually or trigger
-									AI workflows.
+									React + shadcn/ui + React Flow. Users model manually or
+									trigger AI workflows.
 								</p>
 							</div>
 							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
@@ -132,8 +129,8 @@ export function HowItWorks() {
 									<p className="font-medium">Simulator Runtime</p>
 								</div>
 								<p className="text-sm text-muted-foreground">
-									Coordinator + runner processes exchange DEVS messages and drive
-									time-ordered execution.
+									Coordinator + runner processes exchange DEVS messages and
+									drive time-ordered execution.
 								</p>
 							</div>
 						</CardContent>
@@ -154,7 +151,7 @@ export function HowItWorks() {
 									<p className="font-medium">Contract Pattern</p>
 								</div>
 								<pre className="overflow-x-auto rounded-md bg-background p-3 text-xs">
-{`Prompt + Context
+									{`Prompt + Context
   -> OpenAI ChatCompletion
   -> response_format = json_schema (strict = true)
   -> Parse JSON
@@ -195,8 +192,8 @@ export function HowItWorks() {
 								</div>
 								<p className="text-sm text-muted-foreground">
 									Single MUT, single EF root, root must be coupled, connected
-									port directions must be valid, and MUT interface must match the
-									target model interface.
+									port directions must be valid, and MUT interface must match
+									the target model interface.
 								</p>
 							</div>
 							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
@@ -205,8 +202,9 @@ export function HowItWorks() {
 									<p className="font-medium">Simulation Preconditions</p>
 								</div>
 								<p className="text-sm text-muted-foreground">
-									Manifest generation validates runnable graph consistency before
-									the simulation service launches coordinator/runner processes.
+									Manifest generation validates runnable graph consistency
+									before the simulation service launches coordinator/runner
+									processes.
 								</p>
 							</div>
 						</CardContent>
@@ -248,7 +246,8 @@ export function HowItWorks() {
 									<code className="mx-1">devs.msg.SendOutput</code>,
 									<code className="mx-1">devs.msg.ModelOutputMessage</code>,
 									<code className="mx-1">devs.msg.TransitionDone</code> and
-									<code className="mx-1">devs.msg.SimulationDone</code>. ISO-like
+									<code className="mx-1">devs.msg.SimulationDone</code>.
+									ISO-like
 									<code className="mx-1">ErrorReport</code> is also consumed and
 									can mark the run as failed.
 								</p>
@@ -258,7 +257,9 @@ export function HowItWorks() {
 
 					<Card>
 						<CardHeader>
-							<CardTitle>Runner RPC Boundary and Multi-Language Support</CardTitle>
+							<CardTitle>
+								Runner RPC Boundary and Multi-Language Support
+							</CardTitle>
 							<CardDescription>
 								Go and Python models execute behind one shared RPC contract.
 							</CardDescription>
@@ -269,7 +270,7 @@ export function HowItWorks() {
 									<Network className="h-4 w-4 text-primary" />
 									<p className="font-medium">AtomicModelService (gRPC)</p>
 								</div>
-								<p className="text-sm text-muted-foreground flex flex-wrap" >
+								<p className="text-sm text-muted-foreground flex flex-wrap">
 									Runners call a stable RPC interface:
 									<code className="mx-1">Initialize</code>,
 									<code className="mx-1">Finalize</code>,
@@ -301,7 +302,7 @@ export function HowItWorks() {
 									<p className="font-medium">Execution Mapping</p>
 								</div>
 								<pre className="overflow-x-auto rounded-md bg-background p-3 text-xs">
-{`ExecuteTransition(portValueList)
+									{`ExecuteTransition(portValueList)
   -> AddInput(portName, valueJson)
   -> choose Internal / External / Confluent transition
   -> TimeAdvance -> nextTime
@@ -329,9 +330,9 @@ SendOutput
 										Event Consumer and Database Writes
 									</AccordionTrigger>
 									<AccordionContent className="text-sm text-muted-foreground">
-										A backend Kafka consumer stores batches of runtime events into
-										simulation_events and updates simulation status. It handles
-										both DEVS and ISO-like message envelopes.
+										A backend Kafka consumer stores batches of runtime events
+										into simulation_events and updates simulation status. It
+										handles both DEVS and ISO-like message envelopes.
 									</AccordionContent>
 								</AccordionItem>
 								<AccordionItem value="error">
