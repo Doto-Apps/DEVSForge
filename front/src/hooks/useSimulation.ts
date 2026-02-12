@@ -10,11 +10,30 @@ const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(
 
 type SimulationEventResponse =
 	components["schemas"]["response.SimulationEventResponse"];
+type SimulationStartRequest =
+	components["schemas"]["request.SimulationStartRequest"];
+type APISimulationInstanceOverride = NonNullable<
+	SimulationStartRequest["overrides"]
+>[number];
+type APISimulationParameterOverride = NonNullable<
+	APISimulationInstanceOverride["overrideParams"]
+>[number];
+
+export type SimulationParameterOverride = {
+	name: NonNullable<APISimulationParameterOverride["name"]>;
+	value: APISimulationParameterOverride["value"];
+};
+
+export type SimulationInstanceOverride = {
+	instanceModelId: NonNullable<APISimulationInstanceOverride["instanceModelId"]>;
+	overrideParams: SimulationParameterOverride[];
+};
 
 type StartSimulationResult = {
 	startSimulation: (
 		modelId: string,
 		maxTime?: number,
+		overrides?: SimulationInstanceOverride[],
 	) => Promise<Simulation | null>;
 	simulation: Simulation | null;
 	isLoading: boolean;
@@ -38,12 +57,23 @@ export const useStartSimulation = (): StartSimulationResult => {
 	});
 
 	const startSimulation = useCallback(
-		async (modelId: string, maxTime?: number): Promise<Simulation | null> => {
+		async (
+			modelId: string,
+			maxTime?: number,
+			overrides?: SimulationInstanceOverride[],
+		): Promise<Simulation | null> => {
 			setIsLoading(true);
 			setError(null);
 			polling.clearEvents();
 
 			try {
+				const payload: SimulationStartRequest = {
+					maxTime: maxTime || 0,
+				};
+				if (overrides && overrides.length > 0) {
+					payload.overrides = overrides;
+				}
+
 				// Step 1: Create the simulation
 				const createResponse = await fetch(
 					`${API_BASE_URL}/simulation/${modelId}`,
@@ -53,7 +83,7 @@ export const useStartSimulation = (): StartSimulationResult => {
 							"Content-Type": "application/json",
 							Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
 						},
-						body: JSON.stringify({ maxTime: maxTime || 0 }),
+						body: JSON.stringify(payload),
 					},
 				);
 

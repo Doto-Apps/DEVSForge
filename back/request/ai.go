@@ -8,14 +8,14 @@ type PastMessages struct {
 type GenerateDiagramRequest struct {
 	DiagramName   string         `json:"diagramName" validate:"required" example:"MyDiagram"`
 	UserPrompt    string         `json:"userPrompt" validate:"required" example:"Create a software architecture diagram"`
-	PastResponses []PastMessages `json:"pastMessages,omitempty" example:"[]"`
+	PastResponses []PastMessages `json:"pastMessages,omitempty"`
 }
 
 type GenerateEFStructureRequest struct {
 	TargetModelID string         `json:"targetModelId" validate:"required" example:"uuid-of-target-model"`
 	RoomName      string         `json:"roomName,omitempty" example:"Room - NomDuEF"`
 	UserPrompt    string         `json:"userPrompt" validate:"required" example:"I want 2 generators and 1 acceptor to validate latency"`
-	PastResponses []PastMessages `json:"pastMessages,omitempty" example:"[]"`
+	PastResponses []PastMessages `json:"pastMessages,omitempty"`
 }
 
 type PortInfo struct {

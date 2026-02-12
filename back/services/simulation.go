@@ -23,7 +23,12 @@ func NewSimulationService() *SimulationService {
 }
 
 // CreateSimulation creates a new simulation entry in the database
-func (s *SimulationService) CreateSimulation(userID string, modelID string, maxTime float64) (*model.Simulation, error) {
+func (s *SimulationService) CreateSimulation(
+	userID string,
+	modelID string,
+	maxTime float64,
+	runtimeOverrides []lib.RuntimeInstanceOverride,
+) (*model.Simulation, error) {
 	db := database.DB
 
 	// Get models recursively
@@ -46,7 +51,13 @@ func (s *SimulationService) CreateSimulation(userID string, modelID string, maxT
 	}
 
 	// Generate manifest with the simulation ID
-	manifest, err := lib.ModelToManifest(models, modelID, simulation.ID, maxTime)
+	manifest, err := lib.ModelToManifest(
+		models,
+		modelID,
+		simulation.ID,
+		maxTime,
+		runtimeOverrides,
+	)
 	if err != nil {
 		simulation.Status = model.SimulationStatusFailed
 		errMsg := err.Error()

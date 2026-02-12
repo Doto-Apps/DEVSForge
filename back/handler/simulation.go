@@ -2,6 +2,7 @@ package handler
 
 import (
 	"devsforge/database"
+	"devsforge/lib"
 	"devsforge/middleware"
 	"devsforge/model"
 	"devsforge/request"
@@ -53,8 +54,28 @@ func createSimulation(c *fiber.Ctx) error {
 	var req request.SimulationStartRequest
 	_ = c.BodyParser(&req) // Ignore error if body is empty
 
+	runtimeOverrides := make([]lib.RuntimeInstanceOverride, 0, len(req.Overrides))
+	for _, override := range req.Overrides {
+		params := make([]lib.RuntimeParameterOverride, 0, len(override.OverrideParams))
+		for _, param := range override.OverrideParams {
+			params = append(params, lib.RuntimeParameterOverride{
+				Name:  param.Name,
+				Value: param.Value,
+			})
+		}
+		runtimeOverrides = append(runtimeOverrides, lib.RuntimeInstanceOverride{
+			InstanceModelID: override.InstanceModelID,
+			OverrideParams:  params,
+		})
+	}
+
 	// Create simulation entry (status: pending)
-	simulation, err := simulationService.CreateSimulation(userID, modelID, req.MaxTime)
+	simulation, err := simulationService.CreateSimulation(
+		userID,
+		modelID,
+		req.MaxTime,
+		runtimeOverrides,
+	)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),

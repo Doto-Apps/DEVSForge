@@ -59,19 +59,27 @@ Helper methods:
 - get_ports(port_type: str = None) -> List[Port] - Get ports (filter by "in"/"out")
 - is_input_empty() -> bool - Check if all input ports are empty
 
+### RunnableModel config payload (factory input)
+NewModel(config: dict) receives a JSON object with:
+- id: model instance id
+- name: model instance name
+- ports: list of {id, name, type}
+- parameters: optional list of {name, type, value, description}
+
 ## Template Structure
 
 %s
 
 ## Rules
 1. Only output the raw Python code, no markdown code blocks
-2. Use tabs for indentation
+2. Use 4 spaces for indentation (never tabs)
 3. The class must inherit from Atomic
 4. Implement all abstract methods
-5. Use the NewModel factory function pattern
+5. Use the NewModel factory function pattern with config["ports"]
 6. Access ports by name using get_port_by_name()
 7. Add output values using port.add_value()
 8. Read input values using port.get_single_value() or port.get_values()
+9. Read config["parameters"] in NewModel and expose them on the model instance
 `
 
 const ModelPromptGo = `
@@ -131,11 +139,11 @@ Base methods from modeling.Atomic:
 ## Rules
 1. Only output the raw Go code, no markdown code blocks
 2. Package must be 'main'
-3. Import "devsforge-wrapper/modeling" and "encoding/json"
+3. Import "devsforge-wrapper/modeling"
 4. Embed modeling.Atomic in your struct
-5. Use NewModel(cfg modeling.RunnableModel) as factory function
+5. Use NewModel(cfg modeling.RunnableModel) as factory function and read cfg.Parameters
 6. Access ports by name using m.GetPortByName("portName")
-7. Use json.Marshal for port values
+7. Add serializable values directly to output ports (wrapper handles JSON marshaling)
 8. Check errors properly
 `
 

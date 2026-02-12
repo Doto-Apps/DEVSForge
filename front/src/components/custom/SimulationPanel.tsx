@@ -19,7 +19,11 @@ import {
 } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
-import { useStartSimulation } from "@/hooks/useSimulation";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	type SimulationInstanceOverride,
+	useStartSimulation,
+} from "@/hooks/useSimulation";
 import { cn } from "@/lib/utils";
 import type { SimulationStatus } from "@/types";
 import {
@@ -81,10 +85,20 @@ type EventTypeFilter =
 	| "lifecycle"
 	| "payload";
 
+type ModelParameter = components["schemas"]["json.ModelParameter"];
+
+export type SimulationParameterTarget = {
+	instanceModelId: string;
+	modelId: string;
+	modelName: string;
+	parameters: ModelParameter[];
+};
+
 type SimulationPanelProps = {
 	modelId: string;
 	modelName?: string;
 	modelNameById?: Record<string, string>;
+	parameterTargets?: SimulationParameterTarget[];
 };
 
 const statusColors: Record<SimulationStatus, string> = {
@@ -254,6 +268,7 @@ export function SimulationPanel({
 	modelId,
 	modelName,
 	modelNameById = {},
+	parameterTargets = [],
 }: SimulationPanelProps) {
 	const {
 		startSimulation,
@@ -272,10 +287,65 @@ export function SimulationPanel({
 		useState<EventTypeFilter>("all");
 	const [onlyEventsWithPayload, setOnlyEventsWithPayload] = useState(false);
 	const [showOnlyMatchedTransit, setShowOnlyMatchedTransit] = useState(false);
+	const [parameterOverrides, setParameterOverrides] = useState<
+		Record<string, Record<string, unknown>>
+	>({});
+	const [objectInputs, setObjectInputs] = useState<Record<string, string>>({});
+
+	const setOverrideValue = (
+		instanceModelId: string,
+		paramName: string,
+		baseValue: unknown,
+		nextValue: unknown,
+	) => {
+		const baseKey = stableValueKey(baseValue);
+		const nextKey = stableValueKey(nextValue);
+		const shouldReset = baseKey === nextKey;
+
+		setParameterOverrides((prev) => {
+			const next = { ...prev };
+			const currentByInstance = { ...(next[instanceModelId] ?? {}) };
+
+			if (shouldReset) {
+				delete currentByInstance[paramName];
+			} else {
+				currentByInstance[paramName] = nextValue;
+			}
+
+			if (Object.keys(currentByInstance).length === 0) {
+				delete next[instanceModelId];
+			} else {
+				next[instanceModelId] = currentByInstance;
+			}
+
+			return next;
+		});
+	};
+
+	const runtimeOverrides = useMemo<SimulationInstanceOverride[]>(() => {
+		return Object.entries(parameterOverrides)
+			.map(([instanceModelId, params]) => ({
+				instanceModelId,
+				overrideParams: Object.entries(params).map(([name, value]) => ({
+					name,
+					value,
+				})),
+			}))
+			.filter((override) => override.overrideParams.length > 0);
+	}, [parameterOverrides]);
+
+	const parameterTargetsWithParams = useMemo(
+		() => parameterTargets.filter((target) => target.parameters.length > 0),
+		[parameterTargets],
+	);
 
 	const handleStart = async () => {
 		const maxTimeValue = Number.parseFloat(maxTime) || 0;
-		await startSimulation(modelId, maxTimeValue);
+		await startSimulation(
+			modelId,
+			maxTimeValue,
+			runtimeOverrides.length > 0 ? runtimeOverrides : undefined,
+		);
 	};
 
 	const handleStop = () => {
@@ -284,6 +354,11 @@ export function SimulationPanel({
 
 	const handleClear = () => {
 		clearEvents();
+	};
+
+	const handleClearOverrides = () => {
+		setParameterOverrides({});
+		setObjectInputs({});
 	};
 
 	const formatModelIdentity = (id: string | null): string => {
@@ -530,6 +605,193 @@ export function SimulationPanel({
 							</Button>
 						</div>
 					</div>
+
+					{parameterTargetsWithParams.length > 0 ? (
+						<div className="rounded-md border bg-background p-3 space-y-3">
+							<div className="flex items-center justify-between gap-2">
+								<div>
+									<div className="text-sm font-medium">
+										Runtime Parameter Overrides
+									</div>
+									<div className="text-xs text-muted-foreground">
+										Optional. Overrides are applied only for this simulation
+										run.
+									</div>
+								</div>
+								<div className="flex items-center gap-2">
+									<Badge variant="outline">
+										{runtimeOverrides.length} override
+										{runtimeOverrides.length > 1 ? "s" : ""}
+									</Badge>
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onClick={handleClearOverrides}
+										disabled={runtimeOverrides.length === 0}
+									>
+										Reset
+									</Button>
+								</div>
+							</div>
+
+							<div className="max-h-72 overflow-auto space-y-3 pr-1">
+								{parameterTargetsWithParams.map((target) => {
+									const instanceOverrides =
+										parameterOverrides[target.instanceModelId] ?? {};
+
+									return (
+										<div
+											key={target.instanceModelId}
+											className="rounded-md border p-3 space-y-3"
+										>
+											<div className="space-y-1">
+												<div className="text-sm font-medium leading-none">
+													{target.modelName}
+												</div>
+												<div className="text-xs text-muted-foreground font-mono break-all">
+													{target.instanceModelId}
+												</div>
+											</div>
+
+											<div className="grid gap-3 md:grid-cols-2">
+												{target.parameters.map((param) => {
+													const hasRuntimeOverride = Object.prototype.hasOwnProperty.call(
+														instanceOverrides,
+														param.name,
+													);
+													const currentValue = hasRuntimeOverride
+														? instanceOverrides[param.name]
+														: param.value;
+													const objectInputKey = `${target.instanceModelId}::${param.name}`;
+
+													return (
+														<div key={param.name} className="space-y-1.5">
+															<div className="flex items-center justify-between gap-2">
+																<Label className="text-xs font-semibold">
+																	{param.name}
+																</Label>
+																<Badge
+																	variant="outline"
+																	className={cn(
+																		"text-[10px]",
+																		hasRuntimeOverride
+																			? "border-blue-300 text-blue-700"
+																			: "text-muted-foreground",
+																	)}
+																>
+																	{param.type}
+																</Badge>
+															</div>
+
+															{param.type === "bool" ? (
+																<div className="flex h-10 items-center rounded-md border px-3">
+																	<Switch
+																		checked={Boolean(currentValue)}
+																		onCheckedChange={(checked) =>
+																			setOverrideValue(
+																				target.instanceModelId,
+																				param.name,
+																				param.value,
+																				checked,
+																			)
+																		}
+																	/>
+																</div>
+															) : null}
+
+															{param.type === "string" ? (
+																<Input
+																	type="text"
+																	value={
+																		typeof currentValue === "string"
+																			? currentValue
+																			: String(currentValue ?? "")
+																	}
+																	onChange={(event) =>
+																		setOverrideValue(
+																			target.instanceModelId,
+																			param.name,
+																			param.value,
+																			event.target.value,
+																		)
+																	}
+																/>
+															) : null}
+
+															{param.type === "int" || param.type === "float" ? (
+																<Input
+																	type="number"
+																	step={param.type === "int" ? 1 : 0.1}
+																	value={
+																		typeof currentValue === "number" &&
+																		Number.isFinite(currentValue)
+																			? currentValue
+																			: ""
+																	}
+																	onChange={(event) => {
+																		const raw = event.target.value;
+																		if (raw === "") {
+																			setOverrideValue(
+																				target.instanceModelId,
+																				param.name,
+																				param.value,
+																				param.value,
+																			);
+																			return;
+																		}
+																		const parsed = Number(raw);
+																		if (Number.isNaN(parsed)) return;
+
+																		setOverrideValue(
+																			target.instanceModelId,
+																			param.name,
+																			param.value,
+																			param.type === "int"
+																				? Math.trunc(parsed)
+																				: parsed,
+																		);
+																	}}
+																/>
+															) : null}
+
+															{param.type === "object" ? (
+																<Textarea
+																	className="font-mono min-h-24"
+																	value={
+																		objectInputs[objectInputKey] ??
+																		JSON.stringify(currentValue ?? {}, null, 2)
+																	}
+																	onChange={(event) => {
+																		const raw = event.target.value;
+																		setObjectInputs((prev) => ({
+																			...prev,
+																			[objectInputKey]: raw,
+																		}));
+																		try {
+																			const parsed = JSON.parse(raw);
+																			setOverrideValue(
+																				target.instanceModelId,
+																				param.name,
+																				param.value,
+																				parsed,
+																			);
+																		} catch {
+																			// keep raw editing until valid JSON
+																		}
+																	}}
+																/>
+															) : null}
+														</div>
+													);
+												})}
+											</div>
+										</div>
+									);
+								})}
+							</div>
+						</div>
+					) : null}
 
 					<div className="grid grid-cols-2 gap-2 md:grid-cols-5">
 						<div className="rounded-md bg-background p-3 border">

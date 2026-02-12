@@ -370,6 +370,20 @@ definitions:
     - targetModelId
     type: object
   request.GenerateDiagramRequest:
+    properties:
+      diagramName:
+        example: MyDiagram
+        type: string
+      pastMessages:
+        items:
+          $ref: '#/definitions/request.PastMessages'
+        type: array
+      userPrompt:
+        example: Create a software architecture diagram
+        type: string
+    required:
+    - diagramName
+    - userPrompt
     type: object
   request.GenerateDocumentationRequest:
     properties:
@@ -380,6 +394,23 @@ definitions:
     - modelId
     type: object
   request.GenerateEFStructureRequest:
+    properties:
+      pastMessages:
+        items:
+          $ref: '#/definitions/request.PastMessages'
+        type: array
+      roomName:
+        example: Room - NomDuEF
+        type: string
+      targetModelId:
+        example: uuid-of-target-model
+        type: string
+      userPrompt:
+        example: I want 2 generators and 1 acceptor to validate latency
+        type: string
+    required:
+    - targetModelId
+    - userPrompt
     type: object
   request.GenerateModelRequest:
     properties:
@@ -542,11 +573,31 @@ definitions:
     - password
     - username
     type: object
+  request.SimulationModelOverrideRequest:
+    properties:
+      instanceModelId:
+        type: string
+      overrideParams:
+        items:
+          $ref: '#/definitions/request.SimulationParameterOverrideRequest'
+        type: array
+    type: object
+  request.SimulationParameterOverrideRequest:
+    properties:
+      name:
+        type: string
+      value: {}
+    type: object
   request.SimulationStartRequest:
     properties:
       maxTime:
         description: Maximum simulation time (0 = no limit)
         type: number
+      overrides:
+        description: Optional runtime parameter overrides
+        items:
+          $ref: '#/definitions/request.SimulationModelOverrideRequest'
+        type: array
     type: object
   request.UpdateUserAISettingsRequest:
     properties:

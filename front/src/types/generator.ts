@@ -12,16 +12,11 @@ export type ExperimentalFrameRole =
 	components["schemas"]["response.ExperimentalFrameRole"];
 
 // Request types
-export type GenerateDiagramRequest = {
-	diagramName: string;
-	userPrompt: string;
-};
+export type GenerateDiagramRequest =
+	components["schemas"]["request.GenerateDiagramRequest"];
 
-export type GenerateEFStructureRequest = {
-	targetModelId: string;
-	roomName?: string;
-	userPrompt: string;
-};
+export type GenerateEFStructureRequest =
+	components["schemas"]["request.GenerateEFStructureRequest"];
 
 export type PortInfo = components["schemas"]["request.PortInfo"];
 export type GenerateModelCodeRequest =

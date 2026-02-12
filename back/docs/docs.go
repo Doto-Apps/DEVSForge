@@ -2301,7 +2301,27 @@ const docTemplate = `{
             }
         },
         "request.GenerateDiagramRequest": {
-            "type": "object"
+            "type": "object",
+            "required": [
+                "diagramName",
+                "userPrompt"
+            ],
+            "properties": {
+                "diagramName": {
+                    "type": "string",
+                    "example": "MyDiagram"
+                },
+                "pastMessages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.PastMessages"
+                    }
+                },
+                "userPrompt": {
+                    "type": "string",
+                    "example": "Create a software architecture diagram"
+                }
+            }
         },
         "request.GenerateDocumentationRequest": {
             "type": "object",
@@ -2316,7 +2336,31 @@ const docTemplate = `{
             }
         },
         "request.GenerateEFStructureRequest": {
-            "type": "object"
+            "type": "object",
+            "required": [
+                "targetModelId",
+                "userPrompt"
+            ],
+            "properties": {
+                "pastMessages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.PastMessages"
+                    }
+                },
+                "roomName": {
+                    "type": "string",
+                    "example": "Room - NomDuEF"
+                },
+                "targetModelId": {
+                    "type": "string",
+                    "example": "uuid-of-target-model"
+                },
+                "userPrompt": {
+                    "type": "string",
+                    "example": "I want 2 generators and 1 acceptor to validate latency"
+                }
+            }
         },
         "request.GenerateModelRequest": {
             "type": "object",
@@ -2548,12 +2592,42 @@ const docTemplate = `{
                 }
             }
         },
+        "request.SimulationModelOverrideRequest": {
+            "type": "object",
+            "properties": {
+                "instanceModelId": {
+                    "type": "string"
+                },
+                "overrideParams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.SimulationParameterOverrideRequest"
+                    }
+                }
+            }
+        },
+        "request.SimulationParameterOverrideRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {}
+            }
+        },
         "request.SimulationStartRequest": {
             "type": "object",
             "properties": {
                 "maxTime": {
                     "description": "Maximum simulation time (0 = no limit)",
                     "type": "number"
+                },
+                "overrides": {
+                    "description": "Optional runtime parameter overrides",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.SimulationModelOverrideRequest"
+                    }
                 }
             }
         },

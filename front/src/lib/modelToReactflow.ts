@@ -119,6 +119,11 @@ const createReactflowModel = (
 	if (!model) return null;
 
 	const metadata = getModelMetadata(component, model);
+	const resolvedModelRole = metadata.modelRole ?? model.metadata.modelRole ?? "";
+	const resolvedKeywords = metadata.keyword ?? model.metadata.keyword ?? [];
+	const resolvedModelColors =
+		metadata.modelColors ?? model.metadata.modelColors;
+	const resolvedParameters = metadata.parameters ?? model.metadata.parameters;
 
 	return {
 		// on devrait recréer un autre uuid ici
@@ -133,8 +138,8 @@ const createReactflowModel = (
 		data: {
 			id: model.id ?? "Unnamed model",
 			modelType: model.type ?? "atomic",
-			modelRole: model.metadata.modelRole ?? "",
-			keyword: model.metadata.keyword ?? [],
+			modelRole: resolvedModelRole,
+			keyword: resolvedKeywords,
 			label: model.name ?? "Unnamed model",
 			description: model.description,
 			inputPorts: model.ports
@@ -143,10 +148,10 @@ const createReactflowModel = (
 			outputPorts: model.ports
 				.filter((p) => p.type === "out")
 				.map((p) => ({ id: p.id, name: p.name || p.id })),
-			...(model.metadata.modelColors
-				? { reactFlowModelGraphicalData: model.metadata.modelColors }
+			...(resolvedModelColors
+				? { reactFlowModelGraphicalData: resolvedModelColors }
 				: {}),
-			parameters: model.metadata.parameters,
+			parameters: resolvedParameters,
 			code: model.code,
 		},
 		dragging: false,

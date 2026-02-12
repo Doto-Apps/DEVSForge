@@ -55,7 +55,7 @@ const getModelComponent = (
 				...(nodeInNodes.data.reactFlowModelGraphicalData
 					? { modelColors: nodeInNodes.data.reactFlowModelGraphicalData }
 					: {}),
-				// parameters: nodeInNodes.data.parameters,
+				parameters: nodeInNodes.data.parameters ?? undefined,
 			},
 		}));
 };
@@ -150,7 +150,7 @@ const nodeToModel = (
 			...(node.data.reactFlowModelGraphicalData && !node.id.includes("/")
 				? { modelColors: node.data.reactFlowModelGraphicalData }
 				: {}),
-			// parameters: node.data.parameters ?? undefined,
+			parameters: node.data.parameters ?? undefined,
 		},
 		libId: undefined,
 		connections:

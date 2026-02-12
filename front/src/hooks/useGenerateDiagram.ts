@@ -23,10 +23,7 @@ export const useGenerateDiagram = (): UseGenerateDiagramResult => {
 
 		try {
 			const response = await client.POST("/ai/generate-diagram", {
-				body: {
-					diagramName: request.diagramName,
-					userPrompt: request.userPrompt,
-				} as unknown as Record<string, never>,
+				body: request,
 			});
 
 			if (!response.data) {

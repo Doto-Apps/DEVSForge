@@ -39,13 +39,17 @@ type Props = {
 		>,
 	) => void;
 	disabled: boolean;
+	valueOnly?: boolean;
 };
 
 export function ModelParameterEditor({
 	parameters,
 	onParametersChange,
 	disabled,
+	valueOnly = false,
 }: Props) {
+	const canEditValues = !disabled || valueOnly;
+	const canEditSchema = !disabled && !valueOnly;
 	const [editAsJSON, setEditAsJSON] = useState(false);
 	const [jsonInput, setJsonInput] = useState(
 		JSON.stringify(parameters, null, 2),
@@ -77,16 +81,23 @@ export function ModelParameterEditor({
 		<div className="space-y-4">
 			<div className="flex items-center justify-between gap-2">
 				<Label>
-					{editAsJSON ? "Edit Parameters as JSON" : "Edit Parameters with UI"}
+					{valueOnly
+						? "Override parameter values for this instance"
+						: editAsJSON
+							? "Edit Parameters as JSON"
+							: "Edit Parameters with UI"}
 				</Label>
-				<Button
-					variant="secondary"
-					size="icon"
-					className="size-8"
-					onClick={() => setEditAsJSON((prev) => !prev)}
-				>
-					{editAsJSON ? <Code size={18} /> : <Edit size={18} />}
-				</Button>
+				{!valueOnly ? (
+					<Button
+						variant="secondary"
+						size="icon"
+						className="size-8"
+						onClick={() => setEditAsJSON((prev) => !prev)}
+						disabled={!canEditSchema}
+					>
+						{editAsJSON ? <Code size={18} /> : <Edit size={18} />}
+					</Button>
+				) : null}
 			</div>
 
 			{editAsJSON ? (
@@ -94,7 +105,7 @@ export function ModelParameterEditor({
 					value={jsonInput}
 					className="font-mono h-64"
 					onChange={(e) => setJsonInput(e.target.value)}
-					disabled={disabled}
+					disabled={!canEditSchema}
 					onBlur={() => {
 						try {
 							const parsed = ParameterSchema.parse(JSON.parse(jsonInput));
@@ -113,7 +124,7 @@ export function ModelParameterEditor({
 							type={param.type}
 							updateParameter={updateParameter}
 							value={param.value}
-							disabled={disabled}
+							disabled={!canEditValues}
 						/>
 
 						{param.description ? (
@@ -127,7 +138,11 @@ export function ModelParameterEditor({
 
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
-					<Button variant="default" className="w-full">
+					<Button
+						variant="default"
+						className="w-full"
+						disabled={!canEditSchema}
+					>
 						<Plus />
 						Add a parameter
 					</Button>

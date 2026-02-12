@@ -259,8 +259,9 @@ export function EditModel() {
 					<ResizablePanel defaultSize={20} minSize={20}>
 						<ModelPropertyEditor
 							model={selectedModel ?? mainModel}
-							onChange={disableCustomization ? () => {} : onChangeProperty}
+							onChange={onChangeProperty}
 							disabled={disableCustomization}
+							allowParameterValueEdit={disableCustomization}
 						/>
 					</ResizablePanel>
 				</ResizablePanelGroup>
@@ -279,8 +280,9 @@ export function EditModel() {
 					<ResizablePanel defaultSize={30} minSize={20}>
 						<ModelPropertyEditor
 							model={selectedModel ?? mainModel}
-							onChange={disableCustomization ? () => {} : onChangeProperty}
+							onChange={onChangeProperty}
 							disabled={disableCustomization}
+							allowParameterValueEdit={disableCustomization}
 						/>
 					</ResizablePanel>
 				</ResizablePanelGroup>

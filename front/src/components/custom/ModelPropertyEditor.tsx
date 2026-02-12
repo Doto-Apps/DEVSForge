@@ -38,9 +38,15 @@ type Props = {
 	model: Node<ReactFlowModelData>;
 	onChange?: (model: Node<ReactFlowModelData>) => void;
 	disabled: boolean;
+	allowParameterValueEdit?: boolean;
 };
 
-export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
+export function ModelPropertyEditor({
+	model,
+	onChange,
+	disabled,
+	allowParameterValueEdit = false,
+}: Props) {
 	const [keywordInput, setKeywordInput] = useState("");
 	const { generateDocumentation, isLoading: isGenerating } =
 		useGenerateDocumentation();
@@ -267,6 +273,7 @@ export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 							parameters={model.data.parameters ?? []}
 							onParametersChange={handleParametersChange}
 							disabled={disabled}
+							valueOnly={disabled && allowParameterValueEdit}
 						/>
 					</AccordionContent>
 				</AccordionItem>

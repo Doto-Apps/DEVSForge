@@ -26,11 +26,7 @@ export const useGenerateEFStructure = (): UseGenerateEFStructureResult => {
 
 		try {
 			const response = await client.POST("/ai/generate-ef-structure", {
-				body: {
-					targetModelId: request.targetModelId,
-					roomName: request.roomName ?? "",
-					userPrompt: request.userPrompt,
-				} as unknown as Record<string, never>,
+				body: request,
 			});
 
 			if (!response.data) {

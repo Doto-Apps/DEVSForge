@@ -4,6 +4,8 @@ import (
 	"devsforge/json"
 	"devsforge/model"
 	"errors"
+	"fmt"
+	"math"
 	"strings"
 
 	shared "devsforge-shared"
@@ -18,10 +20,22 @@ var ErrModelNotFound = errors.New("MODEL_NOT_FOUND")
 
 // flatNode represents an atomic model instance in the flattened hierarchy
 type flatNode struct {
-	modelID    string       // The actual model ID (for code lookup)
-	model      *model.Model // Reference to the model
-	path       []string     // Path of instanceIDs from root to this node
-	instanceID string       // Unique flattened instance ID (for connections)
+	modelID          string              // The actual model ID (for code lookup)
+	model            *model.Model        // Reference to the model
+	path             []string            // Path of instanceIDs from root to this node
+	instanceID       string              // Unique flattened instance ID (for connections)
+	instanceMetadata *json.ModelMetadata // Optional instance override metadata
+	runtimeOverrides []RuntimeParameterOverride
+}
+
+type RuntimeParameterOverride struct {
+	Name  string
+	Value interface{}
+}
+
+type RuntimeInstanceOverride struct {
+	InstanceModelID string
+	OverrideParams  []RuntimeParameterOverride
 }
 
 // portEndpoint identifies a specific port on a specific instance
@@ -37,7 +51,13 @@ type portEndpoint struct {
 // ModelToManifest converts a list of models from the database to a RunnableManifest
 // that can be used by the simulator coordinator. It flattens multi-level coupled
 // models into a flat list of atomic models with direct connections.
-func ModelToManifest(models []model.Model, rootID string, simulationID string, maxTime float64) (*shared.RunnableManifest, error) {
+func ModelToManifest(
+	models []model.Model,
+	rootID string,
+	simulationID string,
+	maxTime float64,
+	runtimeOverrides []RuntimeInstanceOverride,
+) (*shared.RunnableManifest, error) {
 	rootModel := getModelWithId(models, rootID)
 	if rootModel == nil {
 		return nil, ErrModelNotFound
@@ -50,7 +70,12 @@ func ModelToManifest(models []model.Model, rootID string, simulationID string, m
 	}
 
 	// Step 1: Collect all atomic instances with their paths
-	atomicNodes := collectFlattenedAtomics(rootModel, modelMap, []string{})
+	atomicNodes := collectFlattenedAtomics(rootModel, modelMap, []string{}, nil)
+
+	// Step 1.5: Apply optional runtime parameter overrides
+	if err := applyRuntimeOverrides(rootID, atomicNodes, runtimeOverrides); err != nil {
+		return nil, err
+	}
 
 	// Step 2: Resolve all connections to direct atomic-to-atomic
 	flatConnections := resolveFlattenedConnections(rootModel, modelMap, []string{}, atomicNodes)
@@ -64,7 +89,10 @@ func ModelToManifest(models []model.Model, rootID string, simulationID string, m
 	}
 
 	for _, node := range atomicNodes {
-		runnableModel := buildRunnableModel(node, flatConnections)
+		runnableModel, err := buildRunnableModel(node, flatConnections)
+		if err != nil {
+			return nil, err
+		}
 		manifest.Models = append(manifest.Models, runnableModel)
 	}
 
@@ -76,16 +104,22 @@ func ModelToManifest(models []model.Model, rootID string, simulationID string, m
 // ============================================================================
 
 // collectFlattenedAtomics recursively collects all atomic models with their hierarchy paths
-func collectFlattenedAtomics(m *model.Model, modelMap map[string]*model.Model, currentPath []string) []*flatNode {
+func collectFlattenedAtomics(
+	m *model.Model,
+	modelMap map[string]*model.Model,
+	currentPath []string,
+	instanceMetadata *json.ModelMetadata,
+) []*flatNode {
 	result := make([]*flatNode, 0)
 
 	if m.Type == "atomic" {
 		// Use model ID as instance ID for atomics (they are unique)
 		result = append(result, &flatNode{
-			modelID:    m.ID,
-			model:      m,
-			path:       currentPath,
-			instanceID: m.ID,
+			modelID:          m.ID,
+			model:            m,
+			path:             currentPath,
+			instanceID:       m.ID,
+			instanceMetadata: instanceMetadata,
 		})
 		return result
 	}
@@ -100,10 +134,97 @@ func collectFlattenedAtomics(m *model.Model, modelMap map[string]*model.Model, c
 		// Build path: parent path + this component's instanceID
 		childPath := append(append([]string{}, currentPath...), comp.InstanceID)
 
-		result = append(result, collectFlattenedAtomics(childModel, modelMap, childPath)...)
+		result = append(
+			result,
+			collectFlattenedAtomics(childModel, modelMap, childPath, comp.InstanceMetadata)...,
+		)
 	}
 
 	return result
+}
+
+func applyRuntimeOverrides(
+	rootID string,
+	atomicNodes []*flatNode,
+	runtimeOverrides []RuntimeInstanceOverride,
+) error {
+	if len(runtimeOverrides) == 0 {
+		return nil
+	}
+
+	byIdentifier := make(map[string]*flatNode)
+	for _, node := range atomicNodes {
+		identifiers := buildRuntimeIdentifiers(rootID, node)
+		for _, identifier := range identifiers {
+			if identifier == "" {
+				continue
+			}
+			if existing, exists := byIdentifier[identifier]; exists && existing != node {
+				return fmt.Errorf("ambiguous runtime identifier %q", identifier)
+			}
+			byIdentifier[identifier] = node
+		}
+	}
+
+	for _, override := range runtimeOverrides {
+		ref := normalizeRuntimeIdentifier(override.InstanceModelID)
+		if ref == "" {
+			return fmt.Errorf("invalid runtime override: empty instanceModelId")
+		}
+
+		target, exists := byIdentifier[ref]
+		if !exists {
+			return fmt.Errorf("unknown runtime override instanceModelId %q", override.InstanceModelID)
+		}
+
+		target.runtimeOverrides = append(target.runtimeOverrides, override.OverrideParams...)
+	}
+
+	return nil
+}
+
+func buildRuntimeIdentifiers(rootID string, node *flatNode) []string {
+	identifiers := make([]string, 0, 3)
+	path := normalizeRuntimeIdentifier(pathToString(node.path))
+	root := normalizeRuntimeIdentifier(rootID)
+
+	if path == "" {
+		if root != "" {
+			identifiers = append(identifiers, root)
+		}
+		if node.modelID != "" {
+			identifiers = append(identifiers, normalizeRuntimeIdentifier(node.modelID))
+		}
+		return uniqueStrings(identifiers)
+	}
+
+	identifiers = append(identifiers, path)
+	if root != "" {
+		identifiers = append(identifiers, normalizeRuntimeIdentifier(root+"/"+path))
+	}
+	return uniqueStrings(identifiers)
+}
+
+func normalizeRuntimeIdentifier(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	trimmed = strings.Trim(trimmed, "/")
+	return trimmed
+}
+
+func uniqueStrings(values []string) []string {
+	seen := make(map[string]struct{}, len(values))
+	res := make([]string, 0, len(values))
+	for _, value := range values {
+		if value == "" {
+			continue
+		}
+		if _, exists := seen[value]; exists {
+			continue
+		}
+		seen[value] = struct{}{}
+		res = append(res, value)
+	}
+	return res
 }
 
 // ============================================================================
@@ -276,7 +397,7 @@ func traceInputPortDestinations(coupled *model.Model, inputPort string, modelMap
 // ============================================================================
 
 // buildRunnableModel creates a RunnableModel from a flat node and its connections
-func buildRunnableModel(node *flatNode, allConnections []flatConnection) *shared.RunnableModel {
+func buildRunnableModel(node *flatNode, allConnections []flatConnection) (*shared.RunnableModel, error) {
 	m := node.model
 
 	// Convert ports
@@ -297,17 +418,10 @@ func buildRunnableModel(node *flatNode, allConnections []flatConnection) *shared
 		})
 	}
 
-	// Convert parameters
-	parameters := make([]shared.RunnableModelParameter, 0)
-	if m.Metadata.Parameters != nil {
-		for _, p := range m.Metadata.Parameters {
-			parameters = append(parameters, shared.RunnableModelParameter{
-				Name:        p.Name,
-				Type:        shared.ParameterType(p.Type),
-				Value:       p.Value,
-				Description: p.Description,
-			})
-		}
+	// Convert parameters with instance overrides (if any)
+	parameters, err := buildRunnableParameters(node)
+	if err != nil {
+		return nil, err
 	}
 
 	// Collect connections where this model is the source
@@ -335,6 +449,168 @@ func buildRunnableModel(node *flatNode, allConnections []flatConnection) *shared
 		Ports:       ports,
 		Parameters:  parameters,
 		Connections: connections,
+	}, nil
+}
+
+func buildRunnableParameters(node *flatNode) ([]shared.RunnableModelParameter, error) {
+	base := node.model.Metadata.Parameters
+
+	overrides := make([]json.ModelParameter, 0)
+	if node.instanceMetadata != nil && node.instanceMetadata.Parameters != nil {
+		overrides = node.instanceMetadata.Parameters
+	}
+
+	context := fmt.Sprintf(
+		"model=%s instancePath=%s",
+		node.modelID,
+		pathToString(node.path),
+	)
+
+	finalParams := make([]json.ModelParameter, len(base))
+	copy(finalParams, base)
+
+	indexByName := make(map[string]int, len(finalParams))
+	for idx := range finalParams {
+		name := strings.TrimSpace(finalParams[idx].Name)
+		if name == "" {
+			return nil, fmt.Errorf("invalid parameter: empty name in %s", context)
+		}
+		if _, exists := indexByName[name]; exists {
+			return nil, fmt.Errorf("duplicate base parameter name %q in %s", name, context)
+		}
+		indexByName[name] = idx
+	}
+
+	seenOverrideNames := make(map[string]struct{}, len(overrides))
+	for _, override := range overrides {
+		name := strings.TrimSpace(override.Name)
+		if name == "" {
+			return nil, fmt.Errorf("invalid override parameter: empty name in %s", context)
+		}
+		if _, exists := seenOverrideNames[name]; exists {
+			return nil, fmt.Errorf("duplicate override parameter name %q in %s", name, context)
+		}
+		seenOverrideNames[name] = struct{}{}
+
+		baseIdx, exists := indexByName[name]
+		if !exists {
+			return nil, fmt.Errorf("unknown override parameter %q in %s", name, context)
+		}
+
+		baseParam := finalParams[baseIdx]
+		if override.Type != "" && override.Type != baseParam.Type {
+			return nil, fmt.Errorf(
+				"type mismatch for override parameter %q in %s: expected=%s got=%s",
+				name,
+				context,
+				baseParam.Type,
+				override.Type,
+			)
+		}
+		if !isParameterValueCompatible(baseParam.Type, override.Value) {
+			return nil, fmt.Errorf(
+				"invalid value for override parameter %q in %s: expected type %s",
+				name,
+				context,
+				baseParam.Type,
+			)
+		}
+
+		baseParam.Value = override.Value
+		baseParam.Description = override.Description
+		finalParams[baseIdx] = baseParam
+	}
+
+	seenRuntimeNames := make(map[string]struct{}, len(node.runtimeOverrides))
+	for _, runtimeOverride := range node.runtimeOverrides {
+		name := strings.TrimSpace(runtimeOverride.Name)
+		if name == "" {
+			return nil, fmt.Errorf("invalid runtime override parameter: empty name in %s", context)
+		}
+		if _, exists := seenRuntimeNames[name]; exists {
+			return nil, fmt.Errorf("duplicate runtime override parameter name %q in %s", name, context)
+		}
+		seenRuntimeNames[name] = struct{}{}
+
+		baseIdx, exists := indexByName[name]
+		if !exists {
+			return nil, fmt.Errorf("unknown runtime override parameter %q in %s", name, context)
+		}
+
+		baseParam := finalParams[baseIdx]
+		if !isParameterValueCompatible(baseParam.Type, runtimeOverride.Value) {
+			return nil, fmt.Errorf(
+				"invalid value for runtime override parameter %q in %s: expected type %s",
+				name,
+				context,
+				baseParam.Type,
+			)
+		}
+
+		baseParam.Value = runtimeOverride.Value
+		finalParams[baseIdx] = baseParam
+	}
+
+	res := make([]shared.RunnableModelParameter, 0, len(finalParams))
+	for _, p := range finalParams {
+		if !isParameterValueCompatible(p.Type, p.Value) {
+			return nil, fmt.Errorf(
+				"invalid value for base parameter %q in %s: expected type %s",
+				p.Name,
+				context,
+				p.Type,
+			)
+		}
+		res = append(res, shared.RunnableModelParameter{
+			Name:        p.Name,
+			Type:        shared.ParameterType(p.Type),
+			Value:       p.Value,
+			Description: p.Description,
+		})
+	}
+
+	return res, nil
+}
+
+func isParameterValueCompatible(parameterType json.ParameterType, value interface{}) bool {
+	switch parameterType {
+	case json.ParameterTypeInt:
+		switch v := value.(type) {
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64:
+			return true
+		case float64:
+			return math.Trunc(v) == v
+		case float32:
+			fv := float64(v)
+			return math.Trunc(fv) == fv
+		default:
+			return false
+		}
+	case json.ParameterTypeFloat:
+		switch value.(type) {
+		case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, float64, float32:
+			return true
+		default:
+			return false
+		}
+	case json.ParameterTypeBool:
+		_, ok := value.(bool)
+		return ok
+	case json.ParameterTypeString:
+		_, ok := value.(string)
+		return ok
+	case json.ParameterTypeObject:
+		if value == nil {
+			return true
+		}
+		switch value.(type) {
+		case map[string]interface{}, []interface{}:
+			return true
+		default:
+			return false
+		}
+	default:
+		return false
 	}
 }
 
