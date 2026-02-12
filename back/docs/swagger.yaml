@@ -172,31 +172,6 @@ definitions:
     - ToolbarPositionLeft
     - ToolbarPositionRight
     - ToolbarPositionBottom
-  model.Diagram:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        type: string
-      description:
-        type: string
-      id:
-        type: string
-      modelId:
-        type: string
-      name:
-        maxLength: 50
-        minLength: 3
-        type: string
-      updatedAt:
-        type: string
-      userId:
-        type: string
-      workspaceId:
-        type: string
-    required:
-    - name
-    type: object
   model.Library:
     properties:
       createdAt:
@@ -301,35 +276,10 @@ definitions:
         maxLength: 50
         minLength: 3
         type: string
-      workspaces:
-        items:
-          $ref: '#/definitions/model.Workspace'
-        type: array
     required:
     - email
     - password
     - username
-    type: object
-  model.Workspace:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        type: string
-      description:
-        type: string
-      diagrams:
-        items:
-          $ref: '#/definitions/model.Diagram'
-        type: array
-      id:
-        type: string
-      title:
-        type: string
-      updatedAt:
-        type: string
-      userId:
-        type: string
     type: object
   request.AssistedExperimentalFrameConnection:
     properties:
@@ -393,19 +343,6 @@ definitions:
     required:
     - name
     - type
-    type: object
-  request.DiagramRequest:
-    properties:
-      description:
-        type: string
-      name:
-        type: string
-      workspaceId:
-        type: string
-    required:
-    - description
-    - name
-    - workspaceId
     type: object
   request.ExperimentalFrameRequest:
     properties:
@@ -611,22 +548,24 @@ definitions:
         description: Maximum simulation time (0 = no limit)
         type: number
     type: object
+  request.UpdateUserAISettingsRequest:
+    properties:
+      apiKey:
+        example: sk-...
+        type: string
+      apiModel:
+        example: gpt-4.1-mini
+        type: string
+      apiUrl:
+        example: https://api.openai.com/v1
+        type: string
+    type: object
   request.UpdateUserRequest:
     properties:
       names:
         type: string
     required:
     - names
-    type: object
-  request.WorkspaceRequest:
-    properties:
-      description:
-        type: string
-      title:
-        type: string
-    required:
-    - description
-    - title
     type: object
   response.Connection:
     properties:
@@ -987,6 +926,17 @@ definitions:
       userId:
         type: string
     type: object
+  response.UserAISettingsResponse:
+    properties:
+      apiKeyMasked:
+        type: string
+      apiModel:
+        type: string
+      apiUrl:
+        type: string
+      hasApiKey:
+        type: boolean
+    type: object
   response.UserResponse:
     properties:
       email:
@@ -1327,139 +1277,6 @@ paths:
       summary: Register a new user
       tags:
       - Auth
-  /diagram:
-    get:
-      description: Retrieve a list of all diagrams
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Diagram'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get all diagrams
-      tags:
-      - diagrams
-    post:
-      consumes:
-      - application/json
-      description: Create a new diagram entry
-      parameters:
-      - description: Diagram data
-        in: body
-        name: diagram
-        required: true
-        schema:
-          $ref: '#/definitions/request.DiagramRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/model.Diagram'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Create a diagram
-      tags:
-      - diagrams
-  /diagram/{id}:
-    delete:
-      description: Delete a diagram by its ID
-      parameters:
-      - description: Diagram ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Delete a diagram
-      tags:
-      - diagrams
-    get:
-      description: Retrieve a single diagram by its ID
-      parameters:
-      - description: Diagram ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Diagram'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get a diagram by ID
-      tags:
-      - diagrams
-    patch:
-      consumes:
-      - application/json
-      description: Update an existing diagram with partial data
-      parameters:
-      - description: Diagram ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Fields to update
-        in: body
-        name: updateData
-        required: true
-        schema:
-          $ref: '#/definitions/request.DiagramRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Diagram'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Update a diagram
-      tags:
-      - diagrams
   /experimental-frame:
     post:
       consumes:
@@ -2268,127 +2085,53 @@ paths:
       summary: Update a user
       tags:
       - user
-  /workspace:
+  /user/settings/ai:
     get:
-      description: Retrieve a list of all workspace
+      description: Returns the current user's AI provider settings.
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            items:
-              $ref: '#/definitions/model.Workspace'
-            type: array
-      summary: Get all workspace
-      tags:
-      - workspace
-    post:
-      consumes:
-      - application/json
-      description: Create a new workspace and store it in the database
-      parameters:
-      - description: Workspace object
-        in: body
-        name: workspace
-        required: true
-        schema:
-          $ref: '#/definitions/request.WorkspaceRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/model.Workspace'
+            $ref: '#/definitions/response.UserAISettingsResponse'
         "500":
           description: Internal Server Error
           schema:
             additionalProperties: true
             type: object
-      summary: Create a new workspace
+      summary: Get current user AI settings
       tags:
-      - workspace
-  /workspace/{id}:
-    delete:
-      description: Delete an existing workspace by its ID
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-          schema:
-            additionalProperties: true
-            type: object
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Delete a workspace by ID
-      tags:
-      - workspace
-    get:
-      description: Retrieve a single workspace by its ID
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/model.Workspace'
-        "404":
-          description: Not Found
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get a workspace by ID
-      tags:
-      - workspace
+      - user
     patch:
       consumes:
       - application/json
-      description: Update an existing workspace with partial data
+      description: Updates current user AI provider settings (apiUrl, apiKey, apiModel).
       parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Partial workspace update
+      - description: AI settings to update
         in: body
-        name: workspace
+        name: body
         required: true
         schema:
-          $ref: '#/definitions/request.WorkspaceRequest'
+          $ref: '#/definitions/request.UpdateUserAISettingsRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Workspace'
+            $ref: '#/definitions/response.UserAISettingsResponse'
         "400":
           description: Bad Request
           schema:
             additionalProperties: true
             type: object
-        "404":
-          description: Not Found
+        "500":
+          description: Internal Server Error
           schema:
             additionalProperties: true
             type: object
-      summary: Update a workspace
+      summary: Update current user AI settings
       tags:
-      - workspace
+      - user
 swagger: "2.0"

@@ -21,14 +21,8 @@ func SetupRoutes(app *fiber.App) {
 	// Library
 	handler.SetupLibraryRoutes(app)
 
-	// Diagram
-	handler.SetupDiagramRoutes(app)
-
 	// Model
 	handler.SetupModelRoutes(app)
-
-	// Workspace
-	handler.SetupWorkspaceRoutes(app)
 
 	// Simulation
 	handler.SetupSimulationRoutes(app)

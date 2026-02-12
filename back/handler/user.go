@@ -16,6 +16,8 @@ import (
 func SetupUserRoutes(app *fiber.App) {
 	group := app.Group("/user", middleware.Protected())
 
+	group.Get("/settings/ai", getCurrentUserAISettings)
+	group.Patch("/settings/ai", patchCurrentUserAISettings)
 	group.Get("/", getAllUsers)
 	group.Get("/:id", getUser)
 	group.Delete("/:id", deleteUser)

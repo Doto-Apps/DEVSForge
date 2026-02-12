@@ -9,15 +9,16 @@ import (
 	"devsforge/request"
 	"devsforge/response"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/invopop/jsonschema"
 	"github.com/openai/openai-go"
 	"github.com/openai/openai-go/option"
+	"gorm.io/gorm"
 )
 
 // SetupAiRoutes configures AI-related routes.
@@ -32,21 +33,31 @@ func SetupAiRoutes(app *fiber.App) {
 
 // Request structures
 
-// Retrieves the OpenAI API client.
-func getOpenAIClient() (*openai.Client, error) {
-	apiKey := os.Getenv("AI_API_KEY")
-	apiURL := os.Getenv("AI_API_URL")
+// Retrieves the OpenAI API client configured by the authenticated user.
+func getOpenAIClientForUser(userID string) (*openai.Client, model.UserAISettings, error) {
+	db := database.DB
+	var settings model.UserAISettings
+	if err := db.Where("user_id = ?", userID).First(&settings).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, model.UserAISettings{}, fmt.Errorf("AI settings are not configured for this user")
+		}
+		return nil, model.UserAISettings{}, err
+	}
 
-	if apiKey == "" || apiURL == "" {
-		return nil, fmt.Errorf("OpenAI API key or URL is not set")
+	settings.APIURL = strings.TrimSpace(settings.APIURL)
+	settings.APIKey = strings.TrimSpace(settings.APIKey)
+	settings.APIModel = strings.TrimSpace(settings.APIModel)
+
+	if settings.APIURL == "" || settings.APIKey == "" || settings.APIModel == "" {
+		return nil, model.UserAISettings{}, fmt.Errorf("AI settings are incomplete: apiUrl, apiKey and apiModel are required")
 	}
 
 	client := openai.NewClient(
-		option.WithAPIKey(apiKey), // defaults to os.LookupEnv("OPENAI_API_KEY")
-		option.WithBaseURL(apiURL),
+		option.WithAPIKey(settings.APIKey),
+		option.WithBaseURL(settings.APIURL),
 	)
 
-	return client, nil
+	return client, settings, nil
 }
 
 func GenerateSchema[T any]() interface{} {
@@ -89,7 +100,8 @@ func generateDiagram(c *fiber.Ctx) error {
 		Please respond ONLY in JSON following the provided schema.
 	`, request.DiagramName, request.UserPrompt)
 
-	client, err := getOpenAIClient()
+	userID := c.Locals("user_id").(string)
+	client, aiSettings, err := getOpenAIClientForUser(userID)
 	if err != nil {
 		log.Println("OpenAI error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -127,7 +139,7 @@ func generateDiagram(c *fiber.Ctx) error {
 			},
 		),
 		// only certain models can perform structured outputs
-		Model: openai.F(os.Getenv("AI_MODEL")),
+		Model: openai.F(aiSettings.APIModel),
 	})
 
 	if err != nil {
@@ -202,7 +214,8 @@ Validation Intent:
 Please respond ONLY in JSON following the provided schema.
 `, roomName, target.ID, target.Name, target.Type, targetPortsContext, targetComponentsContext, request.UserPrompt)
 
-	client, err := getOpenAIClient()
+	userID := c.Locals("user_id").(string)
+	client, aiSettings, err := getOpenAIClientForUser(userID)
 	if err != nil {
 		log.Println("OpenAI error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -239,7 +252,7 @@ Please respond ONLY in JSON following the provided schema.
 				JSONSchema: openai.F(schemaParam),
 			},
 		),
-		Model: openai.F(os.Getenv("AI_MODEL")),
+		Model: openai.F(aiSettings.APIModel),
 	})
 
 	if err != nil {
@@ -298,16 +311,15 @@ func generateModel(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Language must be 'python' or 'go'"})
 	}
 
-	client, err := getOpenAIClient()
+	userID := c.Locals("user_id").(string)
+	client, aiSettings, err := getOpenAIClientForUser(userID)
 	if err != nil {
 		log.Println("OpenAI error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
-	userID := c.Locals("user_id").(string)
-
 	// Reuse-first: extract keywords and rank existing models with simple Jaccard.
-	promptKeywords, kwErr := extractPromptKeywords(client, req.UserPrompt)
+	promptKeywords, kwErr := extractPromptKeywords(client, aiSettings.APIModel, req.UserPrompt)
 	if kwErr != nil {
 		log.Printf("keyword extraction warning: %v", kwErr)
 	}
@@ -404,7 +416,7 @@ Respond ONLY with the %s code in JSON as { "code": "your_code_here" }
 				JSONSchema: openai.F(schemaParam),
 			},
 		),
-		Model: openai.F(os.Getenv("AI_MODEL")),
+		Model: openai.F(aiSettings.APIModel),
 	})
 
 	if err != nil {
@@ -508,7 +520,8 @@ Please analyze this DEVS model and generate:
 Respond ONLY in JSON following the provided schema.
 `, m.Name, m.Type, portsIn, portsOut, componentsDesc, m.Code)
 
-	client, err := getOpenAIClient()
+	userID := c.Locals("user_id").(string)
+	client, aiSettings, err := getOpenAIClientForUser(userID)
 	if err != nil {
 		log.Println("OpenAI error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
@@ -535,7 +548,7 @@ Respond ONLY in JSON following the provided schema.
 				JSONSchema: openai.F(schemaParam),
 			},
 		),
-		Model: openai.F(os.Getenv("AI_MODEL")),
+		Model: openai.F(aiSettings.APIModel),
 	})
 
 	if err != nil {

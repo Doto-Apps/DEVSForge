@@ -8,7 +8,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
-	"os"
 	"regexp"
 	"sort"
 	"strings"
@@ -39,10 +38,13 @@ type modelReuseCandidate struct {
 	MatchedCount int
 }
 
-func extractPromptKeywords(client *openai.Client, userPrompt string) ([]string, error) {
+func extractPromptKeywords(client *openai.Client, aiModel string, userPrompt string) ([]string, error) {
 	fallback := fallbackKeywordsFromPrompt(userPrompt)
 	if client == nil {
 		return fallback, nil
+	}
+	if strings.TrimSpace(aiModel) == "" {
+		return fallback, fmt.Errorf("AI model is required for keyword extraction")
 	}
 
 	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
@@ -64,7 +66,7 @@ func extractPromptKeywords(client *openai.Client, userPrompt string) ([]string, 
 				}),
 			},
 		),
-		Model: openai.F(os.Getenv("AI_MODEL")),
+		Model: openai.F(aiModel),
 	})
 	if err != nil || chat == nil || len(chat.Choices) == 0 {
 		if len(fallback) == 0 && err != nil {

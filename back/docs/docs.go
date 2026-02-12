@@ -492,203 +492,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/diagram": {
-            "get": {
-                "description": "Retrieve a list of all diagrams",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "diagrams"
-                ],
-                "summary": "Get all diagrams",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Diagram"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new diagram entry",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "diagrams"
-                ],
-                "summary": "Create a diagram",
-                "parameters": [
-                    {
-                        "description": "Diagram data",
-                        "name": "diagram",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.DiagramRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Diagram"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/diagram/{id}": {
-            "get": {
-                "description": "Retrieve a single diagram by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "diagrams"
-                ],
-                "summary": "Get a diagram by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Diagram ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Diagram"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete a diagram by its ID",
-                "tags": [
-                    "diagrams"
-                ],
-                "summary": "Delete a diagram",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Diagram ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Update an existing diagram with partial data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "diagrams"
-                ],
-                "summary": "Update a diagram",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Diagram ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Fields to update",
-                        "name": "updateData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.DiagramRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Diagram"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
         "/experimental-frame": {
             "post": {
                 "description": "Create an experimental frame association (target model -\u003e coupled frame model)",
@@ -1730,6 +1533,79 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/settings/ai": {
+            "get": {
+                "description": "Returns the current user's AI provider settings.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get current user AI settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UserAISettingsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates current user AI provider settings (apiUrl, apiKey, apiModel).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Update current user AI settings",
+                "parameters": [
+                    {
+                        "description": "AI settings to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateUserAISettingsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UserAISettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/user/{id}": {
             "get": {
                 "description": "Retrieve a single user by their ID",
@@ -1873,189 +1749,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/workspace": {
-            "get": {
-                "description": "Retrieve a list of all workspace",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workspace"
-                ],
-                "summary": "Get all workspace",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Workspace"
-                            }
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new workspace and store it in the database",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workspace"
-                ],
-                "summary": "Create a new workspace",
-                "parameters": [
-                    {
-                        "description": "Workspace object",
-                        "name": "workspace",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.WorkspaceRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/model.Workspace"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/workspace/{id}": {
-            "get": {
-                "description": "Retrieve a single workspace by its ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workspace"
-                ],
-                "summary": "Get a workspace by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Workspace"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete an existing workspace by its ID",
-                "tags": [
-                    "workspace"
-                ],
-                "summary": "Delete a workspace by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Update an existing workspace with partial data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "workspace"
-                ],
-                "summary": "Update a workspace",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Partial workspace update",
-                        "name": "workspace",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.WorkspaceRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Workspace"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -2312,43 +2005,6 @@ const docTemplate = `{
                 "ToolbarPositionBottom"
             ]
         },
-        "model.Diagram": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "modelId": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "userId": {
-                    "type": "string"
-                },
-                "workspaceId": {
-                    "type": "string"
-                }
-            }
-        },
         "model.Library": {
             "type": "object",
             "properties": {
@@ -2505,44 +2161,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 3
-                },
-                "workspaces": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Workspace"
-                    }
-                }
-            }
-        },
-        "model.Workspace": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "type": "string"
-                },
-                "description": {
-                    "type": "string"
-                },
-                "diagrams": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Diagram"
-                    }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "userId": {
-                    "type": "string"
                 }
             }
         },
@@ -2641,25 +2259,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/enum.ModelPortDirection"
                         }
                     ]
-                }
-            }
-        },
-        "request.DiagramRequest": {
-            "type": "object",
-            "required": [
-                "description",
-                "name",
-                "workspaceId"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "name": {
-                    "type": "string"
-                },
-                "workspaceId": {
-                    "type": "string"
                 }
             }
         },
@@ -2958,6 +2557,23 @@ const docTemplate = `{
                 }
             }
         },
+        "request.UpdateUserAISettingsRequest": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "type": "string",
+                    "example": "sk-..."
+                },
+                "apiModel": {
+                    "type": "string",
+                    "example": "gpt-4.1-mini"
+                },
+                "apiUrl": {
+                    "type": "string",
+                    "example": "https://api.openai.com/v1"
+                }
+            }
+        },
         "request.UpdateUserRequest": {
             "type": "object",
             "required": [
@@ -2965,21 +2581,6 @@ const docTemplate = `{
             ],
             "properties": {
                 "names": {
-                    "type": "string"
-                }
-            }
-        },
-        "request.WorkspaceRequest": {
-            "type": "object",
-            "required": [
-                "description",
-                "title"
-            ],
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "title": {
                     "type": "string"
                 }
             }
@@ -3518,6 +3119,23 @@ const docTemplate = `{
                 },
                 "userId": {
                     "type": "string"
+                }
+            }
+        },
+        "response.UserAISettingsResponse": {
+            "type": "object",
+            "properties": {
+                "apiKeyMasked": {
+                    "type": "string"
+                },
+                "apiModel": {
+                    "type": "string"
+                },
+                "apiUrl": {
+                    "type": "string"
+                },
+                "hasApiKey": {
+                    "type": "boolean"
                 }
             }
         },

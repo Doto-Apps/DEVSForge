@@ -53,9 +53,8 @@ func ConnectDB() {
 		Logger: logger.Default.LogMode(logger.Warn),
 	}).AutoMigrate(
 		&model.User{},
+		&model.UserAISettings{},
 		&model.Library{},
-		&model.Diagram{},
-		&model.Workspace{},
 		&model.Model{},
 		&model.ExperimentalFrame{},
 		&model.Simulation{},

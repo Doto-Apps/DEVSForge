@@ -17,8 +17,9 @@ import {
 	Routes,
 } from "react-router-dom";
 
-import { CreateDiagram } from "./pages/diagram/CreateDiagram";
 import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
+import { GettingStarted } from "./pages/help/GettingStarted";
+import { HowItWorks } from "./pages/help/HowItWorks";
 import { ModelerHome } from "./pages/home/ModelerHome";
 import { CreateLibrary } from "./pages/library/CreateLibrary";
 import { CreateModel } from "./pages/model/CreateModel";
@@ -26,7 +27,7 @@ import { EditModel } from "./pages/model/EditModel";
 import { SimulateModel } from "./pages/model/SimulateModel";
 import { TestModel } from "./pages/model/TestModel";
 import { ValidationModel } from "./pages/model/ValidationModel";
-import { CreateWorkspace } from "./pages/workspace/CreateWorkspace";
+import { AccountSettings } from "./pages/settings/AccountSettings";
 import { DnDProvider } from "./providers/DnDContext";
 
 const OnlineDEVSEditor = () => <div>Contact</div>;
@@ -49,13 +50,6 @@ const OnlineDEVSEditor = () => <div>Contact</div>;
   - Détail (ID)      : /model/:id
   - Édition (ID)     : /model/:id/edit
   - Suppression (ID) : /model/:id/delete
-
-  Diagrams :
-  - Liste            : /diagram
-  - Création         : /diagram/new
-  - Détail (ID)      : /diagram/:id
-  - Édition (ID)     : /diagram/:id/edit
-  - Suppression (ID) : /diagram/:id/delete
 
   <Route path="/test2" element={<ModelCodeEditor code='' onSave={() => {}} />} />
   <Route path="/devs-generator" element={<DiagramGenerator />} />
@@ -92,10 +86,10 @@ const Main = () => {
 					element={<ValidationModel />}
 				/>
 
-				<Route path="/workspace/new" element={<CreateWorkspace />} />
-				<Route path="/workspace/:id/diagram/new" element={<CreateDiagram />} />
-
 				<Route path="/devs-generator" element={<GeneratorFlow />} />
+				<Route path="/getting-started" element={<GettingStarted />} />
+				<Route path="/how-it-works" element={<HowItWorks />} />
+				<Route path="/settings" element={<AccountSettings />} />
 
 				<Route path="/" element={<ModelerHome />} />
 				<Route path="/test-model" element={<TestModel />} />
