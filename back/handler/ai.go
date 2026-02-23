@@ -208,6 +208,10 @@ Target Model Type: %s
 Target Model Ports:
 %s
 %s
+Hard Constraint:
+- The MUT model must reuse the exact Target Model port names and directions.
+- Do not rename MUT ports even if the user asks different names.
+
 Validation Intent:
 %s
 
@@ -265,11 +269,21 @@ Please respond ONLY in JSON following the provided schema.
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
 	}
 
+	rawEFResponse := strings.TrimSpace(chat.Choices[0].Message.Content)
+	log.Printf("[EF AI RAW RESPONSE] %s", truncateForLog(rawEFResponse, 8000))
+
 	efResponse := response.ExperimentalFrameStructureResponse{}
-	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &efResponse); err != nil {
+	if err := json.Unmarshal([]byte(rawEFResponse), &efResponse); err != nil {
 		log.Println("JSON Unmarshal error:", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
 	}
+	log.Printf(
+		"[EF AI PARSED] root=%s mut=%s models=%d connections=%d",
+		efResponse.RootModelID,
+		efResponse.ModelUnderTestID,
+		len(efResponse.Models),
+		len(efResponse.Connections),
+	)
 
 	// Server-side normalization and validation guardrails.
 	efResponse.RoomName = roomName
@@ -577,7 +591,11 @@ func buildTargetPortsContext(target model.Model) string {
 
 	var b strings.Builder
 	for _, port := range target.Ports {
-		b.WriteString(fmt.Sprintf("- %s (%s) [id=%s]\n", port.Name, port.Type, port.ID))
+		displayName := canonicalPortName(port.Name, port.ID)
+		if displayName == "" {
+			displayName = "(unnamed-port)"
+		}
+		b.WriteString(fmt.Sprintf("- %s (%s) [id=%s]\n", displayName, port.Type, port.ID))
 	}
 	return b.String()
 }
@@ -656,6 +674,16 @@ func validateEFStructureResponse(ef *response.ExperimentalFrameStructureResponse
 		return fmt.Errorf("modelUnderTestId must reference the model-under-test model")
 	}
 
+	if err := normalizeMutPortsAndConnections(ef, target, mutID); err != nil {
+		return err
+	}
+
+	// Rebuild after potential normalization.
+	modelByID = make(map[string]response.ExperimentalFrameModel, len(ef.Models))
+	for _, m := range ef.Models {
+		modelByID[m.ID] = m
+	}
+
 	rootModel := modelByID[rootID]
 	if !containsString(rootModel.Components, mutID) {
 		return fmt.Errorf("experimental-frame root must include model-under-test as component")
@@ -701,6 +729,109 @@ func validateEFStructureResponse(ef *response.ExperimentalFrameStructureResponse
 	return nil
 }
 
+func normalizeMutPortsAndConnections(
+	ef *response.ExperimentalFrameStructureResponse,
+	target model.Model,
+	mutID string,
+) error {
+	mutModelIndex := -1
+	for i, m := range ef.Models {
+		if m.ID == mutID {
+			mutModelIndex = i
+			break
+		}
+	}
+	if mutModelIndex < 0 {
+		return fmt.Errorf("missing model-under-test model")
+	}
+
+	mutPorts := make([]response.PortResponse, len(ef.Models[mutModelIndex].Ports))
+	copy(mutPorts, ef.Models[mutModelIndex].Ports)
+
+	// If already valid, keep as-is.
+	if err := validateMutPorts(mutPorts, target); err == nil {
+		return nil
+	}
+
+	targetInNames := make([]string, 0)
+	targetOutNames := make([]string, 0)
+	for _, p := range target.Ports {
+		canonicalName := canonicalPortName(p.Name, p.ID)
+		if canonicalName == "" {
+			continue
+		}
+		if p.Type == "in" {
+			targetInNames = append(targetInNames, canonicalName)
+		}
+		if p.Type == "out" {
+			targetOutNames = append(targetOutNames, canonicalName)
+		}
+	}
+
+	mutInIndexes := make([]int, 0)
+	mutOutIndexes := make([]int, 0)
+	for idx, p := range mutPorts {
+		if p.Type == response.PortDirectionIn {
+			mutInIndexes = append(mutInIndexes, idx)
+		}
+		if p.Type == response.PortDirectionOut {
+			mutOutIndexes = append(mutOutIndexes, idx)
+		}
+	}
+
+	// If interface cardinality differs, leave strict validation to fail with clear error.
+	if len(mutInIndexes) != len(targetInNames) || len(mutOutIndexes) != len(targetOutNames) {
+		return nil
+	}
+
+	renamedIn := make(map[string]string, len(mutInIndexes))
+	renamedOut := make(map[string]string, len(mutOutIndexes))
+
+	for i, portIndex := range mutInIndexes {
+		oldName := canonicalPortName(mutPorts[portIndex].Name, mutPorts[portIndex].ID)
+		newName := targetInNames[i]
+		if oldName != newName {
+			for _, alias := range []string{oldName, strings.TrimSpace(mutPorts[portIndex].Name), strings.TrimSpace(mutPorts[portIndex].ID)} {
+				alias = strings.TrimSpace(alias)
+				if alias != "" {
+					renamedIn[alias] = newName
+				}
+			}
+			mutPorts[portIndex].Name = newName
+		}
+	}
+	for i, portIndex := range mutOutIndexes {
+		oldName := canonicalPortName(mutPorts[portIndex].Name, mutPorts[portIndex].ID)
+		newName := targetOutNames[i]
+		if oldName != newName {
+			for _, alias := range []string{oldName, strings.TrimSpace(mutPorts[portIndex].Name), strings.TrimSpace(mutPorts[portIndex].ID)} {
+				alias = strings.TrimSpace(alias)
+				if alias != "" {
+					renamedOut[alias] = newName
+				}
+			}
+			mutPorts[portIndex].Name = newName
+		}
+	}
+
+	ef.Models[mutModelIndex].Ports = mutPorts
+
+	for i, conn := range ef.Connections {
+		if conn.From.Model == mutID {
+			if renamed, exists := renamedOut[strings.TrimSpace(conn.From.Port)]; exists {
+				ef.Connections[i].From.Port = renamed
+			}
+		}
+		if conn.To.Model == mutID {
+			if renamed, exists := renamedIn[strings.TrimSpace(conn.To.Port)]; exists {
+				ef.Connections[i].To.Port = renamed
+			}
+		}
+	}
+
+	return nil
+}
+
 func validateMutPorts(mutPorts []response.PortResponse, target model.Model) error {
 	if len(mutPorts) != len(target.Ports) {
 		return fmt.Errorf("model-under-test ports must match target model interface")
@@ -708,16 +839,21 @@ func validateMutPorts(mutPorts []response.PortResponse, target model.Model) erro
 
 	expected := make(map[string]string, len(target.Ports))
 	for _, port := range target.Ports {
-		expected[port.Name] = string(port.Type)
+		key := canonicalPortName(port.Name, port.ID)
+		if key == "" {
+			return fmt.Errorf("target model has a port with empty name and id")
+		}
+		expected[key] = string(port.Type)
 	}
 
 	for _, port := range mutPorts {
-		expectedDirection, exists := expected[port.Name]
+		key := canonicalPortName(port.Name, port.ID)
+		expectedDirection, exists := expected[key]
 		if !exists {
-			return fmt.Errorf("model-under-test has unexpected port name %s", port.Name)
+			return fmt.Errorf("model-under-test has unexpected port name %s", key)
 		}
 		if expectedDirection != string(port.Type) {
-			return fmt.Errorf("model-under-test port %s has wrong direction %s", port.Name, port.Type)
+			return fmt.Errorf("model-under-test port %s has wrong direction %s", key, port.Type)
 		}
 	}
 
@@ -725,12 +861,27 @@ func validateMutPorts(mutPorts []response.PortResponse, target model.Model) erro
 }
 
 func hasPortByNameAndDirection(ports []response.PortResponse, name string, direction response.PortDirection) bool {
+	targetName := strings.TrimSpace(name)
 	for _, port := range ports {
-		if port.Name == name && port.Type == direction {
+		if port.Type != direction {
+			continue
+		}
+		if canonicalPortName(port.Name, port.ID) == targetName {
+			return true
+		}
+		if strings.TrimSpace(port.Name) == targetName || strings.TrimSpace(port.ID) == targetName {
 			return true
 		}
 	}
 	return false
+}
+
+func canonicalPortName(name string, id string) string {
+	trimmedName := strings.TrimSpace(name)
+	if trimmedName != "" {
+		return trimmedName
+	}
+	return strings.TrimSpace(id)
 }
 
 func containsString(values []string, needle string) bool {
@@ -740,4 +891,11 @@ func containsString(values []string, needle string) bool {
 		}
 	}
 	return false
+}
+
+func truncateForLog(value string, maxLen int) string {
+	if maxLen <= 0 || len(value) <= maxLen {
+		return value
+	}
+	return value[:maxLen] + "...(truncated)"
 }

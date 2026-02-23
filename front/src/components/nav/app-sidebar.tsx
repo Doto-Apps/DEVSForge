@@ -1,6 +1,6 @@
 "use client";
 
-import { BookOpenText, House, Sparkles, Workflow } from "lucide-react";
+import { BookOpenText, House, Rocket, Sparkles, Workflow } from "lucide-react";
 import type * as React from "react";
 
 import { NavLibrary } from "./nav-library";
@@ -43,6 +43,11 @@ const data = {
 			name: "DEVS Generator",
 			url: "/devs-generator",
 			icon: Sparkles,
+		},
+		{
+			name: "WebApps",
+			url: "/webapps",
+			icon: Rocket,
 		},
 	],
 };

@@ -99,6 +99,12 @@ type SimulationPanelProps = {
 	modelName?: string;
 	modelNameById?: Record<string, string>;
 	parameterTargets?: SimulationParameterTarget[];
+	panelTitle?: string;
+	panelDescription?: string;
+	runButtonLabel?: string;
+	showParameterOverrides?: boolean;
+	parameterSectionTitle?: string;
+	parameterSectionDescription?: string;
 };
 
 const statusColors: Record<SimulationStatus, string> = {
@@ -269,6 +275,12 @@ export function SimulationPanel({
 	modelName,
 	modelNameById = {},
 	parameterTargets = [],
+	panelTitle = "Simulation",
+	panelDescription,
+	runButtonLabel = "Start",
+	showParameterOverrides = true,
+	parameterSectionTitle = "Runtime Parameter Overrides",
+	parameterSectionDescription = "Optional. Overrides are applied only for this simulation run.",
 }: SimulationPanelProps) {
 	const {
 		startSimulation,
@@ -527,14 +539,14 @@ export function SimulationPanel({
 				<div className="flex items-center justify-between">
 					<div>
 						<CardTitle className="flex items-center gap-2 text-xl">
-							Simulation
+							{panelTitle}
 							{isPolling && (
 								<RefreshCw className="h-4 w-4 text-blue-500 animate-spin" />
 							)}
 						</CardTitle>
 						<CardDescription>
-							{modelName || `Model: ${modelId}`} - DEVS message tracking and
-							transit flows
+							{panelDescription ||
+								`${modelName || `Model: ${modelId}`} - DEVS message tracking and transit flows`}
 						</CardDescription>
 					</div>
 					{simulation?.status && (
@@ -583,11 +595,11 @@ export function SimulationPanel({
 									</>
 								) : (
 									<>
-										<Play className="mr-2 h-4 w-4" />
-										Start
-									</>
-								)}
-							</Button>
+									<Play className="mr-2 h-4 w-4" />
+									{runButtonLabel}
+								</>
+							)}
+						</Button>
 							<Button
 								variant="outline"
 								onClick={handleStop}
@@ -606,16 +618,15 @@ export function SimulationPanel({
 						</div>
 					</div>
 
-					{parameterTargetsWithParams.length > 0 ? (
+					{showParameterOverrides && parameterTargetsWithParams.length > 0 ? (
 						<div className="rounded-md border bg-background p-3 space-y-3">
 							<div className="flex items-center justify-between gap-2">
 								<div>
 									<div className="text-sm font-medium">
-										Runtime Parameter Overrides
+										{parameterSectionTitle}
 									</div>
 									<div className="text-xs text-muted-foreground">
-										Optional. Overrides are applied only for this simulation
-										run.
+										{parameterSectionDescription}
 									</div>
 								</div>
 								<div className="flex items-center gap-2">

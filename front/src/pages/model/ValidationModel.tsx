@@ -52,6 +52,32 @@ type FrameModelDetails = {
 	name: string;
 };
 
+const extractApiErrorMessage = (apiError: unknown): string | null => {
+	if (!apiError || typeof apiError !== "object") return null;
+	const payload = apiError as Record<string, unknown>;
+
+	const directKeys = ["error", "message", "detail"] as const;
+	for (const key of directKeys) {
+		const value = payload[key];
+		if (typeof value === "string" && value.trim().length > 0) {
+			return value;
+		}
+	}
+
+	const dataField = payload["data"];
+	if (typeof dataField === "string" && dataField.trim().length > 0) {
+		return dataField;
+	}
+
+	for (const value of Object.values(payload)) {
+		if (typeof value === "string" && value.trim().length > 0) {
+			return value;
+		}
+	}
+
+	return null;
+};
+
 export function ValidationModel() {
 	const { libraryId, modelId } = useParams<{
 		libraryId: string;
@@ -409,11 +435,17 @@ export function ValidationModel() {
 				})),
 			};
 
-			const saveResponse = await client.POST("/experimental-frame", {
+			const { data: saveData, error: saveError } = await client.POST(
+				"/experimental-frame",
+				{
 				body: payload as unknown as Record<string, never>,
-			});
-			if (!saveResponse.data) {
-				throw new Error("Failed to save assisted experimental frame.");
+				},
+			);
+			if (saveError || !saveData) {
+				throw new Error(
+					extractApiErrorMessage(saveError) ??
+						"Failed to save assisted experimental frame.",
+				);
 			}
 
 			toast({
@@ -423,7 +455,7 @@ export function ValidationModel() {
 			});
 
 			await Promise.all([mutate(), mutateModels()]);
-			const frameModelId = saveResponse.data.frameModelId;
+			const frameModelId = saveData.frameModelId;
 			if (frameModelId) {
 				navigate(`/library/${libraryId}/model/${frameModelId}`);
 			}

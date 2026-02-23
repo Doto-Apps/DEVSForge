@@ -172,6 +172,104 @@ definitions:
     - ToolbarPositionLeft
     - ToolbarPositionRight
     - ToolbarPositionBottom
+  json.WebAppContract:
+    properties:
+      inputPortBindings:
+        items:
+          $ref: '#/definitions/json.WebAppPortBinding'
+        type: array
+      modelDescription:
+        type: string
+      modelId:
+        type: string
+      modelName:
+        type: string
+      outputPortBindings:
+        items:
+          $ref: '#/definitions/json.WebAppPortBinding'
+        type: array
+      parameterBindings:
+        items:
+          $ref: '#/definitions/json.WebAppParameterBinding'
+        type: array
+    type: object
+  json.WebAppParameterBinding:
+    properties:
+      bindingKey:
+        type: string
+      defaultValue: {}
+      description:
+        type: string
+      instanceModelId:
+        type: string
+      instancePath:
+        type: string
+      modelId:
+        type: string
+      modelName:
+        type: string
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/json.ParameterType'
+    type: object
+  json.WebAppPortBinding:
+    properties:
+      bindingKey:
+        type: string
+      direction:
+        $ref: '#/definitions/enum.ModelPortDirection'
+      name:
+        type: string
+      portId:
+        type: string
+    type: object
+  json.WebAppUISchema:
+    properties:
+      layout:
+        type: string
+      runButtonLabel:
+        type: string
+      sections:
+        items:
+          $ref: '#/definitions/json.WebAppUISection'
+        type: array
+      version:
+        type: integer
+    type: object
+  json.WebAppUISection:
+    properties:
+      description:
+        type: string
+      id:
+        type: string
+      kind:
+        $ref: '#/definitions/json.WebAppUISectionKind'
+      parameterBindingKeys:
+        items:
+          type: string
+        type: array
+      portBindingKeys:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    type: object
+  json.WebAppUISectionKind:
+    enum:
+    - parameters
+    - inputs
+    - outputs
+    - run
+    - custom
+    type: string
+    x-enum-varnames:
+    - WebAppUISectionKindParameters
+    - WebAppUISectionKindInputs
+    - WebAppUISectionKindOutputs
+    - WebAppUISectionKindRun
+    - WebAppUISectionKindCustom
   model.Library:
     properties:
       createdAt:
@@ -344,6 +442,24 @@ definitions:
     - name
     - type
     type: object
+  request.CreateWebAppDeploymentRequest:
+    properties:
+      description:
+        type: string
+      isPublic:
+        type: boolean
+      modelId:
+        type: string
+      name:
+        type: string
+      prompt:
+        type: string
+      uiSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
+    required:
+    - modelId
+    - name
+    type: object
   request.ExperimentalFrameRequest:
     properties:
       connections:
@@ -444,6 +560,20 @@ definitions:
     - modelName
     - ports
     - previousModelsCode
+    - userPrompt
+    type: object
+  request.GenerateWebAppRequest:
+    properties:
+      currentSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
+      modelId:
+        type: string
+      name:
+        type: string
+      userPrompt:
+        type: string
+    required:
+    - modelId
     - userPrompt
     type: object
   request.LibraryRequest:
@@ -617,6 +747,19 @@ definitions:
         type: string
     required:
     - names
+    type: object
+  request.UpdateWebAppDeploymentRequest:
+    properties:
+      description:
+        type: string
+      isPublic:
+        type: boolean
+      name:
+        type: string
+      prompt:
+        type: string
+      uiSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
     type: object
   response.Connection:
     properties:
@@ -997,6 +1140,40 @@ definitions:
     required:
     - email
     - username
+    type: object
+  response.WebAppDeploymentResponse:
+    properties:
+      contract:
+        $ref: '#/definitions/json.WebAppContract'
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      isPublic:
+        type: boolean
+      modelId:
+        type: string
+      name:
+        type: string
+      prompt:
+        type: string
+      slug:
+        type: string
+      uiSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
+      updatedAt:
+        type: string
+      userId:
+        type: string
+    type: object
+  response.WebAppSkeletonResponse:
+    properties:
+      contract:
+        $ref: '#/definitions/json.WebAppContract'
+      uiSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
     type: object
 host: localhost:3000
 info:
@@ -2185,4 +2362,244 @@ paths:
       summary: Update current user AI settings
       tags:
       - user
+  /webapp/deployment:
+    get:
+      description: Lists authenticated user's WebApp deployments (optionally filtered
+        by modelId).
+      parameters:
+      - description: Optional model ID filter
+        in: query
+        name: modelId
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.WebAppDeploymentResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List WebApp deployments
+      tags:
+      - webapp
+    post:
+      consumes:
+      - application/json
+      description: Saves a deployable WebApp artifact bound to a model contract.
+      parameters:
+      - description: Deployment payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateWebAppDeploymentRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.WebAppDeploymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Create a WebApp deployment
+      tags:
+      - webapp
+  /webapp/deployment/{id}:
+    delete:
+      description: Deletes a deployment owned by the authenticated user.
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a WebApp deployment
+      tags:
+      - webapp
+    get:
+      description: Returns a WebApp deployment for the authenticated user.
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WebAppDeploymentResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Get a WebApp deployment
+      tags:
+      - webapp
+    patch:
+      consumes:
+      - application/json
+      description: Updates metadata and/or UI schema of a deployment.
+      parameters:
+      - description: Deployment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Patch payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateWebAppDeploymentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WebAppDeploymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a WebApp deployment
+      tags:
+      - webapp
+  /webapp/generate:
+    post:
+      consumes:
+      - application/json
+      description: Refines a deterministic WebApp skeleton using an LLM while enforcing
+        contract compatibility.
+      parameters:
+      - description: WebApp generation request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.GenerateWebAppRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WebAppSkeletonResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate refined WebApp UI schema with AI
+      tags:
+      - webapp
+  /webapp/skeleton/{modelId}:
+    post:
+      description: Builds a deterministic WebApp contract and UI skeleton from a validated
+        model.
+      parameters:
+      - description: Root model ID
+        in: path
+        name: modelId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WebAppSkeletonResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate deterministic WebApp skeleton
+      tags:
+      - webapp
 swagger: "2.0"

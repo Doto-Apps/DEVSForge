@@ -346,18 +346,23 @@ func validateAssistedExperimentalFrameRequest(
 
 	expectedTargetPorts := make(map[string]enum.ModelPortDirection, len(targetModel.Ports))
 	for _, port := range targetModel.Ports {
-		expectedTargetPorts[port.Name] = port.Type
+		key := canonicalPortName(port.Name, port.ID)
+		if key == "" {
+			return nil, errors.New("target model has a port with empty name and id")
+		}
+		expectedTargetPorts[key] = port.Type
 	}
 	if len(mutModel.Ports) != len(expectedTargetPorts) {
 		return nil, errors.New("model-under-test ports must match target model interface")
 	}
 	for _, port := range mutModel.Ports {
-		expectedDirection, knownPort := expectedTargetPorts[port.Name]
+		key := canonicalPortName(port.Name, "")
+		expectedDirection, knownPort := expectedTargetPorts[key]
 		if !knownPort {
-			return nil, fmt.Errorf("model-under-test contains unexpected port %s", port.Name)
+			return nil, fmt.Errorf("model-under-test contains unexpected port %s", key)
 		}
 		if expectedDirection != port.Type {
-			return nil, fmt.Errorf("model-under-test port %s has wrong direction", port.Name)
+			return nil, fmt.Errorf("model-under-test port %s has wrong direction", key)
 		}
 	}
 

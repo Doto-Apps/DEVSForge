@@ -164,6 +164,10 @@ export function EditModel() {
 		if (!modelId || !libraryId) return;
 		navigate(`/library/${libraryId}/model/${modelId}/validate`);
 	};
+	const deployWebApp = async (): Promise<void> => {
+		if (!modelId || !libraryId) return;
+		navigate(`/library/${libraryId}/model/${modelId}/webapp`);
+	};
 	const onChangeProperty = (updatedNode: Node<ReactFlowModelData>) => {
 		// Structure actuel : structureState.present ou structure (comme dans la réponse précédente)
 		if (!structure) return;
@@ -235,6 +239,7 @@ export function EditModel() {
 				saveFunction={saveModelChange}
 				simulateFunction={simulateModel}
 				validateFunction={validateModel}
+				deployFunction={deployWebApp}
 			/>
 
 			{mainModel?.data.modelType === "atomic" ? (

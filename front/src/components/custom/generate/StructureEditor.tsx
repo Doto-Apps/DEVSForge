@@ -18,12 +18,17 @@ export function StructureEditor({
 	const [reactFlowData, setReactFlowData] = useState<ReactFlowInput | null>(
 		null,
 	);
+	const [autoLayoutSignal, setAutoLayoutSignal] = useState(0);
 
 	useEffect(() => {
-		if (diagram) {
-			const rfData = generatedDiagramToReactFlow(diagram);
-			setReactFlowData(rfData);
+		if (diagram.reactFlowData) {
+			setReactFlowData(diagram.reactFlowData);
+			return;
 		}
+
+		const rfData = generatedDiagramToReactFlow(diagram);
+		setReactFlowData(rfData);
+		setAutoLayoutSignal((current) => current + 1);
 	}, [diagram]);
 
 	const handleReactFlowChange = (newData: ReactFlowInput) => {
@@ -136,6 +141,7 @@ export function StructureEditor({
 							<ModelViewEditor
 								models={reactFlowData}
 								onChange={handleReactFlowChange}
+								autoLayoutSignal={autoLayoutSignal}
 							/>
 						</ReactFlowProvider>
 					) : (

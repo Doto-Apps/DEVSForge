@@ -13,6 +13,9 @@ Rules:
    - role = "model-under-test"
    - id must match modelUnderTestId field in output
 4. The MUT ports MUST preserve the target model interface (same port names and directions).
+   - NEVER rename MUT ports.
+   - NEVER invent aliases like "in_motion", "out_light_state", etc. unless they are explicitly listed in the target model ports.
+   - If the user prompt conflicts with target MUT port names, ALWAYS keep target MUT port names.
 5. Additional generated atomic models may have roles:
    - "generator"
    - "transducer"

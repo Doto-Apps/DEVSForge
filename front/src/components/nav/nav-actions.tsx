@@ -12,6 +12,7 @@ import {
 	LineChart,
 	Link,
 	MoreHorizontal,
+	MonitorPlay,
 	Play,
 	Save,
 	Settings2,
@@ -117,12 +118,14 @@ type NavActionsProps = {
 	saveFunction?: () => Promise<void>;
 	simulateFunction?: () => Promise<void>;
 	validateFunction?: () => Promise<void>;
+	deployFunction?: () => Promise<void>;
 };
 
 export function NavActions({
 	saveFunction,
 	simulateFunction,
 	validateFunction,
+	deployFunction,
 }: NavActionsProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
 
@@ -133,7 +136,12 @@ export function NavActions({
 					<ShieldCheck />
 				</Button>
 			)}
-			{saveFunction && (
+			{deployFunction && (
+				<Button size="icon" className="h-7 w-7" onClick={deployFunction}>
+					<MonitorPlay />
+				</Button>
+			)}
+			{simulateFunction && (
 				<Button size="icon" className="h-7 w-7" onClick={simulateFunction}>
 					<Play />
 				</Button>

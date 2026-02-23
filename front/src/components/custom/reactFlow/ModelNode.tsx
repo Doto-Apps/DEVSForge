@@ -23,9 +23,9 @@ function ModelNode({ id, data, selected }: ModelNodeProps) {
 				minHeight={30}
 				handleClassName="h-2 w-2 z-50 before:content-[''] before:absolute before:inset-[-10px] before:bg-transparent"
 			/>
-			<div className="h-full w-full flex flex-col border-border border rounded-lg border-solid ">
+			<div className="h-full w-full flex flex-col border-border border-2 rounded-b-lg border-solid border-card-foreground">
 				<div
-					className={`flex relative flex-grow ${
+					className={`flex relative flex-grow rounded-b-lg ${
 						!data.reactFlowModelGraphicalData?.bodyBackgroundColor
 							? "bg-card"
 							: ""

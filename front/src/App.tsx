@@ -28,6 +28,9 @@ import { SimulateModel } from "./pages/model/SimulateModel";
 import { TestModel } from "./pages/model/TestModel";
 import { ValidationModel } from "./pages/model/ValidationModel";
 import { AccountSettings } from "./pages/settings/AccountSettings";
+import { WebAppBuilder } from "./pages/webapp/WebAppBuilder";
+import { WebAppDeployment } from "./pages/webapp/WebAppDeployment";
+import { WebAppDeployments } from "./pages/webapp/WebAppDeployments";
 import { DnDProvider } from "./providers/DnDContext";
 
 const OnlineDEVSEditor = () => <div>Contact</div>;
@@ -85,6 +88,12 @@ const Main = () => {
 					path="/library/:libraryId/model/:modelId/validate"
 					element={<ValidationModel />}
 				/>
+				<Route
+					path="/library/:libraryId/model/:modelId/webapp"
+					element={<WebAppBuilder />}
+				/>
+				<Route path="/webapps" element={<WebAppDeployments />} />
+				<Route path="/webapps/:deploymentId" element={<WebAppDeployment />} />
 
 				<Route path="/devs-generator" element={<GeneratorFlow />} />
 				<Route path="/getting-started" element={<GettingStarted />} />

@@ -2352,6 +2352,435 @@ export interface paths {
         };
         trace?: never;
     };
+    "/webapp/deployment": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List WebApp deployments
+         * @description Lists authenticated user's WebApp deployments (optionally filtered by modelId).
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Optional model ID filter */
+                    modelId?: string;
+                };
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.WebAppDeploymentResponse"][];
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        /**
+         * Create a WebApp deployment
+         * @description Saves a deployable WebApp artifact bound to a model contract.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Deployment payload */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["request.CreateWebAppDeploymentRequest"];
+                };
+            };
+            responses: {
+                /** @description Created */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.WebAppDeploymentResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webapp/deployment/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a WebApp deployment
+         * @description Returns a WebApp deployment for the authenticated user.
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Deployment ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.WebAppDeploymentResponse"];
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         * Delete a WebApp deployment
+         * @description Deletes a deployment owned by the authenticated user.
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Deployment ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description No Content */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "*/*": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+        };
+        options?: never;
+        head?: never;
+        /**
+         * Update a WebApp deployment
+         * @description Updates metadata and/or UI schema of a deployment.
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Deployment ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            /** @description Patch payload */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["request.UpdateWebAppDeploymentRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.WebAppDeploymentResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+        };
+        trace?: never;
+    };
+    "/webapp/generate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate refined WebApp UI schema with AI
+         * @description Refines a deterministic WebApp skeleton using an LLM while enforcing contract compatibility.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description WebApp generation request */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["request.GenerateWebAppRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.WebAppSkeletonResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/webapp/skeleton/{modelId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Generate deterministic WebApp skeleton
+         * @description Builds a deterministic WebApp contract and UI skeleton from a validated model.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Root model ID */
+                    modelId: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.WebAppSkeletonResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Not Found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+                /** @description Internal Server Error */
+                500: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: string;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -2416,6 +2845,47 @@ export interface components {
         "json.ParameterType": "int" | "float" | "bool" | "string" | "object";
         /** @enum {string} */
         "json.ToolbarPosition": "top" | "left" | "right" | "bottom";
+        "json.WebAppContract": {
+            inputPortBindings?: components["schemas"]["json.WebAppPortBinding"][];
+            modelDescription?: string;
+            modelId?: string;
+            modelName?: string;
+            outputPortBindings?: components["schemas"]["json.WebAppPortBinding"][];
+            parameterBindings?: components["schemas"]["json.WebAppParameterBinding"][];
+        };
+        "json.WebAppParameterBinding": {
+            bindingKey?: string;
+            defaultValue?: unknown;
+            description?: string;
+            instanceModelId?: string;
+            instancePath?: string;
+            modelId?: string;
+            modelName?: string;
+            name?: string;
+            type?: components["schemas"]["json.ParameterType"];
+        };
+        "json.WebAppPortBinding": {
+            bindingKey?: string;
+            direction?: components["schemas"]["enum.ModelPortDirection"];
+            name?: string;
+            portId?: string;
+        };
+        "json.WebAppUISchema": {
+            layout?: string;
+            runButtonLabel?: string;
+            sections?: components["schemas"]["json.WebAppUISection"][];
+            version?: number;
+        };
+        "json.WebAppUISection": {
+            description?: string;
+            id?: string;
+            kind?: components["schemas"]["json.WebAppUISectionKind"];
+            parameterBindingKeys?: string[];
+            portBindingKeys?: string[];
+            title?: string;
+        };
+        /** @enum {string} */
+        "json.WebAppUISectionKind": "parameters" | "inputs" | "outputs" | "run" | "custom";
         "model.Library": {
             createdAt?: string;
             deletedAt?: string;
@@ -2481,6 +2951,14 @@ export interface components {
             /** @enum {unknown} */
             type: "in" | "out";
         };
+        "request.CreateWebAppDeploymentRequest": {
+            description?: string;
+            isPublic?: boolean;
+            modelId: string;
+            name: string;
+            prompt?: string;
+            uiSchema?: components["schemas"]["json.WebAppUISchema"];
+        };
         "request.ExperimentalFrameRequest": {
             connections?: components["schemas"]["request.AssistedExperimentalFrameConnection"][];
             frameModelId?: string;
@@ -2527,6 +3005,12 @@ export interface components {
             /** @example uuid-of-reuse-candidate */
             reuseModelId?: string;
             /** @example Generate a model based on the previous code */
+            userPrompt: string;
+        };
+        "request.GenerateWebAppRequest": {
+            currentSchema?: components["schemas"]["json.WebAppUISchema"];
+            modelId: string;
+            name?: string;
             userPrompt: string;
         };
         "request.LibraryRequest": {
@@ -2603,6 +3087,13 @@ export interface components {
         };
         "request.UpdateUserRequest": {
             names: string;
+        };
+        "request.UpdateWebAppDeploymentRequest": {
+            description?: string;
+            isPublic?: boolean;
+            name?: string;
+            prompt?: string;
+            uiSchema?: components["schemas"]["json.WebAppUISchema"];
         };
         "response.Connection": {
             /** @description required */
@@ -2767,6 +3258,24 @@ export interface components {
         "response.UserResponse": {
             email: string;
             username: string;
+        };
+        "response.WebAppDeploymentResponse": {
+            contract?: components["schemas"]["json.WebAppContract"];
+            createdAt?: string;
+            description?: string;
+            id?: string;
+            isPublic?: boolean;
+            modelId?: string;
+            name?: string;
+            prompt?: string;
+            slug?: string;
+            uiSchema?: components["schemas"]["json.WebAppUISchema"];
+            updatedAt?: string;
+            userId?: string;
+        };
+        "response.WebAppSkeletonResponse": {
+            contract?: components["schemas"]["json.WebAppContract"];
+            uiSchema?: components["schemas"]["json.WebAppUISchema"];
         };
     };
     responses: never;

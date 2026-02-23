@@ -27,7 +27,11 @@ export function NavMain({
 				{mains.map((item) => (
 					<SidebarMenuButton
 						asChild
-						isActive={item.isActive ?? location.pathname === item.url} // Highlight the active link
+						isActive={
+							item.isActive ??
+							(location.pathname === item.url ||
+								location.pathname.startsWith(`${item.url}/`))
+						}
 						key={item.name}
 					>
 						<Link to={item.url}>

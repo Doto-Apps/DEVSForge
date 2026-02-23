@@ -59,6 +59,7 @@ func ConnectDB() {
 		&model.ExperimentalFrame{},
 		&model.Simulation{},
 		&model.SimulationEvent{},
+		&model.WebAppDeployment{},
 	)
 
 	DB.Config.Logger = currentLogger

@@ -35,4 +35,7 @@ func SetupRoutes(app *fiber.App) {
 
 	// AI
 	handler.SetupAiRoutes(app)
+
+	// WebApp
+	handler.SetupWebAppRoutes(app)
 }

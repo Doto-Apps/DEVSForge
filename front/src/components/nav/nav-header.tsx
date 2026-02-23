@@ -24,6 +24,7 @@ type NavHeaderProps = {
 	saveFunction?: () => Promise<void>;
 	simulateFunction?: () => Promise<void>;
 	validateFunction?: () => Promise<void>;
+	deployFunction?: () => Promise<void>;
 };
 
 const NavHeader: React.FC<NavHeaderProps> = ({
@@ -35,6 +36,7 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 	saveFunction,
 	simulateFunction,
 	validateFunction,
+	deployFunction,
 }) => {
 	const lastIndex = breadcrumbs.length - 1;
 
@@ -70,6 +72,7 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 						saveFunction={saveFunction}
 						simulateFunction={simulateFunction}
 						validateFunction={validateFunction}
+						deployFunction={deployFunction}
 					/>
 				)}
 				{showModeToggle && <ModeToggle />}

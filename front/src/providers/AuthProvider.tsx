@@ -1,4 +1,4 @@
-import type { components, paths } from "@/api/v1"; // Import des types générés par OpenAPI
+import type { components, paths } from "@/api/v1";
 import { useToast } from "@/hooks/use-toast";
 import createClient from "openapi-fetch";
 import {
@@ -10,7 +10,6 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-// Définition du contexte d'authentification
 interface AuthContextProps {
 	user: components["schemas"]["response.UserResponse"] | null;
 	token: string | null | undefined;
@@ -23,10 +22,13 @@ interface AuthContextProps {
 	isLoading: boolean;
 }
 
-// Création du contexte
+const ACCESS_TOKEN_STORAGE_KEY = "accessToken";
+const REFRESH_TOKEN_STORAGE_KEY = "refreshToken";
+const AUTH_TOKEN_REFRESHED_EVENT = "auth:access-token-refreshed";
+const AUTH_SESSION_EXPIRED_EVENT = "auth:session-expired";
+
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
-// Création du client API
 const apiClient = createClient<paths>({
 	baseUrl: import.meta.env.VITE_API_BASE_URL,
 });
@@ -40,65 +42,113 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const navigate = useNavigate();
 	const { toast } = useToast();
 
-	// Fonction pour rafraîchir le token
+	const clearSessionState = () => {
+		setToken(null);
+		setUser(null);
+		localStorage.removeItem(ACCESS_TOKEN_STORAGE_KEY);
+		localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+	};
+
 	const refreshAccessToken = async (): Promise<string | null> => {
+		const refreshToken = localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+		if (!refreshToken) {
+			clearSessionState();
+			return null;
+		}
+
 		try {
 			const { data, error } = await apiClient.POST("/auth/refresh", {
-				body: {
-					refreshToken: localStorage.getItem("refreshToken") ?? "",
-				},
+				body: { refreshToken },
 			});
 
-			if (error) {
-				console.error("Erreur de rafraîchissement du token :", error);
-				logout();
+			if (error || !data?.accessToken) {
+				console.error("Failed to refresh access token", error);
+				clearSessionState();
 				return null;
 			}
 
-			if (data?.accessToken) {
-				setToken(data.accessToken);
-				localStorage.setItem("accessToken", data.accessToken);
-				return data.accessToken;
-			}
-
-			return null;
+			setToken(data.accessToken);
+			localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, data.accessToken);
+			return data.accessToken;
 		} catch (error) {
-			console.error("Error refreshing token:", error);
-			logout();
+			console.error("Error refreshing access token", error);
+			clearSessionState();
 			return null;
 		}
 	};
 
 	useEffect(() => {
-		const initializeAuth = async () => {
-			try {
-				const storedToken = localStorage.getItem("accessToken");
+		const handleTokenRefreshed = (event: Event) => {
+			const tokenRefreshEvent = event as CustomEvent<string>;
+			if (tokenRefreshEvent.detail) {
+				setToken(tokenRefreshEvent.detail);
+			}
+		};
 
+		const handleSessionExpired = () => {
+			clearSessionState();
+			if (window.location.pathname !== "/login") {
+				navigate("/login");
+			}
+		};
+
+		window.addEventListener(
+			AUTH_TOKEN_REFRESHED_EVENT,
+			handleTokenRefreshed as EventListener,
+		);
+		window.addEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
+
+		return () => {
+			window.removeEventListener(
+				AUTH_TOKEN_REFRESHED_EVENT,
+				handleTokenRefreshed as EventListener,
+			);
+			window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
+		};
+	}, [navigate]);
+
+	useEffect(() => {
+		const initializeAuth = async () => {
+			const fetchCurrentUser = async (accessToken: string) => {
+				const { data, error } = await apiClient.GET("/auth/me", {
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+					},
+				});
+
+				if (error || !data) {
+					return null;
+				}
+
+				return data;
+			};
+
+			try {
+				const storedToken = localStorage.getItem(ACCESS_TOKEN_STORAGE_KEY);
 				if (!storedToken) {
-					setIsLoading(false);
 					setToken(null);
 					return;
 				}
 
 				setToken(storedToken);
 
-				// Récupérer les infos utilisateur avec le token
-				const { data, error } = await apiClient.GET("/auth/me", {
-					headers: {
-						Authorization: `Bearer ${storedToken}`,
-					},
-				});
+				let currentUser = await fetchCurrentUser(storedToken);
+				if (!currentUser) {
+					const refreshedToken = await refreshAccessToken();
+					if (refreshedToken) {
+						currentUser = await fetchCurrentUser(refreshedToken);
+					}
+				}
 
-				if (error) {
-					console.error("Erreur de récupération de l'utilisateur :", error);
-					setToken(null);
-					localStorage.removeItem("accessToken");
+				if (!currentUser) {
+					clearSessionState();
 					return;
 				}
 
-				setUser(data ?? null);
+				setUser(currentUser);
 			} catch (error) {
-				console.error("Erreur d'initialisation de l'authentification :", error);
+				console.error("Authentication initialization failed", error);
+				clearSessionState();
 			} finally {
 				setIsLoading(false);
 			}
@@ -114,24 +164,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			});
 
 			if (error) {
-				console.error("Erreur de connexion :", error);
+				console.error("Login error", error);
 				toast({
 					description:
-						String(error) || "An error occurred while generating the diagram.",
+						String(error) || "An error occurred while logging in.",
 					variant: "destructive",
 				});
-				throw new Error("Identifiants incorrects.");
+				throw new Error("Invalid credentials.");
 			}
 
 			if (data?.accessToken && data?.refreshToken) {
 				setToken(data.accessToken);
 				setUser({ username: data.username, email: data.email });
-
-				localStorage.setItem("accessToken", data.accessToken);
-				localStorage.setItem("refreshToken", data.refreshToken);
+				localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, data.accessToken);
+				localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, data.refreshToken);
 			}
 		} catch (error) {
-			console.error("Erreur lors de la connexion :", error);
+			console.error("Login failed", error);
 			throw error;
 		}
 	};
@@ -139,38 +188,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	const register = async (email: string, password: string) => {
 		try {
 			const { error } = await apiClient.POST("/auth/register", {
-				body: { email, password, username: email.split("@")[0] }, // Exemple de username basé sur l'email
+				body: { email, password, username: email.split("@")[0] },
 			});
 
 			if (error) {
-				console.error("Erreur lors de l'inscription :", error);
-				throw new Error("Cet utilisateur existe déjà.");
+				console.error("Register error", error);
+				throw new Error("This user already exists.");
 			}
 
 			navigate("/login");
 		} catch (error) {
-			console.error("Erreur d'inscription :", error);
+			console.error("Register failed", error);
 			throw error;
 		}
 	};
 
 	const logout = async () => {
 		try {
-			const refreshToken = localStorage.getItem("refreshToken");
-
+			const refreshToken = localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
 			if (refreshToken) {
 				await apiClient.POST("/auth/logout", {
 					body: { refreshToken },
 				});
 			}
 		} catch (error) {
-			console.error("Erreur lors de la déconnexion :", error);
+			console.error("Logout error", error);
 		} finally {
-			setToken(null);
-			setUser(null);
-			localStorage.removeItem("accessToken");
-			localStorage.removeItem("refreshToken");
-			navigate("/login"); // Redirige vers la page de connexion après logout
+			clearSessionState();
+			navigate("/login");
 		}
 	};
 
@@ -193,7 +238,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	);
 };
 
-// Hook pour accéder au contexte
 export const useAuth = () => {
 	const context = useContext(AuthContext);
 	if (!context) {

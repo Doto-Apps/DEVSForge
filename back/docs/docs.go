@@ -1756,6 +1756,365 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/webapp/deployment": {
+            "get": {
+                "description": "Lists authenticated user's WebApp deployments (optionally filtered by modelId).",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "List WebApp deployments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional model ID filter",
+                        "name": "modelId",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.WebAppDeploymentResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Saves a deployable WebApp artifact bound to a model contract.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "Create a WebApp deployment",
+                "parameters": [
+                    {
+                        "description": "Deployment payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateWebAppDeploymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.WebAppDeploymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/webapp/deployment/{id}": {
+            "get": {
+                "description": "Returns a WebApp deployment for the authenticated user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "Get a WebApp deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.WebAppDeploymentResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a deployment owned by the authenticated user.",
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "Delete a WebApp deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates metadata and/or UI schema of a deployment.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "Update a WebApp deployment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Deployment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Patch payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateWebAppDeploymentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.WebAppDeploymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/webapp/generate": {
+            "post": {
+                "description": "Refines a deterministic WebApp skeleton using an LLM while enforcing contract compatibility.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "Generate refined WebApp UI schema with AI",
+                "parameters": [
+                    {
+                        "description": "WebApp generation request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GenerateWebAppRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.WebAppSkeletonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/webapp/skeleton/{modelId}": {
+            "post": {
+                "description": "Builds a deterministic WebApp contract and UI skeleton from a validated model.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "Generate deterministic WebApp skeleton",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Root model ID",
+                        "name": "modelId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.WebAppSkeletonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -2003,6 +2362,151 @@ const docTemplate = `{
                 "ToolbarPositionLeft",
                 "ToolbarPositionRight",
                 "ToolbarPositionBottom"
+            ]
+        },
+        "json.WebAppContract": {
+            "type": "object",
+            "properties": {
+                "inputPortBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.WebAppPortBinding"
+                    }
+                },
+                "modelDescription": {
+                    "type": "string"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "modelName": {
+                    "type": "string"
+                },
+                "outputPortBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.WebAppPortBinding"
+                    }
+                },
+                "parameterBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.WebAppParameterBinding"
+                    }
+                }
+            }
+        },
+        "json.WebAppParameterBinding": {
+            "type": "object",
+            "properties": {
+                "bindingKey": {
+                    "type": "string"
+                },
+                "defaultValue": {},
+                "description": {
+                    "type": "string"
+                },
+                "instanceModelId": {
+                    "type": "string"
+                },
+                "instancePath": {
+                    "type": "string"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "modelName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/json.ParameterType"
+                }
+            }
+        },
+        "json.WebAppPortBinding": {
+            "type": "object",
+            "properties": {
+                "bindingKey": {
+                    "type": "string"
+                },
+                "direction": {
+                    "$ref": "#/definitions/enum.ModelPortDirection"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "portId": {
+                    "type": "string"
+                }
+            }
+        },
+        "json.WebAppUISchema": {
+            "type": "object",
+            "properties": {
+                "layout": {
+                    "type": "string"
+                },
+                "runButtonLabel": {
+                    "type": "string"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.WebAppUISection"
+                    }
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "json.WebAppUISection": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "kind": {
+                    "$ref": "#/definitions/json.WebAppUISectionKind"
+                },
+                "parameterBindingKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "portBindingKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "json.WebAppUISectionKind": {
+            "type": "string",
+            "enum": [
+                "parameters",
+                "inputs",
+                "outputs",
+                "run",
+                "custom"
+            ],
+            "x-enum-varnames": [
+                "WebAppUISectionKindParameters",
+                "WebAppUISectionKindInputs",
+                "WebAppUISectionKindOutputs",
+                "WebAppUISectionKindRun",
+                "WebAppUISectionKindCustom"
             ]
         },
         "model.Library": {
@@ -2262,6 +2766,33 @@ const docTemplate = `{
                 }
             }
         },
+        "request.CreateWebAppDeploymentRequest": {
+            "type": "object",
+            "required": [
+                "modelId",
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prompt": {
+                    "type": "string"
+                },
+                "uiSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
+                }
+            }
+        },
         "request.ExperimentalFrameRequest": {
             "type": "object",
             "required": [
@@ -2405,6 +2936,27 @@ const docTemplate = `{
                 "userPrompt": {
                     "type": "string",
                     "example": "Generate a model based on the previous code"
+                }
+            }
+        },
+        "request.GenerateWebAppRequest": {
+            "type": "object",
+            "required": [
+                "modelId",
+                "userPrompt"
+            ],
+            "properties": {
+                "currentSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "userPrompt": {
+                    "type": "string"
                 }
             }
         },
@@ -2656,6 +3208,26 @@ const docTemplate = `{
             "properties": {
                 "names": {
                     "type": "string"
+                }
+            }
+        },
+        "request.UpdateWebAppDeploymentRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prompt": {
+                    "type": "string"
+                },
+                "uiSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
                 }
             }
         },
@@ -3225,6 +3797,58 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "response.WebAppDeploymentResponse": {
+            "type": "object",
+            "properties": {
+                "contract": {
+                    "$ref": "#/definitions/json.WebAppContract"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prompt": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "uiSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.WebAppSkeletonResponse": {
+            "type": "object",
+            "properties": {
+                "contract": {
+                    "$ref": "#/definitions/json.WebAppContract"
+                },
+                "uiSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
                 }
             }
         }

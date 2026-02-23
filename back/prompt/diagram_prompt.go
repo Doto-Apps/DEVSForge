@@ -32,7 +32,7 @@ For connection between models inside coupled, direct connections are allowed. It
 - Valid DEVS structure:
   - "atomic" models must have "ports", but cannot have "components".
   - "coupled" models must have "components", and can have "ports".
-- **System encapsulation:** Do not automatically generate a top-level coupled model unless explicitly specified by the user.
+- **System encapsulation:** if the user specify he wants mutiple model without specifying the top level model, create a coupled model with de diagramName. If he want a single model, do not generate a ocupled model unless he specify it.
 - **Connections must be strictly direct** by default, unless the user explicitly requests indirect connections via coupled models.
 - **No cyclic dependencies** (e.g., Model A → Model B → Model A), unless explicitly requested by the user.
 - Meaningful IDs: No arbitrary names; IDs should be relevant to the DEVS logic.

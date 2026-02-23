@@ -14,6 +14,27 @@ type UseGenerateEFStructureResult = {
 	error: string | null;
 };
 
+const extractApiErrorMessage = (apiError: unknown): string | null => {
+	if (!apiError || typeof apiError !== "object") return null;
+	const payload = apiError as Record<string, unknown>;
+
+	const directMessageKeys = ["error", "message", "detail"] as const;
+	for (const key of directMessageKeys) {
+		const value = payload[key];
+		if (typeof value === "string" && value.trim().length > 0) {
+			return value;
+		}
+	}
+
+	for (const value of Object.values(payload)) {
+		if (typeof value === "string" && value.trim().length > 0) {
+			return value;
+		}
+	}
+
+	return null;
+};
+
 export const useGenerateEFStructure = (): UseGenerateEFStructureResult => {
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
@@ -25,15 +46,20 @@ export const useGenerateEFStructure = (): UseGenerateEFStructureResult => {
 		setError(null);
 
 		try {
-			const response = await client.POST("/ai/generate-ef-structure", {
+			const { data, error: apiError } = await client.POST(
+				"/ai/generate-ef-structure",
+				{
 				body: request,
-			});
+				},
+			);
 
-			if (!response.data) {
-				throw new Error("No data received from API");
+			if (apiError || !data) {
+				throw new Error(
+					extractApiErrorMessage(apiError) ?? "No data received from API",
+				);
 			}
 
-			return efStructureResponseToGeneratedDiagram(response.data);
+			return efStructureResponseToGeneratedDiagram(data);
 		} catch (err) {
 			const errorMessage =
 				err instanceof Error ? err.message : "An error occurred";

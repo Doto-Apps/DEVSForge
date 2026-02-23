@@ -5,8 +5,8 @@ import ELK, { type ElkNode } from "elkjs/lib/elk.bundled";
 const elk = new ELK();
 const elkOptions: NonNullable<ElkNode["layoutOptions"]> = {
 	"elk.algorithm": "layered",
-	"elk.layered.spacing.nodeNodeBetweenLayers": "200",
-	"elk.spacing.nodeNode": "200",
+	"elk.layered.spacing.nodeNodeBetweenLayers": "100",
+	"elk.spacing.nodeNode": "100",
 	"elk.hierarchyHandling": "INCLUDE_CHILDREN",
 	"elk.radial.centerOnRoot": "true",
 	"elk.layered.nodePlacement.strategy": "SIMPLE",
@@ -23,7 +23,7 @@ const buildHierarchy = (nodes: ReactFlowInput["nodes"]) => {
 			id: node.id,
 			layoutOptions: {
 				...elkOptions,
-				"elk.padding": "[top=80,left=40,bottom=40,right=40]",
+				"elk.padding": "[top=40,left=16,bottom=16,right=16]",
 			},
 			//targetPosition: isHorizontal ? 'left' : 'top',
 			//sourcePosition: isHorizontal ? 'right' : 'bottom',
