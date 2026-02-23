@@ -438,7 +438,7 @@ export function ValidationModel() {
 			const { data: saveData, error: saveError } = await client.POST(
 				"/experimental-frame",
 				{
-				body: payload as unknown as Record<string, never>,
+					body: payload as unknown as Record<string, never>,
 				},
 			);
 			if (saveError || !saveData) {

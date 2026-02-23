@@ -15,8 +15,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { useWebAppGenerator } from "@/hooks/useWebAppGenerator";
 import { useToast } from "@/hooks/use-toast";
+import { useWebAppGenerator } from "@/hooks/useWebAppGenerator";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelById } from "@/queries/model/useGetModelById";
 import { useGetWebAppDeployments } from "@/queries/webapp/useGetWebAppDeployments";
@@ -86,7 +86,9 @@ export function WebAppBuilder() {
 		);
 	}, [model?.name]);
 
-	const isReadyForSave = Boolean(modelId && name.trim() && uiSchema && contract);
+	const isReadyForSave = Boolean(
+		modelId && name.trim() && uiSchema && contract,
+	);
 
 	const summary = useMemo(() => {
 		return {
@@ -242,7 +244,10 @@ export function WebAppBuilder() {
 											<span className="text-sm text-muted-foreground">
 												{isPublic ? "Public deployment" : "Private deployment"}
 											</span>
-											<Switch checked={isPublic} onCheckedChange={setIsPublic} />
+											<Switch
+												checked={isPublic}
+												onCheckedChange={setIsPublic}
+											/>
 										</div>
 									</div>
 								</div>
@@ -317,26 +322,44 @@ export function WebAppBuilder() {
 							<CardContent className="space-y-4">
 								<div className="grid grid-cols-2 gap-3 md:grid-cols-4">
 									<div className="rounded border p-3">
-										<div className="text-xs text-muted-foreground">Parameters</div>
-										<div className="text-lg font-semibold">{summary.parameters}</div>
+										<div className="text-xs text-muted-foreground">
+											Parameters
+										</div>
+										<div className="text-lg font-semibold">
+											{summary.parameters}
+										</div>
 									</div>
 									<div className="rounded border p-3">
-										<div className="text-xs text-muted-foreground">Input ports</div>
-										<div className="text-lg font-semibold">{summary.inputs}</div>
+										<div className="text-xs text-muted-foreground">
+											Input ports
+										</div>
+										<div className="text-lg font-semibold">
+											{summary.inputs}
+										</div>
 									</div>
 									<div className="rounded border p-3">
-										<div className="text-xs text-muted-foreground">Output ports</div>
-										<div className="text-lg font-semibold">{summary.outputs}</div>
+										<div className="text-xs text-muted-foreground">
+											Output ports
+										</div>
+										<div className="text-lg font-semibold">
+											{summary.outputs}
+										</div>
 									</div>
 									<div className="rounded border p-3">
-										<div className="text-xs text-muted-foreground">UI sections</div>
-										<div className="text-lg font-semibold">{summary.sections}</div>
+										<div className="text-xs text-muted-foreground">
+											UI sections
+										</div>
+										<div className="text-lg font-semibold">
+											{summary.sections}
+										</div>
 									</div>
 								</div>
 
 								<div className="grid gap-4 lg:grid-cols-2">
 									<div className="rounded border p-3">
-										<div className="mb-2 text-sm font-medium">Parameter bindings</div>
+										<div className="mb-2 text-sm font-medium">
+											Parameter bindings
+										</div>
 										<div className="max-h-60 space-y-2 overflow-auto pr-1">
 											{contract?.parameterBindings?.length ? (
 												contract.parameterBindings.map((binding) => (
@@ -362,7 +385,9 @@ export function WebAppBuilder() {
 									</div>
 
 									<div className="rounded border p-3">
-										<div className="mb-2 text-sm font-medium">Port bindings</div>
+										<div className="mb-2 text-sm font-medium">
+											Port bindings
+										</div>
 										<div className="space-y-2">
 											<div>
 												<div className="mb-1 text-xs text-muted-foreground">
@@ -411,7 +436,9 @@ export function WebAppBuilder() {
 											className="rounded border bg-muted/20 p-3 text-sm"
 										>
 											<div className="mb-1 flex items-center justify-between gap-2">
-												<div className="font-medium">{section.title || section.id}</div>
+												<div className="font-medium">
+													{section.title || section.id}
+												</div>
 												<Badge variant="outline">{section.kind}</Badge>
 											</div>
 											<div className="text-xs text-muted-foreground">
@@ -441,9 +468,12 @@ export function WebAppBuilder() {
 							</CardHeader>
 							<CardContent className="space-y-2">
 								{isLoadingDeployments ? (
-									<div className="text-sm text-muted-foreground">Loading...</div>
+									<div className="text-sm text-muted-foreground">
+										Loading...
+									</div>
 								) : null}
-								{!isLoadingDeployments && (!deployments || deployments.length === 0) ? (
+								{!isLoadingDeployments &&
+								(!deployments || deployments.length === 0) ? (
 									<div className="text-sm text-muted-foreground">
 										No deployment yet for this model.
 									</div>

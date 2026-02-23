@@ -107,14 +107,18 @@ export function WebAppDeployments() {
 											<div className="rounded border p-2">
 												<div className="text-muted-foreground">I/O Ports</div>
 												<div className="font-semibold">
-													{(deployment.contract?.inputPortBindings?.length ?? 0) +
-														(deployment.contract?.outputPortBindings?.length ?? 0)}
+													{(deployment.contract?.inputPortBindings?.length ??
+														0) +
+														(deployment.contract?.outputPortBindings?.length ??
+															0)}
 												</div>
 											</div>
 										</div>
 									</CardContent>
 									<CardFooter className="flex items-center justify-end gap-2">
-										<Button onClick={() => navigate(`/webapps/${deployment.id}`)}>
+										<Button
+											onClick={() => navigate(`/webapps/${deployment.id}`)}
+										>
 											<Rocket className="mr-2 h-4 w-4" />
 											Open runtime
 										</Button>

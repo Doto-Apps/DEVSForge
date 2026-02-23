@@ -103,7 +103,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 				AUTH_TOKEN_REFRESHED_EVENT,
 				handleTokenRefreshed as EventListener,
 			);
-			window.removeEventListener(AUTH_SESSION_EXPIRED_EVENT, handleSessionExpired);
+			window.removeEventListener(
+				AUTH_SESSION_EXPIRED_EVENT,
+				handleSessionExpired,
+			);
 		};
 	}, [navigate]);
 
@@ -166,8 +169,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			if (error) {
 				console.error("Login error", error);
 				toast({
-					description:
-						String(error) || "An error occurred while logging in.",
+					description: String(error) || "An error occurred while logging in.",
 					variant: "destructive",
 				});
 				throw new Error("Invalid credentials.");

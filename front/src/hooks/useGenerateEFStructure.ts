@@ -49,7 +49,7 @@ export const useGenerateEFStructure = (): UseGenerateEFStructureResult => {
 			const { data, error: apiError } = await client.POST(
 				"/ai/generate-ef-structure",
 				{
-				body: request,
+					body: request,
 				},
 			);
 

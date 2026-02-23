@@ -4,7 +4,8 @@ import { useState } from "react";
 
 type WebAppSkeletonResponse =
 	components["schemas"]["response.WebAppSkeletonResponse"];
-type GenerateWebAppRequest = components["schemas"]["request.GenerateWebAppRequest"];
+type GenerateWebAppRequest =
+	components["schemas"]["request.GenerateWebAppRequest"];
 type CreateWebAppDeploymentRequest =
 	components["schemas"]["request.CreateWebAppDeploymentRequest"];
 type WebAppDeploymentResponse =
@@ -87,9 +88,12 @@ export const useWebAppGenerator = (): UseWebAppGeneratorResult => {
 		setIsLoading(true);
 		setError(null);
 		try {
-			const { data, error: apiError } = await client.POST("/webapp/deployment", {
-				body: request,
-			});
+			const { data, error: apiError } = await client.POST(
+				"/webapp/deployment",
+				{
+					body: request,
+				},
+			);
 
 			if (apiError || !data) {
 				throw new Error("Failed to create WebApp deployment");

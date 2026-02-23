@@ -1,7 +1,7 @@
 import type { components } from "@/api/v1";
 import {
-	type SimulationParameterTarget,
 	SimulationPanel,
+	type SimulationParameterTarget,
 } from "@/components/custom/SimulationPanel";
 import NavHeader from "@/components/nav/nav-header";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/card";
 import { useGetWebAppDeploymentById } from "@/queries/webapp/useGetWebAppDeploymentById";
 import { Globe, Loader2, Lock, Rocket } from "lucide-react";
-import { useMemo, type ReactNode } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useParams } from "react-router-dom";
 
 type WebAppDeploymentResponse =
@@ -128,7 +128,10 @@ export function WebAppDeployment() {
 		() => buildParameterTargets(deployment),
 		[deployment],
 	);
-	const modelNameById = useMemo(() => buildModelNameByID(deployment), [deployment]);
+	const modelNameById = useMemo(
+		() => buildModelNameByID(deployment),
+		[deployment],
+	);
 	const schemaSections = deployment?.uiSchema?.sections ?? [];
 	const effectiveSections = useMemo<WebAppUISection[]>(
 		() =>
@@ -196,7 +199,9 @@ export function WebAppDeployment() {
 			return (
 				<Card key={section.id}>
 					<CardHeader>
-						<CardTitle className="text-base">{section.title || "Parameters"}</CardTitle>
+						<CardTitle className="text-base">
+							{section.title || "Parameters"}
+						</CardTitle>
 						{section.description ? (
 							<CardDescription>{section.description}</CardDescription>
 						) : null}
@@ -209,8 +214,13 @@ export function WebAppDeployment() {
 								</div>
 							) : (
 								parameterTargets.map((target) => (
-									<div key={target.instanceModelId} className="rounded border p-2">
-										<div className="text-sm font-medium">{target.modelName}</div>
+									<div
+										key={target.instanceModelId}
+										className="rounded border p-2"
+									>
+										<div className="text-sm font-medium">
+											{target.modelName}
+										</div>
 										<div className="text-xs text-muted-foreground font-mono break-all">
 											{target.instanceModelId}
 										</div>
@@ -298,7 +308,9 @@ export function WebAppDeployment() {
 		return (
 			<Card key={section.id}>
 				<CardHeader>
-					<CardTitle className="text-base">{section.title || section.id}</CardTitle>
+					<CardTitle className="text-base">
+						{section.title || section.id}
+					</CardTitle>
 					{section.description ? (
 						<CardDescription>{section.description}</CardDescription>
 					) : null}
@@ -367,7 +379,9 @@ export function WebAppDeployment() {
 								</div>
 							</div>
 							<div className="rounded border p-3">
-								<div className="text-xs text-muted-foreground">Output ports</div>
+								<div className="text-xs text-muted-foreground">
+									Output ports
+								</div>
 								<div className="text-lg font-semibold">
 									{deployment.contract?.outputPortBindings?.length ?? 0}
 								</div>

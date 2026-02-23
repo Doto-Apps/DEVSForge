@@ -595,11 +595,11 @@ export function SimulationPanel({
 									</>
 								) : (
 									<>
-									<Play className="mr-2 h-4 w-4" />
-									{runButtonLabel}
-								</>
-							)}
-						</Button>
+										<Play className="mr-2 h-4 w-4" />
+										{runButtonLabel}
+									</>
+								)}
+							</Button>
 							<Button
 								variant="outline"
 								onClick={handleStop}
@@ -667,10 +667,11 @@ export function SimulationPanel({
 
 											<div className="grid gap-3 md:grid-cols-2">
 												{target.parameters.map((param) => {
-													const hasRuntimeOverride = Object.prototype.hasOwnProperty.call(
-														instanceOverrides,
-														param.name,
-													);
+													const hasRuntimeOverride =
+														Object.prototype.hasOwnProperty.call(
+															instanceOverrides,
+															param.name,
+														);
 													const currentValue = hasRuntimeOverride
 														? instanceOverrides[param.name]
 														: param.value;
@@ -730,7 +731,8 @@ export function SimulationPanel({
 																/>
 															) : null}
 
-															{param.type === "int" || param.type === "float" ? (
+															{param.type === "int" ||
+															param.type === "float" ? (
 																<Input
 																	type="number"
 																	step={param.type === "int" ? 1 : 0.1}

@@ -4,3285 +4,3295 @@
  */
 
 export interface paths {
-    "/ai/generate-diagram": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Generate a diagram
-         * @description Sends a prompt to OpenAI to generate a diagram in JSON format based on a strict schema.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Data required to generate a diagram */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.GenerateDiagramRequest"];
-                };
-            };
-            responses: {
-                /** @description Generated diagram */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.DiagramResponse"];
-                    };
-                };
-                /** @description Invalid request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description AI processing error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/generate-documentation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Generate model documentation
-         * @description Analyzes a DEVS model and generates description, keywords, and role using AI.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Model ID to generate documentation for */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.GenerateDocumentationRequest"];
-                };
-            };
-            responses: {
-                /** @description Generated documentation */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.GeneratedDocumentationResponse"];
-                    };
-                };
-                /** @description Invalid request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Model not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description AI processing error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/generate-ef-structure": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Generate an experimental frame structure
-         * @description Generates an Experimental Frame (EF) structure around a target model for validation scenarios.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Data required to generate EF structure */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.GenerateEFStructureRequest"];
-                };
-            };
-            responses: {
-                /** @description Generated EF structure */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ExperimentalFrameStructureResponse"];
-                    };
-                };
-                /** @description Invalid request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Target model not found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description AI processing error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/ai/generate-model": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Generate a model
-         * @description Sends a prompt to OpenAI to generate a DEVS model code in Python or Go.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Data required to generate a model */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.GenerateModelRequest"];
-                };
-            };
-            responses: {
-                /** @description Generated model code */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.GeneratedModelResponse"];
-                    };
-                };
-                /** @description Invalid request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description AI processing error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/login": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Log in a user
-         * @description Logs in a user with the provided identity (email or username) and password.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Login Request */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.LoginRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.LoginResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/logout": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Log out a user
-         * @description Logs out a user by invalidating the refresh token.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Logout Request */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.LogoutRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get current user
-         * @description Returns the authenticated user's information based on the access token.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.UserResponse"];
-                    };
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/refresh": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Refresh access token
-         * @description Refreshes the access token using a valid refresh token.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Refresh Request */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.RefreshRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.RefreshResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Unauthorized */
-                401: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/auth/register": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Register a new user
-         * @description Registers a new user with the provided username, email, and password.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Register Request */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.RegisterRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.RegisterResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Conflict */
-                409: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/experimental-frame": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Create an experimental frame
-         * @description Create an experimental frame association (target model -> coupled frame model)
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Experimental frame data */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.ExperimentalFrameRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ExperimentalFrameResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/experimental-frame/model/{modelId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get experimental frames by model
-         * @description Retrieve all experimental frames linked to a target model
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Target model ID */
-                    modelId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ExperimentalFrameResponse"][];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/experimental-frame/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get an experimental frame
-         * @description Retrieve a single experimental frame by its ID
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Experimental frame ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ExperimentalFrameResponse"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /**
-         * Delete an experimental frame
-         * @description Delete an experimental frame by its ID
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Experimental frame ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/health": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * API health check
-         * @description Returns the status of the API to confirm it is running
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description API is running */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/languages": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get available languages
-         * @description Returns the list of programming languages available for DEVS models
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.LanguageListResponse"];
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/languages/{lang}/template": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get language template
-         * @description Returns the atomic model code template for the specified language
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Model name to inject in template */
-                    name?: string;
-                };
-                header?: never;
-                path: {
-                    /** @description Language ID (go, python) */
-                    lang: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.LanguageTemplateResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/library": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get all libraries
-         * @description Retrieve a list of all libraries
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["model.Library"][];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /**
-         * Create a library
-         * @description Create a new library entry
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Library data */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.LibraryRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["model.Library"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/library/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get a library by ID
-         * @description Retrieve a single library by its ID
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Library ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["model.Library"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /**
-         * Delete a library
-         * @description Delete a library by its ID
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Library ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /**
-         * Update a library
-         * @description Update an existing library with partial data
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Library ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            /** @description Fields to update */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.LibraryRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["model.Library"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/model": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get all models
-         * @description Retrieve a list of all models
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ModelResponse"][];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /**
-         * Create a model
-         * @description Create a new model entry
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Model data */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.ModelRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ModelResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/model/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get a model by ID
-         * @description Retrieve a single model by its ID
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Model ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ModelResponse"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /**
-         * Delete a model
-         * @description Delete a model by its ID
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Model ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /**
-         * Update a model
-         * @description Update an existing model with partial data
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Model ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            /** @description Fields to update */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.ModelRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ModelResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/model/{id}/recursive": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get a model by ID
-         * @description Retrieve a single model by its ID
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Model ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.ModelResponse"][];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/model/{id}/simulate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Generate simulations files
-         * @description generateSimulationFile generate a zip that will contain all infromations for simulation
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Model ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/simulation": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get user simulations
-         * @description Retrieve all simulations for the authenticated user
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.SimulationResponse"][];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/simulation/model/{modelId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get simulations by model
-         * @description Retrieve all simulations for a specific model
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Model ID */
-                    modelId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.SimulationResponse"][];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/simulation/{modelId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Create a simulation
-         * @description Create a new simulation for the specified model (does not start it)
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Model ID */
-                    modelId: string;
-                };
-                cookie?: never;
-            };
-            /** @description Simulation parameters */
-            requestBody?: {
-                content: {
-                    "application/json": components["schemas"]["request.SimulationStartRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.SimulationResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/simulation/{simId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get a simulation
-         * @description Retrieve a simulation by its ID
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Simulation ID */
-                    simId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.SimulationResponse"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/simulation/{simId}/events": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get simulation events
-         * @description Retrieve all DEVS messages that transited during a simulation (includes simulation status for polling)
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Maximum number of events (default: 1000) */
-                    limit?: number;
-                    /** @description Offset for pagination (default: 0) */
-                    offset?: number;
-                };
-                header?: never;
-                path: {
-                    /** @description Simulation ID */
-                    simId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.SimulationEventsResponse"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/simulation/{simId}/start": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Start a simulation
-         * @description Start an existing simulation (call after WebSocket is connected)
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Simulation ID */
-                    simId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.SimulationResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/user": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get all user
-         * @description Retrieve a list of all user
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["model.User"][];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/user/settings/ai": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get current user AI settings
-         * @description Returns the current user's AI provider settings.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.UserAISettingsResponse"];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * Update current user AI settings
-         * @description Updates current user AI provider settings (apiUrl, apiKey, apiModel).
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description AI settings to update */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.UpdateUserAISettingsRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.UserAISettingsResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/user/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get a user by ID
-         * @description Retrieve a single user by their ID
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description User ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["model.User"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /**
-         * Delete a user by ID
-         * @description Delete an existing user by their ID
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description User ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            /** @description User password confirmation */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.PasswordRequest"];
-                };
-            };
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /**
-         * Update a user
-         * @description Update an existing user with partial data
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description User ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            /** @description Partial user update */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.UpdateUserRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["model.User"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: unknown;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/webapp/deployment": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * List WebApp deployments
-         * @description Lists authenticated user's WebApp deployments (optionally filtered by modelId).
-         */
-        get: {
-            parameters: {
-                query?: {
-                    /** @description Optional model ID filter */
-                    modelId?: string;
-                };
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.WebAppDeploymentResponse"][];
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        /**
-         * Create a WebApp deployment
-         * @description Saves a deployable WebApp artifact bound to a model contract.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description Deployment payload */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.CreateWebAppDeploymentRequest"];
-                };
-            };
-            responses: {
-                /** @description Created */
-                201: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.WebAppDeploymentResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/webapp/deployment/{id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Get a WebApp deployment
-         * @description Returns a WebApp deployment for the authenticated user.
-         */
-        get: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Deployment ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.WebAppDeploymentResponse"];
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        put?: never;
-        post?: never;
-        /**
-         * Delete a WebApp deployment
-         * @description Deletes a deployment owned by the authenticated user.
-         */
-        delete: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Deployment ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description No Content */
-                204: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content?: never;
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "*/*": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        options?: never;
-        head?: never;
-        /**
-         * Update a WebApp deployment
-         * @description Updates metadata and/or UI schema of a deployment.
-         */
-        patch: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Deployment ID */
-                    id: string;
-                };
-                cookie?: never;
-            };
-            /** @description Patch payload */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.UpdateWebAppDeploymentRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.WebAppDeploymentResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        trace?: never;
-    };
-    "/webapp/generate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Generate refined WebApp UI schema with AI
-         * @description Refines a deterministic WebApp skeleton using an LLM while enforcing contract compatibility.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path?: never;
-                cookie?: never;
-            };
-            /** @description WebApp generation request */
-            requestBody: {
-                content: {
-                    "application/json": components["schemas"]["request.GenerateWebAppRequest"];
-                };
-            };
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.WebAppSkeletonResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/webapp/skeleton/{modelId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * Generate deterministic WebApp skeleton
-         * @description Builds a deterministic WebApp contract and UI skeleton from a validated model.
-         */
-        post: {
-            parameters: {
-                query?: never;
-                header?: never;
-                path: {
-                    /** @description Root model ID */
-                    modelId: string;
-                };
-                cookie?: never;
-            };
-            requestBody?: never;
-            responses: {
-                /** @description OK */
-                200: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": components["schemas"]["response.WebAppSkeletonResponse"];
-                    };
-                };
-                /** @description Bad Request */
-                400: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Not Found */
-                404: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-                /** @description Internal Server Error */
-                500: {
-                    headers: {
-                        [name: string]: unknown;
-                    };
-                    content: {
-                        "application/json": {
-                            [key: string]: string;
-                        };
-                    };
-                };
-            };
-        };
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
+	"/ai/generate-diagram": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Generate a diagram
+		 * @description Sends a prompt to OpenAI to generate a diagram in JSON format based on a strict schema.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Data required to generate a diagram */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.GenerateDiagramRequest"];
+				};
+			};
+			responses: {
+				/** @description Generated diagram */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.DiagramResponse"];
+					};
+				};
+				/** @description Invalid request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description AI processing error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/ai/generate-documentation": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Generate model documentation
+		 * @description Analyzes a DEVS model and generates description, keywords, and role using AI.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Model ID to generate documentation for */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.GenerateDocumentationRequest"];
+				};
+			};
+			responses: {
+				/** @description Generated documentation */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.GeneratedDocumentationResponse"];
+					};
+				};
+				/** @description Invalid request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Model not found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description AI processing error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/ai/generate-ef-structure": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Generate an experimental frame structure
+		 * @description Generates an Experimental Frame (EF) structure around a target model for validation scenarios.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Data required to generate EF structure */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.GenerateEFStructureRequest"];
+				};
+			};
+			responses: {
+				/** @description Generated EF structure */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ExperimentalFrameStructureResponse"];
+					};
+				};
+				/** @description Invalid request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Target model not found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description AI processing error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/ai/generate-model": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Generate a model
+		 * @description Sends a prompt to OpenAI to generate a DEVS model code in Python or Go.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Data required to generate a model */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.GenerateModelRequest"];
+				};
+			};
+			responses: {
+				/** @description Generated model code */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.GeneratedModelResponse"];
+					};
+				};
+				/** @description Invalid request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description AI processing error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/auth/login": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Log in a user
+		 * @description Logs in a user with the provided identity (email or username) and password.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Login Request */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.LoginRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.LoginResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/auth/logout": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Log out a user
+		 * @description Logs out a user by invalidating the refresh token.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Logout Request */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.LogoutRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/auth/me": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get current user
+		 * @description Returns the authenticated user's information based on the access token.
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.UserResponse"];
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/auth/refresh": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Refresh access token
+		 * @description Refreshes the access token using a valid refresh token.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Refresh Request */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.RefreshRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.RefreshResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Unauthorized */
+				401: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/auth/register": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Register a new user
+		 * @description Registers a new user with the provided username, email, and password.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Register Request */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.RegisterRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.RegisterResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Conflict */
+				409: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/experimental-frame": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Create an experimental frame
+		 * @description Create an experimental frame association (target model -> coupled frame model)
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Experimental frame data */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.ExperimentalFrameRequest"];
+				};
+			};
+			responses: {
+				/** @description Created */
+				201: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ExperimentalFrameResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/experimental-frame/model/{modelId}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get experimental frames by model
+		 * @description Retrieve all experimental frames linked to a target model
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Target model ID */
+					modelId: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ExperimentalFrameResponse"][];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/experimental-frame/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get an experimental frame
+		 * @description Retrieve a single experimental frame by its ID
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Experimental frame ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ExperimentalFrameResponse"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		/**
+		 * Delete an experimental frame
+		 * @description Delete an experimental frame by its ID
+		 */
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Experimental frame ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/health": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * API health check
+		 * @description Returns the status of the API to confirm it is running
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description API is running */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/languages": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get available languages
+		 * @description Returns the list of programming languages available for DEVS models
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.LanguageListResponse"];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/languages/{lang}/template": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get language template
+		 * @description Returns the atomic model code template for the specified language
+		 */
+		get: {
+			parameters: {
+				query?: {
+					/** @description Model name to inject in template */
+					name?: string;
+				};
+				header?: never;
+				path: {
+					/** @description Language ID (go, python) */
+					lang: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.LanguageTemplateResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/library": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get all libraries
+		 * @description Retrieve a list of all libraries
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["model.Library"][];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		/**
+		 * Create a library
+		 * @description Create a new library entry
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Library data */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.LibraryRequest"];
+				};
+			};
+			responses: {
+				/** @description Created */
+				201: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["model.Library"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/library/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get a library by ID
+		 * @description Retrieve a single library by its ID
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Library ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["model.Library"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		/**
+		 * Delete a library
+		 * @description Delete a library by its ID
+		 */
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Library ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		/**
+		 * Update a library
+		 * @description Update an existing library with partial data
+		 */
+		patch: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Library ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			/** @description Fields to update */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.LibraryRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["model.Library"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		trace?: never;
+	};
+	"/model": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get all models
+		 * @description Retrieve a list of all models
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ModelResponse"][];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		/**
+		 * Create a model
+		 * @description Create a new model entry
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Model data */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.ModelRequest"];
+				};
+			};
+			responses: {
+				/** @description Created */
+				201: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ModelResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/model/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get a model by ID
+		 * @description Retrieve a single model by its ID
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ModelResponse"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		/**
+		 * Delete a model
+		 * @description Delete a model by its ID
+		 */
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		/**
+		 * Update a model
+		 * @description Update an existing model with partial data
+		 */
+		patch: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			/** @description Fields to update */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.ModelRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ModelResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		trace?: never;
+	};
+	"/model/{id}/recursive": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get a model by ID
+		 * @description Retrieve a single model by its ID
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ModelResponse"][];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/model/{id}/simulate": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Generate simulations files
+		 * @description generateSimulationFile generate a zip that will contain all infromations for simulation
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/simulation": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get user simulations
+		 * @description Retrieve all simulations for the authenticated user
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.SimulationResponse"][];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/simulation/model/{modelId}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get simulations by model
+		 * @description Retrieve all simulations for a specific model
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model ID */
+					modelId: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.SimulationResponse"][];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/simulation/{modelId}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Create a simulation
+		 * @description Create a new simulation for the specified model (does not start it)
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model ID */
+					modelId: string;
+				};
+				cookie?: never;
+			};
+			/** @description Simulation parameters */
+			requestBody?: {
+				content: {
+					"application/json": components["schemas"]["request.SimulationStartRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.SimulationResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/simulation/{simId}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get a simulation
+		 * @description Retrieve a simulation by its ID
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Simulation ID */
+					simId: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.SimulationResponse"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/simulation/{simId}/events": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get simulation events
+		 * @description Retrieve all DEVS messages that transited during a simulation (includes simulation status for polling)
+		 */
+		get: {
+			parameters: {
+				query?: {
+					/** @description Maximum number of events (default: 1000) */
+					limit?: number;
+					/** @description Offset for pagination (default: 0) */
+					offset?: number;
+				};
+				header?: never;
+				path: {
+					/** @description Simulation ID */
+					simId: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.SimulationEventsResponse"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/simulation/{simId}/start": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Start a simulation
+		 * @description Start an existing simulation (call after WebSocket is connected)
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Simulation ID */
+					simId: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.SimulationResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/user": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get all user
+		 * @description Retrieve a list of all user
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["model.User"][];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/user/settings/ai": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get current user AI settings
+		 * @description Returns the current user's AI provider settings.
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.UserAISettingsResponse"];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		/**
+		 * Update current user AI settings
+		 * @description Updates current user AI provider settings (apiUrl, apiKey, apiModel).
+		 */
+		patch: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description AI settings to update */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.UpdateUserAISettingsRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.UserAISettingsResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		trace?: never;
+	};
+	"/user/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get a user by ID
+		 * @description Retrieve a single user by their ID
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description User ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["model.User"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		/**
+		 * Delete a user by ID
+		 * @description Delete an existing user by their ID
+		 */
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description User ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			/** @description User password confirmation */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.PasswordRequest"];
+				};
+			};
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		/**
+		 * Update a user
+		 * @description Update an existing user with partial data
+		 */
+		patch: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description User ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			/** @description Partial user update */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.UpdateUserRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["model.User"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		trace?: never;
+	};
+	"/webapp/deployment": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * List WebApp deployments
+		 * @description Lists authenticated user's WebApp deployments (optionally filtered by modelId).
+		 */
+		get: {
+			parameters: {
+				query?: {
+					/** @description Optional model ID filter */
+					modelId?: string;
+				};
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.WebAppDeploymentResponse"][];
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		/**
+		 * Create a WebApp deployment
+		 * @description Saves a deployable WebApp artifact bound to a model contract.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Deployment payload */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.CreateWebAppDeploymentRequest"];
+				};
+			};
+			responses: {
+				/** @description Created */
+				201: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.WebAppDeploymentResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/webapp/deployment/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get a WebApp deployment
+		 * @description Returns a WebApp deployment for the authenticated user.
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Deployment ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.WebAppDeploymentResponse"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		/**
+		 * Delete a WebApp deployment
+		 * @description Deletes a deployment owned by the authenticated user.
+		 */
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Deployment ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description No Content */
+				204: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content?: never;
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		/**
+		 * Update a WebApp deployment
+		 * @description Updates metadata and/or UI schema of a deployment.
+		 */
+		patch: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Deployment ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			/** @description Patch payload */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.UpdateWebAppDeploymentRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.WebAppDeploymentResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		trace?: never;
+	};
+	"/webapp/generate": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Generate refined WebApp UI schema with AI
+		 * @description Refines a deterministic WebApp skeleton using an LLM while enforcing contract compatibility.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description WebApp generation request */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["request.GenerateWebAppRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.WebAppSkeletonResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/webapp/skeleton/{modelId}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/**
+		 * Generate deterministic WebApp skeleton
+		 * @description Builds a deterministic WebApp contract and UI skeleton from a validated model.
+		 */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Root model ID */
+					modelId: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.WebAppSkeletonResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 }
 export type webhooks = Record<string, never>;
 export interface components {
-    schemas: {
-        /** @enum {string} */
-        "enum.ModelLanguage": "go" | "python";
-        /** @enum {string} */
-        "enum.ModelPortDirection": "in" | "out";
-        /** @enum {string} */
-        "enum.ModelType": "atomic" | "coupled";
-        "json.ModelColors": {
-            bodyBackgroundColor?: string;
-            headerBackgroundColor?: string;
-            headerTextColor?: string;
-        };
-        "json.ModelComponent": {
-            instanceId: string;
-            instanceMetadata?: components["schemas"]["json.ModelMetadata"];
-            modelId: string;
-        };
-        "json.ModelConnection": {
-            from: components["schemas"]["json.ModelLink"];
-            to: components["schemas"]["json.ModelLink"];
-        };
-        "json.ModelLink": {
-            instanceId: string;
-            port: string;
-        };
-        "json.ModelMetadata": {
-            alwaysShowExtraInfo?: boolean;
-            alwaysShowToolbar?: boolean;
-            backgroundColor?: string;
-            keyword: string[];
-            modelColors?: components["schemas"]["json.ModelColors"];
-            modelRole: string;
-            parameters?: components["schemas"]["json.ModelParameter"][];
-            position: components["schemas"]["json.ModelPosition"];
-            style: components["schemas"]["json.ModelStyle"];
-            toolbarPosition?: components["schemas"]["json.ToolbarPosition"];
-            toolbarVisible?: boolean;
-        };
-        "json.ModelParameter": {
-            description?: string;
-            name: string;
-            type: components["schemas"]["json.ParameterType"];
-            value: unknown;
-        };
-        "json.ModelPort": {
-            id: string;
-            name: string;
-            type: components["schemas"]["enum.ModelPortDirection"];
-        };
-        "json.ModelPosition": {
-            x: number;
-            y: number;
-        };
-        "json.ModelStyle": {
-            height: number;
-            width: number;
-        };
-        /** @enum {string} */
-        "json.ParameterType": "int" | "float" | "bool" | "string" | "object";
-        /** @enum {string} */
-        "json.ToolbarPosition": "top" | "left" | "right" | "bottom";
-        "json.WebAppContract": {
-            inputPortBindings?: components["schemas"]["json.WebAppPortBinding"][];
-            modelDescription?: string;
-            modelId?: string;
-            modelName?: string;
-            outputPortBindings?: components["schemas"]["json.WebAppPortBinding"][];
-            parameterBindings?: components["schemas"]["json.WebAppParameterBinding"][];
-        };
-        "json.WebAppParameterBinding": {
-            bindingKey?: string;
-            defaultValue?: unknown;
-            description?: string;
-            instanceModelId?: string;
-            instancePath?: string;
-            modelId?: string;
-            modelName?: string;
-            name?: string;
-            type?: components["schemas"]["json.ParameterType"];
-        };
-        "json.WebAppPortBinding": {
-            bindingKey?: string;
-            direction?: components["schemas"]["enum.ModelPortDirection"];
-            name?: string;
-            portId?: string;
-        };
-        "json.WebAppUISchema": {
-            layout?: string;
-            runButtonLabel?: string;
-            sections?: components["schemas"]["json.WebAppUISection"][];
-            version?: number;
-        };
-        "json.WebAppUISection": {
-            description?: string;
-            id?: string;
-            kind?: components["schemas"]["json.WebAppUISectionKind"];
-            parameterBindingKeys?: string[];
-            portBindingKeys?: string[];
-            title?: string;
-        };
-        /** @enum {string} */
-        "json.WebAppUISectionKind": "parameters" | "inputs" | "outputs" | "run" | "custom";
-        "model.Library": {
-            createdAt?: string;
-            deletedAt?: string;
-            description?: string;
-            id?: string;
-            models?: components["schemas"]["model.Model"][];
-            title?: string;
-            updatedAt?: string;
-            userId?: string;
-        };
-        "model.Model": {
-            code?: string;
-            components?: components["schemas"]["json.ModelComponent"][];
-            connections?: components["schemas"]["json.ModelConnection"][];
-            createdAt?: string;
-            deletedAt?: string;
-            description?: string;
-            id?: string;
-            language?: components["schemas"]["enum.ModelLanguage"];
-            libId?: string;
-            metadata?: components["schemas"]["json.ModelMetadata"];
-            name?: string;
-            ports?: components["schemas"]["json.ModelPort"][];
-            type?: components["schemas"]["enum.ModelType"];
-            updatedAt?: string;
-            userId?: string;
-        };
-        /** @enum {string} */
-        "model.SimulationStatus": "pending" | "running" | "completed" | "failed";
-        "model.User": {
-            createdAt?: string;
-            deletedAt?: string;
-            email: string;
-            fullname?: string;
-            id?: string;
-            libraries?: components["schemas"]["model.Library"][];
-            modelTypes?: components["schemas"]["model.Model"][];
-            password: string;
-            refresh_token?: string;
-            updatedAt?: string;
-            username: string;
-        };
-        "request.AssistedExperimentalFrameConnection": {
-            from: components["schemas"]["request.AssistedExperimentalFrameEndpoint"];
-            to: components["schemas"]["request.AssistedExperimentalFrameEndpoint"];
-        };
-        "request.AssistedExperimentalFrameEndpoint": {
-            model: string;
-            port: string;
-        };
-        "request.AssistedExperimentalFrameModel": {
-            code?: string;
-            components?: string[];
-            id: string;
-            name: string;
-            ports?: components["schemas"]["request.AssistedExperimentalFrameModelPort"][];
-            role?: string;
-            /** @enum {unknown} */
-            type: "atomic" | "coupled";
-        };
-        "request.AssistedExperimentalFrameModelPort": {
-            name: string;
-            /** @enum {unknown} */
-            type: "in" | "out";
-        };
-        "request.CreateWebAppDeploymentRequest": {
-            description?: string;
-            isPublic?: boolean;
-            modelId: string;
-            name: string;
-            prompt?: string;
-            uiSchema?: components["schemas"]["json.WebAppUISchema"];
-        };
-        "request.ExperimentalFrameRequest": {
-            connections?: components["schemas"]["request.AssistedExperimentalFrameConnection"][];
-            frameModelId?: string;
-            libraryId?: string;
-            modelUnderTestId?: string;
-            models?: components["schemas"]["request.AssistedExperimentalFrameModel"][];
-            roomName?: string;
-            rootModelId?: string;
-            targetModelId: string;
-        };
-        "request.GenerateDiagramRequest": {
-            /** @example MyDiagram */
-            diagramName: string;
-            pastMessages?: components["schemas"]["request.PastMessages"][];
-            /** @example Create a software architecture diagram */
-            userPrompt: string;
-        };
-        "request.GenerateDocumentationRequest": {
-            /** @example uuid-of-model */
-            modelId: string;
-        };
-        "request.GenerateEFStructureRequest": {
-            pastMessages?: components["schemas"]["request.PastMessages"][];
-            /** @example Room - NomDuEF */
-            roomName?: string;
-            /** @example uuid-of-target-model */
-            targetModelId: string;
-            /** @example I want 2 generators and 1 acceptor to validate latency */
-            userPrompt: string;
-        };
-        "request.GenerateModelRequest": {
-            /** @example false */
-            forceScratch?: boolean;
-            /**
-             * @example python
-             * @enum {string}
-             */
-            language: "python" | "go";
-            /** @example MyModel */
-            modelName: string;
-            ports: components["schemas"]["request.PortInfo"][];
-            /** @example Existing model code */
-            previousModelsCode: string;
-            /** @example uuid-of-reuse-candidate */
-            reuseModelId?: string;
-            /** @example Generate a model based on the previous code */
-            userPrompt: string;
-        };
-        "request.GenerateWebAppRequest": {
-            currentSchema?: components["schemas"]["json.WebAppUISchema"];
-            modelId: string;
-            name?: string;
-            userPrompt: string;
-        };
-        "request.LibraryRequest": {
-            description: string;
-            title: string;
-        };
-        "request.LoginRequest": {
-            identity: string;
-            password: string;
-        };
-        "request.LogoutRequest": {
-            refreshToken: string;
-        };
-        "request.ModelRequest": {
-            code: string;
-            components: components["schemas"]["json.ModelComponent"][];
-            connections: components["schemas"]["json.ModelConnection"][];
-            description: string;
-            id?: string;
-            language?: components["schemas"]["enum.ModelLanguage"];
-            libId?: string;
-            metadata: components["schemas"]["json.ModelMetadata"];
-            name: string;
-            ports: components["schemas"]["json.ModelPort"][];
-            type: components["schemas"]["enum.ModelType"];
-        };
-        "request.PasswordRequest": {
-            password: string;
-        };
-        "request.PastMessages": {
-            content: string;
-            role: string;
-        };
-        "request.PortInfo": {
-            /** @example port-1 */
-            id: string;
-            /** @example input */
-            name: string;
-            /**
-             * @example in
-             * @enum {string}
-             */
-            type: "in" | "out";
-        };
-        "request.RefreshRequest": {
-            refreshToken: string;
-        };
-        "request.RegisterRequest": {
-            email: string;
-            password: string;
-            username: string;
-        };
-        "request.SimulationModelOverrideRequest": {
-            instanceModelId?: string;
-            overrideParams?: components["schemas"]["request.SimulationParameterOverrideRequest"][];
-        };
-        "request.SimulationParameterOverrideRequest": {
-            name?: string;
-            value?: unknown;
-        };
-        "request.SimulationStartRequest": {
-            /** @description Maximum simulation time (0 = no limit) */
-            maxTime?: number;
-            /** @description Optional runtime parameter overrides */
-            overrides?: components["schemas"]["request.SimulationModelOverrideRequest"][];
-        };
-        "request.UpdateUserAISettingsRequest": {
-            /** @example sk-... */
-            apiKey?: string;
-            /** @example gpt-4.1-mini */
-            apiModel?: string;
-            /** @example https://api.openai.com/v1 */
-            apiUrl?: string;
-        };
-        "request.UpdateUserRequest": {
-            names: string;
-        };
-        "request.UpdateWebAppDeploymentRequest": {
-            description?: string;
-            isPublic?: boolean;
-            name?: string;
-            prompt?: string;
-            uiSchema?: components["schemas"]["json.WebAppUISchema"];
-        };
-        "response.Connection": {
-            /** @description required */
-            from?: components["schemas"]["response.Endpoint"];
-            /** @description required */
-            to?: components["schemas"]["response.Endpoint"];
-        };
-        "response.DiagramResponse": {
-            /** @description required */
-            connections?: components["schemas"]["response.Connection"][];
-            /** @description required */
-            models?: components["schemas"]["response.Model"][];
-        };
-        /** @enum {string} */
-        "response.DocumentationRole": "generator" | "transducer" | "observer";
-        "response.Endpoint": {
-            /** @description required */
-            model?: string;
-            /** @description required */
-            port?: string;
-        };
-        "response.ExperimentalFrameModel": {
-            components?: string[];
-            id?: string;
-            name?: string;
-            ports?: components["schemas"]["response.PortResponse"][];
-            role?: components["schemas"]["response.ExperimentalFrameRole"];
-            type?: components["schemas"]["response.ModelType"];
-        };
-        "response.ExperimentalFrameResponse": {
-            createdAt?: string;
-            frameModelId?: string;
-            id?: string;
-            targetModelId?: string;
-            updatedAt?: string;
-            userId?: string;
-        };
-        /** @enum {string} */
-        "response.ExperimentalFrameRole": "experimental-frame" | "model-under-test" | "generator" | "transducer" | "acceptor";
-        "response.ExperimentalFrameStructureResponse": {
-            connections?: components["schemas"]["response.Connection"][];
-            modelUnderTestId?: string;
-            models?: components["schemas"]["response.ExperimentalFrameModel"][];
-            roomName?: string;
-            rootModelId?: string;
-            targetModelId?: string;
-        };
-        "response.GeneratedDocumentationResponse": {
-            description?: string;
-            keywords?: string[];
-            role?: components["schemas"]["response.DocumentationRole"];
-        };
-        "response.GeneratedModelResponse": {
-            code: string;
-            keywords?: string[];
-            reuseCandidates?: components["schemas"]["response.ReuseCandidateResponse"][];
-            reuseMode?: string;
-            reuseUsed?: components["schemas"]["response.ReuseCandidateResponse"];
-        };
-        "response.LanguageInfo": {
-            description?: string;
-            extension?: string;
-            id?: string;
-            name?: string;
-        };
-        "response.LanguageListResponse": {
-            languages?: components["schemas"]["response.LanguageInfo"][];
-        };
-        "response.LanguageTemplateResponse": {
-            code?: string;
-            language?: string;
-        };
-        "response.LoginResponse": {
-            accessToken: string;
-            email: string;
-            refreshToken: string;
-            username: string;
-        };
-        "response.Model": {
-            /** @description required (can be empty array) */
-            components?: string[];
-            /** @description required */
-            id?: string;
-            /** @description required (can be empty array) */
-            ports?: components["schemas"]["response.PortResponse"][];
-            /** @description required enum */
-            type?: components["schemas"]["response.ModelType"];
-        };
-        "response.ModelResponse": {
-            code: string;
-            components: components["schemas"]["json.ModelComponent"][];
-            connections: components["schemas"]["json.ModelConnection"][];
-            description: string;
-            id: string;
-            libId?: string;
-            metadata: components["schemas"]["json.ModelMetadata"];
-            name: string;
-            ports: components["schemas"]["json.ModelPort"][];
-            type: components["schemas"]["enum.ModelType"];
-            userId: string;
-        };
-        /** @enum {string} */
-        "response.ModelType": "atomic" | "coupled";
-        /** @enum {string} */
-        "response.PortDirection": "in" | "out";
-        "response.PortResponse": {
-            /** @description unique port identifier */
-            id?: string;
-            /** @description logical port name */
-            name?: string;
-            /** @description "in" or "out" */
-            type?: components["schemas"]["response.PortDirection"];
-        };
-        "response.RefreshResponse": {
-            accessToken: string;
-        };
-        "response.RegisterResponse": {
-            accessToken: string;
-            refreshToken: string;
-            user: components["schemas"]["response.UserResponse"];
-        };
-        "response.ReuseCandidateResponse": {
-            description?: string;
-            keywords?: string[];
-            modelId?: string;
-            name?: string;
-            score?: number;
-        };
-        "response.SimulationEventResponse": {
-            createdAt?: string;
-            devsType?: string;
-            id?: string;
-            payload?: unknown;
-            sender?: string;
-            simulationId?: string;
-            simulationTime?: number;
-            target?: string;
-        };
-        "response.SimulationEventsResponse": {
-            events?: components["schemas"]["response.SimulationEventResponse"][];
-            limit?: number;
-            offset?: number;
-            simulation?: components["schemas"]["response.SimulationResponse"];
-            total?: number;
-        };
-        "response.SimulationResponse": {
-            completedAt?: string;
-            createdAt?: string;
-            errorMessage?: string;
-            id?: string;
-            modelId?: string;
-            startedAt?: string;
-            status?: components["schemas"]["model.SimulationStatus"];
-            userId?: string;
-        };
-        "response.UserAISettingsResponse": {
-            apiKeyMasked?: string;
-            apiModel?: string;
-            apiUrl?: string;
-            hasApiKey?: boolean;
-        };
-        "response.UserResponse": {
-            email: string;
-            username: string;
-        };
-        "response.WebAppDeploymentResponse": {
-            contract?: components["schemas"]["json.WebAppContract"];
-            createdAt?: string;
-            description?: string;
-            id?: string;
-            isPublic?: boolean;
-            modelId?: string;
-            name?: string;
-            prompt?: string;
-            slug?: string;
-            uiSchema?: components["schemas"]["json.WebAppUISchema"];
-            updatedAt?: string;
-            userId?: string;
-        };
-        "response.WebAppSkeletonResponse": {
-            contract?: components["schemas"]["json.WebAppContract"];
-            uiSchema?: components["schemas"]["json.WebAppUISchema"];
-        };
-    };
-    responses: never;
-    parameters: never;
-    requestBodies: never;
-    headers: never;
-    pathItems: never;
+	schemas: {
+		/** @enum {string} */
+		"enum.ModelLanguage": "go" | "python";
+		/** @enum {string} */
+		"enum.ModelPortDirection": "in" | "out";
+		/** @enum {string} */
+		"enum.ModelType": "atomic" | "coupled";
+		"json.ModelColors": {
+			bodyBackgroundColor?: string;
+			headerBackgroundColor?: string;
+			headerTextColor?: string;
+		};
+		"json.ModelComponent": {
+			instanceId: string;
+			instanceMetadata?: components["schemas"]["json.ModelMetadata"];
+			modelId: string;
+		};
+		"json.ModelConnection": {
+			from: components["schemas"]["json.ModelLink"];
+			to: components["schemas"]["json.ModelLink"];
+		};
+		"json.ModelLink": {
+			instanceId: string;
+			port: string;
+		};
+		"json.ModelMetadata": {
+			alwaysShowExtraInfo?: boolean;
+			alwaysShowToolbar?: boolean;
+			backgroundColor?: string;
+			keyword: string[];
+			modelColors?: components["schemas"]["json.ModelColors"];
+			modelRole: string;
+			parameters?: components["schemas"]["json.ModelParameter"][];
+			position: components["schemas"]["json.ModelPosition"];
+			style: components["schemas"]["json.ModelStyle"];
+			toolbarPosition?: components["schemas"]["json.ToolbarPosition"];
+			toolbarVisible?: boolean;
+		};
+		"json.ModelParameter": {
+			description?: string;
+			name: string;
+			type: components["schemas"]["json.ParameterType"];
+			value: unknown;
+		};
+		"json.ModelPort": {
+			id: string;
+			name: string;
+			type: components["schemas"]["enum.ModelPortDirection"];
+		};
+		"json.ModelPosition": {
+			x: number;
+			y: number;
+		};
+		"json.ModelStyle": {
+			height: number;
+			width: number;
+		};
+		/** @enum {string} */
+		"json.ParameterType": "int" | "float" | "bool" | "string" | "object";
+		/** @enum {string} */
+		"json.ToolbarPosition": "top" | "left" | "right" | "bottom";
+		"json.WebAppContract": {
+			inputPortBindings?: components["schemas"]["json.WebAppPortBinding"][];
+			modelDescription?: string;
+			modelId?: string;
+			modelName?: string;
+			outputPortBindings?: components["schemas"]["json.WebAppPortBinding"][];
+			parameterBindings?: components["schemas"]["json.WebAppParameterBinding"][];
+		};
+		"json.WebAppParameterBinding": {
+			bindingKey?: string;
+			defaultValue?: unknown;
+			description?: string;
+			instanceModelId?: string;
+			instancePath?: string;
+			modelId?: string;
+			modelName?: string;
+			name?: string;
+			type?: components["schemas"]["json.ParameterType"];
+		};
+		"json.WebAppPortBinding": {
+			bindingKey?: string;
+			direction?: components["schemas"]["enum.ModelPortDirection"];
+			name?: string;
+			portId?: string;
+		};
+		"json.WebAppUISchema": {
+			layout?: string;
+			runButtonLabel?: string;
+			sections?: components["schemas"]["json.WebAppUISection"][];
+			version?: number;
+		};
+		"json.WebAppUISection": {
+			description?: string;
+			id?: string;
+			kind?: components["schemas"]["json.WebAppUISectionKind"];
+			parameterBindingKeys?: string[];
+			portBindingKeys?: string[];
+			title?: string;
+		};
+		/** @enum {string} */
+		"json.WebAppUISectionKind":
+			| "parameters"
+			| "inputs"
+			| "outputs"
+			| "run"
+			| "custom";
+		"model.Library": {
+			createdAt?: string;
+			deletedAt?: string;
+			description?: string;
+			id?: string;
+			models?: components["schemas"]["model.Model"][];
+			title?: string;
+			updatedAt?: string;
+			userId?: string;
+		};
+		"model.Model": {
+			code?: string;
+			components?: components["schemas"]["json.ModelComponent"][];
+			connections?: components["schemas"]["json.ModelConnection"][];
+			createdAt?: string;
+			deletedAt?: string;
+			description?: string;
+			id?: string;
+			language?: components["schemas"]["enum.ModelLanguage"];
+			libId?: string;
+			metadata?: components["schemas"]["json.ModelMetadata"];
+			name?: string;
+			ports?: components["schemas"]["json.ModelPort"][];
+			type?: components["schemas"]["enum.ModelType"];
+			updatedAt?: string;
+			userId?: string;
+		};
+		/** @enum {string} */
+		"model.SimulationStatus": "pending" | "running" | "completed" | "failed";
+		"model.User": {
+			createdAt?: string;
+			deletedAt?: string;
+			email: string;
+			fullname?: string;
+			id?: string;
+			libraries?: components["schemas"]["model.Library"][];
+			modelTypes?: components["schemas"]["model.Model"][];
+			password: string;
+			refresh_token?: string;
+			updatedAt?: string;
+			username: string;
+		};
+		"request.AssistedExperimentalFrameConnection": {
+			from: components["schemas"]["request.AssistedExperimentalFrameEndpoint"];
+			to: components["schemas"]["request.AssistedExperimentalFrameEndpoint"];
+		};
+		"request.AssistedExperimentalFrameEndpoint": {
+			model: string;
+			port: string;
+		};
+		"request.AssistedExperimentalFrameModel": {
+			code?: string;
+			components?: string[];
+			id: string;
+			name: string;
+			ports?: components["schemas"]["request.AssistedExperimentalFrameModelPort"][];
+			role?: string;
+			/** @enum {unknown} */
+			type: "atomic" | "coupled";
+		};
+		"request.AssistedExperimentalFrameModelPort": {
+			name: string;
+			/** @enum {unknown} */
+			type: "in" | "out";
+		};
+		"request.CreateWebAppDeploymentRequest": {
+			description?: string;
+			isPublic?: boolean;
+			modelId: string;
+			name: string;
+			prompt?: string;
+			uiSchema?: components["schemas"]["json.WebAppUISchema"];
+		};
+		"request.ExperimentalFrameRequest": {
+			connections?: components["schemas"]["request.AssistedExperimentalFrameConnection"][];
+			frameModelId?: string;
+			libraryId?: string;
+			modelUnderTestId?: string;
+			models?: components["schemas"]["request.AssistedExperimentalFrameModel"][];
+			roomName?: string;
+			rootModelId?: string;
+			targetModelId: string;
+		};
+		"request.GenerateDiagramRequest": {
+			/** @example MyDiagram */
+			diagramName: string;
+			pastMessages?: components["schemas"]["request.PastMessages"][];
+			/** @example Create a software architecture diagram */
+			userPrompt: string;
+		};
+		"request.GenerateDocumentationRequest": {
+			/** @example uuid-of-model */
+			modelId: string;
+		};
+		"request.GenerateEFStructureRequest": {
+			pastMessages?: components["schemas"]["request.PastMessages"][];
+			/** @example Room - NomDuEF */
+			roomName?: string;
+			/** @example uuid-of-target-model */
+			targetModelId: string;
+			/** @example I want 2 generators and 1 acceptor to validate latency */
+			userPrompt: string;
+		};
+		"request.GenerateModelRequest": {
+			/** @example false */
+			forceScratch?: boolean;
+			/**
+			 * @example python
+			 * @enum {string}
+			 */
+			language: "python" | "go";
+			/** @example MyModel */
+			modelName: string;
+			ports: components["schemas"]["request.PortInfo"][];
+			/** @example Existing model code */
+			previousModelsCode: string;
+			/** @example uuid-of-reuse-candidate */
+			reuseModelId?: string;
+			/** @example Generate a model based on the previous code */
+			userPrompt: string;
+		};
+		"request.GenerateWebAppRequest": {
+			currentSchema?: components["schemas"]["json.WebAppUISchema"];
+			modelId: string;
+			name?: string;
+			userPrompt: string;
+		};
+		"request.LibraryRequest": {
+			description: string;
+			title: string;
+		};
+		"request.LoginRequest": {
+			identity: string;
+			password: string;
+		};
+		"request.LogoutRequest": {
+			refreshToken: string;
+		};
+		"request.ModelRequest": {
+			code: string;
+			components: components["schemas"]["json.ModelComponent"][];
+			connections: components["schemas"]["json.ModelConnection"][];
+			description: string;
+			id?: string;
+			language?: components["schemas"]["enum.ModelLanguage"];
+			libId?: string;
+			metadata: components["schemas"]["json.ModelMetadata"];
+			name: string;
+			ports: components["schemas"]["json.ModelPort"][];
+			type: components["schemas"]["enum.ModelType"];
+		};
+		"request.PasswordRequest": {
+			password: string;
+		};
+		"request.PastMessages": {
+			content: string;
+			role: string;
+		};
+		"request.PortInfo": {
+			/** @example port-1 */
+			id: string;
+			/** @example input */
+			name: string;
+			/**
+			 * @example in
+			 * @enum {string}
+			 */
+			type: "in" | "out";
+		};
+		"request.RefreshRequest": {
+			refreshToken: string;
+		};
+		"request.RegisterRequest": {
+			email: string;
+			password: string;
+			username: string;
+		};
+		"request.SimulationModelOverrideRequest": {
+			instanceModelId?: string;
+			overrideParams?: components["schemas"]["request.SimulationParameterOverrideRequest"][];
+		};
+		"request.SimulationParameterOverrideRequest": {
+			name?: string;
+			value?: unknown;
+		};
+		"request.SimulationStartRequest": {
+			/** @description Maximum simulation time (0 = no limit) */
+			maxTime?: number;
+			/** @description Optional runtime parameter overrides */
+			overrides?: components["schemas"]["request.SimulationModelOverrideRequest"][];
+		};
+		"request.UpdateUserAISettingsRequest": {
+			/** @example sk-... */
+			apiKey?: string;
+			/** @example gpt-4.1-mini */
+			apiModel?: string;
+			/** @example https://api.openai.com/v1 */
+			apiUrl?: string;
+		};
+		"request.UpdateUserRequest": {
+			names: string;
+		};
+		"request.UpdateWebAppDeploymentRequest": {
+			description?: string;
+			isPublic?: boolean;
+			name?: string;
+			prompt?: string;
+			uiSchema?: components["schemas"]["json.WebAppUISchema"];
+		};
+		"response.Connection": {
+			/** @description required */
+			from?: components["schemas"]["response.Endpoint"];
+			/** @description required */
+			to?: components["schemas"]["response.Endpoint"];
+		};
+		"response.DiagramResponse": {
+			/** @description required */
+			connections?: components["schemas"]["response.Connection"][];
+			/** @description required */
+			models?: components["schemas"]["response.Model"][];
+		};
+		/** @enum {string} */
+		"response.DocumentationRole": "generator" | "transducer" | "observer";
+		"response.Endpoint": {
+			/** @description required */
+			model?: string;
+			/** @description required */
+			port?: string;
+		};
+		"response.ExperimentalFrameModel": {
+			components?: string[];
+			id?: string;
+			name?: string;
+			ports?: components["schemas"]["response.PortResponse"][];
+			role?: components["schemas"]["response.ExperimentalFrameRole"];
+			type?: components["schemas"]["response.ModelType"];
+		};
+		"response.ExperimentalFrameResponse": {
+			createdAt?: string;
+			frameModelId?: string;
+			id?: string;
+			targetModelId?: string;
+			updatedAt?: string;
+			userId?: string;
+		};
+		/** @enum {string} */
+		"response.ExperimentalFrameRole":
+			| "experimental-frame"
+			| "model-under-test"
+			| "generator"
+			| "transducer"
+			| "acceptor";
+		"response.ExperimentalFrameStructureResponse": {
+			connections?: components["schemas"]["response.Connection"][];
+			modelUnderTestId?: string;
+			models?: components["schemas"]["response.ExperimentalFrameModel"][];
+			roomName?: string;
+			rootModelId?: string;
+			targetModelId?: string;
+		};
+		"response.GeneratedDocumentationResponse": {
+			description?: string;
+			keywords?: string[];
+			role?: components["schemas"]["response.DocumentationRole"];
+		};
+		"response.GeneratedModelResponse": {
+			code: string;
+			keywords?: string[];
+			reuseCandidates?: components["schemas"]["response.ReuseCandidateResponse"][];
+			reuseMode?: string;
+			reuseUsed?: components["schemas"]["response.ReuseCandidateResponse"];
+		};
+		"response.LanguageInfo": {
+			description?: string;
+			extension?: string;
+			id?: string;
+			name?: string;
+		};
+		"response.LanguageListResponse": {
+			languages?: components["schemas"]["response.LanguageInfo"][];
+		};
+		"response.LanguageTemplateResponse": {
+			code?: string;
+			language?: string;
+		};
+		"response.LoginResponse": {
+			accessToken: string;
+			email: string;
+			refreshToken: string;
+			username: string;
+		};
+		"response.Model": {
+			/** @description required (can be empty array) */
+			components?: string[];
+			/** @description required */
+			id?: string;
+			/** @description required (can be empty array) */
+			ports?: components["schemas"]["response.PortResponse"][];
+			/** @description required enum */
+			type?: components["schemas"]["response.ModelType"];
+		};
+		"response.ModelResponse": {
+			code: string;
+			components: components["schemas"]["json.ModelComponent"][];
+			connections: components["schemas"]["json.ModelConnection"][];
+			description: string;
+			id: string;
+			libId?: string;
+			metadata: components["schemas"]["json.ModelMetadata"];
+			name: string;
+			ports: components["schemas"]["json.ModelPort"][];
+			type: components["schemas"]["enum.ModelType"];
+			userId: string;
+		};
+		/** @enum {string} */
+		"response.ModelType": "atomic" | "coupled";
+		/** @enum {string} */
+		"response.PortDirection": "in" | "out";
+		"response.PortResponse": {
+			/** @description unique port identifier */
+			id?: string;
+			/** @description logical port name */
+			name?: string;
+			/** @description "in" or "out" */
+			type?: components["schemas"]["response.PortDirection"];
+		};
+		"response.RefreshResponse": {
+			accessToken: string;
+		};
+		"response.RegisterResponse": {
+			accessToken: string;
+			refreshToken: string;
+			user: components["schemas"]["response.UserResponse"];
+		};
+		"response.ReuseCandidateResponse": {
+			description?: string;
+			keywords?: string[];
+			modelId?: string;
+			name?: string;
+			score?: number;
+		};
+		"response.SimulationEventResponse": {
+			createdAt?: string;
+			devsType?: string;
+			id?: string;
+			payload?: unknown;
+			sender?: string;
+			simulationId?: string;
+			simulationTime?: number;
+			target?: string;
+		};
+		"response.SimulationEventsResponse": {
+			events?: components["schemas"]["response.SimulationEventResponse"][];
+			limit?: number;
+			offset?: number;
+			simulation?: components["schemas"]["response.SimulationResponse"];
+			total?: number;
+		};
+		"response.SimulationResponse": {
+			completedAt?: string;
+			createdAt?: string;
+			errorMessage?: string;
+			id?: string;
+			modelId?: string;
+			startedAt?: string;
+			status?: components["schemas"]["model.SimulationStatus"];
+			userId?: string;
+		};
+		"response.UserAISettingsResponse": {
+			apiKeyMasked?: string;
+			apiModel?: string;
+			apiUrl?: string;
+			hasApiKey?: boolean;
+		};
+		"response.UserResponse": {
+			email: string;
+			username: string;
+		};
+		"response.WebAppDeploymentResponse": {
+			contract?: components["schemas"]["json.WebAppContract"];
+			createdAt?: string;
+			description?: string;
+			id?: string;
+			isPublic?: boolean;
+			modelId?: string;
+			name?: string;
+			prompt?: string;
+			slug?: string;
+			uiSchema?: components["schemas"]["json.WebAppUISchema"];
+			updatedAt?: string;
+			userId?: string;
+		};
+		"response.WebAppSkeletonResponse": {
+			contract?: components["schemas"]["json.WebAppContract"];
+			uiSchema?: components["schemas"]["json.WebAppUISchema"];
+		};
+	};
+	responses: never;
+	parameters: never;
+	requestBodies: never;
+	headers: never;
+	pathItems: never;
 }
 export type $defs = Record<string, never>;
 export type operations = Record<string, never>;

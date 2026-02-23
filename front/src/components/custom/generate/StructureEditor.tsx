@@ -122,7 +122,7 @@ export function StructureEditor({
 											)}
 											{model.dependencies.length > 0 && (
 												<div className="text-orange-600 dark:text-orange-400">
-												<span className="font-medium">Depends on:</span>{" "}
+													<span className="font-medium">Depends on:</span>{" "}
 													{model.dependencies.join(", ")}
 												</div>
 											)}

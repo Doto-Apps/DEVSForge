@@ -18,7 +18,11 @@ const REFRESH_SKEW_SECONDS = 30;
 const AUTH_TOKEN_REFRESHED_EVENT = "auth:access-token-refreshed";
 const AUTH_SESSION_EXPIRED_EVENT = "auth:session-expired";
 
-const AUTH_BYPASS_PATHS = new Set(["/auth/login", "/auth/register", "/auth/refresh"]);
+const AUTH_BYPASS_PATHS = new Set([
+	"/auth/login",
+	"/auth/register",
+	"/auth/refresh",
+]);
 
 export const client = createClient<paths>({
 	baseUrl: API_BASE_URL,
@@ -34,7 +38,9 @@ const clearStoredTokens = () => {
 
 const dispatchTokenRefreshed = (accessToken: string) => {
 	window.dispatchEvent(
-		new CustomEvent<string>(AUTH_TOKEN_REFRESHED_EVENT, { detail: accessToken }),
+		new CustomEvent<string>(AUTH_TOKEN_REFRESHED_EVENT, {
+			detail: accessToken,
+		}),
 	);
 };
 
@@ -74,7 +80,10 @@ const parseJwtPayload = (token: string): JwtPayload | null => {
 	}
 };
 
-const isTokenExpiringSoon = (token: string, skewSeconds = REFRESH_SKEW_SECONDS) => {
+const isTokenExpiringSoon = (
+	token: string,
+	skewSeconds = REFRESH_SKEW_SECONDS,
+) => {
 	const payload = parseJwtPayload(token);
 	if (!payload?.exp) {
 		return true;
