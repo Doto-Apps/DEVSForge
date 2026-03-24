@@ -32,7 +32,7 @@ services:
       - postgres-db:/var/lib/postgresql/data
       - ../db-init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U easydevs"]
+      test: ["CMD-SHELL", "pg_isready -U devsforge"]
       interval: 10s
       timeout: 5s
       retries: 5

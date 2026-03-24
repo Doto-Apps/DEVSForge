@@ -77,6 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		}
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const handleTokenRefreshed = (event: Event) => {
 			const tokenRefreshEvent = event as CustomEvent<string>;
@@ -110,6 +111,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 		};
 	}, [navigate]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const initializeAuth = async () => {
 			const fetchCurrentUser = async (accessToken: string) => {
@@ -169,7 +171,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 			if (error) {
 				console.error("Login error", error);
 				toast({
-					description: String(error) || "An error occurred while logging in.",
+					description: "An error occurred while logging in.",
 					variant: "destructive",
 				});
 				throw new Error("Invalid credentials.");

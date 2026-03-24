@@ -78,3 +78,6 @@ openapi.json
 #python 
 *.pyc
 __pycache__/
+
+#executable
+*.exe

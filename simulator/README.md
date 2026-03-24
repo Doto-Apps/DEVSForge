@@ -1,88 +1,102 @@
-# Simulator
+# DEVSForge Simulator
 
-PROJECT UNDER HEAVY DEVELOPMENT IT MAY NOT WORK FOR ALL USE CASE PLEASE SEND AN ISSUE.
+The `simulator/` module executes DEVS models in distributed mode using a coordinator + multiple runners + language wrappers.
 
-TODO: Important choix a faire si on ne veux pas devoir sortir le dossier temp de sim du dossier du projet il nous faut avoir deux workspace distinct back et sim sans que la racine n'est de go mod -> il n'existe pas de système d'exclusiion de wrokspace en go
+## Quick Links
+- [Root README](../README.md)
+- [Backend README](../back/README.md)
+- [Frontend README](../front/README.md)
+- [Wrappers README](./wrappers/README.md)
+- [Reproducibility Guide](../docs/reproducibility.md)
 
-## Next steps 
+## Module Layout
+- `coordinator/`: global DEVS scheduler and message orchestrator.
+- `runner/`: one process per atomic model; translates Kafka commands to gRPC wrapper calls.
+- `shared/`: shared manifest, Kafka message types, utilities.
+- `wrappers/`: Go/Python runtime libraries and gRPC servers used by runner subprocesses.
+- `tests/`: integration test assets and Kafka docker-compose for test runs.
 
-- [ ] Log all in a file
-- [x] Temporary directory with config
-- [ ] Make an helper to Marshal incoming data in ports
-- [ ] Implement/Remove portType with primitive typing ?
-- [x] Unit test using a single go model and send kafka message in the test
-  - [x] Ensure we handle correctly SendInit, SendNextTime, SendOuput, ExecuteTransition, SimulationDone, DeltaExt, DeltaInt
-  - [x] Ensure we handle correctly Confluent
-- [ ] Unit test using a go model and a python model
-- [ ] Add java language
-- [ ] Add C++ language
-- [ ] Improve READMEs and code documentation in golang and python
-- [ ] Add a Realworld unit test using all methods
-- [ ] Deploy modeling libraries to make them available for all developers
-- [ ] Handle Create and delete temporary directories in the coordinator
-- [ ] Change Kafka function to add topic with the new kgo lib
+## Execution Model
+### Coordinator responsibilities
+- Parse runnable manifest.
+- Spawn one runner per atomic model.
+- Run DEVS loop over simulation time:
+  1. Send `devs.msg.InitSim`.
+  2. Collect `devs.msg.NextTime`.
+  3. Compute global `tmin`.
+  4. Send `devs.msg.SendOutput` to imminents.
+  5. Collect `devs.msg.ModelOutputMessage`.
+  6. Route outputs through manifest connections.
+  7. Send `devs.msg.ExecuteTransition`.
+  8. Collect `devs.msg.TransitionDone`.
+  9. Repeat until max time, all +Inf next times, or failure.
+- End with `devs.msg.SimulationDone`.
 
-## Implementation State
+### Runner responsibilities
+- Load one-model manifest.
+- Prepare temporary model workspace from wrapper template.
+- Inject generated user code.
+- Start language model process exposing gRPC `AtomicModelService`.
+- Consume Kafka DEVS messages and call gRPC methods (`Initialize`, transitions, `Output`, `Finalize`).
+- Emit DEVS messages back to Kafka.
 
-| Language  | Implemented | Information |
-| :--------------- |:--------------- | :-----|
-| Golang  |   Yes |  Implementation complete |
-| Python  | Yes |   Implementation complete |
-| Java  | No | |
-| C++  | No | |
+## Protocol Contracts
+### Kafka message families
+Defined in `shared/kafka/type.go`:
+- `devs.msg.InitSim`
+- `devs.msg.NextTime`
+- `devs.msg.SendOutput`
+- `devs.msg.ModelOutputMessage`
+- `devs.msg.ExecuteTransition`
+- `devs.msg.TransitionDone`
+- `devs.msg.SimulationDone`
+- ISO-like `ErrorReport` envelope (`messageType: ErrorReport`)
 
-## How to test
+### gRPC contract
+Defined in `proto/devs.proto`:
+- `Initialize`
+- `Finalize`
+- `TimeAdvance`
+- `InternalTransition`
+- `ExternalTransition`
+- `ConfluentTransition`
+- `Output`
+- `AddInput`
 
-For testing the simulation in this project you will need : 
-- Docker or Docker Desktop for windows users.
-- GO in any recent version 
+### Manifest contract
+The backend generates a runnable manifest and flattens coupled model hierarchies into direct atomic runnable models and connections before launching the coordinator.
 
-### Test the runner alone
+## Temporary Directories and Lifecycle
+- Coordinator creates per-simulation temp directory under `simulator/tmp`.
+- Runner creates per-model workspace in this temp area.
+- Wrappers and generated model files are staged there for execution.
 
-There is two main test in the folowing project, the first one is to test a runner alone to verify thats he run smoothly. The test included the start of the docker and any needed dependency.
-From the root of the project : 
+## Error Handling
+- Runner and coordinator can emit `ErrorReport` messages with severity (`error`/`fatal`).
+- Backend event consumer prioritizes fatal error reports and marks simulation status as `failed`.
 
-`go test -v /simulator/runner/tests`: `-v` is needed to have outputs
+## Testing
+From repository root:
+```bash
+go test -v ./simulator/runner/tests/...
+go test -v ./simulator/coordinator/tests/...
+```
 
-### Test the entire simulation ( runners + coord )
+Tests spin up Kafka using testcontainers + `simulator/tests/docker-compose.yml`.
 
-This test include the runnable manifest conatining differents model, automatic start of the kafka, and the execution of the all simulation in general.
-From the root of the project : 
+## Manual Invocation (Advanced)
+You can run the coordinator directly with a valid runnable manifest generated by backend:
+```bash
+go run ./simulator/coordinator --file <manifest.json> --kafka localhost:9092 --topic sim-<id>
+```
 
-`go test -v /simulator/coordinator/tests`: `-v` is needed to have outputs
+## Known Caveats
+- `docker-compose.sim-dev.yml` references `simulator/Dockerfile`, which is currently missing in this repository state.
+- Root project compose file does not include Kafka; simulation execution requires a Kafka-enabled stack.
 
-## How it works
-
-## Coordinator 
-
-The coordinator receive a runnable mannifest either from the back when a user start a simulation ( not implemented ) or by hand like we do with the test. 
-The role of the coordinator are the folowing :
-- Split the main manifest by model and start runner with sending the corresponding single runnable manifest 
-- Coordinate runner with kafka
-
-The coordinator will use DEVS-SF message format to tlak via kafka, ensuring that we are compatible with the standard. The only exception is we only use one kafka Topic per simulation to ensure scalability (Needed for an online platform). The ID of the topic is random and correspond to the ID of the ongoing simulation.
-
-### Coordinator Start
-
-The coordinator will configure him self including kafka connection, parsing runnable manisfest, and creating an Array of 'RunnerState' findable in 'simulator/internal/types.go' and use to keep track of Model 'NextTime' and ports values. Once it is configure, it will start all the differents Runner conresponding to the number of atomic model in the runnable manifest. The coordinator will only end his process when all ths subprocess attach to him have ended. 
-
-### Coordination of runner for simulation 
-
-After all the model are started, the coordinator will send 'DEVSinit' type Message to all the model and will wait fot the response of all the models. The rest of the simulation follow DEVS-SF exectuion and don't need to be further explained.
-
-
-## Runner 
-
-The Runner, represent the gateway between the real modeling DEVS model and the coordinator. Its role is to initialise the model its self is in own language (Currently supported : Python and go). 
-THe role of the runner are the following : 
-- Create a wrapper for the user model 
-- receveive commands frrom the coordinator via kafka 
-- Retransmit the orders received via kafka to the model in any language using GRPC ( Protobuf )
-
-### intialisation of the runner 
-
-
-
-## Wrapper
-    TODO: a faire
-
+## Related Docs
+- [Wrappers README](./wrappers/README.md)
+- [Backend README](../back/README.md)
+- [Frontend README](../front/README.md)
+- [Root README](../README.md)
+- [Reproducibility Guide](../docs/reproducibility.md)

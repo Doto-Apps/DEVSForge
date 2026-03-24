@@ -33,31 +33,6 @@ import { WebAppDeployment } from "./pages/webapp/WebAppDeployment";
 import { WebAppDeployments } from "./pages/webapp/WebAppDeployments";
 import { DnDProvider } from "./providers/DnDContext";
 
-const OnlineDEVSEditor = () => <div>Contact</div>;
-
-/*
-  ============================
-  Routes front pour EasyDEVS
-  ============================
-
-  Libraries :
-  - Liste            : /library
-  - Création         : /library/new
-  - Détail (ID)      : /library/:id
-  - Édition (ID)     : /library/:id/edit
-  - Suppression (ID) : /library/:id/delete
-
-  Models :
-  - Liste            : /model
-  - Création         : /model/new
-  - Détail (ID)      : /model/:id
-  - Édition (ID)     : /model/:id/edit
-  - Suppression (ID) : /model/:id/delete
-
-  <Route path="/test2" element={<ModelCodeEditor code='' onSave={() => {}} />} />
-  <Route path="/devs-generator" element={<DiagramGenerator />} />
-*/
-
 const Main = () => {
 	const { isAuthenticated, isInitialized } = useAuth();
 
@@ -102,9 +77,6 @@ const Main = () => {
 
 				<Route path="/" element={<ModelerHome />} />
 				<Route path="/test-model" element={<TestModel />} />
-
-				<Route path="/online-devs" element={<OnlineDEVSEditor />} />
-				{/* <Route path="/test2" element={<ModelCodeEditor code="" onSave={() => {}} />} /> */}
 
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>
