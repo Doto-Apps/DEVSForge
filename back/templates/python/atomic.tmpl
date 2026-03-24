@@ -1,0 +1,68 @@
+from modeling import Atomic, RunnableModelCfg, RunnableModelPortCfg, new_atomic_from_cfg
+
+
+class {{.Name}}(Atomic):
+    def __init__(self, id: str, name: str, ports=None):
+        super().__init__(id=id, name=name, ports=ports)
+        self.parameters: dict[str, object] = {}
+
+    # Initialize is called before simulation.
+    def initialize(self) -> None:
+        self.hold_in("active", 1.0)
+
+    # Exit is called after simulation.
+    def exit(self) -> None:
+        pass
+
+    # DeltInt: internal transition
+    def delt_int(self) -> None:
+        self.passivate()
+
+    # DeltExt: external transition
+    def delt_ext(self, e: float) -> None:
+        self.continue_(e)
+
+    # DeltCon: confluent transition (internal + external at same time)
+    def delt_con(self, e: float) -> None:
+        self.delt_int()
+
+    # Lambda: output function
+    def lambda_(self) -> None:
+        out_ports = self.get_ports("out")
+        if len(out_ports) == 0:
+            return
+
+        out_ports[0].add_value({"msg": "hello"})
+
+
+def NewModel(config: dict) -> Atomic:
+    """
+    Factory function called by the runner.
+    config = JSON payload of shared.RunnableModel.
+    """
+    raw_ports = config.get("ports") or []
+    ports_cfg = [
+        RunnableModelPortCfg(
+            id=p["id"],
+            name=p.get("name", p["id"]),
+            type=p["type"],
+        )
+        for p in raw_ports
+    ]
+
+    cfg = RunnableModelCfg(
+        id=config["id"],
+        name=config["name"],
+        ports=ports_cfg,
+    )
+
+    model = new_atomic_from_cfg(cfg, {{.Name}})
+
+    raw_parameters = config.get("parameters") or []
+    model.parameters = {
+        p["name"]: p.get("value")
+        for p in raw_parameters
+        if isinstance(p, dict) and p.get("name")
+    }
+
+    return model

@@ -1,21 +1,11 @@
 "use client";
 
-import {
-	BrainCircuit,
-	FilePenLine,
-	Frame,
-	House,
-	LayoutDashboard,
-	MapIcon,
-	PieChart,
-	Square,
-} from "lucide-react";
+import { BookOpenText, House, Rocket, Sparkles, Workflow } from "lucide-react";
 import type * as React from "react";
 
 import { NavLibrary } from "./nav-library";
 import { NavMain } from "./nav-main";
 import { NavUser } from "./nav-user";
-import { NavWorkspace } from "./nav-workspace";
 
 import {
 	Sidebar,
@@ -24,6 +14,7 @@ import {
 	SidebarHeader,
 	SidebarRail,
 } from "@/components/ui/sidebar";
+import { useAuth } from "@/providers/AuthProvider";
 
 // This is sample data.
 const data = {
@@ -32,82 +23,6 @@ const data = {
 		email: "dominici.antoine.p@gmail.com",
 		avatar: "/avatars/shadcn.jpg",
 	},
-	library: [
-		{
-			title: "Smart-Parking",
-			url: "#",
-			items: [
-				{
-					title: "Sensor",
-					url: "#",
-					icon: Square,
-				},
-				{
-					title: "Collector",
-					url: "#",
-					icon: Square,
-				},
-				{
-					title: "Acess Conflicts",
-					url: "#",
-					icon: Square,
-				},
-				{
-					title: "Group Sensor",
-					url: "#",
-					icon: LayoutDashboard,
-				},
-			],
-		},
-		{
-			title: "Light-Systems",
-			url: "#",
-			items: [
-				{
-					title: "Light Sensor",
-					url: "#",
-					icon: Square,
-				},
-				{
-					title: "Switch",
-					url: "#",
-					icon: Square,
-				},
-				{
-					title: "Light",
-					url: "#",
-					icon: Square,
-				},
-				{
-					title: "Light Group",
-					url: "#",
-					icon: LayoutDashboard,
-				},
-				{
-					title: "switch Group",
-					url: "#",
-					icon: LayoutDashboard,
-				},
-			],
-		},
-	],
-	diagrams: [
-		{
-			name: "Design Engineering",
-			url: "#",
-			icon: Frame,
-		},
-		{
-			name: "Sales & Marketing",
-			url: "#",
-			icon: PieChart,
-		},
-		{
-			name: "Travel",
-			url: "#",
-			icon: MapIcon,
-		},
-	],
 	mains: [
 		{
 			name: "Home",
@@ -115,28 +30,45 @@ const data = {
 			icon: House,
 		},
 		{
-			name: "AI Diagram Maker",
-			url: "/devs-generator",
-			icon: BrainCircuit,
+			name: "Getting Started",
+			url: "/getting-started",
+			icon: BookOpenText,
 		},
 		{
-			name: "DEVS Editor",
-			url: "/model-code-editor",
-			icon: FilePenLine,
+			name: "How It Works",
+			url: "/how-it-works",
+			icon: Workflow,
+		},
+		{
+			name: "DEVS Generator",
+			url: "/devs-generator",
+			icon: Sparkles,
+		},
+		{
+			name: "WebApps",
+			url: "/webapps",
+			icon: Rocket,
 		},
 	],
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const { user } = useAuth();
+	const sidebarUser = {
+		name:
+			user?.username?.trim() || user?.email?.split("@")[0] || data.user.name,
+		email: user?.email ?? data.user.email,
+		avatar: data.user.avatar,
+	};
+
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<NavUser user={data.user} />
+				<NavUser user={sidebarUser} />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain mains={data.mains} />
 				<NavLibrary />
-				<NavWorkspace />
 			</SidebarContent>
 			<SidebarFooter />
 			<SidebarRail />

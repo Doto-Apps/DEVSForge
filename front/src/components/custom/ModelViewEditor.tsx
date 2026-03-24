@@ -56,13 +56,20 @@ type Props = {
 	models: ReactFlowInput;
 	onChange: (structure: ReactFlowInput) => void;
 	isLoadingNodes?: boolean;
+	autoLayoutSignal?: number;
 };
 
-export function ModelViewEditor({ models, onChange, isLoadingNodes }: Props) {
+export function ModelViewEditor({
+	models,
+	onChange,
+	isLoadingNodes,
+	autoLayoutSignal,
+}: Props) {
 	const { fitView, screenToFlowPosition, getInternalNode } = useReactFlow();
 	const [dragId] = useDnD();
 	const { toast } = useToast();
 	const needAutoFitView = useRef(true);
+	const lastAutoLayoutSignal = useRef<number | undefined>(undefined);
 	const [internalStructure, setInternalStructure] = useState(models);
 
 	const [copyModelId, setCopyModelId] = useState<string | undefined>(undefined);
@@ -294,6 +301,37 @@ export function ModelViewEditor({ models, onChange, isLoadingNodes }: Props) {
 			edges: updatedEdges,
 		});
 	};
+
+	useEffect(() => {
+		if (autoLayoutSignal === undefined) return;
+		if (lastAutoLayoutSignal.current === autoLayoutSignal) return;
+		if (!models?.nodes || models.nodes.length === 0) return;
+
+		lastAutoLayoutSignal.current = autoLayoutSignal;
+		let cancelled = false;
+
+		const runAutoLayoutThenFit = async () => {
+			try {
+				await onLayoutFn({ direction: "RIGHT" });
+				if (cancelled) return;
+				requestAnimationFrame(() => {
+					if (cancelled) return;
+					requestAnimationFrame(() => {
+						if (cancelled) return;
+						fitView({ duration: 300 });
+					});
+				});
+			} catch (error) {
+				console.error("Auto layout failed", error);
+			}
+		};
+
+		void runAutoLayoutThenFit();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [autoLayoutSignal, models, fitView]);
 
 	useEffect(() => {
 		if (

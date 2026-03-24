@@ -87,6 +87,9 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 		log.Printf("⚠️ Unhandled DevsType Message receive on kafka: %s", msg.DevsType)
 		return nil
 	}); err != nil && !errors.Is(err, ErrSimulationDone) {
+		if reportErr := runnerInstance.SendErrorReport("RUNNER_LOOP_ERROR", "fatal", err); reportErr != nil {
+			log.Printf("failed to emit ErrorReport: %v", reportErr)
+		}
 		// Vraie erreur, pas une fin normale
 		return err
 	}

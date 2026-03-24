@@ -1,6 +1,6 @@
 import { Loader } from "lucide-react";
 import { useCallback, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { client } from "@/api/client.ts";
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
@@ -18,6 +18,7 @@ import { reactflowToModel } from "@/lib/reactflowToModel";
 import { updateCodeBasedOnProperties } from "@/lib/updateCodeBasedOnProperties";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelByIdRecursive } from "@/queries/model/useGetModelByIdRecursive";
+import { useGetModels } from "@/queries/model/useGetModels";
 import type { ReactFlowInput, ReactFlowModelData } from "@/types";
 import type { Node } from "@xyflow/react";
 import { type Options, useHotkeys } from "react-hotkeys-hook";
@@ -36,6 +37,7 @@ export function EditModel() {
 		libraryId: string;
 		modelId: string;
 	}>();
+	const navigate = useNavigate();
 
 	const { data, error, isLoading, mutate } = useGetModelByIdRecursive(
 		modelId
@@ -51,6 +53,7 @@ export function EditModel() {
 				}
 			: null,
 	);
+	const { mutate: mutateModels } = useGetModels();
 	const { toast } = useToast();
 	const [structureState, { set: setStructure, undo, redo }] = useUndo<
 		ReactFlowInput | undefined
@@ -143,7 +146,7 @@ export function EditModel() {
 				title: "Modèle sauvegardé avec succès",
 			});
 
-			await mutate();
+			await Promise.all([mutate(), mutateModels()]);
 		} catch (error) {
 			toast({
 				title: "Erreur lors de la sauvegarde",
@@ -154,25 +157,16 @@ export function EditModel() {
 	};
 
 	const simulateModel = async (): Promise<void> => {
-		if (!structure || !modelId) return;
-
-		try {
-			const response = await client.GET("/model/{id}/simulate", {
-				params: { path: { id: modelId } },
-			});
-
-			if (!response.data) {
-				throw new Error("No data received from API");
-			}
-
-			console.log(response.data);
-		} catch (error) {
-			toast({
-				title: "Erreur lors de la simulation",
-				description: (error as Error).message,
-				variant: "destructive",
-			});
-		}
+		if (!modelId || !libraryId) return;
+		navigate(`/library/${libraryId}/model/${modelId}/simulate`);
+	};
+	const validateModel = async (): Promise<void> => {
+		if (!modelId || !libraryId) return;
+		navigate(`/library/${libraryId}/model/${modelId}/validate`);
+	};
+	const deployWebApp = async (): Promise<void> => {
+		if (!modelId || !libraryId) return;
+		navigate(`/library/${libraryId}/model/${modelId}/webapp`);
 	};
 	const onChangeProperty = (updatedNode: Node<ReactFlowModelData>) => {
 		// Structure actuel : structureState.present ou structure (comme dans la réponse précédente)
@@ -244,6 +238,8 @@ export function EditModel() {
 				showModeToggle
 				saveFunction={saveModelChange}
 				simulateFunction={simulateModel}
+				validateFunction={validateModel}
+				deployFunction={deployWebApp}
 			/>
 
 			{mainModel?.data.modelType === "atomic" ? (
@@ -268,8 +264,9 @@ export function EditModel() {
 					<ResizablePanel defaultSize={20} minSize={20}>
 						<ModelPropertyEditor
 							model={selectedModel ?? mainModel}
-							onChange={disableCustomization ? () => {} : onChangeProperty}
+							onChange={onChangeProperty}
 							disabled={disableCustomization}
+							allowParameterValueEdit={disableCustomization}
 						/>
 					</ResizablePanel>
 				</ResizablePanelGroup>
@@ -288,8 +285,9 @@ export function EditModel() {
 					<ResizablePanel defaultSize={30} minSize={20}>
 						<ModelPropertyEditor
 							model={selectedModel ?? mainModel}
-							onChange={disableCustomization ? () => {} : onChangeProperty}
+							onChange={onChangeProperty}
 							disabled={disableCustomization}
+							allowParameterValueEdit={disableCustomization}
 						/>
 					</ResizablePanel>
 				</ResizablePanelGroup>

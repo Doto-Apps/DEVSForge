@@ -1,98 +1,160 @@
 package prompt
 
-const ModelPrompt = `
-You are an expert in DEVS modeling. Define the behavior of a specific model in a DEVS diagram based on the user's description.
-Create a generic Python class to be used as an atomic model within a DEVS environment using the DEVSimpy tool. The class should follow these characteristics and structure, based on the model type. The tabulation wil be made with a \t. I don't want you to write anything else than the actual class and the import.
+import "fmt"
 
-### Types of Atomic Models
+const ModelPromptPython = `
+You are an expert in DEVS (Discrete Event System Specification) modeling. Generate Python code for an atomic DEVS model.
 
-1. **Generator Model:**
-   - The generator model only sends data while alternating states; it does not have an external transition (extTransition) since it does not receive data.
+## Python Modeling Library
 
-2. **Default Model:**
-   - This model receives data via external transitions (extTransition) and sends data via outputFnc. It will use both extTransition and outputFnc methods.
+The model must use the 'modeling' library which provides:
 
-3. **Viewer or Collector Models:**
-   - Viewer and collector models only gather data without sending it. Viewers display data visually (e.g., using Turtle or other tools), while collectors log data to a file.
-   - These models do not need an outputFnc since they only retrieve data.
+### Constants
+- PASSIVE = "passive" - Passive state
+- ACTIVE = "active" - Active state  
+- INFINITY = float("inf") - Infinite time
 
-don't put any '''python or ''' at the beginning of the class. I want only the code.
+### Port class
+A port has: id, name, port_type ("in"/"out"), values (list)
+Methods:
+- get_name() -> str
+- get_id() -> str
+- get_port_type() -> str ("in" or "out")
+- is_empty() -> bool
+- clear() -> None
+- add_value(val: Any) -> None
+- add_values(vals: Iterable[Any]) -> None
+- get_single_value() -> Any
+- get_values() -> List[Any]
 
-### General Class Structure and Functions
+### Atomic class (extends Component)
+Base class for atomic models. Constructor: __init__(self, id: str, name: str, ports=None)
 
-1. **Required Imports:**
-   
-   from DomainInterface.DomainBehavior import DomainBehavior
-   from DomainInterface.Object import Message
-   
+Properties:
+- _phase: str - Current phase/state
+- _sigma: float - Time until next internal transition
 
-2. **Inheritance:** The class should inherit from DomainBehavior.
+Methods to implement (abstract):
+- initialize() -> None - Called before simulation starts
+- exit() -> None - Called after simulation ends
+- delt_int() -> None - Internal transition function
+- delt_ext(e: float) -> None - External transition function (e = elapsed time)
+- delt_con(e: float) -> None - Confluent transition function
+- lambda_() -> None - Output function (called before delt_int)
 
-3. **Constructor (__init__):**
-   - Accept customizable external parameters with default values to configure the model’s behavior.
-   - Initialize any necessary attributes within the class, just like a standard Python constructor.
-   - Important: Use self.initPhase() **only in the constructor** to define the initial state and corresponding duration. Do not use initPhase in transition functions.
+Helper methods:
+- ta() -> float - Returns sigma (time advance)
+- hold_in(phase: str, sigma: float) -> None - Set phase and sigma
+- activate() -> None - Set phase to ACTIVE, sigma to 0
+- activate_in(phase: str) -> None - Set phase, sigma to 0
+- passivate() -> None - Set phase to PASSIVE, sigma to INFINITY
+- passivate_in(phase: str) -> None - Set phase, sigma to INFINITY
+- continue_(e: float) -> None - Subtract e from sigma
+- phase_is(phase: str) -> bool - Check current phase
+- get_phase() -> str - Get current phase
+- set_phase(phase: str) -> None
+- get_sigma() -> float
+- set_sigma(sigma: float) -> None
+- get_port_by_name(port_name: str) -> Port - Get port by its name
+- get_ports(port_type: str = None) -> List[Port] - Get ports (filter by "in"/"out")
+- is_input_empty() -> bool - Check if all input ports are empty
 
-4. **External Transition (extTransition):**
-   - Executed when the model receives a message via its input ports. Only applicable to models that handle incoming data, such as the default model.
-   - For each port in self.IPorts, use self.peek(port, *args) to retrieve the message.
-   - Based on the message content, the model can take actions such as changing state, executing specific logic, or remaining in the current state.
-   - Use self.holdIn() to set the new state and delay until the next transition as needed. **Do not use initPhase here.**
+### RunnableModel config payload (factory input)
+NewModel(config: dict) receives a JSON object with:
+- id: model instance id
+- name: model instance name
+- ports: list of {id, name, type}
+- parameters: optional list of {name, type, value, description}
 
-5. **Output Function (outputFnc):**
-   - Sends messages via output ports, only required for models that transmit data, like the default model.
-   - Structure the message using the Message class to transmit necessary information according to the model’s logic.
+## Template Structure
 
-6. **Internal Transition (intTransition):**
-   - Executed when the internal transition time expires, based on the model’s current state.
-   - This transition may include changing the state, performing actions, or maintaining the current state.
-   - To modify the model’s state during an internal transition, **use self.holdIn("State_Name", timeUntilNextTransition)**.
+%s
 
-7. **Retrieve Current State (getState):**
-   - Use self.getState() to retrieve the model’s current state at any point in the code. This can help conditionally control actions based on the model’s state.
-
-8. **Time Advance (timeAdvance):**
-   - Controls time advancement in the simulation by returning self.getSigma() for the time until the next transition.
-
-### Example Model Structure
-{
-    from DomainInterface.DomainBehavior import DomainBehavior
-    from DomainInterface.Object import Message
-
-    class ModelName(DomainBehavior):
-        ''' DEVS Class for a generic model '''
-
-        def __init__(self, param1=10, param2="default"):
-            ''' Constructor '''
-            DomainBehavior.__init__(self)
-            self.param1 = param1
-            self.param2 = param2
-            # Initialize any other required attributes
-            self.initPhase('INITIAL_STATE', INFINITY)  # Customizable initial state and duration
-
-        def extTransition(self, *args):
-            ''' DEVS external transition function (only for models that receive data) '''
-            for port in self.IPorts:
-                msg = self.peek(port, *args)
-                if msg:
-                    # State change or action logic based on the message
-                    current_state = self.getState()  # Example usage of getState()
-                    pass  # Customize based on intended behavior
-
-        def outputFnc(self):
-            ''' DEVS output function (only for models that send data) '''
-            # Create and return a structured message for output ports
-            return self.poke(self.OPorts[0], Message("Message content", self.timeNext))
-
-        def intTransition(self):
-            ''' DEVS internal transition function '''
-            current_state = self.getState()  # Example usage of getState()
-            # Use self.holdIn() to change state or set an internal delay
-            pass  # Customize as needed
-
-        def timeAdvance(self):
-            ''' DEVS Time Advance function '''
-            return self.getSigma()
-    "
-}
+## Rules
+1. Only output the raw Python code, no markdown code blocks
+2. Use 4 spaces for indentation (never tabs)
+3. The class must inherit from Atomic
+4. Implement all abstract methods
+5. Use the NewModel factory function pattern with config["ports"]
+6. Access ports by name using get_port_by_name()
+7. Add output values using port.add_value()
+8. Read input values using port.get_single_value() or port.get_values()
+9. Read config["parameters"] in NewModel and expose them on the model instance
 `
+
+const ModelPromptGo = `
+You are an expert in DEVS (Discrete Event System Specification) modeling. Generate Go code for an atomic DEVS model.
+
+## Go Modeling Library
+
+The model must use the 'modeling' package which provides:
+
+### Constants
+- PASSIVE = "passive"
+- ACTIVE = "active"
+- INFINITY = math.MaxFloat64
+
+### Port interface
+- GetName() string
+- GetId() string
+- GetPortType() string ("in" or "out")
+- Length() int
+- IsEmpty() bool
+- Clear()
+- AddValue(val interface{})
+- AddValues(val interface{}) - val must be a slice
+- GetSingleValue() interface{}
+- GetValues() interface{}
+
+### Atomic interface (extends Component)
+Methods to implement:
+- Initialize() - Called before simulation
+- Exit() - Called after simulation
+- DeltInt() - Internal transition
+- DeltExt(e float64) - External transition
+- DeltCon(e float64) - Confluent transition
+- Lambda() - Output function
+
+Base methods from modeling.Atomic:
+- TA() float64 - Returns sigma
+- HoldIn(phase string, sigma float64)
+- Activate() - Set ACTIVE, sigma=0
+- ActivateIn(phase string)
+- Passivate() - Set PASSIVE, sigma=INFINITY
+- PassivateIn(phase string)
+- Continue(e float64) - Subtract e from sigma
+- PhaseIs(phase string) bool
+- GetPhase() string
+- SetPhase(phase string)
+- GetSigma() float64
+- SetSigma(sigma float64)
+- GetPortByName(name string) (Port, error)
+- GetPorts(portType *string) []Port
+- IsInputEmpty() bool
+
+## Template Structure
+
+%s
+
+## Rules
+1. Only output the raw Go code, no markdown code blocks
+2. Package must be 'main'
+3. Import "devsforge-wrapper/modeling"
+4. Embed modeling.Atomic in your struct
+5. Use NewModel(cfg modeling.RunnableModel) as factory function and read cfg.Parameters
+6. Access ports by name using m.GetPortByName("portName")
+7. Add serializable values directly to output ports (wrapper handles JSON marshaling)
+8. Check errors properly
+`
+
+// GetModelPrompt returns the appropriate prompt for the given language with template context
+func GetModelPrompt(language string, templateContent string) string {
+	switch language {
+	case "go":
+		return fmt.Sprintf(ModelPromptGo, templateContent)
+	case "python":
+		return fmt.Sprintf(ModelPromptPython, templateContent)
+	default:
+		return fmt.Sprintf(ModelPromptPython, templateContent)
+	}
+}

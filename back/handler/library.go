@@ -21,13 +21,13 @@ func SetupLibraryRoutes(app *fiber.App) {
 }
 
 // getAllLibraries retrieves all libraries
-// @Summary Get all libraries
-// @Description Retrieve a list of all libraries
-// @Tags libraries
-// @Produce json
-// @Success 200 {array} model.Library
-// @Failure 500 {object} map[string]interface{}
-// @Router /library [get]
+//	@Summary		Get all libraries
+//	@Description	Retrieve a list of all libraries
+//	@Tags			libraries
+//	@Produce		json
+//	@Success		200	{array}		model.Library
+//	@Failure		500	{object}	map[string]interface{}
+//	@Router			/library [get]
 func getAllLibraries(c *fiber.Ctx) error {
 	db := database.DB
 	var Libraries []model.Library
@@ -36,14 +36,14 @@ func getAllLibraries(c *fiber.Ctx) error {
 }
 
 // getLibrary retrieves a library by ID
-// @Summary Get a library by ID
-// @Description Retrieve a single library by its ID
-// @Tags libraries
-// @Produce json
-// @Param id path string true "Library ID"
-// @Success 200 {object} model.Library
-// @Failure 404 {object} map[string]interface{}
-// @Router /library/{id} [get]
+//	@Summary		Get a library by ID
+//	@Description	Retrieve a single library by its ID
+//	@Tags			libraries
+//	@Produce		json
+//	@Param			id	path		string	true	"Library ID"
+//	@Success		200	{object}	model.Library
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/library/{id} [get]
 func getLibrary(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB
@@ -56,16 +56,16 @@ func getLibrary(c *fiber.Ctx) error {
 }
 
 // createLibrary creates a new library
-// @Summary Create a library
-// @Description Create a new library entry
-// @Tags libraries
-// @Accept json
-// @Produce json
-// @Param library body request.LibraryRequest true "Library data"
-// @Success 201 {object} model.Library
-// @Failure 400 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /library [post]
+//	@Summary		Create a library
+//	@Description	Create a new library entry
+//	@Tags			libraries
+//	@Accept			json
+//	@Produce		json
+//	@Param			library	body		request.LibraryRequest	true	"Library data"
+//	@Success		201		{object}	model.Library
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Router			/library [post]
 func createLibrary(c *fiber.Ctx) error {
 	db := database.DB
 	req := new(request.LibraryRequest)
@@ -84,14 +84,14 @@ func createLibrary(c *fiber.Ctx) error {
 }
 
 // deleteLibrary deletes a library by ID
-// @Summary Delete a library
-// @Description Delete a library by its ID
-// @Tags libraries
-// @Param id path string true "Library ID"
-// @Success 204 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Router /library/{id} [delete]
+//	@Summary		Delete a library
+//	@Description	Delete a library by its ID
+//	@Tags			libraries
+//	@Param			id	path		string	true	"Library ID"
+//	@Success		204	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]interface{}
+//	@Failure		400	{object}	map[string]interface{}
+//	@Router			/library/{id} [delete]
 func deleteLibrary(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB
@@ -106,17 +106,17 @@ func deleteLibrary(c *fiber.Ctx) error {
 }
 
 // patchLibrary updates an existing library by ID
-// @Summary Update a library
-// @Description Update an existing library with partial data
-// @Tags libraries
-// @Accept json
-// @Produce json
-// @Param id path string true "Library ID"
-// @Param updateData body request.LibraryRequest true "Fields to update"
-// @Success 200 {object} model.Library
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Router /library/{id} [patch]
+//	@Summary		Update a library
+//	@Description	Update an existing library with partial data
+//	@Tags			libraries
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string					true	"Library ID"
+//	@Param			updateData	body		request.LibraryRequest	true	"Fields to update"
+//	@Success		200			{object}	model.Library
+//	@Failure		400			{object}	map[string]interface{}
+//	@Failure		404			{object}	map[string]interface{}
+//	@Router			/library/{id} [patch]
 func patchLibrary(c *fiber.Ctx) error {
 	db := database.DB
 	id := c.Params("id")

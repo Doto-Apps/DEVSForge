@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata in this file."
+title: "DEVSForge"
+type: software
+authors:
+  - family-names: Dominici
+    given-names: Antoine
+    affiliation: "University of Corsica, Laboratory UMR SPE 6134"
+    email: dominici.antoine.p@gmail.com
+  - family-names: Maliszewski
+    given-names: Dorian
+  - family-names: Capocchi
+    given-names: Laurent
+    affiliation: "University of Corsica, Laboratory UMR SPE 6134"
+repository-code: "https://github.com/Doto-Apps/DEVSForge"
+url: "https://github.com/Doto-Apps/DEVSForge"
+license: MIT
+abstract: "AI-assisted DEVS modeling and distributed simulation platform with backend API, frontend modeler, simulator coordinator/runners, and language wrappers."
+keywords:
+  - DEVS
+  - modeling
+  - simulation
+  - reproducibility
+  - distributed-systems

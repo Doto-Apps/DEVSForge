@@ -2,7 +2,12 @@ module devsforge-runner
 
 go 1.25.4
 
+replace devsforge-shared => ../shared
+replace devsforge-wrapper => ../wrappers/go
+
 require (
+	devsforge-shared v0.0.0
+	devsforge-wrapper v0.0.0
 	github.com/testcontainers/testcontainers-go/modules/compose v0.40.0
 	github.com/twmb/franz-go v1.20.5
 	github.com/twmb/franz-go/pkg/kadm v1.17.1

@@ -1,7 +1,13 @@
 import { client } from "@/api/client";
+import type { components } from "@/api/v1";
 import { useState } from "react";
 
-type GeneratedDocumentation = {
+type GenerateDocumentationRequest =
+	components["schemas"]["request.GenerateDocumentationRequest"];
+type GeneratedDocumentationResponse =
+	components["schemas"]["response.GeneratedDocumentationResponse"];
+
+export type GeneratedDocumentation = {
 	description: string;
 	keywords: string[];
 	role: string;
@@ -26,17 +32,24 @@ export const useGenerateDocumentation = (): UseGenerateDocumentationResult => {
 		setError(null);
 
 		try {
+			const payload: GenerateDocumentationRequest = {
+				modelId,
+			};
+
 			const response = await client.POST("/ai/generate-documentation", {
-				body: {
-					modelId,
-				},
+				body: payload,
 			});
 
-			if (!response.data) {
+			const data: GeneratedDocumentationResponse | undefined = response.data;
+			if (!data) {
 				throw new Error("No data received from API");
 			}
 
-			return response.data as GeneratedDocumentation;
+			return {
+				description: data.description ?? "",
+				keywords: data.keywords ?? [],
+				role: data.role ?? "",
+			};
 		} catch (err) {
 			const errorMessage =
 				err instanceof Error ? err.message : "An error occurred";

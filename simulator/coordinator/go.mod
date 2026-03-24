@@ -5,7 +5,10 @@ go 1.25.4
 // Waiting testcontainers-go to be updated : TODAY 24/11/25
 exclude google.golang.org/genproto v0.0.0-20230223222841-637eb2293923
 
+replace devsforge-shared => ../shared
+
 require (
+	devsforge-shared v0.0.0
 	github.com/segmentio/kafka-go v0.4.49
 	github.com/testcontainers/testcontainers-go/modules/compose v0.40.0
 	github.com/twmb/franz-go v1.20.5

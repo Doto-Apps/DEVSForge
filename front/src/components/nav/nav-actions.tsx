@@ -11,10 +11,12 @@ import {
 	GalleryVerticalEnd,
 	LineChart,
 	Link,
+	MonitorPlay,
 	MoreHorizontal,
 	Play,
 	Save,
 	Settings2,
+	ShieldCheck,
 	Star,
 	Trash,
 	Trash2,
@@ -115,17 +117,31 @@ const data = [
 type NavActionsProps = {
 	saveFunction?: () => Promise<void>;
 	simulateFunction?: () => Promise<void>;
+	validateFunction?: () => Promise<void>;
+	deployFunction?: () => Promise<void>;
 };
 
 export function NavActions({
 	saveFunction,
 	simulateFunction,
+	validateFunction,
+	deployFunction,
 }: NavActionsProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
 
 	return (
 		<div className="flex items-center gap-2 text-sm">
-			{saveFunction && (
+			{validateFunction && (
+				<Button size="icon" className="h-7 w-7" onClick={validateFunction}>
+					<ShieldCheck />
+				</Button>
+			)}
+			{deployFunction && (
+				<Button size="icon" className="h-7 w-7" onClick={deployFunction}>
+					<MonitorPlay />
+				</Button>
+			)}
+			{simulateFunction && (
 				<Button size="icon" className="h-7 w-7" onClick={simulateFunction}>
 					<Play />
 				</Button>

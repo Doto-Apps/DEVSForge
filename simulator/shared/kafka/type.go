@@ -1,7 +1,11 @@
 // Package shared contient les types génériques partagés entre runner / coord / wrappers.
 package kafka
 
-import "encoding/json"
+import (
+	"crypto/rand"
+	"encoding/hex"
+	"encoding/json"
+)
 
 // DevsType représente le type logique du message DEVS-SF transporté sur Kafka.
 // On s'aligne sur les valeurs texte vues dans l'exemple simlytics.
@@ -16,6 +20,17 @@ const (
 	DevsTypeModelOutput       DevsType = "devs.msg.ModelOutputMessage"
 	DevsTypeSimulationDone    DevsType = "devs.msg.SimulationDone"
 )
+
+type MessageType string
+
+const (
+	MessageTypeMonitoringMessage MessageType = "MonitoringMessage"
+	MessageTypeErrorReport       MessageType = "ErrorReport"
+)
+
+func (mt MessageType) String() string {
+	return string(mt)
+}
 
 func (dt DevsType) String() string {
 	return string(dt)
@@ -59,13 +74,20 @@ type ModelOutput struct {
 // BaseKafkaMessage est la structure simplifiée qui colle aux exemples DEVS-SF.
 // DO NOT USE DIRECTLY : Use strongly typed messages
 type BaseKafkaMessage struct {
-	DevsType          DevsType           `json:"devsType"`           // type logique du message
-	Time              *SimTime           `json:"time,omitempty"`     // temps courant du message
+	DevsType          DevsType           `json:"devsType"` // type logique du message
+	MessageType       MessageType        `json:"messageType,omitempty"`
+	SimulationRunID   string             `json:"simulationRunId,omitempty"`
+	MessageID         string             `json:"messageId,omitempty"`
+	SenderID          string             `json:"senderId,omitempty"`
+	ReceiverID        string             `json:"receiverId,omitempty"`
+	Time              *SimTime           `json:"time,omitempty"` // temps courant du message
+	EventTime         *SimTime           `json:"eventTime,omitempty"`
 	NextTime          *SimTime           `json:"nextTime,omitempty"` // temps de la prochaine transition (NextTime / TransitionDone / ModelOutput)
 	Sender            string             `json:"sender,omitempty"`   // ex: "clerk1"
 	Target            string             `json:"target,omitempty"`
 	ModelInputsOption *ModelInputsOption `json:"modelInputsOption,omitempty"` // pour ExecuteTransition
 	ModelOutput       *ModelOutput       `json:"modelOutput,omitempty"`       // pour ModelOutputMessage
+	Payload           map[string]any     `json:"payload,omitempty"`
 }
 
 type KafkaMessageInitSim struct {
@@ -118,6 +140,25 @@ type KafkaMessageModelOutput struct {
 	ModelOutput ModelOutput `json:"modelOutput"` // pour ModelOutputMessage
 }
 
+type ErrorReportPayload struct {
+	OriginRole string         `json:"originRole"`
+	OriginID   string         `json:"originId"`
+	Severity   string         `json:"severity"` // info|warning|error|fatal
+	ErrorCode  any            `json:"errorCode"`
+	Message    string         `json:"message"`
+	Details    map[string]any `json:"details,omitempty"`
+}
+
+type KafkaMessageErrorReport struct {
+	MessageType     MessageType        `json:"messageType"`
+	SimulationRunID string             `json:"simulationRunId,omitempty"`
+	MessageID       string             `json:"messageId"`
+	SenderID        string             `json:"senderId"`
+	ReceiverID      string             `json:"receiverId"`
+	EventTime       *SimTime           `json:"eventTime,omitempty"`
+	Payload         ErrorReportPayload `json:"payload"`
+}
+
 type KafkaMessageI interface {
 	Marshal() ([]byte, error)
 }
@@ -149,4 +190,46 @@ func (m *KafkaMessageModelOutput) Marshal() ([]byte, error) {
 }
 func (m *KafkaMessageSimulationDone) Marshal() ([]byte, error) {
 	return json.Marshal(m)
+}
+
+func (m *KafkaMessageErrorReport) Marshal() ([]byte, error) {
+	return json.Marshal(m)
+}
+
+func NewErrorReportMessage(
+	simulationRunID string,
+	senderID string,
+	receiverID string,
+	originRole string,
+	originID string,
+	severity string,
+	errorCode any,
+	message string,
+	eventTime *SimTime,
+	details map[string]any,
+) *KafkaMessageErrorReport {
+	return &KafkaMessageErrorReport{
+		MessageType:     MessageTypeErrorReport,
+		SimulationRunID: simulationRunID,
+		MessageID:       newMessageID(),
+		SenderID:        senderID,
+		ReceiverID:      receiverID,
+		EventTime:       eventTime,
+		Payload: ErrorReportPayload{
+			OriginRole: originRole,
+			OriginID:   originID,
+			Severity:   severity,
+			ErrorCode:  errorCode,
+			Message:    message,
+			Details:    details,
+		},
+	}
+}
+
+func newMessageID() string {
+	raw := make([]byte, 16)
+	if _, err := rand.Read(raw); err != nil {
+		return "msg-" + hex.EncodeToString([]byte("fallback"))
+	}
+	return "msg-" + hex.EncodeToString(raw)
 }

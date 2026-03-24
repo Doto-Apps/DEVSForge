@@ -1,5 +1,13 @@
 basePath: /
 definitions:
+  enum.ModelLanguage:
+    enum:
+    - go
+    - python
+    type: string
+    x-enum-varnames:
+    - ModelLanguageGo
+    - ModelLanguagePython
   enum.ModelPortDirection:
     enum:
     - in
@@ -109,10 +117,13 @@ definitions:
     properties:
       id:
         type: string
+      name:
+        type: string
       type:
         $ref: '#/definitions/enum.ModelPortDirection'
     required:
     - id
+    - name
     - type
     type: object
   json.ModelPosition:
@@ -161,31 +172,104 @@ definitions:
     - ToolbarPositionLeft
     - ToolbarPositionRight
     - ToolbarPositionBottom
-  model.Diagram:
+  json.WebAppContract:
     properties:
-      createdAt:
+      inputPortBindings:
+        items:
+          $ref: '#/definitions/json.WebAppPortBinding'
+        type: array
+      modelDescription:
         type: string
-      deletedAt:
+      modelId:
         type: string
+      modelName:
+        type: string
+      outputPortBindings:
+        items:
+          $ref: '#/definitions/json.WebAppPortBinding'
+        type: array
+      parameterBindings:
+        items:
+          $ref: '#/definitions/json.WebAppParameterBinding'
+        type: array
+    type: object
+  json.WebAppParameterBinding:
+    properties:
+      bindingKey:
+        type: string
+      defaultValue: {}
+      description:
+        type: string
+      instanceModelId:
+        type: string
+      instancePath:
+        type: string
+      modelId:
+        type: string
+      modelName:
+        type: string
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/json.ParameterType'
+    type: object
+  json.WebAppPortBinding:
+    properties:
+      bindingKey:
+        type: string
+      direction:
+        $ref: '#/definitions/enum.ModelPortDirection'
+      name:
+        type: string
+      portId:
+        type: string
+    type: object
+  json.WebAppUISchema:
+    properties:
+      layout:
+        type: string
+      runButtonLabel:
+        type: string
+      sections:
+        items:
+          $ref: '#/definitions/json.WebAppUISection'
+        type: array
+      version:
+        type: integer
+    type: object
+  json.WebAppUISection:
+    properties:
       description:
         type: string
       id:
         type: string
-      modelId:
+      kind:
+        $ref: '#/definitions/json.WebAppUISectionKind'
+      parameterBindingKeys:
+        items:
+          type: string
+        type: array
+      portBindingKeys:
+        items:
+          type: string
+        type: array
+      title:
         type: string
-      name:
-        maxLength: 50
-        minLength: 3
-        type: string
-      updatedAt:
-        type: string
-      userId:
-        type: string
-      workspaceId:
-        type: string
-    required:
-    - name
     type: object
+  json.WebAppUISectionKind:
+    enum:
+    - parameters
+    - inputs
+    - outputs
+    - run
+    - custom
+    type: string
+    x-enum-varnames:
+    - WebAppUISectionKindParameters
+    - WebAppUISectionKindInputs
+    - WebAppUISectionKindOutputs
+    - WebAppUISectionKindRun
+    - WebAppUISectionKindCustom
   model.Library:
     properties:
       createdAt:
@@ -227,6 +311,8 @@ definitions:
         type: string
       id:
         type: string
+      language:
+        $ref: '#/definitions/enum.ModelLanguage'
       libId:
         type: string
       metadata:
@@ -244,6 +330,18 @@ definitions:
       userId:
         type: string
     type: object
+  model.SimulationStatus:
+    enum:
+    - pending
+    - running
+    - completed
+    - failed
+    type: string
+    x-enum-varnames:
+    - SimulationStatusPending
+    - SimulationStatusRunning
+    - SimulationStatusCompleted
+    - SimulationStatusFailed
   model.User:
     properties:
       createdAt:
@@ -276,50 +374,132 @@ definitions:
         maxLength: 50
         minLength: 3
         type: string
-      workspaces:
-        items:
-          $ref: '#/definitions/model.Workspace'
-        type: array
     required:
     - email
     - password
     - username
     type: object
-  model.Workspace:
+  request.AssistedExperimentalFrameConnection:
     properties:
-      createdAt:
+      from:
+        $ref: '#/definitions/request.AssistedExperimentalFrameEndpoint'
+      to:
+        $ref: '#/definitions/request.AssistedExperimentalFrameEndpoint'
+    required:
+    - from
+    - to
+    type: object
+  request.AssistedExperimentalFrameEndpoint:
+    properties:
+      model:
         type: string
-      deletedAt:
+      port:
         type: string
-      description:
+    required:
+    - model
+    - port
+    type: object
+  request.AssistedExperimentalFrameModel:
+    properties:
+      code:
         type: string
-      diagrams:
+      components:
         items:
-          $ref: '#/definitions/model.Diagram'
+          type: string
         type: array
       id:
         type: string
-      title:
+      name:
         type: string
-      updatedAt:
+      ports:
+        items:
+          $ref: '#/definitions/request.AssistedExperimentalFrameModelPort'
+        type: array
+      role:
         type: string
-      userId:
-        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/enum.ModelType'
+        enum:
+        - atomic
+        - coupled
+    required:
+    - id
+    - name
+    - type
     type: object
-  request.DiagramRequest:
+  request.AssistedExperimentalFrameModelPort:
+    properties:
+      name:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/enum.ModelPortDirection'
+        enum:
+        - in
+        - out
+    required:
+    - name
+    - type
+    type: object
+  request.CreateWebAppDeploymentRequest:
     properties:
       description:
         type: string
+      isPublic:
+        type: boolean
+      modelId:
+        type: string
       name:
         type: string
-      workspaceId:
+      prompt:
+        type: string
+      uiSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
+    required:
+    - modelId
+    - name
+    type: object
+  request.ExperimentalFrameRequest:
+    properties:
+      connections:
+        items:
+          $ref: '#/definitions/request.AssistedExperimentalFrameConnection'
+        type: array
+      frameModelId:
+        type: string
+      libraryId:
+        type: string
+      modelUnderTestId:
+        type: string
+      models:
+        items:
+          $ref: '#/definitions/request.AssistedExperimentalFrameModel'
+        type: array
+      roomName:
+        type: string
+      rootModelId:
+        type: string
+      targetModelId:
         type: string
     required:
-    - description
-    - name
-    - workspaceId
+    - targetModelId
     type: object
   request.GenerateDiagramRequest:
+    properties:
+      diagramName:
+        example: MyDiagram
+        type: string
+      pastMessages:
+        items:
+          $ref: '#/definitions/request.PastMessages'
+        type: array
+      userPrompt:
+        example: Create a software architecture diagram
+        type: string
+    required:
+    - diagramName
+    - userPrompt
     type: object
   request.GenerateDocumentationRequest:
     properties:
@@ -329,24 +509,71 @@ definitions:
     required:
     - modelId
     type: object
+  request.GenerateEFStructureRequest:
+    properties:
+      pastMessages:
+        items:
+          $ref: '#/definitions/request.PastMessages'
+        type: array
+      roomName:
+        example: Room - NomDuEF
+        type: string
+      targetModelId:
+        example: uuid-of-target-model
+        type: string
+      userPrompt:
+        example: I want 2 generators and 1 acceptor to validate latency
+        type: string
+    required:
+    - targetModelId
+    - userPrompt
+    type: object
   request.GenerateModelRequest:
     properties:
+      forceScratch:
+        example: false
+        type: boolean
+      language:
+        enum:
+        - python
+        - go
+        example: python
+        type: string
       modelName:
         example: MyModel
         type: string
-      modelType:
-        example: DEVS
-        type: string
+      ports:
+        items:
+          $ref: '#/definitions/request.PortInfo'
+        type: array
       previousModelsCode:
         example: Existing model code
+        type: string
+      reuseModelId:
+        example: uuid-of-reuse-candidate
         type: string
       userPrompt:
         example: Generate a model based on the previous code
         type: string
     required:
+    - language
     - modelName
-    - modelType
+    - ports
     - previousModelsCode
+    - userPrompt
+    type: object
+  request.GenerateWebAppRequest:
+    properties:
+      currentSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
+      modelId:
+        type: string
+      name:
+        type: string
+      userPrompt:
+        type: string
+    required:
+    - modelId
     - userPrompt
     type: object
   request.LibraryRequest:
@@ -392,6 +619,8 @@ definitions:
         type: string
       id:
         type: string
+      language:
+        $ref: '#/definitions/enum.ModelLanguage'
       libId:
         type: string
       metadata:
@@ -431,6 +660,25 @@ definitions:
     - content
     - role
     type: object
+  request.PortInfo:
+    properties:
+      id:
+        example: port-1
+        type: string
+      name:
+        example: input
+        type: string
+      type:
+        enum:
+        - in
+        - out
+        example: in
+        type: string
+    required:
+    - id
+    - name
+    - type
+    type: object
   request.RefreshRequest:
     properties:
       refreshToken:
@@ -455,6 +703,44 @@ definitions:
     - password
     - username
     type: object
+  request.SimulationModelOverrideRequest:
+    properties:
+      instanceModelId:
+        type: string
+      overrideParams:
+        items:
+          $ref: '#/definitions/request.SimulationParameterOverrideRequest'
+        type: array
+    type: object
+  request.SimulationParameterOverrideRequest:
+    properties:
+      name:
+        type: string
+      value: {}
+    type: object
+  request.SimulationStartRequest:
+    properties:
+      maxTime:
+        description: Maximum simulation time (0 = no limit)
+        type: number
+      overrides:
+        description: Optional runtime parameter overrides
+        items:
+          $ref: '#/definitions/request.SimulationModelOverrideRequest'
+        type: array
+    type: object
+  request.UpdateUserAISettingsRequest:
+    properties:
+      apiKey:
+        example: sk-...
+        type: string
+      apiModel:
+        example: gpt-4.1-mini
+        type: string
+      apiUrl:
+        example: https://api.openai.com/v1
+        type: string
+    type: object
   request.UpdateUserRequest:
     properties:
       names:
@@ -462,45 +748,42 @@ definitions:
     required:
     - names
     type: object
-  request.WorkspaceRequest:
+  request.UpdateWebAppDeploymentRequest:
     properties:
       description:
         type: string
-      title:
+      isPublic:
+        type: boolean
+      name:
         type: string
-    required:
-    - description
-    - title
+      prompt:
+        type: string
+      uiSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
     type: object
   response.Connection:
     properties:
       from:
         allOf:
         - $ref: '#/definitions/response.Endpoint'
-        description: obligatoire
+        description: required
       to:
         allOf:
         - $ref: '#/definitions/response.Endpoint'
-        description: obligatoire
-    required:
-    - from
-    - to
+        description: required
     type: object
   response.DiagramResponse:
     properties:
       connections:
-        description: obligatoire
+        description: required
         items:
           $ref: '#/definitions/response.Connection'
         type: array
       models:
-        description: obligatoire
+        description: required
         items:
           $ref: '#/definitions/response.Model'
         type: array
-    required:
-    - connections
-    - models
     type: object
   response.DocumentationRole:
     enum:
@@ -515,14 +798,78 @@ definitions:
   response.Endpoint:
     properties:
       model:
-        description: obligatoire
+        description: required
         type: string
       port:
-        description: obligatoire
+        description: required
         type: string
-    required:
-    - model
-    - port
+    type: object
+  response.ExperimentalFrameModel:
+    properties:
+      components:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      name:
+        type: string
+      ports:
+        items:
+          $ref: '#/definitions/response.PortResponse'
+        type: array
+      role:
+        $ref: '#/definitions/response.ExperimentalFrameRole'
+      type:
+        $ref: '#/definitions/response.ModelType'
+    type: object
+  response.ExperimentalFrameResponse:
+    properties:
+      createdAt:
+        type: string
+      frameModelId:
+        type: string
+      id:
+        type: string
+      targetModelId:
+        type: string
+      updatedAt:
+        type: string
+      userId:
+        type: string
+    type: object
+  response.ExperimentalFrameRole:
+    enum:
+    - experimental-frame
+    - model-under-test
+    - generator
+    - transducer
+    - acceptor
+    type: string
+    x-enum-varnames:
+    - ExperimentalFrameRoleExperimentalFrame
+    - ExperimentalFrameRoleModelUnderTest
+    - ExperimentalFrameRoleGenerator
+    - ExperimentalFrameRoleTransducer
+    - ExperimentalFrameRoleAcceptor
+  response.ExperimentalFrameStructureResponse:
+    properties:
+      connections:
+        items:
+          $ref: '#/definitions/response.Connection'
+        type: array
+      modelUnderTestId:
+        type: string
+      models:
+        items:
+          $ref: '#/definitions/response.ExperimentalFrameModel'
+        type: array
+      roomName:
+        type: string
+      rootModelId:
+        type: string
+      targetModelId:
+        type: string
     type: object
   response.GeneratedDocumentationResponse:
     properties:
@@ -539,8 +886,45 @@ definitions:
     properties:
       code:
         type: string
+      keywords:
+        items:
+          type: string
+        type: array
+      reuseCandidates:
+        items:
+          $ref: '#/definitions/response.ReuseCandidateResponse'
+        type: array
+      reuseMode:
+        type: string
+      reuseUsed:
+        $ref: '#/definitions/response.ReuseCandidateResponse'
     required:
     - code
+    type: object
+  response.LanguageInfo:
+    properties:
+      description:
+        type: string
+      extension:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+    type: object
+  response.LanguageListResponse:
+    properties:
+      languages:
+        items:
+          $ref: '#/definitions/response.LanguageInfo'
+        type: array
+    type: object
+  response.LanguageTemplateResponse:
+    properties:
+      code:
+        type: string
+      language:
+        type: string
     type: object
   response.LoginResponse:
     properties:
@@ -569,9 +953,10 @@ definitions:
         description: required
         type: string
       ports:
-        allOf:
-        - $ref: '#/definitions/response.Ports'
-        description: required
+        description: required (can be empty array)
+        items:
+          $ref: '#/definitions/response.PortResponse'
+        type: array
       type:
         allOf:
         - $ref: '#/definitions/response.ModelType'
@@ -627,18 +1012,26 @@ definitions:
     x-enum-varnames:
     - ModelTypeAtomic
     - ModelTypeCoupled
-  response.Ports:
+  response.PortDirection:
+    enum:
+    - in
+    - out
+    type: string
+    x-enum-varnames:
+    - PortDirectionIn
+    - PortDirectionOut
+  response.PortResponse:
     properties:
-      in:
-        description: required (can be empty array)
-        items:
-          type: string
-        type: array
-      out:
-        description: required (can be empty array)
-        items:
-          type: string
-        type: array
+      id:
+        description: unique port identifier
+        type: string
+      name:
+        description: logical port name
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/response.PortDirection'
+        description: '"in" or "out"'
     type: object
   response.RefreshResponse:
     properties:
@@ -660,6 +1053,84 @@ definitions:
     - refreshToken
     - user
     type: object
+  response.ReuseCandidateResponse:
+    properties:
+      description:
+        type: string
+      keywords:
+        items:
+          type: string
+        type: array
+      modelId:
+        type: string
+      name:
+        type: string
+      score:
+        type: number
+    type: object
+  response.SimulationEventResponse:
+    properties:
+      createdAt:
+        type: string
+      devsType:
+        type: string
+      id:
+        type: string
+      payload: {}
+      sender:
+        type: string
+      simulationId:
+        type: string
+      simulationTime:
+        type: number
+      target:
+        type: string
+    type: object
+  response.SimulationEventsResponse:
+    properties:
+      events:
+        items:
+          $ref: '#/definitions/response.SimulationEventResponse'
+        type: array
+      limit:
+        type: integer
+      offset:
+        type: integer
+      simulation:
+        $ref: '#/definitions/response.SimulationResponse'
+      total:
+        type: integer
+    type: object
+  response.SimulationResponse:
+    properties:
+      completedAt:
+        type: string
+      createdAt:
+        type: string
+      errorMessage:
+        type: string
+      id:
+        type: string
+      modelId:
+        type: string
+      startedAt:
+        type: string
+      status:
+        $ref: '#/definitions/model.SimulationStatus'
+      userId:
+        type: string
+    type: object
+  response.UserAISettingsResponse:
+    properties:
+      apiKeyMasked:
+        type: string
+      apiModel:
+        type: string
+      apiUrl:
+        type: string
+      hasApiKey:
+        type: boolean
+    type: object
   response.UserResponse:
     properties:
       email:
@@ -669,6 +1140,40 @@ definitions:
     required:
     - email
     - username
+    type: object
+  response.WebAppDeploymentResponse:
+    properties:
+      contract:
+        $ref: '#/definitions/json.WebAppContract'
+      createdAt:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      isPublic:
+        type: boolean
+      modelId:
+        type: string
+      name:
+        type: string
+      prompt:
+        type: string
+      slug:
+        type: string
+      uiSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
+      updatedAt:
+        type: string
+      userId:
+        type: string
+    type: object
+  response.WebAppSkeletonResponse:
+    properties:
+      contract:
+        $ref: '#/definitions/json.WebAppContract'
+      uiSchema:
+        $ref: '#/definitions/json.WebAppUISchema'
     type: object
 host: localhost:3000
 info:
@@ -753,11 +1258,53 @@ paths:
       summary: Generate model documentation
       tags:
       - AI
+  /ai/generate-ef-structure:
+    post:
+      consumes:
+      - application/json
+      description: Generates an Experimental Frame (EF) structure around a target
+        model for validation scenarios.
+      parameters:
+      - description: Data required to generate EF structure
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.GenerateEFStructureRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Generated EF structure
+          schema:
+            $ref: '#/definitions/response.ExperimentalFrameStructureResponse'
+        "400":
+          description: Invalid request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Target model not found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: AI processing error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate an experimental frame structure
+      tags:
+      - AI
   /ai/generate-model:
     post:
       consumes:
       - application/json
-      description: Sends a prompt to OpenAI to generate a DEVS model code.
+      description: Sends a prompt to OpenAI to generate a DEVS model code in Python
+        or Go.
       parameters:
       - description: Data required to generate a model
         in: body
@@ -958,46 +1505,33 @@ paths:
       summary: Register a new user
       tags:
       - Auth
-  /diagram:
-    get:
-      description: Retrieve a list of all diagrams
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/model.Diagram'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get all diagrams
-      tags:
-      - diagrams
+  /experimental-frame:
     post:
       consumes:
       - application/json
-      description: Create a new diagram entry
+      description: Create an experimental frame association (target model -> coupled
+        frame model)
       parameters:
-      - description: Diagram data
+      - description: Experimental frame data
         in: body
-        name: diagram
+        name: body
         required: true
         schema:
-          $ref: '#/definitions/request.DiagramRequest'
+          $ref: '#/definitions/request.ExperimentalFrameRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/model.Diagram'
+            $ref: '#/definitions/response.ExperimentalFrameResponse'
         "400":
           description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
           schema:
             additionalProperties: true
             type: object
@@ -1006,14 +1540,14 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Create a diagram
+      summary: Create an experimental frame
       tags:
-      - diagrams
-  /diagram/{id}:
+      - experimental-frames
+  /experimental-frame/{id}:
     delete:
-      description: Delete a diagram by its ID
+      description: Delete an experimental frame by its ID
       parameters:
-      - description: Diagram ID
+      - description: Experimental frame ID
         in: path
         name: id
         required: true
@@ -1029,13 +1563,13 @@ paths:
           schema:
             additionalProperties: true
             type: object
-      summary: Delete a diagram
+      summary: Delete an experimental frame
       tags:
-      - diagrams
+      - experimental-frames
     get:
-      description: Retrieve a single diagram by its ID
+      description: Retrieve a single experimental frame by its ID
       parameters:
-      - description: Diagram ID
+      - description: Experimental frame ID
         in: path
         name: id
         required: true
@@ -1046,51 +1580,46 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Diagram'
+            $ref: '#/definitions/response.ExperimentalFrameResponse'
         "404":
           description: Not Found
           schema:
             additionalProperties: true
             type: object
-      summary: Get a diagram by ID
+      summary: Get an experimental frame
       tags:
-      - diagrams
-    patch:
-      consumes:
-      - application/json
-      description: Update an existing diagram with partial data
+      - experimental-frames
+  /experimental-frame/model/{modelId}:
+    get:
+      description: Retrieve all experimental frames linked to a target model
       parameters:
-      - description: Diagram ID
+      - description: Target model ID
         in: path
-        name: id
+        name: modelId
         required: true
         type: string
-      - description: Fields to update
-        in: body
-        name: updateData
-        required: true
-        schema:
-          $ref: '#/definitions/request.DiagramRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Diagram'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
+            items:
+              $ref: '#/definitions/response.ExperimentalFrameResponse'
+            type: array
         "404":
           description: Not Found
           schema:
             additionalProperties: true
             type: object
-      summary: Update a diagram
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get experimental frames by model
       tags:
-      - diagrams
+      - experimental-frames
   /health:
     get:
       consumes:
@@ -1107,6 +1636,53 @@ paths:
       summary: API health check
       tags:
       - Health
+  /languages:
+    get:
+      description: Returns the list of programming languages available for DEVS models
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LanguageListResponse'
+      summary: Get available languages
+      tags:
+      - Languages
+  /languages/{lang}/template:
+    get:
+      description: Returns the atomic model code template for the specified language
+      parameters:
+      - description: Language ID (go, python)
+        in: path
+        name: lang
+        required: true
+        type: string
+      - default: MyModel
+        description: Model name to inject in template
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LanguageTemplateResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get language template
+      tags:
+      - Languages
   /library:
     get:
       description: Retrieve a list of all libraries
@@ -1435,6 +2011,180 @@ paths:
       summary: Generate simulations files
       tags:
       - models
+  /simulation:
+    get:
+      description: Retrieve all simulations for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.SimulationResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get user simulations
+      tags:
+      - simulations
+  /simulation/{modelId}:
+    post:
+      consumes:
+      - application/json
+      description: Create a new simulation for the specified model (does not start
+        it)
+      parameters:
+      - description: Model ID
+        in: path
+        name: modelId
+        required: true
+        type: string
+      - description: Simulation parameters
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/request.SimulationStartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SimulationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Create a simulation
+      tags:
+      - simulations
+  /simulation/{simId}:
+    get:
+      description: Retrieve a simulation by its ID
+      parameters:
+      - description: Simulation ID
+        in: path
+        name: simId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SimulationResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get a simulation
+      tags:
+      - simulations
+  /simulation/{simId}/events:
+    get:
+      description: Retrieve all DEVS messages that transited during a simulation (includes
+        simulation status for polling)
+      parameters:
+      - description: Simulation ID
+        in: path
+        name: simId
+        required: true
+        type: string
+      - description: 'Maximum number of events (default: 1000)'
+        in: query
+        name: limit
+        type: integer
+      - description: 'Offset for pagination (default: 0)'
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SimulationEventsResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get simulation events
+      tags:
+      - simulations
+  /simulation/{simId}/start:
+    post:
+      description: Start an existing simulation (call after WebSocket is connected)
+      parameters:
+      - description: Simulation ID
+        in: path
+        name: simId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.SimulationResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Start a simulation
+      tags:
+      - simulations
+  /simulation/model/{modelId}:
+    get:
+      description: Retrieve all simulations for a specific model
+      parameters:
+      - description: Model ID
+        in: path
+        name: modelId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.SimulationResponse'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get simulations by model
+      tags:
+      - simulations
   /user:
     get:
       description: Retrieve a list of all user
@@ -1563,9 +2313,64 @@ paths:
       summary: Update a user
       tags:
       - user
-  /workspace:
+  /user/settings/ai:
     get:
-      description: Retrieve a list of all workspace
+      description: Returns the current user's AI provider settings.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UserAISettingsResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get current user AI settings
+      tags:
+      - user
+    patch:
+      consumes:
+      - application/json
+      description: Updates current user AI provider settings (apiUrl, apiKey, apiModel).
+      parameters:
+      - description: AI settings to update
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateUserAISettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.UserAISettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Update current user AI settings
+      tags:
+      - user
+  /webapp/deployment:
+    get:
+      description: Lists authenticated user's WebApp deployments (optionally filtered
+        by modelId).
+      parameters:
+      - description: Optional model ID filter
+        in: query
+        name: modelId
+        type: string
       produces:
       - application/json
       responses:
@@ -1573,42 +2378,61 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/model.Workspace'
+              $ref: '#/definitions/response.WebAppDeploymentResponse'
             type: array
-      summary: Get all workspace
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: List WebApp deployments
       tags:
-      - workspace
+      - webapp
     post:
       consumes:
       - application/json
-      description: Create a new workspace and store it in the database
+      description: Saves a deployable WebApp artifact bound to a model contract.
       parameters:
-      - description: Workspace object
+      - description: Deployment payload
         in: body
-        name: workspace
+        name: body
         required: true
         schema:
-          $ref: '#/definitions/request.WorkspaceRequest'
+          $ref: '#/definitions/request.CreateWebAppDeploymentRequest'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/model.Workspace'
+            $ref: '#/definitions/response.WebAppDeploymentResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
         "500":
           description: Internal Server Error
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
-      summary: Create a new workspace
+      summary: Create a WebApp deployment
       tags:
-      - workspace
-  /workspace/{id}:
+      - webapp
+  /webapp/deployment/{id}:
     delete:
-      description: Delete an existing workspace by its ID
+      description: Deletes a deployment owned by the authenticated user.
       parameters:
-      - description: Workspace ID
+      - description: Deployment ID
         in: path
         name: id
         required: true
@@ -1616,21 +2440,25 @@ paths:
       responses:
         "204":
           description: No Content
-          schema:
-            additionalProperties: true
-            type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
-      summary: Delete a workspace by ID
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Delete a WebApp deployment
       tags:
-      - workspace
+      - webapp
     get:
-      description: Retrieve a single workspace by its ID
+      description: Returns a WebApp deployment for the authenticated user.
       parameters:
-      - description: Workspace ID
+      - description: Deployment ID
         in: path
         name: id
         required: true
@@ -1641,49 +2469,137 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Workspace'
+            $ref: '#/definitions/response.WebAppDeploymentResponse'
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
-      summary: Get a workspace by ID
+      summary: Get a WebApp deployment
       tags:
-      - workspace
+      - webapp
     patch:
       consumes:
       - application/json
-      description: Update an existing workspace with partial data
+      description: Updates metadata and/or UI schema of a deployment.
       parameters:
-      - description: Workspace ID
+      - description: Deployment ID
         in: path
         name: id
         required: true
         type: string
-      - description: Partial workspace update
+      - description: Patch payload
         in: body
-        name: workspace
+        name: body
         required: true
         schema:
-          $ref: '#/definitions/request.WorkspaceRequest'
+          $ref: '#/definitions/request.UpdateWebAppDeploymentRequest'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/model.Workspace'
+            $ref: '#/definitions/response.WebAppDeploymentResponse'
         "400":
           description: Bad Request
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
         "404":
           description: Not Found
           schema:
-            additionalProperties: true
+            additionalProperties:
+              type: string
             type: object
-      summary: Update a workspace
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Update a WebApp deployment
       tags:
-      - workspace
+      - webapp
+  /webapp/generate:
+    post:
+      consumes:
+      - application/json
+      description: Refines a deterministic WebApp skeleton using an LLM while enforcing
+        contract compatibility.
+      parameters:
+      - description: WebApp generation request
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.GenerateWebAppRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WebAppSkeletonResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate refined WebApp UI schema with AI
+      tags:
+      - webapp
+  /webapp/skeleton/{modelId}:
+    post:
+      description: Builds a deterministic WebApp contract and UI skeleton from a validated
+        model.
+      parameters:
+      - description: Root model ID
+        in: path
+        name: modelId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.WebAppSkeletonResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Generate deterministic WebApp skeleton
+      tags:
+      - webapp
 swagger: "2.0"

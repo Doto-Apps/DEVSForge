@@ -2,23 +2,40 @@ import type { components } from "@/api/v1";
 import type { ReactFlowInput } from ".";
 
 // Types for LLM diagram responses
-export type LLMDiagramResponse = components["schemas"]["response.DiagramResponse"];
+export type LLMDiagramResponse =
+	components["schemas"]["response.DiagramResponse"];
 export type LLMModel = components["schemas"]["response.Model"];
 export type LLMConnection = components["schemas"]["response.Connection"];
 export type LLMEndpoint = components["schemas"]["response.Endpoint"];
-export type LLMPorts = components["schemas"]["response.Ports"];
+export type LLMPortResponse = components["schemas"]["response.PortResponse"];
+export type ExperimentalFrameRole =
+	components["schemas"]["response.ExperimentalFrameRole"];
 
 // Request types
-export type GenerateDiagramRequest = {
-	diagramName: string;
-	userPrompt: string;
+export type GenerateDiagramRequest =
+	components["schemas"]["request.GenerateDiagramRequest"];
+
+export type GenerateEFStructureRequest =
+	components["schemas"]["request.GenerateEFStructureRequest"];
+
+export type PortInfo = components["schemas"]["request.PortInfo"];
+export type GenerateModelCodeRequest =
+	components["schemas"]["request.GenerateModelRequest"];
+
+export type ReuseCandidate = {
+	modelId: string;
+	name: string;
+	score: number;
+	keywords?: string[];
+	description?: string;
 };
 
-export type GenerateModelCodeRequest = {
-	modelName: string;
-	modelType: "atomic" | "coupled";
-	previousModelsCode: string;
-	userPrompt: string;
+export type GenerateModelCodeResult = {
+	code: string;
+	keywords?: string[];
+	reuseCandidates?: ReuseCandidate[];
+	reuseUsed?: ReuseCandidate;
+	reuseMode?: string;
 };
 
 // Generator states
@@ -29,6 +46,7 @@ export type GeneratedModelData = {
 	id: string;
 	name: string;
 	type: "atomic" | "coupled";
+	role?: ExperimentalFrameRole;
 	ports: {
 		in: string[];
 		out: string[];
@@ -44,6 +62,9 @@ export type GeneratedDiagram = {
 	name: string;
 	models: GeneratedModelData[];
 	connections: LLMConnection[];
+	rootModelId?: string;
+	modelUnderTestId?: string;
+	targetModelId?: string;
 	reactFlowData?: ReactFlowInput;
 };
 
@@ -79,4 +100,6 @@ export type CodeGenerationPanelProps = {
 	onCodeGenerated: (modelId: string, code: string) => void;
 	onModelValidated: () => void;
 	onCodeChange: (modelId: string, code: string) => void;
+	atomicModelFilter?: (model: GeneratedModelData) => boolean;
+	excludeFromContextModelIds?: string[];
 };

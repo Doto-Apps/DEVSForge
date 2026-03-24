@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	"devsforge-wrapper/modeling"
 	devspb "devsforge-wrapper/proto"
@@ -70,39 +69,37 @@ func (s *DEVSModelServer) ConfluentTransition(ctx context.Context, req *devspb.E
 // On lit les ports de sortie et on renvoie les valeurs au runner.
 func (s *DEVSModelServer) Output(ctx context.Context, _ *emptypb.Empty) (*devspb.OutputResponse, error) {
 	// On laisse le modèle calculer ses sorties
-	log.Printf("\n[DEBUG] %+v \n", s.model.GetPorts(nil))
 	s.model.Lambda()
-	log.Printf("\n[DEBUG] %+v \n", s.model.GetPorts(nil))
 
 	var resp devspb.OutputResponse
 
 	// Récupération des ports de sortie via Component.GetOutPorts()
 	portType := "out"
-	parsedValues := make([]string, 0)
 	for _, port := range s.model.GetPorts(&portType) {
 		portName := port.GetName()
 
-		// On suppose que les ports sont typés []string
+		// Les ports sont stockés en []interface{} dans le runtime wrapper.
 		values, ok := port.GetValues().([]interface{})
 		if !ok {
-			// Si ce n'est pas []string, on fallback en stringifiant
-			// (à toi d'ajuster si tu veux utiliser du JSON ou autre)
 			return nil, status.Errorf(
 				codes.Internal,
-				"port %s n'est pas de type []string (type réel: %T)",
+				"port %s is not []interface{} (actual type: %T)",
 				portName, port.GetValues(),
 			)
 		}
+
+		parsedValues := make([]string, 0, len(values))
 		for _, value := range values {
-			parsedValue, err := json.Marshal(value)
+			parsedValue, err := marshalPortValueAsJSON(value)
 			if err != nil {
 				return nil, status.Errorf(
 					codes.Internal,
-					"Cannot marshal values : %s",
+					"cannot JSON-encode output value on port %s: %s",
+					portName,
 					err,
 				)
 			}
-			parsedValues = append(parsedValues, string(parsedValue))
+			parsedValues = append(parsedValues, parsedValue)
 
 		}
 
@@ -123,18 +120,41 @@ func (s *DEVSModelServer) Output(ctx context.Context, _ *emptypb.Empty) (*devspb
 // AddInput permet d'ajouter une valeur dans un port d'entrée du modèle.
 func (s *DEVSModelServer) AddInput(ctx context.Context, req *devspb.InputMessage) (*emptypb.Empty, error) {
 	portName := req.GetPortName()
-	value := req.GetValueJson() // ici on traite la valeur comme un string
+	valueJSON := req.GetValueJson()
+
+	var value interface{}
+	if err := json.Unmarshal([]byte(valueJSON), &value); err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid JSON for value_json on port %s: %s", portName, err)
+	}
 
 	inPort, err := s.model.GetPortByName(portName)
 	if err != nil {
 		return nil, status.Errorf(codes.NotFound, "input port %s not found", portName)
 	}
 
-	// Le port est supposé être créé avec un type []string côté modèle,
-	// donc AddValue(string) est cohérent.
 	inPort.AddValue(value)
 
 	return &emptypb.Empty{}, nil
+}
+
+func marshalPortValueAsJSON(value interface{}) (string, error) {
+	// Compat path: many existing Go models emit []byte(JSON).
+	if raw, ok := value.([]byte); ok {
+		var decoded interface{}
+		if err := json.Unmarshal(raw, &decoded); err == nil {
+			normalized, err := json.Marshal(decoded)
+			if err != nil {
+				return "", err
+			}
+			return string(normalized), nil
+		}
+	}
+
+	encoded, err := json.Marshal(value)
+	if err != nil {
+		return "", err
+	}
+	return string(encoded), nil
 }
 
 // Helper pour log/debug si besoin

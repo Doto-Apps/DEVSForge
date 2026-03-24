@@ -1,23 +1,25 @@
-// Package cmd : Run a go model
 package cmd
 
 import (
-	"devsforge-runner/internal"
-	"devsforge-runner/internal/config"
-	"devsforge-runner/internal/generators"
-	"devsforge-runner/util"
-	shared "devsforge-shared"
-	"devsforge-shared/utils"
+	"context"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"time"
+
+	"devsforge-runner/internal"
+	"devsforge-runner/internal/config"
+	"devsforge-runner/internal/generators"
+	"devsforge-runner/util"
+	shared "devsforge-shared"
+	kafkaShared "devsforge-shared/kafka"
+	"devsforge-shared/utils"
+
+	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-// prepareGeneralWrapper : partie commune à tous les langages
-// - InitConfig
-// - création (ou réutilisation) du dossier de simulation devsforge_<SimulationID>_*
 func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath string) (*generators.WrapperInfo, error) {
 	cfg := config.InitConfig(manifest, yamlConfigFilePath)
 
@@ -30,7 +32,6 @@ func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 		simRoot = wd
 	}
 
-	// Resolve tmp directory to an absolute path if needed.
 	if !filepath.IsAbs(cfg.TmpDirectory) {
 		cfg.TmpDirectory = filepath.Join(simRoot, cfg.TmpDirectory)
 	}
@@ -63,12 +64,12 @@ func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 	}, nil
 }
 
-// LaunchRunner Launch a runner with args
 func LaunchRunner(args []string) error {
 	log.SetPrefix("[RUNNER] ")
 	log.Println("======================================")
-	log.Println("          ⚙️ DEVSForge Runner         ")
+	log.Println("          DEVSForge Runner            ")
 	log.Println("======================================")
+
 	fs := flag.NewFlagSet("runner", flag.ContinueOnError)
 	jsonStr := fs.String("json", "", "JSON string to parse")
 	filePath := fs.String("file", "", "Path to JSON file")
@@ -77,9 +78,8 @@ func LaunchRunner(args []string) error {
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("error parsing flags: %w", err)
 	}
-
 	if *configFile == "" {
-		return fmt.Errorf("⚠️ No config file provided ")
+		return fmt.Errorf("no config file provided")
 	}
 
 	var manifest shared.RunnableManifest
@@ -98,49 +98,82 @@ func LaunchRunner(args []string) error {
 	} else {
 		return fmt.Errorf("please provide --json or --file")
 	}
-	log.SetPrefix("[RUNNER: " + manifest.Models[0].ID + " ]\t")
 
 	if len(manifest.Models) != 1 {
-		return fmt.Errorf("❌ Manifest has no models or more than 1. Runner can only run 1 model at the same time")
+		return fmt.Errorf("manifest must contain exactly one model for a runner")
 	}
-	log.Println("✅ Manifest validated")
+	log.SetPrefix("[RUNNER: " + manifest.Models[0].ID + " ]\t")
+	log.Println("manifest validated")
 
-	// 1) Préparation générale (indépendante du langage)
 	wrapper, err := prepareGeneralWrapper(manifest, *configFile)
 	if err != nil {
 		return err
 	}
-
 	defer func() {
-		log.Println("Trying to cleanup")
-
+		log.Println("trying to cleanup")
 		if err := wrapper.Cleanup(); err != nil {
-			log.Printf("⚠️ Cleanup error: %v", err)
+			log.Printf("cleanup error: %v", err)
 		}
 	}()
 
-	log.Printf("Launch using language: %s", manifest.Models[0].Language)
-	// 2) Préparation spécifique au langage (Go / Python / ...)
+	log.Printf("launch using language: %s", manifest.Models[0].Language)
 	switch manifest.Models[0].Language {
 	case "go":
 		if err := generators.PrepareGoWraper(wrapper, manifest); err != nil {
+			emitRunnerErrorReport(wrapper.Cfg, "RUNNER_PREPARE_GO_ERROR", err)
 			return err
 		}
 	case "python":
 		if err := generators.PreparePythonWraper(wrapper, manifest); err != nil {
+			emitRunnerErrorReport(wrapper.Cfg, "RUNNER_PREPARE_PYTHON_ERROR", err)
 			return err
 		}
 	default:
-		return fmt.Errorf("❌ Simulator can't handle %s language. It need to be implemented", manifest.Models[0].Language)
+		err := fmt.Errorf("runner cannot handle language %s", manifest.Models[0].Language)
+		emitRunnerErrorReport(wrapper.Cfg, "RUNNER_UNSUPPORTED_LANGUAGE", err)
+		return err
 	}
 
-	// 3) Lancement de la sim
 	if err := internal.LaunchSim(wrapper); err != nil {
 		return err
 	}
 
 	log.Println("======================================")
-	log.Println("   ⚙️ Runner ended successfully ✅    ")
+	log.Println("      runner ended successfully       ")
 	log.Println("======================================")
 	return nil
+}
+
+func emitRunnerErrorReport(cfg *config.RunnerConfig, errorCode string, sourceErr error) {
+	if sourceErr == nil || cfg == nil || cfg.KafkaClient == nil || cfg.Model == nil {
+		return
+	}
+	if errorCode == "" {
+		errorCode = "RUNNER_ERROR"
+	}
+
+	report := kafkaShared.NewErrorReportMessage(
+		cfg.SimulationID,
+		cfg.ID,
+		"Coordinator",
+		"Runner",
+		cfg.Model.ID,
+		"fatal",
+		errorCode,
+		sourceErr.Error(),
+		nil,
+		nil,
+	)
+
+	data, err := report.Marshal()
+	if err != nil {
+		log.Printf("failed to marshal runner ErrorReport: %v", err)
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err := cfg.KafkaClient.ProduceSync(ctx, &kgo.Record{Value: data}).FirstErr(); err != nil {
+		log.Printf("failed to publish runner ErrorReport: %v", err)
+	}
 }

@@ -17,47 +17,21 @@ import {
 	Routes,
 } from "react-router-dom";
 
-import { CreateDiagram } from "./pages/diagram/CreateDiagram";
+import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
+import { GettingStarted } from "./pages/help/GettingStarted";
+import { HowItWorks } from "./pages/help/HowItWorks";
+import { ModelerHome } from "./pages/home/ModelerHome";
 import { CreateLibrary } from "./pages/library/CreateLibrary";
 import { CreateModel } from "./pages/model/CreateModel";
 import { EditModel } from "./pages/model/EditModel";
+import { SimulateModel } from "./pages/model/SimulateModel";
 import { TestModel } from "./pages/model/TestModel";
-import { CreateWorkspace } from "./pages/workspace/CreateWorkspace";
-import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
+import { ValidationModel } from "./pages/model/ValidationModel";
+import { AccountSettings } from "./pages/settings/AccountSettings";
+import { WebAppBuilder } from "./pages/webapp/WebAppBuilder";
+import { WebAppDeployment } from "./pages/webapp/WebAppDeployment";
+import { WebAppDeployments } from "./pages/webapp/WebAppDeployments";
 import { DnDProvider } from "./providers/DnDContext";
-
-const HomePage = () => <div>Page d'accueil</div>;
-const OnlineDEVSEditor = () => <div>Contact</div>;
-
-/*
-  ============================
-  Routes front pour EasyDEVS
-  ============================
-
-  Libraries :
-  - Liste            : /library
-  - Création         : /library/new
-  - Détail (ID)      : /library/:id
-  - Édition (ID)     : /library/:id/edit
-  - Suppression (ID) : /library/:id/delete
-
-  Models :
-  - Liste            : /model
-  - Création         : /model/new
-  - Détail (ID)      : /model/:id
-  - Édition (ID)     : /model/:id/edit
-  - Suppression (ID) : /model/:id/delete
-
-  Diagrams :
-  - Liste            : /diagram
-  - Création         : /diagram/new
-  - Détail (ID)      : /diagram/:id
-  - Édition (ID)     : /diagram/:id/edit
-  - Suppression (ID) : /diagram/:id/delete
-
-  <Route path="/test2" element={<ModelCodeEditor code='' onSave={() => {}} />} />
-  <Route path="/devs-generator" element={<DiagramGenerator />} />
-*/
 
 const Main = () => {
 	const { isAuthenticated, isInitialized } = useAuth();
@@ -81,16 +55,28 @@ const Main = () => {
 					path="/library/:libraryId/model/:modelId"
 					element={<EditModel />}
 				/>
-
-				<Route path="/workspace/new" element={<CreateWorkspace />} />
-				<Route path="/workspace/:id/diagram/new" element={<CreateDiagram />} />
+				<Route
+					path="/library/:libraryId/model/:modelId/simulate"
+					element={<SimulateModel />}
+				/>
+				<Route
+					path="/library/:libraryId/model/:modelId/validate"
+					element={<ValidationModel />}
+				/>
+				<Route
+					path="/library/:libraryId/model/:modelId/webapp"
+					element={<WebAppBuilder />}
+				/>
+				<Route path="/webapps" element={<WebAppDeployments />} />
+				<Route path="/webapps/:deploymentId" element={<WebAppDeployment />} />
 
 				<Route path="/devs-generator" element={<GeneratorFlow />} />
+				<Route path="/getting-started" element={<GettingStarted />} />
+				<Route path="/how-it-works" element={<HowItWorks />} />
+				<Route path="/settings" element={<AccountSettings />} />
 
-				<Route path="/" element={<TestModel />} />
-
-				<Route path="/online-devs" element={<OnlineDEVSEditor />} />
-				{/* <Route path="/test2" element={<ModelCodeEditor code="" onSave={() => {}} />} /> */}
+				<Route path="/" element={<ModelerHome />} />
+				<Route path="/test-model" element={<TestModel />} />
 
 				<Route path="*" element={<Navigate to="/" />} />
 			</Routes>

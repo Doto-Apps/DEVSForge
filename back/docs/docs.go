@@ -128,9 +128,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/ai/generate-ef-structure": {
+            "post": {
+                "description": "Generates an Experimental Frame (EF) structure around a target model for validation scenarios.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "AI"
+                ],
+                "summary": "Generate an experimental frame structure",
+                "parameters": [
+                    {
+                        "description": "Data required to generate EF structure",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GenerateEFStructureRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Generated EF structure",
+                        "schema": {
+                            "$ref": "#/definitions/response.ExperimentalFrameStructureResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Target model not found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "AI processing error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/ai/generate-model": {
             "post": {
-                "description": "Sends a prompt to OpenAI to generate a DEVS model code.",
+                "description": "Sends a prompt to OpenAI to generate a DEVS model code in Python or Go.",
                 "consumes": [
                     "application/json"
                 ],
@@ -431,37 +492,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/diagram": {
-            "get": {
-                "description": "Retrieve a list of all diagrams",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "diagrams"
-                ],
-                "summary": "Get all diagrams",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Diagram"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
+        "/experimental-frame": {
             "post": {
-                "description": "Create a new diagram entry",
+                "description": "Create an experimental frame association (target model -\u003e coupled frame model)",
                 "consumes": [
                     "application/json"
                 ],
@@ -469,17 +502,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "diagrams"
+                    "experimental-frames"
                 ],
-                "summary": "Create a diagram",
+                "summary": "Create an experimental frame",
                 "parameters": [
                     {
-                        "description": "Diagram data",
-                        "name": "diagram",
+                        "description": "Experimental frame data",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.DiagramRequest"
+                            "$ref": "#/definitions/request.ExperimentalFrameRequest"
                         }
                     }
                 ],
@@ -487,11 +520,18 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/model.Diagram"
+                            "$ref": "#/definitions/response.ExperimentalFrameResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -507,20 +547,66 @@ const docTemplate = `{
                 }
             }
         },
-        "/diagram/{id}": {
+        "/experimental-frame/model/{modelId}": {
             "get": {
-                "description": "Retrieve a single diagram by its ID",
+                "description": "Retrieve all experimental frames linked to a target model",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "diagrams"
+                    "experimental-frames"
                 ],
-                "summary": "Get a diagram by ID",
+                "summary": "Get experimental frames by model",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Diagram ID",
+                        "description": "Target model ID",
+                        "name": "modelId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.ExperimentalFrameResponse"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/experimental-frame/{id}": {
+            "get": {
+                "description": "Retrieve a single experimental frame by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "experimental-frames"
+                ],
+                "summary": "Get an experimental frame",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Experimental frame ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -530,7 +616,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Diagram"
+                            "$ref": "#/definitions/response.ExperimentalFrameResponse"
                         }
                     },
                     "404": {
@@ -543,15 +629,15 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete a diagram by its ID",
+                "description": "Delete an experimental frame by its ID",
                 "tags": [
-                    "diagrams"
+                    "experimental-frames"
                 ],
-                "summary": "Delete a diagram",
+                "summary": "Delete an experimental frame",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Diagram ID",
+                        "description": "Experimental frame ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -560,59 +646,6 @@ const docTemplate = `{
                 "responses": {
                     "204": {
                         "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "patch": {
-                "description": "Update an existing diagram with partial data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "diagrams"
-                ],
-                "summary": "Update a diagram",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Diagram ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Fields to update",
-                        "name": "updateData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.DiagramRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/model.Diagram"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -644,6 +677,76 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "API is running",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/languages": {
+            "get": {
+                "description": "Returns the list of programming languages available for DEVS models",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Languages"
+                ],
+                "summary": "Get available languages",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LanguageListResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/languages/{lang}/template": {
+            "get": {
+                "description": "Returns the atomic model code template for the specified language",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Languages"
+                ],
+                "summary": "Get language template",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Language ID (go, python)",
+                        "name": "lang",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "MyModel",
+                        "description": "Model name to inject in template",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LanguageTemplateResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -1136,6 +1239,263 @@ const docTemplate = `{
                 }
             }
         },
+        "/simulation": {
+            "get": {
+                "description": "Retrieve all simulations for the authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simulations"
+                ],
+                "summary": "Get user simulations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.SimulationResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/simulation/model/{modelId}": {
+            "get": {
+                "description": "Retrieve all simulations for a specific model",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simulations"
+                ],
+                "summary": "Get simulations by model",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Model ID",
+                        "name": "modelId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/response.SimulationResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/simulation/{modelId}": {
+            "post": {
+                "description": "Create a new simulation for the specified model (does not start it)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simulations"
+                ],
+                "summary": "Create a simulation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Model ID",
+                        "name": "modelId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Simulation parameters",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/request.SimulationStartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SimulationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/simulation/{simId}": {
+            "get": {
+                "description": "Retrieve a simulation by its ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simulations"
+                ],
+                "summary": "Get a simulation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Simulation ID",
+                        "name": "simId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SimulationResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/simulation/{simId}/events": {
+            "get": {
+                "description": "Retrieve all DEVS messages that transited during a simulation (includes simulation status for polling)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simulations"
+                ],
+                "summary": "Get simulation events",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Simulation ID",
+                        "name": "simId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Maximum number of events (default: 1000)",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Offset for pagination (default: 0)",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SimulationEventsResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/simulation/{simId}/start": {
+            "post": {
+                "description": "Start an existing simulation (call after WebSocket is connected)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simulations"
+                ],
+                "summary": "Start a simulation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Simulation ID",
+                        "name": "simId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.SimulationResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/user": {
             "get": {
                 "description": "Retrieve a list of all user",
@@ -1158,6 +1518,79 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/user/settings/ai": {
+            "get": {
+                "description": "Returns the current user's AI provider settings.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Get current user AI settings",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UserAISettingsResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates current user AI provider settings (apiUrl, apiKey, apiModel).",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Update current user AI settings",
+                "parameters": [
+                    {
+                        "description": "AI settings to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdateUserAISettingsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.UserAISettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -1324,30 +1757,47 @@ const docTemplate = `{
                 }
             }
         },
-        "/workspace": {
+        "/webapp/deployment": {
             "get": {
-                "description": "Retrieve a list of all workspace",
+                "description": "Lists authenticated user's WebApp deployments (optionally filtered by modelId).",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "workspace"
+                    "webapp"
                 ],
-                "summary": "Get all workspace",
+                "summary": "List WebApp deployments",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Optional model ID filter",
+                        "name": "modelId",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.Workspace"
+                                "$ref": "#/definitions/response.WebAppDeploymentResponse"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
                             }
                         }
                     }
                 }
             },
             "post": {
-                "description": "Create a new workspace and store it in the database",
+                "description": "Saves a deployable WebApp artifact bound to a model contract.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1355,17 +1805,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "workspace"
+                    "webapp"
                 ],
-                "summary": "Create a new workspace",
+                "summary": "Create a WebApp deployment",
                 "parameters": [
                     {
-                        "description": "Workspace object",
-                        "name": "workspace",
+                        "description": "Deployment payload",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.WorkspaceRequest"
+                            "$ref": "#/definitions/request.CreateWebAppDeploymentRequest"
                         }
                     }
                 ],
@@ -1373,33 +1823,53 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/model.Workspace"
+                            "$ref": "#/definitions/response.WebAppDeploymentResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
             }
         },
-        "/workspace/{id}": {
+        "/webapp/deployment/{id}": {
             "get": {
-                "description": "Retrieve a single workspace by its ID",
+                "description": "Returns a WebApp deployment for the authenticated user.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "workspace"
+                    "webapp"
                 ],
-                "summary": "Get a workspace by ID",
+                "summary": "Get a WebApp deployment",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Workspace ID",
+                        "description": "Deployment ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1409,28 +1879,30 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Workspace"
+                            "$ref": "#/definitions/response.WebAppDeploymentResponse"
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
             },
             "delete": {
-                "description": "Delete an existing workspace by its ID",
+                "description": "Deletes a deployment owned by the authenticated user.",
                 "tags": [
-                    "workspace"
+                    "webapp"
                 ],
-                "summary": "Delete a workspace by ID",
+                "summary": "Delete a WebApp deployment",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Workspace ID",
+                        "description": "Deployment ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1438,23 +1910,30 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
+                        "description": "No Content"
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
             },
             "patch": {
-                "description": "Update an existing workspace with partial data",
+                "description": "Updates metadata and/or UI schema of a deployment.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1462,24 +1941,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "workspace"
+                    "webapp"
                 ],
-                "summary": "Update a workspace",
+                "summary": "Update a WebApp deployment",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Workspace ID",
+                        "description": "Deployment ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Partial workspace update",
-                        "name": "workspace",
+                        "description": "Patch payload",
+                        "name": "body",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.WorkspaceRequest"
+                            "$ref": "#/definitions/request.UpdateWebAppDeploymentRequest"
                         }
                     }
                 ],
@@ -1487,21 +1966,151 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/model.Workspace"
+                            "$ref": "#/definitions/response.WebAppDeploymentResponse"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     },
                     "404": {
                         "description": "Not Found",
                         "schema": {
                             "type": "object",
-                            "additionalProperties": true
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/webapp/generate": {
+            "post": {
+                "description": "Refines a deterministic WebApp skeleton using an LLM while enforcing contract compatibility.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "Generate refined WebApp UI schema with AI",
+                "parameters": [
+                    {
+                        "description": "WebApp generation request",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GenerateWebAppRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.WebAppSkeletonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/webapp/skeleton/{modelId}": {
+            "post": {
+                "description": "Builds a deterministic WebApp contract and UI skeleton from a validated model.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "webapp"
+                ],
+                "summary": "Generate deterministic WebApp skeleton",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Root model ID",
+                        "name": "modelId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.WebAppSkeletonResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
                         }
                     }
                 }
@@ -1509,6 +2118,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "enum.ModelLanguage": {
+            "type": "string",
+            "enum": [
+                "go",
+                "python"
+            ],
+            "x-enum-varnames": [
+                "ModelLanguageGo",
+                "ModelLanguagePython"
+            ]
+        },
         "enum.ModelPortDirection": {
             "type": "string",
             "enum": [
@@ -1667,10 +2287,14 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "id",
+                "name",
                 "type"
             ],
             "properties": {
                 "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "type": {
@@ -1740,42 +2364,150 @@ const docTemplate = `{
                 "ToolbarPositionBottom"
             ]
         },
-        "model.Diagram": {
+        "json.WebAppContract": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
-                "createdAt": {
+                "inputPortBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.WebAppPortBinding"
+                    }
+                },
+                "modelDescription": {
                     "type": "string"
                 },
-                "deletedAt": {
+                "modelId": {
                     "type": "string"
                 },
+                "modelName": {
+                    "type": "string"
+                },
+                "outputPortBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.WebAppPortBinding"
+                    }
+                },
+                "parameterBindings": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.WebAppParameterBinding"
+                    }
+                }
+            }
+        },
+        "json.WebAppParameterBinding": {
+            "type": "object",
+            "properties": {
+                "bindingKey": {
+                    "type": "string"
+                },
+                "defaultValue": {},
+                "description": {
+                    "type": "string"
+                },
+                "instanceModelId": {
+                    "type": "string"
+                },
+                "instancePath": {
+                    "type": "string"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "modelName": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/json.ParameterType"
+                }
+            }
+        },
+        "json.WebAppPortBinding": {
+            "type": "object",
+            "properties": {
+                "bindingKey": {
+                    "type": "string"
+                },
+                "direction": {
+                    "$ref": "#/definitions/enum.ModelPortDirection"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "portId": {
+                    "type": "string"
+                }
+            }
+        },
+        "json.WebAppUISchema": {
+            "type": "object",
+            "properties": {
+                "layout": {
+                    "type": "string"
+                },
+                "runButtonLabel": {
+                    "type": "string"
+                },
+                "sections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.WebAppUISection"
+                    }
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
+        "json.WebAppUISection": {
+            "type": "object",
+            "properties": {
                 "description": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "modelId": {
-                    "type": "string"
+                "kind": {
+                    "$ref": "#/definitions/json.WebAppUISectionKind"
                 },
-                "name": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 3
+                "parameterBindingKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
-                "updatedAt": {
-                    "type": "string"
+                "portBindingKeys": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
-                "userId": {
-                    "type": "string"
-                },
-                "workspaceId": {
+                "title": {
                     "type": "string"
                 }
             }
+        },
+        "json.WebAppUISectionKind": {
+            "type": "string",
+            "enum": [
+                "parameters",
+                "inputs",
+                "outputs",
+                "run",
+                "custom"
+            ],
+            "x-enum-varnames": [
+                "WebAppUISectionKindParameters",
+                "WebAppUISectionKindInputs",
+                "WebAppUISectionKindOutputs",
+                "WebAppUISectionKindRun",
+                "WebAppUISectionKindCustom"
+            ]
         },
         "model.Library": {
             "type": "object",
@@ -1839,6 +2571,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "language": {
+                    "$ref": "#/definitions/enum.ModelLanguage"
+                },
                 "libId": {
                     "type": "string"
                 },
@@ -1864,6 +2599,21 @@ const docTemplate = `{
                     "type": "string"
                 }
             }
+        },
+        "model.SimulationStatus": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "running",
+                "completed",
+                "failed"
+            ],
+            "x-enum-varnames": [
+                "SimulationStatusPending",
+                "SimulationStatusRunning",
+                "SimulationStatusCompleted",
+                "SimulationStatusFailed"
+            ]
         },
         "model.User": {
             "type": "object",
@@ -1915,68 +2665,194 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 50,
                     "minLength": 3
-                },
-                "workspaces": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/model.Workspace"
-                    }
                 }
             }
         },
-        "model.Workspace": {
+        "request.AssistedExperimentalFrameConnection": {
             "type": "object",
+            "required": [
+                "from",
+                "to"
+            ],
             "properties": {
-                "createdAt": {
+                "from": {
+                    "$ref": "#/definitions/request.AssistedExperimentalFrameEndpoint"
+                },
+                "to": {
+                    "$ref": "#/definitions/request.AssistedExperimentalFrameEndpoint"
+                }
+            }
+        },
+        "request.AssistedExperimentalFrameEndpoint": {
+            "type": "object",
+            "required": [
+                "model",
+                "port"
+            ],
+            "properties": {
+                "model": {
                     "type": "string"
                 },
-                "deletedAt": {
+                "port": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.AssistedExperimentalFrameModel": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "code": {
                     "type": "string"
                 },
-                "description": {
-                    "type": "string"
-                },
-                "diagrams": {
+                "components": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/model.Diagram"
+                        "type": "string"
                     }
                 },
                 "id": {
                     "type": "string"
                 },
-                "title": {
+                "name": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.AssistedExperimentalFrameModelPort"
+                    }
+                },
+                "role": {
                     "type": "string"
                 },
-                "userId": {
-                    "type": "string"
+                "type": {
+                    "enum": [
+                        "atomic",
+                        "coupled"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/enum.ModelType"
+                        }
+                    ]
                 }
             }
         },
-        "request.DiagramRequest": {
+        "request.AssistedExperimentalFrameModelPort": {
             "type": "object",
             "required": [
-                "description",
                 "name",
-                "workspaceId"
+                "type"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "in",
+                        "out"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/enum.ModelPortDirection"
+                        }
+                    ]
+                }
+            }
+        },
+        "request.CreateWebAppDeploymentRequest": {
+            "type": "object",
+            "required": [
+                "modelId",
+                "name"
             ],
             "properties": {
                 "description": {
                     "type": "string"
                 },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "modelId": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
-                "workspaceId": {
+                "prompt": {
+                    "type": "string"
+                },
+                "uiSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
+                }
+            }
+        },
+        "request.ExperimentalFrameRequest": {
+            "type": "object",
+            "required": [
+                "targetModelId"
+            ],
+            "properties": {
+                "connections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.AssistedExperimentalFrameConnection"
+                    }
+                },
+                "frameModelId": {
+                    "type": "string"
+                },
+                "libraryId": {
+                    "type": "string"
+                },
+                "modelUnderTestId": {
+                    "type": "string"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.AssistedExperimentalFrameModel"
+                    }
+                },
+                "roomName": {
+                    "type": "string"
+                },
+                "rootModelId": {
+                    "type": "string"
+                },
+                "targetModelId": {
                     "type": "string"
                 }
             }
         },
         "request.GenerateDiagramRequest": {
-            "type": "object"
+            "type": "object",
+            "required": [
+                "diagramName",
+                "userPrompt"
+            ],
+            "properties": {
+                "diagramName": {
+                    "type": "string",
+                    "example": "MyDiagram"
+                },
+                "pastMessages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.PastMessages"
+                    }
+                },
+                "userPrompt": {
+                    "type": "string",
+                    "example": "Create a software architecture diagram"
+                }
+            }
         },
         "request.GenerateDocumentationRequest": {
             "type": "object",
@@ -1990,30 +2866,97 @@ const docTemplate = `{
                 }
             }
         },
+        "request.GenerateEFStructureRequest": {
+            "type": "object",
+            "required": [
+                "targetModelId",
+                "userPrompt"
+            ],
+            "properties": {
+                "pastMessages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.PastMessages"
+                    }
+                },
+                "roomName": {
+                    "type": "string",
+                    "example": "Room - NomDuEF"
+                },
+                "targetModelId": {
+                    "type": "string",
+                    "example": "uuid-of-target-model"
+                },
+                "userPrompt": {
+                    "type": "string",
+                    "example": "I want 2 generators and 1 acceptor to validate latency"
+                }
+            }
+        },
         "request.GenerateModelRequest": {
             "type": "object",
             "required": [
+                "language",
                 "modelName",
-                "modelType",
+                "ports",
                 "previousModelsCode",
                 "userPrompt"
             ],
             "properties": {
+                "forceScratch": {
+                    "type": "boolean",
+                    "example": false
+                },
+                "language": {
+                    "type": "string",
+                    "enum": [
+                        "python",
+                        "go"
+                    ],
+                    "example": "python"
+                },
                 "modelName": {
                     "type": "string",
                     "example": "MyModel"
                 },
-                "modelType": {
-                    "type": "string",
-                    "example": "DEVS"
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.PortInfo"
+                    }
                 },
                 "previousModelsCode": {
                     "type": "string",
                     "example": "Existing model code"
                 },
+                "reuseModelId": {
+                    "type": "string",
+                    "example": "uuid-of-reuse-candidate"
+                },
                 "userPrompt": {
                     "type": "string",
                     "example": "Generate a model based on the previous code"
+                }
+            }
+        },
+        "request.GenerateWebAppRequest": {
+            "type": "object",
+            "required": [
+                "modelId",
+                "userPrompt"
+            ],
+            "properties": {
+                "currentSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "userPrompt": {
+                    "type": "string"
                 }
             }
         },
@@ -2092,6 +3035,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "language": {
+                    "$ref": "#/definitions/enum.ModelLanguage"
+                },
                 "libId": {
                     "type": "string"
                 },
@@ -2138,6 +3084,32 @@ const docTemplate = `{
                 }
             }
         },
+        "request.PortInfo": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "port-1"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "input"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "in",
+                        "out"
+                    ],
+                    "example": "in"
+                }
+            }
+        },
         "request.RefreshRequest": {
             "type": "object",
             "required": [
@@ -2172,6 +3144,62 @@ const docTemplate = `{
                 }
             }
         },
+        "request.SimulationModelOverrideRequest": {
+            "type": "object",
+            "properties": {
+                "instanceModelId": {
+                    "type": "string"
+                },
+                "overrideParams": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.SimulationParameterOverrideRequest"
+                    }
+                }
+            }
+        },
+        "request.SimulationParameterOverrideRequest": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "value": {}
+            }
+        },
+        "request.SimulationStartRequest": {
+            "type": "object",
+            "properties": {
+                "maxTime": {
+                    "description": "Maximum simulation time (0 = no limit)",
+                    "type": "number"
+                },
+                "overrides": {
+                    "description": "Optional runtime parameter overrides",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/request.SimulationModelOverrideRequest"
+                    }
+                }
+            }
+        },
+        "request.UpdateUserAISettingsRequest": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "type": "string",
+                    "example": "sk-..."
+                },
+                "apiModel": {
+                    "type": "string",
+                    "example": "gpt-4.1-mini"
+                },
+                "apiUrl": {
+                    "type": "string",
+                    "example": "https://api.openai.com/v1"
+                }
+            }
+        },
         "request.UpdateUserRequest": {
             "type": "object",
             "required": [
@@ -2183,30 +3211,31 @@ const docTemplate = `{
                 }
             }
         },
-        "request.WorkspaceRequest": {
+        "request.UpdateWebAppDeploymentRequest": {
             "type": "object",
-            "required": [
-                "description",
-                "title"
-            ],
             "properties": {
                 "description": {
                     "type": "string"
                 },
-                "title": {
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "name": {
                     "type": "string"
+                },
+                "prompt": {
+                    "type": "string"
+                },
+                "uiSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
                 }
             }
         },
         "response.Connection": {
             "type": "object",
-            "required": [
-                "from",
-                "to"
-            ],
             "properties": {
                 "from": {
-                    "description": "obligatoire",
+                    "description": "required",
                     "allOf": [
                         {
                             "$ref": "#/definitions/response.Endpoint"
@@ -2214,7 +3243,7 @@ const docTemplate = `{
                     ]
                 },
                 "to": {
-                    "description": "obligatoire",
+                    "description": "required",
                     "allOf": [
                         {
                             "$ref": "#/definitions/response.Endpoint"
@@ -2225,20 +3254,16 @@ const docTemplate = `{
         },
         "response.DiagramResponse": {
             "type": "object",
-            "required": [
-                "connections",
-                "models"
-            ],
             "properties": {
                 "connections": {
-                    "description": "obligatoire",
+                    "description": "required",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.Connection"
                     }
                 },
                 "models": {
-                    "description": "obligatoire",
+                    "description": "required",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.Model"
@@ -2261,17 +3286,111 @@ const docTemplate = `{
         },
         "response.Endpoint": {
             "type": "object",
-            "required": [
-                "model",
-                "port"
-            ],
             "properties": {
                 "model": {
-                    "description": "obligatoire",
+                    "description": "required",
                     "type": "string"
                 },
                 "port": {
-                    "description": "obligatoire",
+                    "description": "required",
+                    "type": "string"
+                }
+            }
+        },
+        "response.ExperimentalFrameModel": {
+            "type": "object",
+            "properties": {
+                "components": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.PortResponse"
+                    }
+                },
+                "role": {
+                    "$ref": "#/definitions/response.ExperimentalFrameRole"
+                },
+                "type": {
+                    "$ref": "#/definitions/response.ModelType"
+                }
+            }
+        },
+        "response.ExperimentalFrameResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "frameModelId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "targetModelId": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ExperimentalFrameRole": {
+            "type": "string",
+            "enum": [
+                "experimental-frame",
+                "model-under-test",
+                "generator",
+                "transducer",
+                "acceptor"
+            ],
+            "x-enum-varnames": [
+                "ExperimentalFrameRoleExperimentalFrame",
+                "ExperimentalFrameRoleModelUnderTest",
+                "ExperimentalFrameRoleGenerator",
+                "ExperimentalFrameRoleTransducer",
+                "ExperimentalFrameRoleAcceptor"
+            ]
+        },
+        "response.ExperimentalFrameStructureResponse": {
+            "type": "object",
+            "properties": {
+                "connections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Connection"
+                    }
+                },
+                "modelUnderTestId": {
+                    "type": "string"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ExperimentalFrameModel"
+                    }
+                },
+                "roomName": {
+                    "type": "string"
+                },
+                "rootModelId": {
+                    "type": "string"
+                },
+                "targetModelId": {
                     "type": "string"
                 }
             }
@@ -2300,6 +3419,63 @@ const docTemplate = `{
             ],
             "properties": {
                 "code": {
+                    "type": "string"
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "reuseCandidates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.ReuseCandidateResponse"
+                    }
+                },
+                "reuseMode": {
+                    "type": "string"
+                },
+                "reuseUsed": {
+                    "$ref": "#/definitions/response.ReuseCandidateResponse"
+                }
+            }
+        },
+        "response.LanguageInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "extension": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.LanguageListResponse": {
+            "type": "object",
+            "properties": {
+                "languages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.LanguageInfo"
+                    }
+                }
+            }
+        },
+        "response.LanguageTemplateResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "language": {
                     "type": "string"
                 }
             }
@@ -2342,12 +3518,11 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "ports": {
-                    "description": "required",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/response.Ports"
-                        }
-                    ]
+                    "description": "required (can be empty array)",
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.PortResponse"
+                    }
                 },
                 "type": {
                     "description": "required enum",
@@ -2429,22 +3604,35 @@ const docTemplate = `{
                 "ModelTypeCoupled"
             ]
         },
-        "response.Ports": {
+        "response.PortDirection": {
+            "type": "string",
+            "enum": [
+                "in",
+                "out"
+            ],
+            "x-enum-varnames": [
+                "PortDirectionIn",
+                "PortDirectionOut"
+            ]
+        },
+        "response.PortResponse": {
             "type": "object",
             "properties": {
-                "in": {
-                    "description": "required (can be empty array)",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "id": {
+                    "description": "unique port identifier",
+                    "type": "string"
                 },
-                "out": {
-                    "description": "required (can be empty array)",
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                "name": {
+                    "description": "logical port name",
+                    "type": "string"
+                },
+                "type": {
+                    "description": "\"in\" or \"out\"",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/response.PortDirection"
+                        }
+                    ]
                 }
             }
         },
@@ -2478,6 +3666,125 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ReuseCandidateResponse": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "keywords": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "score": {
+                    "type": "number"
+                }
+            }
+        },
+        "response.SimulationEventResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "devsType": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "payload": {},
+                "sender": {
+                    "type": "string"
+                },
+                "simulationId": {
+                    "type": "string"
+                },
+                "simulationTime": {
+                    "type": "number"
+                },
+                "target": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.SimulationEventsResponse": {
+            "type": "object",
+            "properties": {
+                "events": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.SimulationEventResponse"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "simulation": {
+                    "$ref": "#/definitions/response.SimulationResponse"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.SimulationResponse": {
+            "type": "object",
+            "properties": {
+                "completedAt": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "errorMessage": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "startedAt": {
+                    "type": "string"
+                },
+                "status": {
+                    "$ref": "#/definitions/model.SimulationStatus"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.UserAISettingsResponse": {
+            "type": "object",
+            "properties": {
+                "apiKeyMasked": {
+                    "type": "string"
+                },
+                "apiModel": {
+                    "type": "string"
+                },
+                "apiUrl": {
+                    "type": "string"
+                },
+                "hasApiKey": {
+                    "type": "boolean"
+                }
+            }
+        },
         "response.UserResponse": {
             "type": "object",
             "required": [
@@ -2490,6 +3797,58 @@ const docTemplate = `{
                 },
                 "username": {
                     "type": "string"
+                }
+            }
+        },
+        "response.WebAppDeploymentResponse": {
+            "type": "object",
+            "properties": {
+                "contract": {
+                    "$ref": "#/definitions/json.WebAppContract"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isPublic": {
+                    "type": "boolean"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "prompt": {
+                    "type": "string"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "uiSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.WebAppSkeletonResponse": {
+            "type": "object",
+            "properties": {
+                "contract": {
+                    "$ref": "#/definitions/json.WebAppContract"
+                },
+                "uiSchema": {
+                    "$ref": "#/definitions/json.WebAppUISchema"
                 }
             }
         }

@@ -16,6 +16,8 @@ import (
 func SetupUserRoutes(app *fiber.App) {
 	group := app.Group("/user", middleware.Protected())
 
+	group.Get("/settings/ai", getCurrentUserAISettings)
+	group.Patch("/settings/ai", patchCurrentUserAISettings)
 	group.Get("/", getAllUsers)
 	group.Get("/:id", getUser)
 	group.Delete("/:id", deleteUser)
@@ -50,14 +52,14 @@ func validUser(id string, p string) bool {
 }
 
 // getAllUsers retrieves a list of all user
-// @Summary Get all user
-// @Description Retrieve a list of all user
-// @Tags user
-// @Produce json
-// @Success 200 {array} model.User
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /user [get]
+//	@Summary		Get all user
+//	@Description	Retrieve a list of all user
+//	@Tags			user
+//	@Produce		json
+//	@Success		200	{array}		model.User
+//	@Failure		404	{object}	map[string]interface{}
+//	@Failure		500	{object}	map[string]interface{}
+//	@Router			/user [get]
 func getAllUsers(c *fiber.Ctx) error {
 	db := database.DB
 	var user []model.User
@@ -76,14 +78,14 @@ func getAllUsers(c *fiber.Ctx) error {
 }
 
 // getUser retrieves a single user by ID
-// @Summary Get a user by ID
-// @Description Retrieve a single user by their ID
-// @Tags user
-// @Produce json
-// @Param id path string true "User ID"
-// @Success 200 {object} model.User
-// @Failure 404 {object} map[string]interface{}
-// @Router /user/{id} [get]
+//	@Summary		Get a user by ID
+//	@Description	Retrieve a single user by their ID
+//	@Tags			user
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	model.User
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/user/{id} [get]
 func getUser(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB
@@ -96,18 +98,18 @@ func getUser(c *fiber.Ctx) error {
 }
 
 // patchUser updates an existing user by their ID
-// @Summary Update a user
-// @Description Update an existing user with partial data
-// @Tags user
-// @Accept json
-// @Produce json
-// @Param id path string true "User ID"
-// @Param user body request.UpdateUserRequest true "Partial user update"
-// @Success 200 {object} model.User
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /user/{id} [patch]
+//	@Summary		Update a user
+//	@Description	Update an existing user with partial data
+//	@Tags			user
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string						true	"User ID"
+//	@Param			user	body		request.UpdateUserRequest	true	"Partial user update"
+//	@Success		200		{object}	model.User
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		404		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Router			/user/{id} [patch]
 func patchUser(c *fiber.Ctx) error {
 	var uui request.UpdateUserRequest
 	if err := c.BodyParser(&uui); err != nil {
@@ -131,16 +133,16 @@ func patchUser(c *fiber.Ctx) error {
 }
 
 // deleteUser deletes a user by their ID
-// @Summary Delete a user by ID
-// @Description Delete an existing user by their ID
-// @Tags user
-// @Param id path string true "User ID"
-// @Param user body request.PasswordRequest true "User password confirmation"
-// @Success 204 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /user/{id} [delete]
+//	@Summary		Delete a user by ID
+//	@Description	Delete an existing user by their ID
+//	@Tags			user
+//	@Param			id		path		string					true	"User ID"
+//	@Param			user	body		request.PasswordRequest	true	"User password confirmation"
+//	@Success		204		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		404		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Router			/user/{id} [delete]
 func deleteUser(c *fiber.Ctx) error {
 	var pi request.PasswordRequest
 	if err := c.BodyParser(&pi); err != nil {

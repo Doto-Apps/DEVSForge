@@ -1,0 +1,62 @@
+package main
+
+import (
+	modeling "devsforge-wrapper/modeling"
+)
+
+type {{.Name}} struct {
+	modeling.Atomic
+	parameters map[string]interface{}
+}
+
+func NewModel(cfg modeling.RunnableModel) modeling.Atomic {
+	params := make(map[string]interface{}, len(cfg.Parameters))
+	for _, parameter := range cfg.Parameters {
+		params[parameter.Name] = parameter.Value
+	}
+
+	return &{{.Name}}{
+		Atomic:     modeling.NewAtomic(cfg),
+		parameters: params,
+	}
+}
+
+// Initialize is called before simulation.
+func (m *{{.Name}}) Initialize() {
+	m.HoldIn("active", 1.0)
+}
+
+// Exit is called after simulation.
+func (m *{{.Name}}) Exit() {
+	// No-op by default
+}
+
+// DeltInt: internal transition.
+func (m *{{.Name}}) DeltInt() {
+	m.Passivate()
+}
+
+// DeltExt: external transition.
+func (m *{{.Name}}) DeltExt(e float64) {
+	m.Continue(e)
+}
+
+// DeltCon: confluent transition (internal + external at same time).
+func (m *{{.Name}}) DeltCon(e float64) {
+	m.DeltInt()
+}
+
+// Lambda: output function.
+func (m *{{.Name}}) Lambda() {
+	outType := "out"
+	outPorts := m.GetPorts(&outType)
+	if len(outPorts) == 0 {
+		return
+	}
+
+	// Add a serializable object directly.
+	// The wrapper handles JSON marshaling once.
+	outPorts[0].AddValue(map[string]interface{}{
+		"msg": "hello",
+	})
+}

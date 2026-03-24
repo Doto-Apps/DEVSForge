@@ -7,7 +7,46 @@ import {
 import type { EdgeData, ReactFlowInput } from "@/types";
 import type { Edge } from "@xyflow/react";
 
+const resolvePortName = (
+	model:
+		| components["schemas"]["response.ModelResponse"]
+		| components["schemas"]["request.ModelRequest"],
+	rawPort: string,
+): string => {
+	const match = model.ports.find(
+		(port) => port.id === rawPort || port.name === rawPort,
+	);
+	if (!match) return rawPort;
+	return match.name || match.id || rawPort;
+};
+
+const getComponentModel = (
+	models:
+		| components["schemas"]["response.ModelResponse"][]
+		| components["schemas"]["request.ModelRequest"][],
+	parentModel:
+		| components["schemas"]["response.ModelResponse"]
+		| components["schemas"]["request.ModelRequest"],
+	instanceID: string,
+):
+	| components["schemas"]["response.ModelResponse"]
+	| components["schemas"]["request.ModelRequest"]
+	| undefined => {
+	const component = parentModel.components.find(
+		(modelComponent) => modelComponent.instanceId === instanceID,
+	);
+	if (!component) return undefined;
+
+	return models.find((model) => model.id === component.modelId);
+};
+
 const createEdge = (
+	models:
+		| components["schemas"]["response.ModelResponse"][]
+		| components["schemas"]["request.ModelRequest"][],
+	parentModel:
+		| components["schemas"]["response.ModelResponse"]
+		| components["schemas"]["request.ModelRequest"],
 	conn: components["schemas"]["json.ModelConnection"],
 	component: components["schemas"]["json.ModelComponent"],
 	modelNamespace: string,
@@ -23,19 +62,35 @@ const createEdge = (
 			: `${component.instanceId}/${conn.to.instanceId}`
 	}`;
 
-	const id = `${source}->${target}`;
+	const sourceModel =
+		conn.from.instanceId === "root"
+			? parentModel
+			: getComponentModel(models, parentModel, conn.from.instanceId);
+	const targetModel =
+		conn.to.instanceId === "root"
+			? parentModel
+			: getComponentModel(models, parentModel, conn.to.instanceId);
+
+	const normalizedSourcePort = sourceModel
+		? resolvePortName(sourceModel, conn.from.port)
+		: conn.from.port;
+	const normalizedTargetPort = targetModel
+		? resolvePortName(targetModel, conn.to.port)
+		: conn.to.port;
+
+	const id = `${source}:${normalizedSourcePort}->${target}:${normalizedTargetPort}`;
 	return {
 		id,
 		source,
 		target,
 		sourceHandle:
 			conn.from.instanceId === "root"
-				? `${INTERNAL_PREFIX}${source}:${conn.from.port}`
-				: `${source}:${conn.from.port}`,
+				? `${INTERNAL_PREFIX}${source}:${normalizedSourcePort}`
+				: `${source}:${normalizedSourcePort}`,
 		targetHandle:
 			conn.to.instanceId === "root"
-				? `${INTERNAL_PREFIX}${target}:${conn.to.port}`
-				: `${target}:${conn.to.port}`,
+				? `${INTERNAL_PREFIX}${target}:${normalizedTargetPort}`
+				: `${target}:${normalizedTargetPort}`,
 		data: {
 			holderId: `${
 				modelNamespace.length > 0 ? `${modelNamespace}/` : ""
@@ -64,6 +119,11 @@ const createReactflowModel = (
 	if (!model) return null;
 
 	const metadata = getModelMetadata(component, model);
+	const resolvedModelRole = metadata.modelRole ?? model.metadata.modelRole ?? "";
+	const resolvedKeywords = metadata.keyword ?? model.metadata.keyword ?? [];
+	const resolvedModelColors =
+		metadata.modelColors ?? model.metadata.modelColors;
+	const resolvedParameters = metadata.parameters ?? model.metadata.parameters;
 
 	return {
 		// on devrait recréer un autre uuid ici
@@ -78,20 +138,20 @@ const createReactflowModel = (
 		data: {
 			id: model.id ?? "Unnamed model",
 			modelType: model.type ?? "atomic",
-			modelRole: model.metadata.modelRole ?? "",
-			keyword: model.metadata.keyword ?? [],
+			modelRole: resolvedModelRole,
+			keyword: resolvedKeywords,
 			label: model.name ?? "Unnamed model",
 			description: model.description,
 			inputPorts: model.ports
 				.filter((p) => p.type === "in")
-				.map((p) => ({ id: p.id })),
+				.map((p) => ({ id: p.id, name: p.name || p.id })),
 			outputPorts: model.ports
 				.filter((p) => p.type === "out")
-				.map((p) => ({ id: p.id })),
-			...(model.metadata.modelColors
-				? { reactFlowModelGraphicalData: model.metadata.modelColors }
+				.map((p) => ({ id: p.id, name: p.name || p.id })),
+			...(resolvedModelColors
+				? { reactFlowModelGraphicalData: resolvedModelColors }
 				: {}),
-			parameters: model.metadata.parameters,
+			parameters: resolvedParameters,
 			code: model.code,
 		},
 		dragging: false,
@@ -117,7 +177,7 @@ const recursiveModelParsing = (
 
 	if (!actualModel || !actualModel.id) return { nodes: [], edges: [] };
 	const actualEdge = actualModel.connections.map<Edge<EdgeData>>((conn) =>
-		createEdge(conn, component, modelNamespace),
+		createEdge(models, actualModel, conn, component, modelNamespace),
 	);
 
 	const childNodes =

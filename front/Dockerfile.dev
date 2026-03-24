@@ -1,20 +1,15 @@
-# Utilise une image Node.js légère
-FROM node:18-alpine
+FROM node:20-alpine
 
-# Crée un répertoire de travail
 WORKDIR /app
 
-# Copie uniquement les fichiers nécessaires pour l'installation
-COPY package.json package-lock.json ./
+RUN corepack enable
 
-# Installe les dépendances
-RUN npm install
+COPY package.json pnpm-lock.yaml ./
 
-# Copie le reste des fichiers
-VOLUME [ "/app" ]
+RUN pnpm install --frozen-lockfile
 
-# Expose le port utilisé par Vite
+VOLUME ["/app"]
+
 EXPOSE 5173
 
-# Commande par défaut pour le développement
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--mode", "docker"]
+CMD ["pnpm", "dev", "--host", "0.0.0.0", "--mode", "docker"]

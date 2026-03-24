@@ -68,16 +68,24 @@ func DeleteTopic(broker, topic string) error {
 	return nil
 }
 
-func GetKafkaTopic(kafkaConnStr string) (string, error) {
-	kafkaTopic, err := RandomStringWithPrefix("sim", 8)
-	if err != nil {
-		return "", err
+func GetKafkaTopic(kafkaConnStr string, providedTopic string) (string, error) {
+	kafkaTopic := providedTopic
+
+	// If no topic provided, generate one
+	if kafkaTopic == "" {
+		var err error
+		kafkaTopic, err = RandomStringWithPrefix("sim", 8)
+		if err != nil {
+			return "", err
+		}
 	}
-	// Testing purpose only
+
+	// Testing purpose only - env var overrides
 	envTopic := os.Getenv("KAFKA_TOPIC")
 	if envTopic != "" {
 		kafkaTopic = envTopic
 	}
+
 	if kafkaConnStr != "" {
 		err := CreateTopic(kafkaConnStr, kafkaTopic, 1, 1)
 		if err != nil {
@@ -104,7 +112,7 @@ func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessag
 		if errs := fetches.Errors(); len(errs) > 0 {
 			// All errors are retried internally when fetching, but non-retriable errors are
 			// returned from polls so that users can notice and take action.
-			panic(fmt.Sprint(errs))
+			return fmt.Errorf("kafka poll error: %v", errs)
 		}
 
 		// We can iterate through a record iterator...

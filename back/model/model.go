@@ -13,6 +13,7 @@ type Model struct {
 	LibID       *string                `gorm:"type:uuid" json:"libId"`
 	Name        string                 `gorm:"type:varchar(255);not null" json:"name"`
 	Type        enum.ModelType         `gorm:"type:model_type;not null" json:"type"`
+	Language    enum.ModelLanguage     `gorm:"type:model_language;not null;default:'python'" json:"language"`
 	Description string                 `gorm:"type:text;not null" json:"description"`
 	Code        string                 `gorm:"type:text;not null" json:"code"`
 	Ports       []json.ModelPort       `gorm:"type:json;default:'[]';serializer:json" json:"ports"`

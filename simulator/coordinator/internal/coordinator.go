@@ -72,8 +72,11 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 			break
 		}
 
-		// Si tu as une borne de fin dans le manifest, tu peux faire :
-		// if manifest.EndTime > 0 && tmin > manifest.EndTime { break }
+		// Check if we've reached the maximum simulation time
+		if manifest.MaxTime > 0 && tmin >= manifest.MaxTime {
+			log.Printf("Temps max de simulation atteint (%.6f >= %.6f), fin de simulation.", tmin, manifest.MaxTime)
+			break
+		}
 
 		// 1) trouver les imminents
 		imminents := []*RunnerState{}

@@ -13,6 +13,7 @@ import (
 )
 
 type RunnerConfig struct {
+	SimulationID string
 	Model        *shared.RunnableModel
 	ID           string
 	KafkaConfig  kafka.KafkaConfig
@@ -85,6 +86,7 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 	}
 
 	config = &RunnerConfig{
+		SimulationID: manifest.SimulationID,
 		ID:           model.ID,
 		Model:        &model,
 		KafkaConfig:  *kafkaConfig,

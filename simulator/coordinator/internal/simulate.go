@@ -22,6 +22,7 @@ func RunSimulation(args []string) error {
 	filePath := fs.String("file", "", "Path to JSON file")
 	dockerProvider := fs.Bool("docker", false, "Whether to use docker to launch runner or use shell")
 	kafka := fs.String("kafka", "", "The kafka endpoint")
+	topic := fs.String("topic", "", "The kafka topic (generated if not provided)")
 
 	if err := fs.Parse(args); err != nil {
 		return fmt.Errorf("error parsing flags: %w", err)
@@ -36,7 +37,7 @@ func RunSimulation(args []string) error {
 		return fmt.Errorf("no models provided in the manifest")
 	}
 
-	kafkaTopic, err := GetKafkaTopic(*kafka)
+	kafkaTopic, err := GetKafkaTopic(*kafka, *topic)
 	if err != nil {
 		return fmt.Errorf("failed to initialize Kafka topic: %w", err)
 	}
@@ -85,6 +86,7 @@ func RunSimulation(args []string) error {
 		// TODO: Docker path should also rely on simRoot / rootDir if needed.
 	} else {
 		if err := RunShellSimulation(manifest, configFile, cfg); err != nil {
+			sendCoordinatorErrorReport(cfg, manifest.SimulationID, "COORDINATOR_SIMULATION_ERROR", err)
 			return err
 		}
 	}

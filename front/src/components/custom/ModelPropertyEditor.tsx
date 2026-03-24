@@ -21,20 +21,32 @@ import type { ReactFlowModelData } from "@/types";
 import type { Node } from "@xyflow/react";
 import { Loader2, Sparkles, X } from "lucide-react";
 import { type KeyboardEvent, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
 import { Textarea } from "../ui/textarea";
 import { ModelParameterEditor } from "./ModelParameterEditor";
-import { PortCountEditor } from "./reactFlow/PortCountEditor";
+import { PortEditor } from "./reactFlow/PortEditor";
 
-const MODEL_ROLES = ["generator", "transducer", "observer"] as const;
+const MODEL_ROLES = [
+	"atomic",
+	"coupled",
+	"generator",
+	"transducer",
+	"acceptor",
+	"experimental-frame",
+] as const;
 
 type Props = {
 	model: Node<ReactFlowModelData>;
 	onChange?: (model: Node<ReactFlowModelData>) => void;
 	disabled: boolean;
+	allowParameterValueEdit?: boolean;
 };
 
-export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
+export function ModelPropertyEditor({
+	model,
+	onChange,
+	disabled,
+	allowParameterValueEdit = false,
+}: Props) {
 	const [keywordInput, setKeywordInput] = useState("");
 	const { generateDocumentation, isLoading: isGenerating } =
 		useGenerateDocumentation();
@@ -72,20 +84,11 @@ export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 	};
 
 	const handlePortUpdate = (
-		action: "add" | "remove",
 		portType: "input" | "output",
+		ports: typeof model.data.inputPorts,
 	) => {
 		const portsKey = portType === "input" ? "inputPorts" : "outputPorts";
-		const existing = model.data[portsKey] ?? [];
-
-		let updated: typeof existing;
-		if (action === "add") {
-			updated = [...existing, { id: uuidv4() }];
-		} else {
-			updated = existing.slice(0, -1);
-		}
-
-		update({ [portsKey]: updated } as Partial<ReactFlowModelData>);
+		update({ [portsKey]: ports } as Partial<ReactFlowModelData>);
 	};
 
 	const graphicalData = model.data.reactFlowModelGraphicalData ?? {};
@@ -244,20 +247,20 @@ export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 						</div>
 
 						{/* Ports */}
-						<PortCountEditor
+						<PortEditor
 							label="Input Ports"
-							count={model.data.inputPorts?.length ?? 0}
-							onAdd={() => handlePortUpdate("add", "input")}
-							onRemove={() => handlePortUpdate("remove", "input")}
+							ports={model.data.inputPorts ?? []}
+							onChange={(ports) => handlePortUpdate("input", ports)}
 							disabled={disabled}
+							defaultPrefix="in"
 						/>
 
-						<PortCountEditor
+						<PortEditor
 							label="Output Ports"
-							count={model.data.outputPorts?.length ?? 0}
-							onAdd={() => handlePortUpdate("add", "output")}
-							onRemove={() => handlePortUpdate("remove", "output")}
+							ports={model.data.outputPorts ?? []}
+							onChange={(ports) => handlePortUpdate("output", ports)}
 							disabled={disabled}
+							defaultPrefix="out"
 						/>
 					</AccordionContent>
 				</AccordionItem>
@@ -270,6 +273,7 @@ export function ModelPropertyEditor({ model, onChange, disabled }: Props) {
 							parameters={model.data.parameters ?? []}
 							onParametersChange={handleParametersChange}
 							disabled={disabled}
+							valueOnly={disabled && allowParameterValueEdit}
 						/>
 					</AccordionContent>
 				</AccordionItem>

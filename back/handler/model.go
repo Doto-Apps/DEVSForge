@@ -28,13 +28,13 @@ func SetupModelRoutes(app *fiber.App) {
 }
 
 // getAllModels retrieves a list of all models
-// @Summary Get all models
-// @Description Retrieve a list of all models
-// @Tags models
-// @Produce json
-// @Success 200 {object} []response.ModelResponse
-// @Failure 500 {object} map[string]interface{}
-// @Router /model [get]
+//	@Summary		Get all models
+//	@Description	Retrieve a list of all models
+//	@Tags			models
+//	@Produce		json
+//	@Success		200	{object}	[]response.ModelResponse
+//	@Failure		500	{object}	map[string]interface{}
+//	@Router			/model [get]
 func getAllModels(c *fiber.Ctx) error {
 	db := database.DB
 	var models []model.Model
@@ -49,14 +49,14 @@ func getAllModels(c *fiber.Ctx) error {
 }
 
 // getModel retrieves a single model by ID
-// @Summary Get a model by ID
-// @Description Retrieve a single model by its ID
-// @Tags models
-// @Produce json
-// @Param id path string true "Model ID"
-// @Success 200 {object} response.ModelResponse
-// @Failure 404 {object} map[string]interface{}
-// @Router /model/{id} [get]
+//	@Summary		Get a model by ID
+//	@Description	Retrieve a single model by its ID
+//	@Tags			models
+//	@Produce		json
+//	@Param			id	path		string	true	"Model ID"
+//	@Success		200	{object}	response.ModelResponse
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/model/{id} [get]
 func getModel(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB
@@ -72,14 +72,14 @@ func getModel(c *fiber.Ctx) error {
 }
 
 // getModel retrieves a single model by ID
-// @Summary Get a model by ID
-// @Description Retrieve a single model by its ID
-// @Tags models
-// @Produce json
-// @Param id path string true "Model ID"
-// @Success 200 {object} []response.ModelResponse
-// @Failure 404 {object} map[string]interface{}
-// @Router /model/{id}/recursive [get]
+//	@Summary		Get a model by ID
+//	@Description	Retrieve a single model by its ID
+//	@Tags			models
+//	@Produce		json
+//	@Param			id	path		string	true	"Model ID"
+//	@Success		200	{object}	[]response.ModelResponse
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/model/{id}/recursive [get]
 func getModelRecursive(c *fiber.Ctx) error {
 	res := make([]response.ModelResponse, 0)
 	models, err := services.GetModelRecursice(c.Params("id"), c.Locals("user_id").(string))
@@ -93,16 +93,16 @@ func getModelRecursive(c *fiber.Ctx) error {
 }
 
 // createModel creates a new model
-// @Summary Create a model
-// @Description Create a new model entry
-// @Tags models
-// @Accept json
-// @Produce json
-// @Param model body request.ModelRequest true "Model data"
-// @Success 201 {object} response.ModelResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 500 {object} map[string]interface{}
-// @Router /model [post]
+//	@Summary		Create a model
+//	@Description	Create a new model entry
+//	@Tags			models
+//	@Accept			json
+//	@Produce		json
+//	@Param			model	body		request.ModelRequest	true	"Model data"
+//	@Success		201		{object}	response.ModelResponse
+//	@Failure		400		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]interface{}
+//	@Router			/model [post]
 func createModel(c *fiber.Ctx) error {
 	db := database.DB
 	req := new(request.ModelRequest)
@@ -120,13 +120,13 @@ func createModel(c *fiber.Ctx) error {
 }
 
 // deleteModel deletes a model by its ID
-// @Summary Delete a model
-// @Description Delete a model by its ID
-// @Tags models
-// @Param id path string true "Model ID"
-// @Success 204 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Router /model/{id} [delete]
+//	@Summary		Delete a model
+//	@Description	Delete a model by its ID
+//	@Tags			models
+//	@Param			id	path		string	true	"Model ID"
+//	@Success		204	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/model/{id} [delete]
 func deleteModel(c *fiber.Ctx) error {
 	id := c.Params("id")
 	db := database.DB
@@ -141,17 +141,17 @@ func deleteModel(c *fiber.Ctx) error {
 }
 
 // patchModel updates an existing model by its ID
-// @Summary Update a model
-// @Description Update an existing model with partial data
-// @Tags models
-// @Accept json
-// @Produce json
-// @Param id path string true "Model ID"
-// @Param updateData body request.ModelRequest true "Fields to update"
-// @Success 200 {object} response.ModelResponse
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Router /model/{id} [patch]
+//	@Summary		Update a model
+//	@Description	Update an existing model with partial data
+//	@Tags			models
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string					true	"Model ID"
+//	@Param			updateData	body		request.ModelRequest	true	"Fields to update"
+//	@Success		200			{object}	response.ModelResponse
+//	@Failure		400			{object}	map[string]interface{}
+//	@Failure		404			{object}	map[string]interface{}
+//	@Router			/model/{id} [patch]
 func patchModel(c *fiber.Ctx) error {
 	db := database.DB
 	id := c.Params("id")
@@ -184,15 +184,15 @@ func patchModel(c *fiber.Ctx) error {
 }
 
 // generateSimulationFile generate a zip that will contain all infromations for simulation
-// @Summary Generate simulations files
-// @Description generateSimulationFile generate a zip that will contain all infromations for simulation
-// @Tags models
-// @Produce json
-// @Param id path string true "Model ID"
-// @Success 200 {object} map[string]interface{}
-// @Failure 400 {object} map[string]interface{}
-// @Failure 404 {object} map[string]interface{}
-// @Router /model/{id}/simulate [get]
+//	@Summary		Generate simulations files
+//	@Description	generateSimulationFile generate a zip that will contain all infromations for simulation
+//	@Tags			models
+//	@Produce		json
+//	@Param			id	path		string	true	"Model ID"
+//	@Success		200	{object}	map[string]interface{}
+//	@Failure		400	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]interface{}
+//	@Router			/model/{id}/simulate [get]
 func generateSimulationFile(c *fiber.Ctx) error {
 	models, err := services.GetModelRecursice(c.Params("id"), c.Locals("user_id").(string))
 	if err != nil && err.Error() == "MODEL_NOT_FOUND" {

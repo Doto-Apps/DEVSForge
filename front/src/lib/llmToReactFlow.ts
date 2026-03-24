@@ -20,19 +20,32 @@ export const llmResponseToGeneratedDiagram = (
 	// Build dependency graph to determine order
 	const dependencyGraph = buildDependencyGraph(response);
 
-	const models: GeneratedModelData[] = response.models.map((model) => ({
-		id: model.id,
-		name: model.id, // Name is ID in LLM response
-		type: model.type,
-		ports: {
-			in: model.ports?.in ?? [],
-			out: model.ports?.out ?? [],
-		},
-		components: model.components,
-		code: undefined,
-		codeGenerated: false,
-		dependencies: dependencyGraph.get(model.id) ?? [],
-	}));
+	const models: GeneratedModelData[] = response.models.map((model) => {
+		// Convert new port format [{id, name, type}] to old format {in: [], out: []}
+		const inPorts: string[] = [];
+		const outPorts: string[] = [];
+		for (const port of model.ports ?? []) {
+			if (port.type === "in") {
+				inPorts.push(port.name);
+			} else if (port.type === "out") {
+				outPorts.push(port.name);
+			}
+		}
+
+		return {
+			id: model.id,
+			name: model.id, // Name is ID in LLM response
+			type: model.type,
+			ports: {
+				in: inPorts,
+				out: outPorts,
+			},
+			components: model.components,
+			code: undefined,
+			codeGenerated: false,
+			dependencies: dependencyGraph.get(model.id) ?? [],
+		};
+	});
 
 	// Sort models by topological order (models without dependencies first)
 	const sortedModels = topologicalSort(models);
@@ -42,6 +55,322 @@ export const llmResponseToGeneratedDiagram = (
 		models: sortedModels,
 		connections: response.connections,
 		reactFlowData: undefined,
+	};
+};
+
+/**
+ * Converts EF structure response to GeneratedDiagram structure
+ */
+export const efStructureResponseToGeneratedDiagram = (
+	response: components["schemas"]["response.ExperimentalFrameStructureResponse"],
+): GeneratedDiagram => {
+	const modelsRaw = response.models ?? [];
+	const connectionsRaw = response.connections ?? [];
+
+	const dependencyGraph = buildDependencyGraph({
+		models: modelsRaw.map((model) => ({
+			id: model.id ?? "",
+			type: model.type ?? "atomic",
+			ports: model.ports ?? [],
+			components: model.components ?? [],
+		})),
+		connections: connectionsRaw,
+	} as LLMDiagramResponse);
+
+	const models: GeneratedModelData[] = modelsRaw.map((model) => {
+		const inPorts: string[] = [];
+		const outPorts: string[] = [];
+		for (const port of model.ports ?? []) {
+			if (port.type === "in" && port.name) inPorts.push(port.name);
+			if (port.type === "out" && port.name) outPorts.push(port.name);
+		}
+
+		return {
+			id: model.id ?? "",
+			name: model.name ?? model.id ?? "Unnamed model",
+			type: model.type ?? "atomic",
+			role: model.role,
+			ports: {
+				in: inPorts,
+				out: outPorts,
+			},
+			components: model.components ?? [],
+			code: undefined,
+			codeGenerated: false,
+			dependencies: dependencyGraph.get(model.id ?? "") ?? [],
+		};
+	});
+
+	return {
+		name: response.roomName ?? "Room - EF",
+		models: topologicalSort(models),
+		connections: connectionsRaw,
+		rootModelId: response.rootModelId ?? undefined,
+		modelUnderTestId: response.modelUnderTestId ?? undefined,
+		targetModelId: response.targetModelId ?? undefined,
+		reactFlowData: undefined,
+	};
+};
+
+const dedupeStrings = (values: string[]): string[] =>
+	Array.from(new Set(values.filter((value) => value.trim().length > 0)));
+
+const getTargetPortsByDirection = (
+	targetModel: components["schemas"]["response.ModelResponse"],
+): { inPorts: string[]; outPorts: string[] } => {
+	const inPorts = dedupeStrings(
+		(targetModel.ports ?? [])
+			.filter((port) => port.type === "in")
+			.map((port) => port.name || port.id),
+	);
+	const outPorts = dedupeStrings(
+		(targetModel.ports ?? [])
+			.filter((port) => port.type === "out")
+			.map((port) => port.name || port.id),
+	);
+
+	return { inPorts, outPorts };
+};
+
+const recomputeGeneratedModelDependencies = (
+	models: GeneratedModelData[],
+	connections: components["schemas"]["response.Connection"][],
+): GeneratedModelData[] => {
+	const knownModelIDs = new Set(models.map((model) => model.id));
+	const dependencyMap = new Map<string, string[]>();
+
+	for (const model of models) {
+		const deps = dedupeStrings(
+			(model.components ?? []).filter(
+				(componentID) =>
+					componentID !== model.id && knownModelIDs.has(componentID),
+			),
+		);
+		dependencyMap.set(model.id, deps);
+	}
+
+	for (const connection of connections) {
+		const sourceModelID = connection.from?.model ?? "";
+		const targetModelID = connection.to?.model ?? "";
+		if (!sourceModelID || !targetModelID || sourceModelID === targetModelID) {
+			continue;
+		}
+		if (
+			!knownModelIDs.has(sourceModelID) ||
+			!knownModelIDs.has(targetModelID)
+		) {
+			continue;
+		}
+
+		const currentDeps = dependencyMap.get(targetModelID) ?? [];
+		dependencyMap.set(
+			targetModelID,
+			dedupeStrings([...currentDeps, sourceModelID]),
+		);
+	}
+
+	return models.map((model) => ({
+		...model,
+		dependencies: dependencyMap.get(model.id) ?? [],
+	}));
+};
+
+export const validateGeneratedMutConnections = (
+	diagram: GeneratedDiagram,
+	targetModel: components["schemas"]["response.ModelResponse"],
+): string[] => {
+	const errors: string[] = [];
+	const modelUnderTestID = diagram.modelUnderTestId ?? targetModel.id;
+
+	if (!modelUnderTestID) {
+		return ["MUT validation failed: missing modelUnderTestId."];
+	}
+
+	const modelIDs = new Set(diagram.models.map((model) => model.id));
+	if (!modelIDs.has(modelUnderTestID)) {
+		errors.push(
+			`MUT validation failed: model "${modelUnderTestID}" not found.`,
+		);
+	}
+
+	const { inPorts, outPorts } = getTargetPortsByDirection(targetModel);
+	const inPortSet = new Set(inPorts);
+	const outPortSet = new Set(outPorts);
+
+	diagram.connections.forEach((connection, index) => {
+		const sourceModelID = connection.from?.model ?? "";
+		const targetModelID = connection.to?.model ?? "";
+		const sourcePort = connection.from?.port ?? "";
+		const targetPort = connection.to?.port ?? "";
+		const connectionLabel = `connection #${index + 1}`;
+
+		if (sourceModelID && !modelIDs.has(sourceModelID)) {
+			errors.push(
+				`Invalid ${connectionLabel}: unknown source model "${sourceModelID}".`,
+			);
+		}
+		if (targetModelID && !modelIDs.has(targetModelID)) {
+			errors.push(
+				`Invalid ${connectionLabel}: unknown target model "${targetModelID}".`,
+			);
+		}
+
+		if (
+			sourceModelID === modelUnderTestID &&
+			(!sourcePort || !outPortSet.has(sourcePort))
+		) {
+			errors.push(
+				`Invalid ${connectionLabel}: MUT output port "${sourcePort}" does not exist on "${targetModel.name}".`,
+			);
+		}
+		if (
+			targetModelID === modelUnderTestID &&
+			(!targetPort || !inPortSet.has(targetPort))
+		) {
+			errors.push(
+				`Invalid ${connectionLabel}: MUT input port "${targetPort}" does not exist on "${targetModel.name}".`,
+			);
+		}
+	});
+
+	return dedupeStrings(errors);
+};
+
+export const replaceGeneratedMutPlaceholder = (
+	diagram: GeneratedDiagram,
+	targetModel: components["schemas"]["response.ModelResponse"],
+): { diagram: GeneratedDiagram; errors: string[] } => {
+	const targetModelID = targetModel.id;
+	if (!targetModelID) {
+		return {
+			diagram,
+			errors: ["Unable to replace MUT: target model id is missing."],
+		};
+	}
+
+	const mutPlaceholderID = diagram.modelUnderTestId;
+	if (!mutPlaceholderID) {
+		return {
+			diagram,
+			errors: [
+				"Unable to replace MUT: modelUnderTestId is missing in AI output.",
+			],
+		};
+	}
+
+	const mutExists = diagram.models.some(
+		(model) => model.id === mutPlaceholderID,
+	);
+	if (!mutExists) {
+		return {
+			diagram,
+			errors: [
+				`Unable to replace MUT: placeholder model "${mutPlaceholderID}" not found.`,
+			],
+		};
+	}
+
+	const collidesWithExistingModel = diagram.models.some(
+		(model) => model.id === targetModelID && model.id !== mutPlaceholderID,
+	);
+	if (collidesWithExistingModel) {
+		return {
+			diagram,
+			errors: [
+				`Unable to replace MUT: target model id "${targetModelID}" already exists in AI structure.`,
+			],
+		};
+	}
+
+	const remapModelID = (modelID: string): string =>
+		modelID === mutPlaceholderID ? targetModelID : modelID;
+
+	const knownModelIDs = new Set(
+		diagram.models.map((model) => remapModelID(model.id)),
+	);
+	const targetScopedComponents = dedupeStrings(
+		(targetModel.components ?? [])
+			.map((component) => remapModelID(component.modelId))
+			.filter(
+				(componentModelID) =>
+					knownModelIDs.has(componentModelID) &&
+					componentModelID !== targetModelID,
+			),
+	);
+
+	const { inPorts, outPorts } = getTargetPortsByDirection(targetModel);
+
+	const remappedModels: GeneratedModelData[] = diagram.models.map((model) => {
+		const modelID = remapModelID(model.id);
+		const components = dedupeStrings(
+			(model.components ?? [])
+				.map(remapModelID)
+				.filter((componentID) => componentID !== modelID),
+		);
+
+		if (model.id !== mutPlaceholderID) {
+			return {
+				...model,
+				id: modelID,
+				components,
+				dependencies: model.dependencies.map(remapModelID),
+			};
+		}
+
+		return {
+			...model,
+			id: targetModelID,
+			name: targetModel.name ?? model.name,
+			type: targetModel.type ?? model.type,
+			role: "model-under-test",
+			ports: {
+				in: inPorts,
+				out: outPorts,
+			},
+			components: targetScopedComponents,
+			code: targetModel.code ?? "",
+			codeGenerated: Boolean(targetModel.code),
+			dependencies: model.dependencies.map(remapModelID),
+		};
+	});
+
+	const remappedConnections: components["schemas"]["response.Connection"][] =
+		diagram.connections.map((connection) => ({
+			...connection,
+			from: connection.from
+				? {
+						...connection.from,
+						model: connection.from.model
+							? remapModelID(connection.from.model)
+							: connection.from.model,
+					}
+				: connection.from,
+			to: connection.to
+				? {
+						...connection.to,
+						model: connection.to.model
+							? remapModelID(connection.to.model)
+							: connection.to.model,
+					}
+				: connection.to,
+		}));
+
+	const withUpdatedDependencies = recomputeGeneratedModelDependencies(
+		remappedModels,
+		remappedConnections,
+	);
+
+	const nextDiagram: GeneratedDiagram = {
+		...diagram,
+		targetModelId: targetModelID,
+		modelUnderTestId: targetModelID,
+		models: topologicalSort(withUpdatedDependencies),
+		connections: remappedConnections,
+	};
+
+	return {
+		diagram: nextDiagram,
+		errors: validateGeneratedMutConnections(nextDiagram, targetModel),
 	};
 };
 
@@ -78,7 +407,9 @@ const buildDependencyGraph = (
  * Topological sort to determine code generation order
  * Atomic models without dependencies are generated first
  */
-const topologicalSort = (models: GeneratedModelData[]): GeneratedModelData[] => {
+const topologicalSort = (
+	models: GeneratedModelData[],
+): GeneratedModelData[] => {
 	const visited = new Set<string>();
 	const result: GeneratedModelData[] = [];
 	const modelMap = new Map(models.map((m) => [m.id, m]));
@@ -162,14 +493,16 @@ export const generatedDiagramToReactFlow = (
 				id: model.id,
 				modelType: model.type,
 				label: model.name,
-				inputPorts: model.ports.in.map((p) => ({ id: p })),
-				outputPorts: model.ports.out.map((p) => ({ id: p })),
+				inputPorts: model.ports.in.map((p) => ({ id: p, name: p })),
+				outputPorts: model.ports.out.map((p) => ({ id: p, name: p })),
 				code: model.code ?? "",
 				parameters: [],
 			},
 			dragging: false,
 			selected: false,
-			...(isRoot ? { deletable: false } : { extent: "parent", parentId: rootModel.id }),
+			...(isRoot
+				? { deletable: false }
+				: { extent: "parent", parentId: rootModel.id }),
 		});
 	});
 
@@ -209,7 +542,10 @@ export const generatedDiagramToReactFlow = (
 export const createAtomicModelRequests = (
 	diagram: GeneratedDiagram,
 	libraryId: string,
-): { requests: components["schemas"]["request.ModelRequest"][]; idMap: Map<string, string> } => {
+): {
+	requests: components["schemas"]["request.ModelRequest"][];
+	idMap: Map<string, string>;
+} => {
 	const requests: components["schemas"]["request.ModelRequest"][] = [];
 	const idMap = new Map<string, string>(); // Map from original model name to generated UUID
 
@@ -260,7 +596,7 @@ export const createCoupledModelRequests = (
 		// Also build a map from component name to instanceId for connection mapping
 		const modelComponents: components["schemas"]["json.ModelComponent"][] = [];
 		const nameToInstanceId = new Map<string, string>(); // Map component name to instanceId
-		
+
 		if (model.components) {
 			for (const componentName of model.components) {
 				const componentId = atomicIdMap.get(componentName);
@@ -277,12 +613,13 @@ export const createCoupledModelRequests = (
 
 		// Map connections from diagram to model connections format
 		// Filter connections that are relevant to this coupled model's components
-		const modelConnections: components["schemas"]["json.ModelConnection"][] = [];
-		
+		const modelConnections: components["schemas"]["json.ModelConnection"][] =
+			[];
+
 		for (const conn of diagram.connections) {
 			const fromInstanceId = nameToInstanceId.get(conn.from.model);
 			const toInstanceId = nameToInstanceId.get(conn.to.model);
-			
+
 			// Only include connections between components of this coupled model
 			if (fromInstanceId && toInstanceId) {
 				modelConnections.push({
@@ -332,4 +669,3 @@ export const generatedDiagramToModelRequests = (
 	const { requests } = createAtomicModelRequests(diagram, libraryId);
 	return requests;
 };
-
