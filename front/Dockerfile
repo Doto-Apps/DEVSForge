@@ -10,7 +10,7 @@ RUN pnpm install --frozen-lockfile
 ENV VITE_API_BASE_URL=http://localhost:3000/
 
 COPY . .
-RUN pnpm run build
+RUN pnpm exec vite build
 
 FROM nginx:stable-alpine
 
