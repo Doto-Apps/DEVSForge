@@ -20,7 +20,7 @@ jobs:
         run: docker compose -f docker-compose.yml config
 
       - name: Build frontend release image
-        run: docker build -f ./Dockerfile -t devsforge-frontend:ci ./front
+        run: docker build -f ./front/Dockerfile -t devsforge-frontend:ci ./front
 
       - name: Build backend release image
-        run: docker build -f ./Dockerfile -t devsforge-backend:ci ./back
+        run: docker build -f ./back/Dockerfile -t devsforge-backend:ci ./

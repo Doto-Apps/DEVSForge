@@ -21,10 +21,10 @@ jobs:
         include:
           - image_name: devsforge-frontend
             context: ./front
-            dockerfile: ./Dockerfile
+            dockerfile: ./front/Dockerfile
           - image_name: devsforge-backend
-            context: ./back
-            dockerfile: ./Dockerfile
+            context: ./
+            dockerfile: ./back/Dockerfile
 
     steps:
       - name: Checkout
