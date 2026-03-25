@@ -1,16 +1,36 @@
 services:
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile.dev
+    env_file:
+      - ./.env.front
+    ports:
+      - 5173:5173
+    volumes:
+      - ./front:/app
+      - /app/node_modules
+    depends_on:
+      backend:
+        condition: service_started
+    
   backend:
     build:
-      context: ../
+      context: .
       dockerfile: back/Dockerfile.dev
-    working_dir: /app/back
     env_file:
-      - .env.back
+      - ./.env.back
+    environment:
+      KAFKA_ADDRESS: kafka:9092
     ports:
-      - "3000:3000"
+      - 3000:3000
     volumes:
-      - ../back:/app/back
-      - ../simulator:/app/simulator
+      - ./back:/app/back
+      - ./simulator:/app/simulator
+      - ./go.work:/app/go.work
+      - ./.env.back:/app/back/.env.back
+    working_dir: /app/back
+    command: air
     depends_on:
       db:
         condition: service_healthy
@@ -19,7 +39,7 @@ services:
     develop:
       watch:
         - action: sync
-          path: ../back
+          path: ./back
           target: /app/back
 
   db:
@@ -30,7 +50,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres-db:/var/lib/postgresql/data
-      - ../db-init:/docker-entrypoint-initdb.d
+      - ./db-init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 10s
@@ -39,7 +59,6 @@ services:
 
   kafka:
     image: apache/kafka:latest
-    container_name: kafka
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller

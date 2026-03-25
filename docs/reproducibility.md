@@ -60,37 +60,16 @@ Copy-Item .env.back.dist .env.back
 Copy-Item .env.front.dist .env.front
 ```
 
-### 1.3 Verify minimum env values
-
-In `.env.back`, verify at least:
-- `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `DB_PORT`
-- `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`
-- `PORT`
-- `CLIENT_URL=http://localhost:5173`
-
-In `.env.front`, verify at least:
-- `VITE_API_BASE_URL=http://localhost:3000/`
-
-Important:
-- AI generation is configured per user in the app Settings page.
-- Legacy `AI_API_URL`, `AI_API_KEY`, `AI_MODEL` values in `.env.back` are not used by authenticated AI endpoints.
-
-### 1.4 Start the platform (development)
+### 1.3 Start the platform (development)
 
 ```bash
-docker compose up --build
+docker compose -f docker-compose.local.yml up --build
 ```
 
 Default services:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:3000`
 - PostgreSQL: `localhost:5432`
-
-### 1.5 Optional: start Kafka-based simulation services (distributed mode)
-
-```bash
-docker compose -f docker-compose.sim-dev.yml up --build
-```
 
 ---
 
@@ -377,8 +356,7 @@ Output:
 ## 8) Simulation and trace inspection
 
 1. Click **Play** (simulate).
-2. Select the model (plain vs EF-wrapped).
-3. Run the simulation.
+2. Run the simulation.
 
 Expected observations (qualitative):
 - If two users pick the same target at the same time, a `conflict_result` is emitted with exactly one `winner_id`.
@@ -397,12 +375,11 @@ You can use:
 2. Provide the UI prompt (P4):
 
 ```text
-Improve visuals in a simple, compact way,
-and let me choose the conflict manager strategy (closest, first, random).
+Explain all the different model.
 ```
 
 Expected outcome:
-- A generated WebApp exposing configuration widgets for sensors/users and conflict strategy
+- An explanation for each model in the `EF_SmartParking_Conflicts`
 - A **Simulate** action calling the REST simulation API
 - The deployed app appears under the **WebApps** tab
 

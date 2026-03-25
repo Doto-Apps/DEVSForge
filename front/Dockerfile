@@ -1,24 +1,22 @@
-# Utilise une image Node.js légère
 FROM node:20-alpine AS builder
 
-# Crée un répertoire de travail
 WORKDIR /app
 
-# Copie uniquement les fichiers nécessaires pour l'installation
-COPY package.json pnpm-lock.yaml ./
+RUN corepack enable
 
-# Installe les dépendances
+COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-COPY . .
-RUN pnpm run build
+ENV VITE_API_BASE_URL=http://localhost:3000/
 
+COPY . .
+RUN pnpm exec vite build
 
 FROM nginx:stable-alpine
 
 COPY --from=builder /app/dist /usr/share/nginx/html
+COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 
 EXPOSE 80
 
-COPY ./nginx.conf /etc/nginx/conf.d/default.conf
 CMD ["nginx", "-g", "daemon off;"]

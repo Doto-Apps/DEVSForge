@@ -30,6 +30,7 @@ ios/DerivedData/
 # Environment variables and secrets
 .env.back
 .env.front
+.env.release
 .env
 .env.local
 .env.*.local

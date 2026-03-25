@@ -1,0 +1,56 @@
+name: Docker CI
+
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "docker-compose.yml"
+      - "docker-compose.local.yml"
+      - "front/Dockerfile"
+      - "front/Dockerfile.dev"
+      - "back/Dockerfile.release"
+      - "back/Dockerfile.dev"
+      - ".env.back.dist"
+      - ".env.front.dist"
+      - ".env.release.dist"
+      - ".github/workflows/docker-*.yml"
+  push:
+    branches: ["main"]
+    paths:
+      - "docker-compose.yml"
+      - "docker-compose.local.yml"
+      - "front/Dockerfile"
+      - "front/Dockerfile.dev"
+      - "back/Dockerfile.release"
+      - "back/Dockerfile.dev"
+      - ".env.back.dist"
+      - ".env.front.dist"
+      - ".env.release.dist"
+      - ".github/workflows/docker-*.yml"
+
+jobs:
+  validate:
+    name: Validate Compose And Build Images
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare env files for compose validation
+        run: |
+          cp .env.back.dist .env.back
+          cp .env.front.dist .env.front
+          cp .env.release.dist .env.release
+
+      - name: Validate local compose
+        run: docker compose -f docker-compose.local.yml config
+
+      - name: Validate release compose
+        run: docker compose -f docker-compose.yml config
+
+      - name: Build frontend release image
+        run: docker build -f front/Dockerfile -t devsforge-frontend:ci ./front
+
+      - name: Build backend release image
+        run: docker build -f back/Dockerfile.release -t devsforge-backend:ci .
