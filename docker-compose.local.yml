@@ -4,7 +4,7 @@ services:
       context: ./front
       dockerfile: Dockerfile.dev
     env_file:
-      - ./.env.front
+      - ./.env
     ports:
       - 5173:5173
     volumes:
@@ -18,8 +18,6 @@ services:
     build:
       context: .
       dockerfile: back/Dockerfile.dev
-    env_file:
-      - ./.env.back
     environment:
       KAFKA_ADDRESS: kafka:9092
     ports:
@@ -28,7 +26,7 @@ services:
       - ./back:/app/back
       - ./simulator:/app/simulator
       - ./go.work:/app/go.work
-      - ./.env.back:/app/back/.env.back
+      - ./.env:/app/back/.env
     working_dir: /app/back
     command: air
     depends_on:
@@ -43,9 +41,13 @@ services:
           target: /app/back
 
   db:
-    image: postgres:alpine
+    image: postgres:17-alpine
     env_file:
-      - ./.env.back
+      - ./.env
+    environment:
+      POSTGRES_USER: ${DB_USER:-devsforge}
+      POSTGRES_DB: ${DB_NAME:-devsforge}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test123}
     ports:
       - "5432:5432"
     volumes:

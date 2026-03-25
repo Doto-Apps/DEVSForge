@@ -8,21 +8,22 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Chargement unique avec sync.Once
 var once sync.Once
 
-// LoadEnv charge `.env.back` une seule fois
+// LoadEnv loads environment files once.
 func LoadEnv() {
 	once.Do(func() {
-		err := godotenv.Load(".env.back")
-		if err != nil {
-			fmt.Println("⚠️ Warning: Could not load .env.back, using default environment variables")
+		if err := godotenv.Load(".env"); err == nil {
+			fmt.Println("Loaded .env")
+			return
 		}
+
+		fmt.Println("Warning: could not load .env.back or .env, using process environment variables")
 	})
 }
 
-// Config récupère la variable d'env après chargement
+// Config returns a variable after env loading.
 func Config(key string) string {
-	LoadEnv() // On s'assure que l'env est chargé
+	LoadEnv()
 	return os.Getenv(key)
 }

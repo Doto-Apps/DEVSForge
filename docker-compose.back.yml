@@ -2,13 +2,16 @@ services:
   backend:
     build:
       context: ./
-      dockerfile: ./Dockerfile.dev
+      dockerfile: ./back/Dockerfile.dev
+    env_file:
+      - ./.env
     working_dir: /app/back
     ports:
       - "3000:3000"
     volumes:
       - ./back:/app/back
       - ./simulator:/app/simulator
+      - ./.env:/app/back/.env
     depends_on:
       db:
         condition: service_healthy
@@ -21,7 +24,11 @@ services:
           target: /app/back
 
   db:
-    image: postgres:alpine
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${DB_USER:-devsforge}
+      POSTGRES_DB: ${DB_NAME:-devsforge}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test123}
     ports:
       - "5432:5432"
     volumes:
