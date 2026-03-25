@@ -4,7 +4,6 @@
 
 [![Docker CI](https://github.com/Doto-Apps/DEVSForge/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/Doto-Apps/DEVSForge/actions/workflows/docker-ci.yml)
 [![Publish Docker Images](https://github.com/Doto-Apps/DEVSForge/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Doto-Apps/DEVSForge/actions/workflows/docker-publish.yml)
-[![Simulator CI](https://github.com/Doto-Apps/DEVSForge/actions/workflows/simulator.yml/badge.svg)](https://github.com/Doto-Apps/DEVSForge/actions/workflows/simulator.yml)
 [![DOI](https://zenodo.org/badge/887624150.svg)](https://doi.org/10.5281/zenodo.19219365)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -31,13 +30,6 @@ cd DEVSForge
 ```bash
 cp .env.release.dist .env.release
 ```
-PowerShell:
-```powershell
-Copy-Item .env.release.dist .env.release
-```
-
-3. Edit `.env.release`:
-- Set `DEVSFORGE_IMAGE_TAG` (example: `latest` or `sha-...`)
 
 4. Pull and run:
 ```bash
@@ -104,8 +96,6 @@ Published by tag workflow (`v*`) in GitHub Actions.
 - Lightweight scenario: [docs/light_case.md](docs/light_case.md)
 - Stable archival DOI (concept, always latest release): `10.5281/zenodo.19219365`
 - Version DOI used for the current archived artifact (`v0.0.2`): `10.5281/zenodo.19219366`
-
-For ACM AERCR submissions, cite the version DOI and tag for exact reruns, and keep the concept DOI in the README badge.
 
 ## Citation
 Citation metadata is available in [`CITATION.cff`](CITATION.cff).
