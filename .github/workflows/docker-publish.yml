@@ -21,10 +21,10 @@ jobs:
         include:
           - image_name: devsforge-frontend
             context: ./front
-            dockerfile: ./front/Dockerfile
+            dockerfile: ./Dockerfile
           - image_name: devsforge-backend
-            context: .
-            dockerfile: ./back/Dockerfile.release
+            context: ./back
+            dockerfile: ./Dockerfile
 
     steps:
       - name: Checkout
@@ -51,8 +51,7 @@ jobs:
           tags: |
             type=raw,value=latest
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
+
 
       - name: Build and push image
         uses: docker/build-push-action@v6

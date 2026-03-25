@@ -2,6 +2,7 @@ cff-version: 1.2.0
 message: "If you use this software, please cite it using the metadata in this file."
 title: "DEVSForge"
 type: software
+doi: "10.5281/zenodo.19219365"
 authors:
   - family-names: Dominici
     given-names: Antoine

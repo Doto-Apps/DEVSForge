@@ -3,7 +3,7 @@ services:
     image: ghcr.io/doto-apps/devsforge-frontend:${DEVSFORGE_IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
-      - "5173:80"
+      - "80:80"
     depends_on:
       backend:
         condition: service_started
@@ -24,8 +24,10 @@ services:
   db:
     image: postgres:alpine
     restart: unless-stopped
-    env_file:
-      - ./.env.release
+    environment:
+      POSTGRES_USER: $DB_USER
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_PASSWORD: $DB_PASSWORD
     ports:
       - "5432:5432"
     volumes:
