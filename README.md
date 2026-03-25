@@ -1,4 +1,4 @@
-#DEVSForge 
+# DEVSForge 
 
 DEVSForge is an AI-assisted modeling and simulation platform for DEVS systems. It combines:
 - a Go backend API,
@@ -37,6 +37,50 @@ BibTeX example:
 5. Runners call wrapper gRPC services (Go/Python) to execute model transitions.
 6. Backend consumes simulation events from Kafka and exposes traces/status to frontend polling.
 
+## Quick Start (Release / GHCR)
+
+### Prepare
+
+1. Copy:
+```bash
+cp .env.release.dist .env.release
+```
+PowerShell:
+```powershell
+Copy-Item .env.release.dist .env.release
+```
+2. Edit `.env.release` and set at least:
+- `JWT_SECRET`
+- `REFRESH_TOKEN_SECRET`
+- `AI_API_URL`, `AI_API_KEY`, `AI_MODEL` (or keep placeholders if configured per user later)
+- `DEVSFORGE_IMAGE_TAG` (default `latest`)
+
+### Run
+
+```sh
+docker compose pull
+docker compose up -d
+```
+
+### Access to the services
+
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:3000`
+- Swagger: `http://localhost:3000/swagger/index.html`
+
+### Stop & Cleanup
+
+1. Stop the services
+```sh
+docker compose down
+```
+
+2. _(Optional)_ remove database volume:
+```sh
+docker volume rm easydevs_db_data
+```
+
+
 ## Prerequisites
 - Docker and Docker Compose (or Docker Desktop)
 - Node.js 20+
@@ -45,8 +89,10 @@ BibTeX example:
   - Python 3 with gRPC packages
   - pnpm (via `corepack enable`)
 
-## Quick Start (Default Stack)
-1. Create root environment files:
+## Quick Start from git sources
+
+1. Install prerequisites
+2. Create root environment files:
 ```bash
 cp .env.back.dist .env.back
 cp .env.front.dist .env.front
@@ -57,37 +103,31 @@ Copy-Item .env.back.dist .env.back
 Copy-Item .env.front.dist .env.front
 ```
 
-2. Start frontend + backend + kafka + database:
+3. Start frontend + backend + kafka + database (dev stack):
 ```bash
-docker compose up --build
+docker compose -f docker-compose.local.yml up --build
 ```
 
-3. Open:
+4. Open:
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:3000`
 - Swagger: `http://localhost:3000/swagger/index.html`
 
-## Simulation-Ready Notes
-Simulation requires Kafka connectivity from backend to coordinator/runners.
-
-### Important
-- Root `docker-compose.yml` does **not** start Kafka.
-- `docker-compose.sim-dev.yml` currently references `simulator/Dockerfile`, which is missing in this repository state.
-
-### Development 
-1. Prepare backend-local env file for `back/docker-compose.yml`:
+## Development 
+1. Install prerequisites
+2. Prepare backend-local env file for `back/docker-compose.yml`:
 ```bash
 cp .env.back back/.env.back
 ```
-2. Add/verify in `back/.env.back`:
+3. Add/verify in `back/.env.back`:
 ```bash
 KAFKA_ADDRESS=kafka:9092
 ```
-3. Start backend + db + kafka:
+4. Start backend + db + kafka:
 ```bash
 pnpm run start:back
 ```
-4. Start frontend in a second terminal:
+5. Start frontend in a second terminal:
 ```bash
 cp .env.front front/.env
 pnpm run start:front
@@ -109,13 +149,6 @@ This repository is organized for artifact evaluation and reproducibility with a 
 - Full case study protocol: [reproducibility.md](docs/reproducibility.md)
 - Minimal deterministic scenario: [light_case.md](docs/light_case.md)
 
-### ACM Badge Alignment Checklist
-| ACM target | Current support in repo | Submission-time action |
-| --- | --- | --- |
-| Artifacts Evaluated - Functional | Documented modules, executable services, integration tests, reproducibility guide | Run blank-environment validation and capture logs/runtime expectations |
-| Artifacts Evaluated - Reusable | Modular architecture, typed contracts, README per subsystem | Final documentation polish and package consistency checks |
-| Artifacts Available | Public repository available | Add archival DOI and license metadata before camera-ready |
-| Results Reproduced | Reproduction protocol provided | Attach independent reproduction report when available |
 
 ## Developer Commands
 From repository root:
@@ -141,11 +174,6 @@ go test -v ./simulator/runner/tests/...
 go test -v ./simulator/coordinator/tests/...
 ```
 
-## Known Caveats
-- Root compose has no Kafka service; simulation endpoints depend on Kafka.
-- `docker-compose.sim-dev.yml` references a missing `simulator/Dockerfile`.
-- Project license is MIT (see [`LICENCE`](LICENCE)); for archival packaging, add DOI metadata in addition to license.
-
 ## Additional Resources
 - [Backend README](back/README.md)
 - [Frontend README](front/README.md)
@@ -153,3 +181,6 @@ go test -v ./simulator/coordinator/tests/...
 - [Wrappers README](simulator/wrappers/README.md)
 - [Reproducibility Guide](docs/reproducibility.md)
 - [Light Case](docs/light_case.md)
+
+## License
+- Project license is MIT (see [`LICENSE`](LICENSE)); 

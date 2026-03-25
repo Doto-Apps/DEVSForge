@@ -109,7 +109,7 @@ Goal:
 
 I/O:
 - Output port: out_presence
-- No input required
+- No input requiredbon deja reglons quelque pb que je voit
 
 Behavior:
 - At simulation start, emit:
