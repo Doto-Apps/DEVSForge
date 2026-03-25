@@ -3,7 +3,7 @@ services:
     image: ghcr.io/doto-apps/devsforge-frontend:${DEVSFORGE_IMAGE_TAG:-latest}
     restart: unless-stopped
     ports:
-      - "5173:80"
+      - "80:80"
     depends_on:
       backend:
         condition: service_started

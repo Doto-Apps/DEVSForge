@@ -6,7 +6,7 @@
 		"lint": "biome lint --write ./front",
 		"check": "biome check --write ./front",
 		"generateSDK": "cd back && swag init && swagger2openapi -o ./docs/openapi.json ./docs/swagger.json && npx openapi-typescript ./docs/openapi.json -o ../front/src/api/v1.d.ts",
-		"start:front": "cd front && npm run dev",
+		"start:front": "cd front && pnpm dev",
 		"start:back": "cd back && docker compose up --watch",
 		"start": "docker compose -f docker-compose.local.yml up --watch --build",
 		"clean:back": "cd back && docker compose down -v",

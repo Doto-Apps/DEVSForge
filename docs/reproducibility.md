@@ -12,6 +12,19 @@ Note: the sensor behavior refinement step is excluded from the main path (no P2 
 
 ---
 
+## Artifact snapshot and citation anchors
+
+Use the following references to avoid ambiguity between "latest" and "exact" artifact versions:
+
+- Zenodo concept DOI (stable, points to latest release): `10.5281/zenodo.19219365`
+- Zenodo version DOI (exact archived artifact): `10.5281/zenodo.19219366`
+- Git tag corresponding to this archived artifact: `v0.0.2`
+- Git commit for that tag: `fa00e65`
+
+If you run a newer release, replace the version DOI/tag above with the matching release metadata.
+
+---
+
 ## 0) Prerequisites
 
 Required:
