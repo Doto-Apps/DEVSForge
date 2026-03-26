@@ -1,6 +1,6 @@
 # DEVSForge
 
-![DEVSForge logo](devsforge.png)
+![DEVSForge logo](assets/devsforge.png)
 
 [![Docker CI](https://github.com/Doto-Apps/DEVSForge/actions/workflows/docker-ci.yml/badge.svg)](https://github.com/Doto-Apps/DEVSForge/actions/workflows/docker-ci.yml)
 [![Publish Docker Images](https://github.com/Doto-Apps/DEVSForge/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/Doto-Apps/DEVSForge/actions/workflows/docker-publish.yml)
@@ -15,6 +15,10 @@ DEVSForge is an AI-assisted modeling and simulation platform for DEVS systems.
 3. Simulation orchestration uses Kafka and simulator components (coordinator + runners).
 4. Wrappers (Go/Python) execute atomic-model behavior.
 
+## Try it online
+
+- Go to [DEVSForge website](https://devsforge.doto.ovh)
+
 ## Choose Your Install Mode
 
 ### Mode A: Run From GHCR Images (Recommended for self-hosting)
@@ -28,7 +32,7 @@ cd DEVSForge
 
 2. Prepare release env:
 ```bash
-cp .env.release.dist .env.release
+cp .env.dist .env
 ```
 
 4. Pull and run:

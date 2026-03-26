@@ -3,7 +3,7 @@ import type { Simulation } from "@/types";
 import { useCallback, useState } from "react";
 import { useSimulationPolling } from "./useSimulationPolling";
 
-const API_BASE_URL = window.API_URL.replace(/\/+$/, "");
+const API_BASE_URL = window.API_URL?.replace(/\/+$/, "");
 
 type SimulationEventResponse =
 	components["schemas"]["response.SimulationEventResponse"];
