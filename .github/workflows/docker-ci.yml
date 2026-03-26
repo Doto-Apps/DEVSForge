@@ -14,7 +14,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Prepare env files for compose validation
-        run: cp .env.dist .env.release
+        run: cp .env.dist .env
 
       - name: Validate release compose
         run: docker compose -f docker-compose.yml config
