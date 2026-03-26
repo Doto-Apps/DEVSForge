@@ -7,10 +7,7 @@ type SimulationEventResponse =
 type SimulationEventsResponse =
 	components["schemas"]["response.SimulationEventsResponse"];
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(
-	/\/+$/,
-	"",
-);
+const API_BASE_URL = window.API_URL.replace(/\/+$/, "");
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
 	if (!value || typeof value !== "object" || Array.isArray(value)) return null;

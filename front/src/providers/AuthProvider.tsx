@@ -30,7 +30,7 @@ const AUTH_SESSION_EXPIRED_EVENT = "auth:session-expired";
 const AuthContext = createContext<AuthContextProps | undefined>(undefined);
 
 const apiClient = createClient<paths>({
-	baseUrl: import.meta.env.VITE_API_BASE_URL,
+	baseUrl: window.API_URL,
 });
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {

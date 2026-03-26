@@ -3,10 +3,7 @@ import type { Simulation } from "@/types";
 import { useCallback, useState } from "react";
 import { useSimulationPolling } from "./useSimulationPolling";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL as string).replace(
-	/\/+$/,
-	"",
-);
+const API_BASE_URL = window.API_URL.replace(/\/+$/, "");
 
 type SimulationEventResponse =
 	components["schemas"]["response.SimulationEventResponse"];
@@ -25,7 +22,9 @@ export type SimulationParameterOverride = {
 };
 
 export type SimulationInstanceOverride = {
-	instanceModelId: NonNullable<APISimulationInstanceOverride["instanceModelId"]>;
+	instanceModelId: NonNullable<
+		APISimulationInstanceOverride["instanceModelId"]
+	>;
 	overrideParams: SimulationParameterOverride[];
 };
 
