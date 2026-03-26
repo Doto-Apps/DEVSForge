@@ -9,7 +9,7 @@
 		"start:front": "cd front && npm run dev",
 		"start:back": "docker compose -f docker-compose.back.yml up",
 		"start": "docker compose -f docker-compose.local.yml up --build",
-		"start:prod": "docker compose -f docker-compose.yml up",
+		"start:prod": "docker compose -f docker-compose.yml up --pull always",
 		"clean:back": "docker compose -f docker-compose.back.yml down -v",
 		"typecheck": "cd front && pnpm tsc --noEmit"
 	},
