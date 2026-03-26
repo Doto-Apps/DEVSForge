@@ -8,9 +8,8 @@ package main
 
 import (
 	"devsforge/database"
-	"log"
-
 	"devsforge/router"
+	"log"
 
 	_ "devsforge/docs"
 
@@ -28,14 +27,14 @@ func main() {
 		CaseSensitive: true,
 		StrictRouting: true,
 		ServerHeader:  "Fiber",
-		AppName:       "Easy DEVS",
+		AppName:       "DEVSForge",
 	})
 	app.Use(cors.New())
 
 	app.Use(requestid.New())
 	app.Use(logger.New(logger.Config{
 		// For more options, see the Config section
-		Format: "${pid} ${locals:requestid} ${status} - ${method} ${path}​\n",
+		Format: "${pid} ${locals:requestid} ${status} - ${method} ${path}\n",
 	}))
 	app.Use(recover.New())
 

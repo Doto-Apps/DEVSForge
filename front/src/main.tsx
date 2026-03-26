@@ -5,6 +5,10 @@ import App from "./App.tsx";
 
 const rootElement = document.getElementById("root");
 
+if (!window.API_URL) {
+	window.API_URL = import.meta.env.VITE_API_BASE_URL;
+}
+
 if (rootElement) {
 	createRoot(rootElement).render(
 		<StrictMode>
