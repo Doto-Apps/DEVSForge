@@ -12,16 +12,9 @@ Note: the sensor behavior refinement step is excluded from the main path (no P2 
 
 ---
 
-## Artifact snapshot and citation anchors
+## DOI
 
-Use the following references to avoid ambiguity between "latest" and "exact" artifact versions:
-
-- Zenodo concept DOI (stable, points to latest release): `10.5281/zenodo.19219365`
-- Zenodo version DOI (exact archived artifact): `10.5281/zenodo.19219366`
-- Git tag corresponding to this archived artifact: `v0.0.2`
-- Git commit for that tag: `fa00e65`
-
-If you run a newer release, replace the version DOI/tag above with the matching release metadata.
+[![DOI](https://zenodo.org/badge/887624150.svg)](https://doi.org/10.5281/zenodo.19219365)
 
 ---
 
@@ -32,7 +25,7 @@ Required:
 - Docker Desktop (or Docker Engine + Docker Compose v2)
 - Free ports: `5173` (front), `3000` (back), `5432` (PostgreSQL)
 
-Optional (only for local expert mode outside Docker):
+Optional (only for dev mode outside Docker):
 - Node.js 20+
 - pnpm 10+
 - Go 1.24+
@@ -62,25 +55,17 @@ cd DEVSForge
 Bash:
 
 ```bash
-cp .env.back.dist .env.back
-cp .env.front.dist .env.front
-```
-
-PowerShell:
-
-```powershell
-Copy-Item .env.back.dist .env.back
-Copy-Item .env.front.dist .env.front
+cp .env.dist .env
 ```
 
 ### 1.3 Start the platform (development)
 
 ```bash
-docker compose -f docker-compose.local.yml up --build
+docker compose -f docker-compose.yml up --build
 ```
 
 Default services:
-- Frontend: `http://localhost:5173`
+- Frontend: `http://localhost`
 - Backend: `http://localhost:3000`
 - PostgreSQL: `localhost:5432`
 
@@ -90,7 +75,7 @@ Default services:
 
 ### 2.1 Create account and login
 
-1. Open `http://localhost:5173`.
+1. Open `http://localhost`.
 2. Click **Sign up**.
 3. Register, then login.
 

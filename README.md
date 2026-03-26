@@ -56,13 +56,7 @@ Use this mode when actively developing frontend/backend.
 
 1. Create local env files:
 ```bash
-cp .env.back.dist .env.back
-cp .env.front.dist .env.front
-```
-PowerShell:
-```powershell
-Copy-Item .env.back.dist .env.back
-Copy-Item .env.front.dist .env.front
+cp .env.dist .env
 ```
 
 2. Start backend (terminal 1, hot reload):
@@ -84,8 +78,6 @@ pnpm run start:front
 - Frontend: `ghcr.io/doto-apps/devsforge-frontend`
 - Backend: `ghcr.io/doto-apps/devsforge-backend`
 
-Published by tag workflow (`v*`) in GitHub Actions.
-
 ## Repository Navigation
 | Module | Purpose | Documentation |
 | --- | --- | --- |
@@ -93,13 +85,10 @@ Published by tag workflow (`v*`) in GitHub Actions.
 | `front/` | UI for modeling, generation, validation, simulation, webapps | [front/README.md](front/README.md) |
 | `simulator/` | DEVS distributed runtime (coordinator, runners, shared contracts) | [simulator/README.md](simulator/README.md) |
 | `simulator/wrappers/` | Go/Python wrapper runtimes and gRPC bridge | [simulator/wrappers/README.md](simulator/wrappers/README.md) |
-| Reproducibility assets | Case-study protocols and experiment flow | [docs/reproducibility.md](docs/reproducibility.md), [docs/light_case.md](docs/light_case.md) |
+| Reproducibility assets | Case-study protocols and experiment flow | [docs/reproducibility.md](docs/reproducibility.md) |
 
 ## Reproducibility
 - Main guide: [docs/reproducibility.md](docs/reproducibility.md)
-- Lightweight scenario: [docs/light_case.md](docs/light_case.md)
-- Stable archival DOI (concept, always latest release): `10.5281/zenodo.19219365`
-- Version DOI used for the current archived artifact (`v0.0.2`): `10.5281/zenodo.19219366`
 
 ## Citation
 Citation metadata is available in [`CITATION.cff`](CITATION.cff).

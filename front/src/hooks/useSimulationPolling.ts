@@ -8,7 +8,7 @@ type SimulationEventsResponse =
 	components["schemas"]["response.SimulationEventsResponse"];
 
 const API_BASE_URL = window.API_URL?.replace(/\/+$/, "");
-console.log(window.API_URL)
+console.log(window.API_URL);
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
 	if (!value || typeof value !== "object" || Array.isArray(value)) return null;
