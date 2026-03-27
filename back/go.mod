@@ -1,6 +1,6 @@
 module devsforge
 
-go 1.24.10
+go 1.25.4
 
 require (
 	devsforge-shared v0.0.0
