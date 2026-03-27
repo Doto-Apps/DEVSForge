@@ -160,10 +160,7 @@ import (
 
 func main() {
 	log.SetPrefix("[WRAPPER] ")
-	log.Printf("wrapper PID=%%d starting...", os.Getpid())
-	log.Println("======================================")
-	log.Println("   ⚙️ Wrapper RPC for model %s")
-	log.Println("======================================")
+	log.Printf("wrapper for model %s PID=%%d starting...", os.Getpid())
 
 	fs := flag.NewFlagSet("runner", flag.ContinueOnError)
 	jsonStr := fs.String("json", "", "JSON string to parse") // --json "<...>"

@@ -82,3 +82,6 @@ __pycache__/
 
 #executable
 *.exe
+
+# binaries
+devsforge

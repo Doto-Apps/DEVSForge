@@ -1,11 +1,10 @@
 package database
 
 import (
-	"fmt"
-	"strconv"
-
 	"devsforge/config"
 	"devsforge/model"
+	"fmt"
+	"strconv"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"

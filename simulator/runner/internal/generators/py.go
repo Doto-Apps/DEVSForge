@@ -24,8 +24,10 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-var pythonMainFileName = "main.py"
-var pythonModelFileName = "model.py"
+var (
+	pythonMainFileName  = "main.py"
+	pythonModelFileName = "model.py"
+)
 
 // PreparePythonWrapper : version Python de PrepareGoWraper.
 // Elle génère model.py + main.py, lance le process Python, puis attend que le gRPC soit prêt.
@@ -164,10 +166,7 @@ from model import NewModel  # fonction NewModel(cfg) dans model.py
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="[PY-WRAPPER] %%(message)s")
-    logging.info("wrapper starting (PID=%%s)", os.getpid())
-    logging.info("======================================")
-    logging.info("   ⚙️ Wrapper RPC for model %s")
-    logging.info("======================================")
+    logging.info("wrapper starting for model %s (PID=%%s)", os.getpid())
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", required=True, help="JSON string to parse")

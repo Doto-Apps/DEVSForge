@@ -2,43 +2,33 @@ services:
   frontend:
     build:
       context: ./front
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
     env_file:
       - ./.env
     ports:
-      - 5173:5173
-    volumes:
-      - ./front:/app
-      - /app/node_modules
+      - 5173:80
     depends_on:
       backend:
         condition: service_started
-    
+
   backend:
     build:
       context: .
-      dockerfile: back/Dockerfile.dev
+      dockerfile: back/Dockerfile
     environment:
       KAFKA_ADDRESS: kafka:9092
+      SIM_CMD: /devsforge-coordinator
+      RUNNER_CMD: /devsforge-runner
+      DEVSFORGE_SIM_ROOT: /
     ports:
       - 3000:3000
-    volumes:
-      - ./back:/app/back
-      - ./simulator:/app/simulator
-      - ./go.work:/app/go.work
-      - ./.env:/app/back/.env
-    working_dir: /app/back
-    command: air
+    env_file:
+      - ./.env
     depends_on:
       db:
         condition: service_healthy
       kafka:
         condition: service_started
-    develop:
-      watch:
-        - action: sync
-          path: ./back
-          target: /app/back
 
   db:
     image: postgres:17-alpine

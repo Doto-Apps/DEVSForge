@@ -9,7 +9,6 @@ package main
 import (
 	"devsforge/database"
 	"devsforge/router"
-	"log"
 
 	_ "devsforge/docs"
 
@@ -23,7 +22,6 @@ import (
 
 func main() {
 	app := fiber.New(fiber.Config{
-		Prefork:       true,
 		CaseSensitive: true,
 		StrictRouting: true,
 		ServerHeader:  "Fiber",
@@ -43,5 +41,7 @@ func main() {
 	router.SetupRoutes(app)
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	log.Fatal(app.Listen(":3000"))
+	if err := app.Listen(":3000"); err != nil {
+		panic(err)
+	}
 }

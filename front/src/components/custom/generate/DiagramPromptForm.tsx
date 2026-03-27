@@ -49,11 +49,10 @@ export function DiagramPromptForm({
 			<div className="h-full w-full flex justify-center items-center">
 				<div className="flex flex-col items-center justify-center space-y-4">
 					<Loader2 className="w-12 h-12 text-foreground animate-spin" />
-					<p className="text-lg text-foreground">
-						Generating your diagram...
-					</p>
+					<p className="text-lg text-foreground">Generating your diagram...</p>
 					<p className="text-sm text-muted-foreground">
-						AI is analyzing your description and creating the DEVS model structure
+						AI is analyzing your description and creating the DEVS model
+						structure
 					</p>
 				</div>
 			</div>
@@ -68,8 +67,8 @@ export function DiagramPromptForm({
 			</div>
 
 			<p className="text-muted-foreground text-center mb-8 max-w-lg">
-				Describe the system you want to model. The AI will generate the
-				DEVS model structure with its components, ports, and connections.
+				Describe the system you want to model. The AI will generate the DEVS
+				model structure with its components, ports, and connections.
 			</p>
 
 			<Form {...form}>
@@ -84,10 +83,7 @@ export function DiagramPromptForm({
 							<FormItem>
 								<FormLabel>Diagram Name</FormLabel>
 								<FormControl>
-									<Input
-										placeholder="e.g., Traffic Light System"
-										{...field}
-									/>
+									<Input placeholder="e.g., Traffic Light System" {...field} />
 								</FormControl>
 								<FormMessage />
 							</FormItem>
@@ -118,8 +114,6 @@ export function DiagramPromptForm({
 					</Button>
 				</form>
 			</Form>
-
-
 		</div>
 	);
 }

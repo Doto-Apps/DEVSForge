@@ -1,15 +1,10 @@
 version: "3"
 
 vars:
-  # Variable qui liste les chemins absolus de tous les modules du go.work
   MODULES_DIRS:
     sh: awk '/use \(/,/\)/ { if ($1 ~ /^\./) print $1 }' go.work
 
 tasks:
-  ###################################
-  # MAINTENANCE ET NETTOYAGE (Ordre: fix-genproto -> tidy)
-  ###################################
-
   tidy:
     desc: Exécute go mod tidy de manière récursive sur tous les modules du workspace.
     cmds:
@@ -17,31 +12,34 @@ tasks:
         cmd: cd {{.ITEM}} && go mod tidy
     silent: true
 
-  ###################################
-  # FLUX DE CI LOCAL (Ordre: build -> (lint, test))
-  ###################################
-
-  # La tâche 'ci' est une porte d'entrée pour tout lancer
   ci:
     desc: Lance le build, le lint et les tests (flux complet de CI).
     deps: [build, lint, test]
 
   build:
     desc: Compile tous les modules du workspace.
-    deps: [tidy] # S'assure que les dépendances sont propres avant de compiler
+    deps: [tidy]
     cmds:
       - for: { var: MODULES_DIRS }
         cmd: cd {{.ITEM}} && go build -v ./...
 
   lint:
     desc: Lance le linter (golangci-lint) sur le projet.
-    deps: [build] # Se lance après que le build ait réussi
+    deps: [build]
     cmds:
-      - golangci-lint run --issues-exit-code 0 # Utilise 0 pour simuler 'continue-on-error' comme dans la CI
+      - golangci-lint run --issues-exit-code 0
 
   test:
     desc: Lance les tests avec le race detector (pour le simulateur).
-    deps: [build] # Se lance après que le build ait réussi
+    deps: [build]
     cmds:
-      # Assurez-vous que le chemin est correct pour vos tests :
       - go test -v ./simulator/runner/tests/...
+
+  prod-docker-build:
+    desc: Create complete docker image with backend+simulator+runner.
+    deps: [tidy]
+    cmds:
+      - defer: docker image rm devsforge-local-backend-test:latest > /dev/null || true
+      - docker build -f ./back/Dockerfile -t devsforge-local-backend-test:latest ./
+      - echo "Taille de l'image finale :"
+      - docker images devsforge-local-backend-test:latest --format "{{.Size}}"
