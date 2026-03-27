@@ -1,16 +1,21 @@
 package services
 
 import (
+	"bytes"
 	"devsforge/config"
 	"devsforge/database"
 	"devsforge/lib"
 	"devsforge/model"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
+	"log/slog"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
@@ -134,8 +139,102 @@ func (s *SimulationService) StartSimulation(simulationID string) error {
 	return nil
 }
 
-// runCoordinator executes the coordinator subprocess
+// runCoordinator Launch remote or local simulator
 func (s *SimulationService) runCoordinator(simulationID string, manifestFile string, kafkaAddr string, kafkaTopic string) {
+	simulatorAddr := os.Getenv("SIMULATOR_ADDR")
+	if simulatorAddr == "" {
+		s.runLocalCoordinator(simulationID, manifestFile, kafkaAddr, kafkaTopic)
+	} else {
+		s.runRemoteCoordinator(simulatorAddr, simulationID, manifestFile, kafkaAddr, kafkaTopic)
+	}
+}
+
+// runRemoteCoordinator executes the coordinator subprocess
+func (s *SimulationService) runRemoteCoordinator(simulatorAddr string, simulationID string, manifestFile string, kafkaAddr string, kafkaTopic string) {
+	defer EventConsumers.StopConsumer(simulationID)
+	defer func() {
+		if err := os.Remove(manifestFile); err != nil {
+			slog.Warn("cannot delete temporary manifest file")
+		}
+	}()
+
+	log := slog.With("simulationId", simulationID)
+	log.Info("Starting remote coordinator")
+
+	manifestData, err := os.ReadFile(manifestFile)
+	if err != nil {
+		log.Error("Failed to read manifest file", "error", err)
+		s.markSimulationFailedByID(simulationID, fmt.Sprintf("failed to read manifest: %v", err))
+		return
+	}
+
+	body := map[string]interface{}{
+		"json":  string(manifestData),
+		"kafka": kafkaAddr,
+		"topic": kafkaTopic,
+	}
+	jsonData, err := json.Marshal(body)
+	if err != nil {
+		log.Error("Failed to marshal request body", "error", err)
+		s.markSimulationFailedByID(simulationID, fmt.Sprintf("failed to marshal request: %v", err))
+		return
+	}
+
+	if !strings.HasPrefix(simulatorAddr, "http://") && !strings.HasPrefix(simulatorAddr, "https://") {
+		simulatorAddr = "http://" + simulatorAddr
+	}
+	url := simulatorAddr + "/simulate-async"
+
+	client := &http.Client{
+		Timeout: 30 * time.Second,
+	}
+
+	req, err := http.NewRequest(http.MethodPost, url, bytes.NewBuffer(jsonData))
+	if err != nil {
+		log.Error("Failed to create HTTP request", "error", err)
+		s.markSimulationFailedByID(simulationID, fmt.Sprintf("failed to create request: %v", err))
+		return
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Error("HTTP request failed", "error", err)
+		s.markSimulationFailedByID(simulationID, fmt.Sprintf("request failed: %v", err))
+		return
+	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			slog.Warn("cannot close response body")
+		}
+	}()
+
+	if resp.StatusCode != http.StatusCreated {
+		body, _ := io.ReadAll(resp.Body)
+		log.Error("Simulator returned error", "status", resp.StatusCode, "body", string(body))
+		s.markSimulationFailedByID(simulationID, fmt.Sprintf("simulator error %d: %s", resp.StatusCode, string(body)))
+		return
+	}
+
+	respBody, _ := io.ReadAll(resp.Body)
+	log.Info("Remote coordinator launched successfully", "response", string(respBody))
+
+	db := database.DB
+	now := time.Now()
+
+	result := db.Model(&model.Simulation{}).
+		Where("id = ? AND status <> ?", simulationID, model.SimulationStatusFailed).
+		Updates(map[string]interface{}{
+			"status":       model.SimulationStatusCompleted,
+			"completed_at": now,
+		})
+	if result.Error != nil {
+		log.Error("Failed to mark simulation as completed", "error", result.Error)
+	}
+}
+
+// runLocalCoordinator executes the coordinator subprocess
+func (s *SimulationService) runLocalCoordinator(simulationID string, manifestFile string, kafkaAddr string, kafkaTopic string) {
 	db := database.DB
 
 	// Ensure event consumer is stopped when coordinator finishes
@@ -207,6 +306,23 @@ func (s *SimulationService) markSimulationFailed(simulation *model.Simulation, e
 	simulation.Status = model.SimulationStatusFailed
 	simulation.ErrorMessage = &errorMsg
 	db.Save(simulation)
+}
+
+// markSimulationFailedByID marks a simulation as failed by ID only
+func (s *SimulationService) markSimulationFailedByID(simulationID string, errorMsg string) {
+	db := database.DB
+	now := time.Now()
+
+	result := db.Model(&model.Simulation{}).
+		Where("id = ?", simulationID).
+		Updates(map[string]interface{}{
+			"status":        model.SimulationStatusFailed,
+			"error_message": errorMsg,
+			"completed_at":  now,
+		})
+	if result.Error != nil {
+		slog.Error("failed to mark simulation as failed", "simulationId", simulationID, "error", result.Error)
+	}
 }
 
 // GetSimulation retrieves a simulation by ID

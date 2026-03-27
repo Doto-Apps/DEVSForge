@@ -1,0 +1,84 @@
+services:
+  frontend:
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
+    ports:
+      - 5173:80
+    depends_on:
+      backend:
+        condition: service_started
+
+  simulator:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+      target: simulator
+    environment:
+      KAFKA_ADDRESS: kafka:9092
+      SIM_CMD: /devsforge-coordinator
+      RUNNER_CMD: /devsforge-runner
+      DEVSFORGE_SIM_ROOT: /
+    volumes:
+      - ./tmp/logs:/logs
+
+  backend:
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+      target: backend
+    environment:
+      SIMULATOR_ADDR: simulator:8080
+    env_file:
+      - ./.env
+    ports:
+      - 3000:3000
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+
+  db:
+    image: postgres:17-alpine
+    env_file:
+      - ./.env
+    environment:
+      POSTGRES_USER: ${DB_USER:-devsforge}
+      POSTGRES_DB: ${DB_NAME:-devsforge}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-test123}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-db:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: apache/kafka:latest
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_LOG4J_ROOT_LOGLEVEL: WARN
+      KAFKA_LOG4J_LOGGERS: "kafka=WARN,kafka.controller=WARN,kafka.log.LogCleaner=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN"
+    ports:
+      - "9092:9092"
+
+volumes:
+  postgres-db:

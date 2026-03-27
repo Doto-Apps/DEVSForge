@@ -33,7 +33,7 @@ type ErrorResponse struct {
 
 func StartDaemonServer(port int) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/simulate", handleSimulate)
+	mux.HandleFunc("/simulate-async", handleSimulate)
 
 	addr := fmt.Sprintf(":%d", port)
 	server := &http.Server{
@@ -69,7 +69,9 @@ func handleSimulate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "method not allowed, use POST"})
+		if err := json.NewEncoder(w).Encode(ErrorResponse{Error: "method not allowed, use POST"}); err != nil {
+			slog.Error("cannot encode response method not allowed")
+		}
 		return
 	}
 
@@ -77,14 +79,18 @@ func handleSimulate(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid JSON body: " + err.Error()})
+		if err := json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid JSON body: " + err.Error()}); err != nil {
+			slog.Error("cannot encode response invalid JSON body")
+		}
 		return
 	}
 
 	if req.JSON == "" && req.File == "" {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(ErrorResponse{Error: "either 'json' or 'file' must be provided"})
+		if err := json.NewEncoder(w).Encode(ErrorResponse{Error: "either 'json' or 'file' must be provided"}); err != nil {
+			slog.Error("cannot encode response no json or file provided")
+		}
 		return
 	}
 
@@ -93,7 +99,9 @@ func handleSimulate(w http.ResponseWriter, r *http.Request) {
 		if err := utils.ParseManifest(req.JSON, &manifest); err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid manifest JSON: " + err.Error()})
+			if err := json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid manifest JSON: " + err.Error()}); err != nil {
+				slog.Error("cannot encode response invalid manifest JSON")
+			}
 			return
 		}
 	} else if req.File != "" {
@@ -101,13 +109,17 @@ func handleSimulate(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(ErrorResponse{Error: "cannot read file: " + err.Error()})
+			if err := json.NewEncoder(w).Encode(ErrorResponse{Error: "cannot read file: " + err.Error()}); err != nil {
+				slog.Error("cannot encode response cannot read file")
+			}
 			return
 		}
 		if err := utils.ParseManifest(string(data), &manifest); err != nil {
 			w.Header().Set("Content-Type", "application/json")
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid manifest file: " + err.Error()})
+			if err := json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid manifest file: " + err.Error()}); err != nil {
+				slog.Error("cannot encode response invalid manifest file")
+			}
 			return
 		}
 	}
@@ -121,18 +133,25 @@ func handleSimulate(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(SimulateResponse{
+	if err := json.NewEncoder(w).Encode(SimulateResponse{
 		SimulationID: simulationID,
 		Status:       "running",
-	})
+	}); err != nil {
+		slog.Error("cannot encode response simulation is running")
+	}
 }
 
 func launchSimulationAsync(req SimulateRequest, simulationID string) {
+	jsonVal := req.JSON
+	fileVal := req.File
+	kafkaVal := req.Kafka
+	topicVal := req.Topic
+
 	params := SimulationParams{
-		KafkaAddress: &req.Kafka,
-		Json:         &req.JSON,
-		File:         &req.File,
-		KafkaTopic:   &req.Topic,
+		Json:         &jsonVal,
+		File:         &fileVal,
+		KafkaAddress: &kafkaVal,
+		KafkaTopic:   &topicVal,
 	}
 
 	slog.Info("Launching simulation asynchronously", "simulationId", simulationID)
