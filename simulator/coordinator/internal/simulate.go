@@ -53,11 +53,6 @@ func RunSimulation(args []string) error {
 	if err := os.MkdirAll(tmpBase, 0o755); err != nil {
 		return fmt.Errorf("failed to create tmp base directory %q: %w", tmpBase, err)
 	}
-	defer func() {
-		if err = os.RemoveAll(tmpBase); err != nil {
-			log.Println("cannot remove tmpBase: ", err)
-		}
-	}()
 
 	prefix := "devsforge_" + manifest.SimulationID + "_"
 	rootDir, err := os.MkdirTemp(tmpBase, prefix)
@@ -98,6 +93,9 @@ func RunSimulation(args []string) error {
 
 	if err := CleanupKafka(*kafka, kafkaTopic); err != nil {
 		return fmt.Errorf("error during cleanup: %w", err)
+	}
+	if err = os.RemoveAll(rootDir); err != nil {
+		log.Println("cannot remove simulation rootDir: ", err)
 	}
 
 	log.Println("Done")
