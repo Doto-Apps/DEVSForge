@@ -5,7 +5,7 @@ import (
 	shared "devsforge-shared"
 	"devsforge-shared/utils"
 	"fmt"
-	"log"
+	"log/slog"
 	"math"
 	"os"
 	"os/exec"
@@ -13,7 +13,7 @@ import (
 )
 
 func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, cfg *CoordConfig) error {
-	log.Printf("Launching %d runners using shell...", len(manifest.Models))
+	slog.Info("Launching runners using shell", "count", len(manifest.Models))
 	errCh := make(chan error, len(manifest.Models))
 	runnerCmd := os.Getenv("RUNNER_CMD")
 
@@ -25,15 +25,15 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 		if err != nil {
 			return fmt.Errorf("failed to resolve simulator root: %w", err)
 		}
-		log.Printf("Using simulator folder : %s", simulatorRootDir)
+		slog.Info("Using simulator folder", "path", simulatorRootDir)
 	}
 
 	// Check runner command
 	runnerDir := filepath.Join(simulatorRootDir, "runner")
 	if runnerCmd != "" {
-		log.Printf("Launching runners using %s command\n", runnerCmd)
+		slog.Info("Launching runners using command", "command", runnerCmd)
 	} else {
-		log.Printf("Launching runners using go run inside %s directory\n", runnerDir)
+		slog.Info("Launching runners using go run", "directory", runnerDir)
 		if _, err := os.Stat(filepath.Join(runnerDir, "main.go")); err != nil {
 			return fmt.Errorf("main.go not found in %s", runnerDir)
 		}
@@ -85,7 +85,7 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	}
 
 	coordinator := CreateCoordinnator(cfg, context.Background(), runnerStates)
-	log.Println("All models started, launching coordinator main loop")
+	slog.Info("All models started, launching coordinator main loop")
 
 	if err := coordinator.RunCoordinator(&manifest); err != nil {
 		return fmt.Errorf("coordination error: %w", err)
@@ -93,7 +93,7 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 
 	for range manifest.Models {
 		if err := <-errCh; err != nil {
-			fmt.Println("Runner failed:", err)
+			slog.Error("Runner failed", "error", err)
 			return fmt.Errorf("runner failure: %w", err)
 		}
 	}

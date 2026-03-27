@@ -2,7 +2,7 @@ package internal
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"time"
 
 	kafkaShared "devsforge-shared/kafka"
@@ -33,7 +33,7 @@ func sendCoordinatorErrorReport(cfg *CoordConfig, simulationRunID string, errorC
 
 	payload, marshalErr := msg.Marshal()
 	if marshalErr != nil {
-		log.Printf("failed to marshal coordinator ErrorReport: %v", marshalErr)
+		slog.Error("Failed to marshal coordinator ErrorReport", "error", marshalErr)
 		return
 	}
 
@@ -41,6 +41,6 @@ func sendCoordinatorErrorReport(cfg *CoordConfig, simulationRunID string, errorC
 	defer cancel()
 
 	if produceErr := cfg.KafkaClient.ProduceSync(ctx, &kgo.Record{Value: payload}).FirstErr(); produceErr != nil {
-		log.Printf("failed to publish coordinator ErrorReport: %v", produceErr)
+		slog.Error("Failed to publish coordinator ErrorReport", "error", produceErr)
 	}
 }

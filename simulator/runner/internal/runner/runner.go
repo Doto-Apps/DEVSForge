@@ -6,7 +6,7 @@ import (
 	"devsforge-shared/kafka"
 	devspb "devsforge-wrapper/proto"
 	"fmt"
-	"log"
+	"log/slog"
 	"math"
 
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -36,7 +36,7 @@ func (r *Runner) SendMessage(msg kafka.KafkaMessageI) error {
 		return fmt.Errorf("cannot marshal kafka message : %w", err)
 	}
 
-	log.Printf("[OUT]: %s", string(data))
+	slog.Debug("Output", "data", string(data))
 
 	return r.Config.KafkaClient.ProduceSync(r.Context, &kgo.Record{Value: data}).FirstErr()
 }

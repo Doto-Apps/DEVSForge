@@ -5,10 +5,11 @@ import (
 	"devsforge-runner/internal"
 	"devsforge-runner/internal/config"
 	"devsforge-runner/internal/generators"
+	"devsforge-shared/logger"
 	"devsforge-shared/utils"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -19,8 +20,6 @@ import (
 )
 
 func LaunchRunner(args []string) error {
-	log.Println("Starting runner...")
-
 	fs := flag.NewFlagSet("runner", flag.ContinueOnError)
 	jsonStr := fs.String("json", "", "JSON string to parse")
 	filePath := fs.String("file", "", "Path to JSON file")
@@ -53,21 +52,36 @@ func LaunchRunner(args []string) error {
 	if len(manifest.Models) != 1 {
 		return fmt.Errorf("manifest must contain exactly one model for a runner")
 	}
-	log.SetPrefix("[RUNNER: " + manifest.Models[0].ID + " ]\t")
-	log.Println("manifest validated")
+
+	// Initialize logger
+	logDir := os.Getenv("LOG_DIR")
+	if logDir == "" {
+		logDir = "logs"
+	}
+
+	logCfg := logger.DefaultConfig(manifest.SimulationID)
+	logCfg.LogDir = logDir
+
+	logInstance, err := logger.InitLogger(logCfg, "runner", manifest.Models[0].ID)
+	if err != nil {
+		return fmt.Errorf("failed to initialize logger: %w", err)
+	}
+	slog.SetDefault(logInstance)
+
+	slog.Info("Manifest validated", "model_id", manifest.Models[0].ID)
 
 	wrapper, err := internal.PrepareGeneralWrapper(manifest, *configFile)
 	if err != nil {
 		return err
 	}
 	defer func() {
-		log.Println("trying to cleanup")
+		slog.Info("Cleaning up")
 		if err := wrapper.Cleanup(); err != nil {
-			log.Printf("cleanup error: %v", err)
+			slog.Error("Cleanup error", "error", err)
 		}
 	}()
 
-	log.Printf("use language %s wrapper", manifest.Models[0].Language)
+	slog.Info("Using language wrapper", "language", manifest.Models[0].Language)
 	switch manifest.Models[0].Language {
 	case "go":
 		if err := generators.PrepareGoWraper(wrapper, manifest); err != nil {
@@ -89,7 +103,7 @@ func LaunchRunner(args []string) error {
 		return err
 	}
 
-	log.Println("simulation ended successfully")
+	slog.Info("Simulation ended successfully")
 	return nil
 }
 
@@ -116,13 +130,13 @@ func emitRunnerErrorReport(cfg *config.RunnerConfig, errorCode string, sourceErr
 
 	data, err := report.Marshal()
 	if err != nil {
-		log.Printf("failed to marshal runner ErrorReport: %v", err)
+		slog.Error("Failed to marshal runner ErrorReport", "error", err)
 		return
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	if err := cfg.KafkaClient.ProduceSync(ctx, &kgo.Record{Value: data}).FirstErr(); err != nil {
-		log.Printf("failed to publish runner ErrorReport: %v", err)
+		slog.Error("Failed to publish runner ErrorReport", "error", err)
 	}
 }

@@ -4,7 +4,7 @@ import (
 	"context"
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
-	"log"
+	"log/slog"
 	"math"
 )
 
@@ -28,7 +28,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 	nextTimeCh := make(chan *kafka.BaseKafkaMessage)
 	transitionDoneCh := make(chan *kafka.BaseKafkaMessage)
 	outputCh := make(chan *kafka.BaseKafkaMessage)
-	log.SetPrefix("[COORDI] ")
+	// Logger prefix removed - using structured logging
 
 	// Goroutine qui écoute Kafka côté coordi
 	go func() {
@@ -45,36 +45,36 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 			case kafka.DevsTypeModelOutput:
 				outputCh <- msg
 			default:
-				log.Printf("Unreconized message : %s\n", msg.DevsType.String())
+				slog.Warn("Unrecognized message", "type", msg.DevsType.String())
 			}
 			return nil
 		})
 		if err != nil {
-			log.Printf("❌ collector error in coordinator: %v", err)
+			slog.Error("Collector error", "error", err)
 		}
 	}()
 
 	// --- Phase 1 : InitSim pour tous les modèles ---
-	log.Println("Envoi des InitSim à tous les runners...")
+	slog.Info("Sending InitSim to all runners")
 	err := c.RunInitSim()
 	if err != nil {
 		return err
 	}
 	// Attente d'un NextTime par runner
 	c.RunNextTime(nextTimeCh)
-	log.Println("Tous les runners ont répondu avec leur NextTime initial.")
+	slog.Info("All runners responded with initial NextTime")
 
 	// --- Phase 2 : Boucle principale de simulation ---
 	for {
 		tmin := computeMinTime(c.RunnerStates)
 		if tmin == math.MaxFloat64 {
-			log.Println("Tous les nextTime sont +Inf, fin de simulation.")
+			slog.Info("Simulation ended: all nextTimes are +Inf")
 			break
 		}
 
 		// Check if we've reached the maximum simulation time
 		if manifest.MaxTime > 0 && tmin >= manifest.MaxTime {
-			log.Printf("Temps max de simulation atteint (%.6f >= %.6f), fin de simulation.", tmin, manifest.MaxTime)
+			slog.Info("Simulation ended: max time reached", "tmin", tmin, "maxTime", manifest.MaxTime)
 			break
 		}
 
@@ -88,7 +88,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 			st.Inbox = nil
 		}
 
-		log.Printf("t = %.6f, imminents = %d\n", tmin, len(imminents))
+		slog.Debug("Coordination step", "tmin", tmin, "imminents", len(imminents))
 
 		// 2) demander les outputs aux imminents
 		err := c.RunSendOutput(imminents, tmin)
@@ -128,7 +128,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 			msg := <-transitionDoneCh
 			st, ok := c.RunnerStates[msg.Sender]
 			if !ok {
-				log.Printf("⚠️ TransitionDone from unknown runner %s", msg.Sender)
+				slog.Warn("TransitionDone from unknown runner", "sender", msg.Sender)
 				continue
 			}
 			if msg.NextTime == nil {
@@ -141,12 +141,12 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 
 	// --- Phase 3 : SimulationDone ---
 
-	log.Println("Envoi des SimulationDone à tous les runners...")
+	slog.Info("Sending SimulationDone to all runners")
 	err = c.RunSimulationDone()
 	if err != nil {
 		return err
 	}
 
-	log.Println("Coordination terminée.")
+	slog.Info("Coordination completed")
 	return nil
 }

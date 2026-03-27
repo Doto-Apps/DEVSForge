@@ -4,7 +4,7 @@ package util
 import (
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 )
@@ -63,7 +63,7 @@ func copyFile(src, dst string, perm os.FileMode) error {
 	}
 	defer func() {
 		if err = in.Close(); err != nil {
-			log.Println("cannot close in file: ", err)
+			slog.Debug("Cannot close input file", "error", err)
 		}
 	}()
 
@@ -73,7 +73,7 @@ func copyFile(src, dst string, perm os.FileMode) error {
 	}
 	defer func() {
 		if err = out.Close(); err != nil {
-			log.Println("cannot close out file: ", err)
+			slog.Debug("Cannot close output file", "error", err)
 		}
 	}()
 

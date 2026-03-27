@@ -1,7 +1,7 @@
 package kafka
 
 import (
-	"log"
+	"log/slog"
 	"time"
 
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -34,6 +34,6 @@ func NewKafkaConfig(brokerAdress string, topic string, ID string) *KafkaConfig {
 		kgo.AutoCommitInterval(1 * time.Second),
 		kgo.TransactionTimeout(3 * time.Second),
 	}
-	log.Printf("Kafka Config Initialised: %s", brokerAdress)
+	slog.Info("Kafka config initialized", "broker", brokerAdress)
 	return &KafkaConfig{Config: opts}
 }

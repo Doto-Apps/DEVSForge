@@ -8,7 +8,7 @@ import (
 	devspb "devsforge-wrapper/proto"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 )
 
 // ErrSimulationDone signale la fin normale de la simulation
@@ -26,7 +26,7 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 	modelClient := devspb.NewAtomicModelServiceClient(wrapper.GRPCConn)
 	runnerInstance := runner.CreateRunner(cfg, context.Background(), modelClient)
 
-	log.Println("Simulation loop starting...")
+	slog.Info("Simulation loop starting")
 	if err := runnerInstance.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
 		if msg.Target != cfg.Model.ID || msg.Sender == cfg.Model.ID {
 			return nil
@@ -34,7 +34,7 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 
 		tolog, err := msg.Marshal()
 		if err == nil {
-			log.Printf("[IN]: %s", tolog)
+			slog.Debug("Input received", "data", tolog)
 		}
 
 		// ======================
@@ -81,16 +81,16 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 			return ErrSimulationDone
 		}
 
-		log.Printf("⚠️ Unhandled DevsType Message receive on kafka: %s", msg.DevsType)
+		slog.Warn("Unhandled Kafka message type", "type", msg.DevsType)
 		return nil
 	}); err != nil && !errors.Is(err, ErrSimulationDone) {
 		if reportErr := runnerInstance.SendErrorReport("RUNNER_LOOP_ERROR", "fatal", err); reportErr != nil {
-			log.Printf("failed to emit ErrorReport: %v", reportErr)
+			slog.Error("Failed to emit ErrorReport", "error", reportErr)
 		}
 		// Vraie erreur, pas une fin normale
 		return err
 	}
 
-	log.Println("Simulation loop ended")
+	slog.Info("Simulation loop ended")
 	return nil
 }

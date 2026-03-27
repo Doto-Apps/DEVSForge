@@ -7,7 +7,7 @@ services:
     depends_on:
       backend:
         condition: service_started
-    
+
   backend:
     image: ghcr.io/doto-apps/devsforge-backend:${DEVSFORGE_IMAGE_TAG:-latest}
     restart: unless-stopped

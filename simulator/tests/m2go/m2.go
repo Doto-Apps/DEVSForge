@@ -20,11 +20,11 @@ func NewModel(cfg modeling.RunnableModel) modeling.Atomic {
 func (m *Collector) Initialize() {
 	// Pas d'événements internes : on se met en attente
 	m.Passivate()
-	log.Println("[COLLECTOR] Initialize")
+	log.Println("Collector initialized")
 }
 
 func (m *Collector) Exit() {
-	log.Printf("[COLLECTOR] Exit, messages reçus ~ %d\n", m.Count)
+	log.Println("Collector exit", "count", m.Count)
 }
 
 // Transition interne : rien de spécial, on reste passif
@@ -35,7 +35,6 @@ func (m *Collector) DeltInt() {
 // Transition externe : on considère qu'on a reçu au moins un message
 // (si plus tard tu veux lire les vraies valeurs, tu pourras étendre ici)
 func (m *Collector) DeltExt(e float64) {
-
 	inPort, err := m.GetPortByName("in")
 	if err != nil {
 		return
@@ -43,7 +42,7 @@ func (m *Collector) DeltExt(e float64) {
 	raw := inPort.GetValues()
 
 	m.Count++
-	log.Printf("[COLLECTOR] DeltExt, nouveau message reçu %s", raw)
+	log.Println("Collector received message", "data", raw)
 	m.Passivate()
 }
 

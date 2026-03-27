@@ -2,18 +2,16 @@ package internal
 
 import (
 	shared "devsforge-shared"
+	"devsforge-shared/logger"
 	"devsforge-shared/utils"
 	"flag"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"path/filepath"
 )
 
 func RunSimulation(args []string) error {
-	log.SetPrefix("[COORDI] ")
-	log.Println("🏗️ DEVSForge Simulator")
-
 	fs := flag.NewFlagSet("simulator", flag.ContinueOnError)
 
 	jsonStr := fs.String("json", "", "JSON string to parse")
@@ -34,6 +32,23 @@ func RunSimulation(args []string) error {
 	if len(manifest.Models) == 0 {
 		return fmt.Errorf("no models provided in the manifest")
 	}
+
+	// Initialize logger
+	logDir := os.Getenv("LOG_DIR")
+	if logDir == "" {
+		logDir = "logs"
+	}
+
+	logCfg := logger.DefaultConfig(manifest.SimulationID)
+	logCfg.LogDir = logDir
+
+	logInstance, err := logger.InitLogger(logCfg, "coordinator", "")
+	if err != nil {
+		return fmt.Errorf("failed to initialize logger: %w", err)
+	}
+	slog.SetDefault(logInstance)
+
+	slog.Info("DEVSForge Simulator")
 
 	kafkaTopic, err := GetKafkaTopic(*kafka, *topic)
 	if err != nil {
@@ -59,7 +74,7 @@ func RunSimulation(args []string) error {
 	if err != nil {
 		return fmt.Errorf("failed to create simulation temp dir with prefix %q under %q: %w", prefix, tmpBase, err)
 	}
-	log.Printf("📁 Created simulation temp dir %s", rootDir)
+	slog.Info("Created simulation temp dir", "path", rootDir)
 
 	// Pass an absolute tmp directory to runners (stable, no relative paths).
 	yamlConfig := shared.YamlInputConfig{
@@ -79,7 +94,7 @@ func RunSimulation(args []string) error {
 	cfg := InitConfig(yamlConfig)
 
 	if *dockerProvider {
-		log.Printf("Launching %d runners using docker...", len(manifest.Models))
+		slog.Info("Launching runners using docker", "count", len(manifest.Models))
 		// TODO: Docker path should also rely on simRoot / rootDir if needed.
 	} else {
 		if err := RunShellSimulation(manifest, configFile, cfg); err != nil {
@@ -88,17 +103,17 @@ func RunSimulation(args []string) error {
 		}
 	}
 
-	log.Println("🏗️ Simulation ended... ✨")
-	log.Println("Cleaning environment...")
+	slog.Info("Simulation ended")
+	slog.Info("Cleaning environment")
 
 	if err := CleanupKafka(*kafka, kafkaTopic); err != nil {
 		return fmt.Errorf("error during cleanup: %w", err)
 	}
 	if err = os.RemoveAll(rootDir); err != nil {
-		log.Println("cannot remove simulation rootDir: ", err)
+		slog.Error("Cannot remove simulation rootDir", "error", err)
 	}
 
-	log.Println("Done")
+	slog.Info("Done")
 	return nil
 }
 

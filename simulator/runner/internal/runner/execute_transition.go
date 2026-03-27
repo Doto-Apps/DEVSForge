@@ -5,7 +5,7 @@ import (
 	devspb "devsforge-wrapper/proto"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"math"
 
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -63,7 +63,7 @@ func (r *Runner) RunExecuteTransition(msg kafka.KafkaMessageExecuteTransition) e
 		}
 
 	default:
-		log.Printf("⚠️ unexpected ExecuteTransition case: hasInputs=%v, t=%v, r.NextTime=%v", hasInputs, t, r.NextTime)
+		slog.Warn("Unexpected ExecuteTransition case", "hasInputs", hasInputs, "t", t, "nextTime", r.NextTime)
 	}
 
 	// 3) Nouveau r.NextTime après la transition (TA)
