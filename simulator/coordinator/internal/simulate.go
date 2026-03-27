@@ -23,7 +23,7 @@ func RunSimulation(args []string) error {
 	topic := fs.String("topic", "", "The kafka topic (generated if not provided)")
 
 	if err := fs.Parse(args); err != nil {
-		return fmt.Errorf("error parsing flags: ", err)
+		return fmt.Errorf("error parsing flags: %w", err)
 	}
 
 	manifest, err := CreateManifest(jsonStr, filePath)
