@@ -6,7 +6,7 @@ on:
 
 jobs:
   validate:
-    name: Validate Compose And Build Images
+    name: Validate Compose
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -18,9 +18,3 @@ jobs:
 
       - name: Validate release compose
         run: docker compose -f docker-compose.yml config
-
-      - name: Build frontend release image
-        run: docker build -f ./front/Dockerfile -t devsforge-frontend:ci ./front
-
-      - name: Build backend release image
-        run: docker build -f ./back/Dockerfile -t devsforge-backend:ci ./

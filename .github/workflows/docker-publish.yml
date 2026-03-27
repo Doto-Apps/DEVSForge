@@ -24,9 +24,19 @@ jobs:
           - image_name: devsforge-frontend
             context: ./front
             dockerfile: ./front/Dockerfile
+            target: ""
+          - image_name: devsforge-backend-aio
+            context: ./
+            dockerfile: ./back/Dockerfile
+            target: "all-in-one"
           - image_name: devsforge-backend
             context: ./
             dockerfile: ./back/Dockerfile
+            target: backend
+          - image_name: devsforge-simulator
+            context: ./
+            dockerfile: ./back/Dockerfile
+            target: simulator
 
     steps:
       - name: Checkout
@@ -60,6 +70,7 @@ jobs:
         with:
           context: ${{ matrix.context }}
           file: ${{ matrix.dockerfile }}
+          target: ${{ matrix.target }}
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ steps.meta.outputs.tags }}

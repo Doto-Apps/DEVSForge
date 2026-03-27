@@ -47,10 +47,14 @@ tasks:
       - go test -v ./simulator/runner/tests/...
 
   prod-docker-build:
-    desc: Create complete docker image with backend+simulator+runner.
+    desc: Test docker image creations for backend, simulator, runner and all-in-one.
     deps: [tidy]
     cmds:
       - defer: docker image rm devsforge-local-backend-test:latest > /dev/null || true
-      - docker build -f ./back/Dockerfile -t devsforge-local-backend-test:latest ./
-      - echo "Taille de l'image finale :"
-      - docker images devsforge-local-backend-test:latest --format "{{.Size}}"
+      - defer: docker image rm devsforge-local-simulator-test:latest > /dev/null || true
+      - defer: docker image rm devsforge-local-runner-test:latest > /dev/null || true
+      - defer: docker image rm devsforge-local-aio-test:latest > /dev/null || true
+      - docker build -f ./back/Dockerfile --target backend -t devsforge-local-backend-test:latest ./
+      - docker build -f ./back/Dockerfile --target simulator -t devsforge-local-simulator-test:latest ./
+      - docker build -f ./back/Dockerfile --target runner -t devsforge-local-runner-test:latest ./
+      - docker build -f ./back/Dockerfile -t devsforge-local-aio-test:latest ./

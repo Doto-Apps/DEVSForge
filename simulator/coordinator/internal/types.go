@@ -9,4 +9,11 @@ type RunnerState struct {
 	Inbox    []kafka.PortValue // messages reçus avant un ExecuteTransition
 }
 
+type SimulationParams struct {
+	Json         *string
+	File         *string
+	KafkaAddress *string
+	KafkaTopic   *string
+}
+
 type RunnerStates = map[string]*RunnerState

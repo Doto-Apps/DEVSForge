@@ -4,27 +4,14 @@ import (
 	shared "devsforge-shared"
 	"devsforge-shared/logger"
 	"devsforge-shared/utils"
-	"flag"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
 )
 
-func RunSimulation(args []string) error {
-	fs := flag.NewFlagSet("simulator", flag.ContinueOnError)
-
-	jsonStr := fs.String("json", "", "JSON string to parse")
-	filePath := fs.String("file", "", "Path to JSON file")
-	dockerProvider := fs.Bool("docker", false, "Whether to use docker to launch runner or use shell")
-	kafka := fs.String("kafka", "", "The kafka endpoint")
-	topic := fs.String("topic", "", "The kafka topic (generated if not provided)")
-
-	if err := fs.Parse(args); err != nil {
-		return fmt.Errorf("error parsing flags: %w", err)
-	}
-
-	manifest, err := CreateManifest(jsonStr, filePath)
+func RunSimulation(params SimulationParams) error {
+	manifest, err := CreateManifest(params.Json, params.File)
 	if err != nil {
 		return err
 	}
@@ -50,7 +37,7 @@ func RunSimulation(args []string) error {
 
 	slog.Info("DEVSForge Simulator")
 
-	kafkaTopic, err := GetKafkaTopic(*kafka, *topic)
+	kafkaTopic, err := GetKafkaTopic(*params.KafkaAddress, *params.KafkaTopic)
 	if err != nil {
 		return fmt.Errorf("failed to initialize Kafka topic: %w", err)
 	}
@@ -80,7 +67,7 @@ func RunSimulation(args []string) error {
 	yamlConfig := shared.YamlInputConfig{
 		Kafka: shared.YamlInputConfigKafka{
 			Enabled: true,
-			Address: *kafka,
+			Address: *params.KafkaAddress,
 			Topic:   kafkaTopic,
 		},
 		TmpDirectory: rootDir,
@@ -93,20 +80,15 @@ func RunSimulation(args []string) error {
 
 	cfg := InitConfig(yamlConfig)
 
-	if *dockerProvider {
-		slog.Info("Launching runners using docker", "count", len(manifest.Models))
-		// TODO: Docker path should also rely on simRoot / rootDir if needed.
-	} else {
-		if err := RunShellSimulation(manifest, configFile, cfg); err != nil {
-			sendCoordinatorErrorReport(cfg, manifest.SimulationID, "COORDINATOR_SIMULATION_ERROR", err)
-			return err
-		}
+	if err := RunShellSimulation(manifest, configFile, cfg); err != nil {
+		sendCoordinatorErrorReport(cfg, manifest.SimulationID, "COORDINATOR_SIMULATION_ERROR", err)
+		return err
 	}
 
 	slog.Info("Simulation ended")
 	slog.Info("Cleaning environment")
 
-	if err := CleanupKafka(*kafka, kafkaTopic); err != nil {
+	if err := CleanupKafka(*params.KafkaAddress, kafkaTopic); err != nil {
 		return fmt.Errorf("error during cleanup: %w", err)
 	}
 	if err = os.RemoveAll(rootDir); err != nil {
