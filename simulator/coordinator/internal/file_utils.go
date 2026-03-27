@@ -4,10 +4,10 @@ import (
 	"crypto/rand"
 	shared "devsforge-shared"
 	"devsforge-shared/utils"
-
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -40,7 +40,11 @@ func GenerateRunnerYamlConfig(config shared.YamlInputConfig) (*os.File, error) {
 		return nil, fmt.Errorf("error creating tmp file: %w", err)
 	}
 
-	defer tmpFile.Close()
+	defer func() {
+		if err = tmpFile.Close(); err != nil {
+			log.Println("cannot close tmpFile: %w", err)
+		}
+	}()
 	if _, err := tmpFile.Write(rawYAML); err != nil {
 		return nil, fmt.Errorf("error writing YAML tmp file: %w", err)
 	}
@@ -58,7 +62,11 @@ func GenerateJSONRunnerManifest(m *shared.RunnableModel, modelCount int, simulat
 		return nil, fmt.Errorf("error when launching %s : Invalid JSON to stringify", m.ID)
 	}
 	tmpFile, _ := os.CreateTemp("", "model-*.json")
-	defer tmpFile.Close()
+	defer func() {
+		if err = tmpFile.Close(); err != nil {
+			log.Println("cannot close tmpFile: %w", err)
+		}
+	}()
 	if _, err := tmpFile.Write(rawJSON); err != nil {
 		return nil, fmt.Errorf("error when launching %s : cannot write tmp file: %w", m.ID, err)
 	}

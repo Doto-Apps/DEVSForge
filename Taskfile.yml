@@ -3,34 +3,45 @@ version: "3"
 vars:
   MODULES_DIRS:
     sh: awk '/use \(/,/\)/ { if ($1 ~ /^\./) print $1 }' go.work
+  # Same as in .github folder
+  GOLANGCI_VERSION: v2.11.4
 
 tasks:
   tidy:
-    desc: Exécute go mod tidy de manière récursive sur tous les modules du workspace.
+    desc: Execute tidy on all modules
     cmds:
       - for: { var: MODULES_DIRS }
         cmd: cd {{.ITEM}} && go mod tidy
     silent: true
 
   ci:
-    desc: Lance le build, le lint et les tests (flux complet de CI).
+    desc: Launch all task for ci.
     deps: [build, lint, test]
 
   build:
-    desc: Compile tous les modules du workspace.
+    desc: Build all modules.
     deps: [tidy]
     cmds:
       - for: { var: MODULES_DIRS }
         cmd: cd {{.ITEM}} && go build -v ./...
 
   lint:
-    desc: Lance le linter (golangci-lint) sur le projet.
-    deps: [build]
+    desc: Lint all go modules.
     cmds:
-      - golangci-lint run --issues-exit-code 0
+      - for: { var: MODULES_DIRS }
+        cmd: |
+          echo -e "\033[1;34m==================================================\033[0m"
+          echo -e "\033[1;34m🔍 Linting moddule : {{.ITEM}}\033[0m"
+          echo -e "\033[1;34m==================================================\033[0m"
+          docker run -t --rm -v $(pwd):/app -w /app/{{.ITEM}} --name golangci-lint-devsforge \
+          --user $(id -u):$(id -g) \
+          -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
+          -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
+          -v ~/.cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+          golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}} || true
 
   test:
-    desc: Lance les tests avec le race detector (pour le simulateur).
+    desc: Launch unit tests.
     deps: [build]
     cmds:
       - go test -v ./simulator/runner/tests/...

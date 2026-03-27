@@ -198,7 +198,7 @@ func buildReuseContext(
 	if len(promptKeywords) == 0 {
 		b.WriteString("- Prompt keywords: none\n")
 	} else {
-		b.WriteString(fmt.Sprintf("- Prompt keywords: %s\n", strings.Join(promptKeywords, ", ")))
+		fmt.Fprintf(&b, "- Prompt keywords: %s\n", strings.Join(promptKeywords, ", "))
 	}
 
 	if len(candidates) == 0 {
@@ -208,26 +208,18 @@ func buildReuseContext(
 
 	b.WriteString("- Ranked candidates (Jaccard):\n")
 	for _, c := range candidates {
-		b.WriteString(
-			fmt.Sprintf(
-				"  - %s (%s): score=%.3f, keywords=[%s]\n",
-				c.Name,
-				c.ModelID,
-				c.Score,
-				strings.Join(c.Keywords, ", "),
-			),
-		)
+		fmt.Fprintf(&b, "  - %s (%s): score=%.3f, keywords=[%s]\n",
+			c.Name,
+			c.ModelID,
+			c.Score,
+			strings.Join(c.Keywords, ", "))
 	}
 
 	if selected != nil {
-		b.WriteString(
-			fmt.Sprintf(
-				"- Selected candidate: %s (%s), score=%.3f\n",
-				selected.Name,
-				selected.ModelID,
-				selected.Score,
-			),
-		)
+		fmt.Fprintf(&b, "- Selected candidate: %s (%s), score=%.3f\n",
+			selected.Name,
+			selected.ModelID,
+			selected.Score)
 	}
 	return b.String()
 }
@@ -238,10 +230,10 @@ func buildPreviousCodeWithReuse(previous string, selected *modelReuseCandidate) 
 	}
 	var b strings.Builder
 	b.WriteString("# === Reuse candidate (reuse-first) ===\n")
-	b.WriteString(fmt.Sprintf("# model: %s (%s)\n", selected.Name, selected.ModelID))
-	b.WriteString(fmt.Sprintf("# score: %.3f\n", selected.Score))
+	fmt.Fprintf(&b, "# model: %s (%s)\n", selected.Name, selected.ModelID)
+	fmt.Fprintf(&b, "# score: %.3f\n", selected.Score)
 	if len(selected.Keywords) > 0 {
-		b.WriteString(fmt.Sprintf("# keywords: %s\n", strings.Join(selected.Keywords, ", ")))
+		fmt.Fprintf(&b, "# keywords: %s\n", strings.Join(selected.Keywords, ", "))
 	}
 	b.WriteString(selected.Code)
 	b.WriteString("\n\n# === Existing referenced models ===\n")

@@ -8,9 +8,7 @@ import (
 )
 
 func GetDevsSympyJSON(models []model.Model, rootId string) (res json.Diagram, err error) {
-
-	var rootModel *model.Model
-	rootModel = getModelWithId(models, rootId)
+	rootModel := getModelWithId(models, rootId)
 
 	if rootModel == nil {
 		return res, errors.New("NOT_FOUND")
@@ -25,6 +23,7 @@ func GetDevsSympyJSON(models []model.Model, rootId string) (res json.Diagram, er
 	res.Cells = recursiveParser(models, firstModelComponent) // <--- ici, plus besoin de []
 	return res, nil
 }
+
 func getModelWithId(models []model.Model, id string) *model.Model {
 	for i := range models {
 		if models[i].ID == id {
@@ -74,7 +73,7 @@ func getSimulationBehaviour(model model.Model, modelComponent json.ModelComponen
 		var params []json.ModelParameter
 		if modelComponent.InstanceMetadata != nil && len(modelComponent.InstanceMetadata.Parameters) > 0 {
 			params = modelComponent.InstanceMetadata.Parameters
-		} else if model.Metadata.Parameters != nil && len(model.Metadata.Parameters) > 0 {
+		} else if len(model.Metadata.Parameters) > 0 {
 			params = model.Metadata.Parameters
 		}
 
@@ -180,7 +179,7 @@ func recursiveParser(models []model.Model, modelComponent json.ModelComponent) (
 		res = append(res, getSimulationConnection(conn, *actualModel, modelComponent))
 	}
 
-	//ajout des model atom ou coup
+	// ajout des model atom ou coup
 	res = append(res, createSimulationModel(*actualModel, modelComponent))
 
 	return res

@@ -137,7 +137,9 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 				return nil
 			}
 
-			conn.Close()
+			if err = conn.Close(); err != nil {
+				log.Println("cannot close grpc connection")
+			}
 		}
 	}
 }

@@ -43,7 +43,7 @@ func (c *component) GetPortByName(portName string) (Port, error) {
 			return p, nil
 		}
 	}
-	return nil, fmt.Errorf("Cant find port")
+	return nil, fmt.Errorf("cant find port")
 }
 
 func (c *component) GetPorts(portType *string) []Port {

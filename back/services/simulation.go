@@ -7,6 +7,7 @@ import (
 	"devsforge/model"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -165,9 +166,6 @@ func (s *SimulationService) runCoordinator(simulationID string, manifestFile str
 	cmd.Stderr = os.Stderr
 	err = cmd.Run()
 
-	// Clean up manifest file
-	os.Remove(manifestFile)
-
 	// Update simulation status.
 	// If the event consumer already marked the run as failed from an ErrorReport,
 	// do not override it with "completed".
@@ -185,6 +183,11 @@ func (s *SimulationService) runCoordinator(simulationID string, manifestFile str
 			fmt.Printf("[SimulationService] failed to mark simulation as failed: %v\n", result.Error)
 		}
 		return
+	}
+
+	// Clean up manifest file
+	if err = os.Remove(manifestFile); err != nil {
+		log.Println("cannot remove manifestFile: %w", err)
 	}
 
 	result := db.Model(&model.Simulation{}).

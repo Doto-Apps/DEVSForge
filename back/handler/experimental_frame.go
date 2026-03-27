@@ -406,10 +406,10 @@ func createAssistedModelFromSpec(
 ) (model.Model, error) {
 	role := strings.TrimSpace(spec.Role)
 	if role == "" {
-		switch {
-		case spec.ID == req.RootModelID:
+		switch spec.ID {
+		case req.RootModelID:
 			role = "experimental-frame"
-		case spec.ID == req.TargetModelID:
+		case req.TargetModelID:
 			role = "model-under-test"
 		default:
 			role = string(spec.Type)

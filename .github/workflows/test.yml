@@ -26,8 +26,8 @@ jobs:
   golangci-lint:
     needs: detect-modules
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         modules: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
     steps:

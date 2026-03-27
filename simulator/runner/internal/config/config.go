@@ -30,7 +30,11 @@ func pickFreePort() (int, error) {
 	if err != nil {
 		return 0, fmt.Errorf("failed to listen on random port: %w", err)
 	}
-	defer l.Close()
+	defer func() {
+		if err = l.Close(); err != nil {
+			log.Println("cannot close listening: %w", err)
+		}
+	}()
 
 	addr, ok := l.Addr().(*net.TCPAddr)
 	if !ok {

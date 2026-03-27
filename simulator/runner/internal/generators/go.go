@@ -122,7 +122,6 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 				continue
 			}
 
-			// Test si le serveur répond vraiment avec un ping rapide
 			testCtx, testCancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 			modelClient := devspb.NewAtomicModelServiceClient(conn)
 			_, testErr := modelClient.Initialize(testCtx, &emptypb.Empty{})
@@ -135,8 +134,10 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 				return nil
 			}
 
-			// Si ça a échoué, on ferme cette connexion et on réessaie
-			conn.Close()
+			if err = conn.Close(); err != nil {
+				log.Println("cannot close grpc connection")
+			}
+
 		}
 	}
 }

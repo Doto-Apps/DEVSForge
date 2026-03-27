@@ -31,11 +31,11 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	// Check runner command
 	runnerDir := filepath.Join(simulatorRootDir, "runner")
 	if runnerCmd != "" {
-		log.Println("Launching runners using %s command", runnerCmd)
+		log.Printf("Launching runners using %s command\n", runnerCmd)
 	} else {
-		log.Println("Launching runners using go run inside %s directory", runnerDir)
+		log.Printf("Launching runners using go run inside %s directory\n", runnerDir)
 		if _, err := os.Stat(filepath.Join(runnerDir, "main.go")); err != nil {
-			return fmt.Errorf("main.go not found in %", runnerDir)
+			return fmt.Errorf("main.go not found in %s", runnerDir)
 		}
 	}
 

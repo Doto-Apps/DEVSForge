@@ -106,9 +106,10 @@ func BuildWebAppContract(models []model.Model, rootID string) (jsonModel.WebAppC
 			Name:       portName,
 			Direction:  port.Type,
 		}
-		if port.Type == "in" {
+		switch port.Type {
+		case "in":
 			inputPortBindings = append(inputPortBindings, binding)
-		} else if port.Type == "out" {
+		case "out":
 			outputPortBindings = append(outputPortBindings, binding)
 		}
 	}

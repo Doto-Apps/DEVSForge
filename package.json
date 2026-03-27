@@ -12,6 +12,8 @@
 		"start:prod": "docker compose -f docker-compose.yml up --pull always",
 		"clean:back": "docker compose -f docker-compose.back.yml down -v",
 		"typecheck": "cd front && pnpm tsc --noEmit",
+    "lint:back": "task lint",
+    "lint:back:fix": "task lint -- --fix",
     "postinstall": "lefthook install"
 	},
 	"devDependencies": {

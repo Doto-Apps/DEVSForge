@@ -53,7 +53,11 @@ func RunSimulation(args []string) error {
 	if err := os.MkdirAll(tmpBase, 0o755); err != nil {
 		return fmt.Errorf("failed to create tmp base directory %q: %w", tmpBase, err)
 	}
-	defer os.RemoveAll(tmpBase)
+	defer func() {
+		if err = os.RemoveAll(tmpBase); err != nil {
+			log.Println("cannot remove tmpBase: %w", err)
+		}
+	}()
 
 	prefix := "devsforge_" + manifest.SimulationID + "_"
 	rootDir, err := os.MkdirTemp(tmpBase, prefix)

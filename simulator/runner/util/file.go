@@ -1,8 +1,10 @@
+// Package util : Runner utilitaries
 package util
 
 import (
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 )
@@ -59,13 +61,21 @@ func copyFile(src, dst string, perm os.FileMode) error {
 	if err != nil {
 		return fmt.Errorf("open src: %w", err)
 	}
-	defer in.Close()
+	defer func() {
+		if err = in.Close(); err != nil {
+			log.Println("cannot close in file: %w", err)
+		}
+	}()
 
 	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, perm)
 	if err != nil {
 		return fmt.Errorf("open dst: %w", err)
 	}
-	defer out.Close()
+	defer func() {
+		if err = out.Close(); err != nil {
+			log.Println("cannot close out file: %w", err)
+		}
+	}()
 
 	if _, err := io.Copy(out, in); err != nil {
 		return fmt.Errorf("copy data: %w", err)

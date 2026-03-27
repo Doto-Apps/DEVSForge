@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"devsforge-shared/utils"
 	"errors"
 	"log"
 	"os"
@@ -9,8 +10,6 @@ import (
 	"path/filepath"
 	"syscall"
 	"testing"
-
-	"devsforge-shared/utils"
 
 	tccompose "github.com/testcontainers/testcontainers-go/modules/compose"
 )
@@ -21,7 +20,6 @@ var (
 
 	ErrSimulationDone = errors.New("simulation completed normally")
 	Sender            = "fakecoordinator"
-	testLogger        = log.New(os.Stdout, "[TEST FAKE COORDINATOR] ", log.LstdFlags)
 
 	// Global compose stack to ensure we can stop it reliably.
 	stack *tccompose.DockerCompose

@@ -38,12 +38,6 @@ type RuntimeInstanceOverride struct {
 	OverrideParams  []RuntimeParameterOverride
 }
 
-// portEndpoint identifies a specific port on a specific instance
-type portEndpoint struct {
-	instancePath []string // Path of instanceIDs
-	portName     string   // Port name (ID)
-}
-
 // ============================================================================
 // Main Entry Point
 // ============================================================================
