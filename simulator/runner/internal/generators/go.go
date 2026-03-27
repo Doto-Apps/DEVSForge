@@ -7,7 +7,7 @@ import (
 	devspb "devsforge-wrapper/proto"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -51,7 +51,7 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 	}
 	binaryPath := filepath.Join(wrapper.ModelDir, binaryName)
 
-	log.Printf("Compiling model wrapper...")
+	slog.Info("Compiling model wrapper...")
 	buildCmd := exec.Command("go", "build", "-o", binaryPath, ".")
 	buildCmd.Dir = wrapper.ModelDir
 
@@ -64,7 +64,7 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 	if err := buildCmd.Run(); err != nil {
 		return fmt.Errorf("failed to compile model wrapper: %w", err)
 	}
-	log.Printf("✅ Model wrapper compiled: %s", binaryPath)
+	slog.Info(fmt.Sprintf("✅ Model wrapper compiled: %s", binaryPath))
 
 	modelJSON, err := json.Marshal(cfg.Model)
 	if err != nil {
@@ -84,7 +84,7 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 		return fmt.Errorf("failed to start model process: %w", err)
 	}
 
-	log.Printf("Started model process (id=%s, pid=%d)", cfg.ID, cmd.Process.Pid)
+	slog.Info(fmt.Sprintf("Started model process (id=%s, pid=%d)", cfg.ID, cmd.Process.Pid))
 	wrapper.Cmd = cmd
 
 	// On surveille le process pour détecter un crash avant que le gRPC soit prêt
@@ -96,7 +96,7 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 
 	// Connexion gRPC avec surveillance du process et timeout
 	addr := fmt.Sprintf("%s:%d", cfg.GRPC.Host, cfg.GRPC.Port)
-	log.Printf("Waiting for gRPC server at %s to be ready...", addr)
+	slog.Info(fmt.Sprintf("Waiting for gRPC server at %s to be ready...", addr))
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -129,13 +129,13 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 
 			if testErr == nil {
 				// Connexion réussie !
-				log.Println("✅ gRPC server is ready and responding")
+				slog.Info("✅ gRPC server is ready and responding")
 				wrapper.GRPCConn = conn
 				return nil
 			}
 
 			if err = conn.Close(); err != nil {
-				log.Println("cannot close grpc connection")
+				slog.Warn("cannot close grpc connection")
 			}
 
 		}

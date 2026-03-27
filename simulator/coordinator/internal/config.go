@@ -4,7 +4,7 @@ import (
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/twmb/franz-go/pkg/kgo"
@@ -21,8 +21,9 @@ var config *CoordConfig
 func InitConfig(yamlConfig shared.YamlInputConfig) *CoordConfig {
 	// Charge la config YAML (Kafka, gRPC, etc.)
 
-	log.Printf("Connecting to kafka: %s | topic=%s",
+	slog.Info("Connecting to kafka", "broker",
 		yamlConfig.Kafka.Address,
+		"topic",
 		yamlConfig.Kafka.Topic,
 	)
 
@@ -31,7 +32,7 @@ func InitConfig(yamlConfig shared.YamlInputConfig) *CoordConfig {
 
 	client, err := kgo.NewClient(kafkaConfig.Config...)
 	if err != nil {
-		log.Printf("Error while creating kafka client: %v\n", err)
+		slog.Error("Error creating kafka client", "error", err)
 		return nil
 	}
 

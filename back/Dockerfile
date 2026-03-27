@@ -58,4 +58,6 @@ COPY --from=builder /app/bin/devsforge-runner /devsforge-runner
 
 EXPOSE 3000
 
+VOLUME [ "/sim-logs" ]
+
 CMD ["./devsforge-backend"]

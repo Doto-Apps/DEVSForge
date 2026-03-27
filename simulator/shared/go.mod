@@ -2,7 +2,10 @@ module devsforge-shared
 
 go 1.24.10
 
-require github.com/twmb/franz-go v1.20.5
+require (
+	github.com/twmb/franz-go v1.20.5
+	gopkg.in/natefinch/lumberjack.v2 v2.2.1
+)
 
 require (
 	github.com/klauspost/compress v1.18.1 // indirect

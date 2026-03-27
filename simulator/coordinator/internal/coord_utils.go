@@ -3,7 +3,7 @@ package internal
 import (
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
-	"log"
+	"log/slog"
 	"math"
 )
 
@@ -43,7 +43,7 @@ func routeOutputs(
 				// c.To.Port = nom du port d'entrée
 				destState, ok := runners[c.To.ID]
 				if !ok {
-					log.Printf("⚠️ routeOutputs: aucun runner pour le modèle destination %s", c.To.ID)
+					slog.Warn("No runner for destination model", "destination_id", c.To.ID)
 					continue
 				}
 

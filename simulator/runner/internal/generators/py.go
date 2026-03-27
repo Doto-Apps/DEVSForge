@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -83,7 +83,7 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 		return fmt.Errorf("failed to start python model process: %w", err)
 	}
 
-	log.Printf("Started PY model process (id=%s, pid=%d)", cfg.ID, cmd.Process.Pid)
+	slog.Info("Started PY model process", "model_id", cfg.ID, "pid", cmd.Process.Pid)
 	wrapper.Cmd = cmd
 
 	// On surveille le process pour détecter un crash avant que le gRPC soit prêt
@@ -95,7 +95,7 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 
 	// Connexion gRPC avec surveillance du process et timeout (même logique que Go)
 	addr := fmt.Sprintf("%s:%d", cfg.GRPC.Host, cfg.GRPC.Port)
-	log.Printf("Waiting for PY gRPC server at %s to be ready...", addr)
+	slog.Debug("Waiting for PY gRPC server", "address", addr)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
@@ -132,13 +132,13 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 			testCancel()
 
 			if testErr == nil {
-				log.Println("✅ PY gRPC server is ready and responding")
+				slog.Debug("PY gRPC server is ready")
 				wrapper.GRPCConn = conn
 				return nil
 			}
 
 			if err = conn.Close(); err != nil {
-				log.Println("cannot close grpc connection")
+				slog.Debug("Cannot close gRPC connection")
 			}
 		}
 	}

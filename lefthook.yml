@@ -33,7 +33,7 @@ pre-commit:
     - name: Format back
       run: pnpm run format:back
       root: "/back"
-      glob: "*.go"
+      glob: "**/*.go"
       stage_fixed: true
 
     # - name: govet

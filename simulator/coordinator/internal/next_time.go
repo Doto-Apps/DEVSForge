@@ -2,7 +2,7 @@ package internal
 
 import (
 	"devsforge-shared/kafka"
-	"log"
+	"log/slog"
 	"math"
 )
 
@@ -12,7 +12,7 @@ func (c *Coordinator) RunNextTime(nextTimeCh chan *kafka.BaseKafkaMessage) {
 		id := msg.Sender
 		st, ok := c.RunnerStates[id]
 		if !ok {
-			log.Printf("⚠️ NextTime from unknown runner %s", id)
+			slog.Warn("NextTime from unknown runner", "runner_id", id)
 			continue
 		}
 		if msg.NextTime == nil {

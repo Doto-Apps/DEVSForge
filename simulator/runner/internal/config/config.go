@@ -4,7 +4,7 @@ import (
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
 	"fmt"
-	"log"
+	"log/slog"
 	"net"
 	"os"
 
@@ -32,7 +32,7 @@ func pickFreePort() (int, error) {
 	}
 	defer func() {
 		if err = l.Close(); err != nil {
-			log.Println("cannot close listening: ", err)
+			slog.Debug("Cannot close listening connection", "error", err)
 		}
 	}()
 
@@ -71,7 +71,7 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 
 	// On fixe l'host (tu peux garder celui du YAML si tu veux)
 
-	log.Printf("[RUNNER %s] Connecting to kafka: %s | topic=%s | gRPC=%s:%d",
+	slog.Info("Connecting to kafka", "runner_id",
 		model.ID,
 		runnerConfig.Kafka.Address,
 		runnerConfig.Kafka.Topic,
@@ -85,7 +85,7 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 
 	client, err := kgo.NewClient(kafkaConfig.Config...)
 	if err != nil {
-		log.Printf("Error while creating kafka client: %v\n", err)
+		slog.Error("Error creating kafka client", "error", err)
 		return nil
 	}
 

@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"time"
 
@@ -26,7 +26,7 @@ func CreateTopic(brokerAddress, topic string, partitions int, replicationFactor 
 	}
 	defer func() {
 		if err = conn.Close(); err != nil {
-			log.Println("cannot close conn: ", err)
+			slog.Debug("Cannot close connection", "error", err)
 		}
 	}()
 
@@ -52,7 +52,7 @@ func DeleteTopic(broker, topic string) error {
 	}
 	defer func() {
 		if err = conn.Close(); err != nil {
-			log.Println("cannot close conn: ", err)
+			slog.Debug("Cannot close connection", "error", err)
 		}
 	}()
 
@@ -68,7 +68,7 @@ func DeleteTopic(broker, topic string) error {
 	}
 	defer func() {
 		if err = ctrlConn.Close(); err != nil {
-			log.Println("cannot close ctrlConn: ", err)
+			slog.Debug("Cannot close controller connection", "error", err)
 		}
 	}()
 

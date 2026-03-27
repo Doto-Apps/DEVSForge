@@ -2,7 +2,7 @@ package generators
 
 import (
 	"devsforge-runner/internal/config"
-	"log"
+	"log/slog"
 	"os/exec"
 	"time"
 
@@ -23,7 +23,7 @@ func (w *WrapperInfo) Cleanup() error {
 	// 1. Fermer la connexion gRPC
 	if w.GRPCConn != nil {
 		if err := w.GRPCConn.Close(); err != nil {
-			log.Printf("⚠️ failed to close gRPC connection: %v", err)
+			slog.Debug("Failed to close gRPC connection", "error", err)
 		}
 		w.GRPCConn = nil
 	}
@@ -31,18 +31,18 @@ func (w *WrapperInfo) Cleanup() error {
 	// 2. Arrêter le processus
 	if w.Cmd != nil && w.Cmd.Process != nil {
 		pid := w.Cmd.Process.Pid
-		log.Printf("Stopping model process pid=%d", pid)
+		slog.Info("Stopping model process", "pid", pid)
 
 		// Tuer le processus (c'est un binaire unique maintenant, pas go run)
 		if err := w.Cmd.Process.Kill(); err != nil {
-			log.Printf("⚠️ failed to kill process: %v", err)
+			slog.Warn("Failed to kill process", "error", err)
 		}
 
 		// Attendre que le processus se termine
 		if err := w.Cmd.Wait(); err != nil {
-			log.Println("Process wait error: ", err)
+			slog.Error("Process wait error", "error", err)
 		}
-		log.Printf("Process stopped pid=%d", pid)
+		slog.Info("Process stopped", "pid", pid)
 		w.Cmd = nil
 
 		// Petit délai pour que le système libère les fichiers

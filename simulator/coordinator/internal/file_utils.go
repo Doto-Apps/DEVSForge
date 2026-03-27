@@ -7,7 +7,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"gopkg.in/yaml.v3"
@@ -42,7 +42,7 @@ func GenerateRunnerYamlConfig(config shared.YamlInputConfig) (*os.File, error) {
 
 	defer func() {
 		if err = tmpFile.Close(); err != nil {
-			log.Println("cannot close tmpFile: ", err)
+			slog.Debug("Cannot close temp file", "error", err)
 		}
 	}()
 	if _, err := tmpFile.Write(rawYAML); err != nil {
@@ -64,7 +64,7 @@ func GenerateJSONRunnerManifest(m *shared.RunnableModel, modelCount int, simulat
 	tmpFile, _ := os.CreateTemp("", "model-*.json")
 	defer func() {
 		if err = tmpFile.Close(); err != nil {
-			log.Println("cannot close tmpFile: ", err)
+			slog.Debug("Cannot close temp file", "error", err)
 		}
 	}()
 	if _, err := tmpFile.Write(rawJSON); err != nil {
