@@ -2,17 +2,16 @@
 package tests
 
 import (
+	"devsforge-runner/cmd"
 	shared "devsforge-shared"
+	"devsforge-shared/kafka"
+	"devsforge-shared/utils"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"devsforge-runner/cmd"
-	"devsforge-shared/kafka"
-	"devsforge-shared/utils"
 
 	"gopkg.in/yaml.v3"
 )
@@ -138,7 +137,7 @@ func TestRunPythonModel(t *testing.T) {
 
 		case kafka.DevsTypeNextTime:
 			currentTime = msg.NextTime.T
-			SendMessage(client, &kafka.KafkaMessageExecuteTransition{
+			err = SendMessage(client, &kafka.KafkaMessageExecuteTransition{
 				DevsType: kafka.DevsTypeExecuteTransition,
 				Time: kafka.SimTime{
 					TimeType: kafka.DevsDoubleSimTime.String(),
@@ -148,7 +147,7 @@ func TestRunPythonModel(t *testing.T) {
 			})
 			i = i + 1
 		case kafka.DevsTypeTransitionDone:
-			SendMessage(client, &kafka.KafkaMessageSendOutput{
+			err = SendMessage(client, &kafka.KafkaMessageSendOutput{
 				DevsType: kafka.DevsTypeSendOutput,
 				Time: kafka.SimTime{
 					TimeType: kafka.DevsDoubleSimTime.String(),
@@ -158,7 +157,7 @@ func TestRunPythonModel(t *testing.T) {
 				Sender: Sender,
 			})
 		case kafka.DevsTypeModelOutput:
-			SendMessage(client, &kafka.KafkaMessageSimulationDone{
+			err = SendMessage(client, &kafka.KafkaMessageSimulationDone{
 				DevsType: kafka.DevsTypeSimulationDone,
 				Target:   runnerPythonID,
 				Sender:   Sender,

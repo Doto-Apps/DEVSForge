@@ -21,18 +21,20 @@ commit-msg:
   scripts:
     "commitlint.sh":
       runner: bash
-      
+
 pre-commit:
   parallel: true
   jobs:
     - name: Format front
-      run: pnpm biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
-      glob: "*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      run: pnpm run format:front
+      glob: "front/**/*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      stage_fixed: true
 
     - name: Format back
-      run: go fmt
+      run: pnpm run format:back
       root: "/back"
       glob: "*.go"
+      stage_fixed: true
 
     # - name: govet
     #   files: git ls-files -m

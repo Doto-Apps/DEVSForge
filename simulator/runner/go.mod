@@ -3,6 +3,7 @@ module devsforge-runner
 go 1.25.4
 
 replace devsforge-shared => ../shared
+
 replace devsforge-wrapper => ../wrappers/go
 
 require (

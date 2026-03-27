@@ -10,7 +10,10 @@ import NavHeader from "@/components/nav/nav-header";
 import { Button } from "@/components/ui/button";
 import { useGenerateDiagram } from "@/hooks/useGenerateDiagram";
 import { useToast } from "@/hooks/use-toast";
-import { createAtomicModelRequests, createCoupledModelRequests } from "@/lib/llmToReactFlow";
+import {
+	createAtomicModelRequests,
+	createCoupledModelRequests,
+} from "@/lib/llmToReactFlow";
 import type { GeneratedDiagram, GeneratorPhase } from "@/types";
 import {
 	ArrowLeft,
@@ -133,7 +136,9 @@ export function GeneratorFlow() {
 	const handleModelValidated = useCallback(() => {
 		if (!diagram) return;
 
-		const atomicCount = diagram.models.filter((m) => m.type === "atomic").length;
+		const atomicCount = diagram.models.filter(
+			(m) => m.type === "atomic",
+		).length;
 		const nextIndex = currentModelIndex + 1;
 		if (nextIndex >= atomicCount) {
 			setPhase("complete");
@@ -167,7 +172,10 @@ export function GeneratorFlow() {
 
 			// Step 1: Create atomic models first (they have code)
 			// We need to track the mapping from model name to DB-generated ID
-			const { requests: atomicRequests } = createAtomicModelRequests(diagram, libraryId);
+			const { requests: atomicRequests } = createAtomicModelRequests(
+				diagram,
+				libraryId,
+			);
 			const dbIdMap = new Map<string, string>(); // Map from model name to DB ID
 
 			for (const modelRequest of atomicRequests) {
@@ -184,7 +192,11 @@ export function GeneratorFlow() {
 			}
 
 			// Step 2: Create coupled models with references to atomic models (using DB IDs)
-			const coupledRequests = createCoupledModelRequests(diagram, libraryId, dbIdMap);
+			const coupledRequests = createCoupledModelRequests(
+				diagram,
+				libraryId,
+				dbIdMap,
+			);
 
 			for (const modelRequest of coupledRequests) {
 				const modelResponse = await client.POST("/model", {
@@ -272,9 +284,7 @@ export function GeneratorFlow() {
 									{index < phaseSteps.length - 1 && (
 										<div
 											className={`w-8 sm:w-16 h-0.5 mx-2 ${
-												index < currentPhaseIndex
-													? "bg-green-500"
-													: "bg-muted"
+												index < currentPhaseIndex ? "bg-green-500" : "bg-muted"
 											}`}
 										/>
 									)}
@@ -330,15 +340,12 @@ export function GeneratorFlow() {
 						<CheckCircle2 className="w-20 h-20 text-green-500 mb-6" />
 						<h1 className="text-3xl font-bold mb-2">Generation Complete!</h1>
 						<p className="text-muted-foreground text-center max-w-md mb-8">
-							All models for "{diagram.name}" have been generated
-							successfully. You can now save them to your library.
+							All models for "{diagram.name}" have been generated successfully.
+							You can now save them to your library.
 						</p>
 
 						<div className="flex gap-4">
-							<Button
-								variant="outline"
-								onClick={() => setPhase("code")}
-							>
+							<Button variant="outline" onClick={() => setPhase("code")}>
 								<Code2 className="w-4 h-4 mr-2" />
 								Review Code
 							</Button>

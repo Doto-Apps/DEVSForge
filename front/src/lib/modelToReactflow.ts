@@ -119,7 +119,8 @@ const createReactflowModel = (
 	if (!model) return null;
 
 	const metadata = getModelMetadata(component, model);
-	const resolvedModelRole = metadata.modelRole ?? model.metadata.modelRole ?? "";
+	const resolvedModelRole =
+		metadata.modelRole ?? model.metadata.modelRole ?? "";
 	const resolvedKeywords = metadata.keyword ?? model.metadata.keyword ?? [];
 	const resolvedModelColors =
 		metadata.modelColors ?? model.metadata.modelColors;

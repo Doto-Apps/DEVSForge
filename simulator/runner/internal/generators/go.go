@@ -122,7 +122,6 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 				continue
 			}
 
-			// Test si le serveur répond vraiment avec un ping rapide
 			testCtx, testCancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
 			modelClient := devspb.NewAtomicModelServiceClient(conn)
 			_, testErr := modelClient.Initialize(testCtx, &emptypb.Empty{})
@@ -135,8 +134,10 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 				return nil
 			}
 
-			// Si ça a échoué, on ferme cette connexion et on réessaie
-			conn.Close()
+			if err = conn.Close(); err != nil {
+				log.Println("cannot close grpc connection")
+			}
+
 		}
 	}
 }
@@ -160,10 +161,7 @@ import (
 
 func main() {
 	log.SetPrefix("[WRAPPER] ")
-	log.Printf("wrapper PID=%%d starting...", os.Getpid())
-	log.Println("======================================")
-	log.Println("   ⚙️ Wrapper RPC for model %s")
-	log.Println("======================================")
+	log.Printf("wrapper for model %s PID=%%d starting...", os.Getpid())
 
 	fs := flag.NewFlagSet("runner", flag.ContinueOnError)
 	jsonStr := fs.String("json", "", "JSON string to parse") // --json "<...>"

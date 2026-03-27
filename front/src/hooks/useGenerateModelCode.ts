@@ -1,16 +1,14 @@
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
-import type {
-	GenerateModelCodeResult,
-	ReuseCandidate,
-} from "@/types";
+import type { GenerateModelCodeResult, ReuseCandidate } from "@/types";
 import { useState } from "react";
 
 type GenerateModelCodeRequest =
 	components["schemas"]["request.GenerateModelRequest"];
 type APIGenerateModelCodeResult =
 	components["schemas"]["response.GeneratedModelResponse"];
-type APIReuseCandidate = components["schemas"]["response.ReuseCandidateResponse"];
+type APIReuseCandidate =
+	components["schemas"]["response.ReuseCandidateResponse"];
 
 const normalizeReuseCandidate = (
 	candidate: APIReuseCandidate | undefined,

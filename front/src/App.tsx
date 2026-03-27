@@ -29,9 +29,9 @@ import { TestModel } from "./pages/model/TestModel";
 import { ValidationModel } from "./pages/model/ValidationModel";
 import { AccountSettings } from "./pages/settings/AccountSettings";
 import { WebAppBuilder } from "./pages/webapp/WebAppBuilder";
+import { DnDProvider } from "./providers/DnDContext";
 import { WebAppDeployment } from "./pages/webapp/WebAppDeployment";
 import { WebAppDeployments } from "./pages/webapp/WebAppDeployments";
-import { DnDProvider } from "./providers/DnDContext";
 
 const Main = () => {
 	const { isAuthenticated, isInitialized } = useAuth();

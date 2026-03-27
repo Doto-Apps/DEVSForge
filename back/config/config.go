@@ -18,7 +18,7 @@ func LoadEnv() {
 			return
 		}
 
-		fmt.Println("Warning: could not load .env.back or .env, using process environment variables")
+		fmt.Println("Warning: could not load .env, using process environment variables")
 	})
 }
 

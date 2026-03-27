@@ -1,47 +1,56 @@
 version: "3"
 
 vars:
-  # Variable qui liste les chemins absolus de tous les modules du go.work
   MODULES_DIRS:
     sh: awk '/use \(/,/\)/ { if ($1 ~ /^\./) print $1 }' go.work
+  # Same as in .github folder
+  GOLANGCI_VERSION: v2.11.4
 
 tasks:
-  ###################################
-  # MAINTENANCE ET NETTOYAGE (Ordre: fix-genproto -> tidy)
-  ###################################
-
   tidy:
-    desc: Exécute go mod tidy de manière récursive sur tous les modules du workspace.
+    desc: Execute tidy on all modules
     cmds:
       - for: { var: MODULES_DIRS }
         cmd: cd {{.ITEM}} && go mod tidy
     silent: true
 
-  ###################################
-  # FLUX DE CI LOCAL (Ordre: build -> (lint, test))
-  ###################################
-
-  # La tâche 'ci' est une porte d'entrée pour tout lancer
   ci:
-    desc: Lance le build, le lint et les tests (flux complet de CI).
+    desc: Launch all task for ci.
     deps: [build, lint, test]
 
   build:
-    desc: Compile tous les modules du workspace.
-    deps: [tidy] # S'assure que les dépendances sont propres avant de compiler
+    desc: Build all modules.
+    deps: [tidy]
     cmds:
       - for: { var: MODULES_DIRS }
         cmd: cd {{.ITEM}} && go build -v ./...
 
   lint:
-    desc: Lance le linter (golangci-lint) sur le projet.
-    deps: [build] # Se lance après que le build ait réussi
+    desc: Lint all go modules.
     cmds:
-      - golangci-lint run --issues-exit-code 0 # Utilise 0 pour simuler 'continue-on-error' comme dans la CI
+      - for: { var: MODULES_DIRS }
+        cmd: |
+          echo -e "\033[1;34m==================================================\033[0m"
+          echo -e "\033[1;34m🔍 Linting moddule : {{.ITEM}}\033[0m"
+          echo -e "\033[1;34m==================================================\033[0m"
+          docker run -t --rm -v $(pwd):/app -w /app/{{.ITEM}} --name golangci-lint-devsforge \
+          --user $(id -u):$(id -g) \
+          -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
+          -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
+          -v ~/.cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+          golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}} || true
 
   test:
-    desc: Lance les tests avec le race detector (pour le simulateur).
-    deps: [build] # Se lance après que le build ait réussi
+    desc: Launch unit tests.
+    deps: [build]
     cmds:
-      # Assurez-vous que le chemin est correct pour vos tests :
       - go test -v ./simulator/runner/tests/...
+
+  prod-docker-build:
+    desc: Create complete docker image with backend+simulator+runner.
+    deps: [tidy]
+    cmds:
+      - defer: docker image rm devsforge-local-backend-test:latest > /dev/null || true
+      - docker build -f ./back/Dockerfile -t devsforge-local-backend-test:latest ./
+      - echo "Taille de l'image finale :"
+      - docker images devsforge-local-backend-test:latest --format "{{.Size}}"

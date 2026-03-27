@@ -1,11 +1,10 @@
 package database
 
 import (
-	"fmt"
-	"strconv"
-
 	"devsforge/config"
 	"devsforge/model"
+	"fmt"
+	"strconv"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -47,9 +46,9 @@ func ConnectDB() {
 		panic("ERROR: Failed to connect to the database")
 	}
 
-	currentLogger := DB.Config.Logger
+	currentLogger := DB.Logger
 
-	DB.Session(&gorm.Session{
+	err = DB.Session(&gorm.Session{
 		Logger: logger.Default.LogMode(logger.Warn),
 	}).AutoMigrate(
 		&model.User{},
@@ -61,6 +60,9 @@ func ConnectDB() {
 		&model.SimulationEvent{},
 		&model.WebAppDeployment{},
 	)
+	if err != nil {
+		panic("ERROR: cannot migrate database")
+	}
 
-	DB.Config.Logger = currentLogger
+	DB.Logger = currentLogger
 }

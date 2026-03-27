@@ -2,73 +2,24 @@ package cmd
 
 import (
 	"context"
+	"devsforge-runner/internal"
+	"devsforge-runner/internal/config"
+	"devsforge-runner/internal/generators"
+	"devsforge-shared/utils"
 	"flag"
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
 	"time"
 
-	"devsforge-runner/internal"
-	"devsforge-runner/internal/config"
-	"devsforge-runner/internal/generators"
-	"devsforge-runner/util"
 	shared "devsforge-shared"
 	kafkaShared "devsforge-shared/kafka"
-	"devsforge-shared/utils"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func prepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath string) (*generators.WrapperInfo, error) {
-	cfg := config.InitConfig(manifest, yamlConfigFilePath)
-
-	simRoot := os.Getenv("DEVSFORGE_SIM_ROOT")
-	if simRoot == "" {
-		wd, err := os.Getwd()
-		if err != nil {
-			return nil, fmt.Errorf("failed to get working directory: %w", err)
-		}
-		simRoot = wd
-	}
-
-	if !filepath.IsAbs(cfg.TmpDirectory) {
-		cfg.TmpDirectory = filepath.Join(simRoot, cfg.TmpDirectory)
-	}
-	if err := os.MkdirAll(cfg.TmpDirectory, 0o755); err != nil {
-		return nil, fmt.Errorf("failed to create tmp directory %q: %w", cfg.TmpDirectory, err)
-	}
-
-	modelRoot := filepath.Join(cfg.TmpDirectory, "model_"+cfg.Model.ID)
-	modelingFolder := filepath.Join(simRoot, "wrappers", string(cfg.Model.Language))
-
-	if _, err := os.Stat(modelingFolder); err != nil {
-		return nil, fmt.Errorf("wrapper directory not found: %q: %w", modelingFolder, err)
-	}
-
-	if err := os.RemoveAll(modelRoot); err != nil {
-		return nil, fmt.Errorf("failed to remove directory %q: %w", modelRoot, err)
-	}
-	if err := os.MkdirAll(modelRoot, 0o755); err != nil {
-		return nil, fmt.Errorf("failed to create model directory %q: %w", modelRoot, err)
-	}
-
-	if err := util.CopyDir(modelingFolder, modelRoot); err != nil {
-		return nil, fmt.Errorf("failed to copy wrapper directory from %q to %q: %w", modelingFolder, modelRoot, err)
-	}
-
-	return &generators.WrapperInfo{
-		Cfg:      cfg,
-		RootDir:  cfg.TmpDirectory,
-		ModelDir: modelRoot,
-	}, nil
-}
-
 func LaunchRunner(args []string) error {
-	log.SetPrefix("[RUNNER] ")
-	log.Println("======================================")
-	log.Println("          DEVSForge Runner            ")
-	log.Println("======================================")
+	log.Println("Starting runner...")
 
 	fs := flag.NewFlagSet("runner", flag.ContinueOnError)
 	jsonStr := fs.String("json", "", "JSON string to parse")
@@ -105,7 +56,7 @@ func LaunchRunner(args []string) error {
 	log.SetPrefix("[RUNNER: " + manifest.Models[0].ID + " ]\t")
 	log.Println("manifest validated")
 
-	wrapper, err := prepareGeneralWrapper(manifest, *configFile)
+	wrapper, err := internal.PrepareGeneralWrapper(manifest, *configFile)
 	if err != nil {
 		return err
 	}
@@ -116,7 +67,7 @@ func LaunchRunner(args []string) error {
 		}
 	}()
 
-	log.Printf("launch using language: %s", manifest.Models[0].Language)
+	log.Printf("use language %s wrapper", manifest.Models[0].Language)
 	switch manifest.Models[0].Language {
 	case "go":
 		if err := generators.PrepareGoWraper(wrapper, manifest); err != nil {
@@ -138,9 +89,7 @@ func LaunchRunner(args []string) error {
 		return err
 	}
 
-	log.Println("======================================")
-	log.Println("      runner ended successfully       ")
-	log.Println("======================================")
+	log.Println("simulation ended successfully")
 	return nil
 }
 

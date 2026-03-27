@@ -1,17 +1,17 @@
 package services
 
 import (
-	"encoding/json"
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
-	"time"
-
 	"devsforge/config"
 	"devsforge/database"
 	"devsforge/lib"
 	"devsforge/model"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
+	"os/exec"
+	"path/filepath"
+	"time"
 )
 
 // SimulationService handles simulation business logic
@@ -119,13 +119,6 @@ func (s *SimulationService) StartSimulation(simulationID string) error {
 		kafkaAddr = "localhost:9092"
 	}
 
-	// Get coordinator path
-	coordinatorPath := config.Config("COORDINATOR_PATH")
-	if coordinatorPath == "" {
-		// Default to relative path from back
-		coordinatorPath = "../simulator/coordinator"
-	}
-
 	// Generate Kafka topic name for this simulation
 	kafkaTopic := GenerateTopicName(simulationID)
 
@@ -136,13 +129,13 @@ func (s *SimulationService) StartSimulation(simulationID string) error {
 	}
 
 	// Launch coordinator in background
-	go s.runCoordinator(simulationID, manifestFile, kafkaAddr, kafkaTopic, coordinatorPath)
+	go s.runCoordinator(simulationID, manifestFile, kafkaAddr, kafkaTopic)
 
 	return nil
 }
 
 // runCoordinator executes the coordinator subprocess
-func (s *SimulationService) runCoordinator(simulationID string, manifestFile string, kafkaAddr string, kafkaTopic string, coordinatorPath string) {
+func (s *SimulationService) runCoordinator(simulationID string, manifestFile string, kafkaAddr string, kafkaTopic string) {
 	db := database.DB
 
 	// Ensure event consumer is stopped when coordinator finishes
@@ -154,15 +147,24 @@ func (s *SimulationService) runCoordinator(simulationID string, manifestFile str
 	}
 
 	// Run the coordinator with the topic
-	cmd := exec.Command("go", "run", ".", "--file", manifestFile, "--kafka", kafkaAddr, "--topic", kafkaTopic)
-	cmd.Dir = coordinatorPath
+	simulatorCmd := os.Getenv("SIM_CMD")
+	var err error
+	var cmd *exec.Cmd
+	if simulatorCmd != "" {
+		cmd = exec.Command(simulatorCmd, "--file", manifestFile, "--kafka", kafkaAddr, "--topic", kafkaTopic)
+	} else {
+		// Get coordinator path
+		coordinatorPath := config.Config("COORDINATOR_PATH")
+		if coordinatorPath == "" {
+			// Default to relative path from back
+			coordinatorPath = "../simulator/coordinator"
+		}
+		cmd = exec.Command("go", "run", ".", "--file", manifestFile, "--kafka", kafkaAddr, "--topic", kafkaTopic)
+		cmd.Dir = coordinatorPath
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
-	err := cmd.Run()
-
-	// Clean up manifest file
-	os.Remove(manifestFile)
+	err = cmd.Run()
 
 	// Update simulation status.
 	// If the event consumer already marked the run as failed from an ErrorReport,
@@ -181,6 +183,11 @@ func (s *SimulationService) runCoordinator(simulationID string, manifestFile str
 			fmt.Printf("[SimulationService] failed to mark simulation as failed: %v\n", result.Error)
 		}
 		return
+	}
+
+	// Clean up manifest file
+	if err = os.Remove(manifestFile); err != nil {
+		log.Println("cannot remove manifestFile: %w", err)
 	}
 
 	result := db.Model(&model.Simulation{}).

@@ -12,9 +12,7 @@ import (
 
 func RunSimulation(args []string) error {
 	log.SetPrefix("[COORDI] ")
-	log.Println("======================================")
-	log.Println("        🏗️ DEVSForge Simulator        ")
-	log.Println("======================================")
+	log.Println("🏗️ DEVSForge Simulator")
 
 	fs := flag.NewFlagSet("simulator", flag.ContinueOnError)
 
@@ -42,7 +40,6 @@ func RunSimulation(args []string) error {
 		return fmt.Errorf("failed to initialize Kafka topic: %w", err)
 	}
 
-	// Resolve simulator root in a deterministic way.
 	simRoot := os.Getenv(utils.EnvSimulatorRoot)
 	if simRoot == "" {
 		simRoot, err = utils.SimulatorRoot()
@@ -56,6 +53,11 @@ func RunSimulation(args []string) error {
 	if err := os.MkdirAll(tmpBase, 0o755); err != nil {
 		return fmt.Errorf("failed to create tmp base directory %q: %w", tmpBase, err)
 	}
+	defer func() {
+		if err = os.RemoveAll(tmpBase); err != nil {
+			log.Println("cannot remove tmpBase: %w", err)
+		}
+	}()
 
 	prefix := "devsforge_" + manifest.SimulationID + "_"
 	rootDir, err := os.MkdirTemp(tmpBase, prefix)
@@ -91,12 +93,10 @@ func RunSimulation(args []string) error {
 		}
 	}
 
-	log.Println("======================================")
-	log.Println("       🏗️ Simulation ended... ✨      ")
-	log.Println("======================================")
+	log.Println("🏗️ Simulation ended... ✨")
 	log.Println("Cleaning environment...")
 
-	if err := Cleanup(*kafka, kafkaTopic); err != nil {
+	if err := CleanupKafka(*kafka, kafkaTopic); err != nil {
 		return fmt.Errorf("error during cleanup: %w", err)
 	}
 
@@ -104,7 +104,7 @@ func RunSimulation(args []string) error {
 	return nil
 }
 
-func Cleanup(kafkaConnStr string, kafkaTopic string) error {
+func CleanupKafka(kafkaConnStr string, kafkaTopic string) error {
 	if kafkaConnStr != "" && kafkaTopic != "" {
 		if err := DeleteTopic(kafkaConnStr, kafkaTopic); err != nil {
 			return err

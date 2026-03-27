@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -23,7 +24,11 @@ func CreateTopic(brokerAddress, topic string, partitions int, replicationFactor 
 	if err != nil {
 		return fmt.Errorf("failed to dial Kafka broker %s: %w", brokerAddress, err)
 	}
-	defer conn.Close()
+	defer func() {
+		if err = conn.Close(); err != nil {
+			log.Println("cannot close conn: %w", err)
+		}
+	}()
 
 	topicConfig := kafka.TopicConfig{
 		Topic:             topic,
@@ -45,20 +50,27 @@ func DeleteTopic(broker, topic string) error {
 	if err != nil {
 		return fmt.Errorf("failed to dial broker: %w", err)
 	}
-	defer conn.Close()
+	defer func() {
+		if err = conn.Close(); err != nil {
+			log.Println("cannot close conn: %w", err)
+		}
+	}()
 
 	controller, err := conn.Controller()
 	if err != nil {
 		return fmt.Errorf("failed to get controller: %w", err)
 	}
-	conn.Close()
 
 	controllerAddr := fmt.Sprintf("%s:%d", controller.Host, controller.Port)
 	ctrlConn, err := kafka.Dial("tcp", controllerAddr)
 	if err != nil {
 		return fmt.Errorf("failed to dial controller: %w", err)
 	}
-	defer ctrlConn.Close()
+	defer func() {
+		if err = ctrlConn.Close(); err != nil {
+			log.Println("cannot close ctrlConn: %w", err)
+		}
+	}()
 
 	err = ctrlConn.DeleteTopics(topic)
 	if err != nil {

@@ -382,7 +382,7 @@ func generateModel(c *fiber.Ctx) error {
 	var portsContext strings.Builder
 	portsContext.WriteString("## Model Ports\n")
 	for _, port := range req.Ports {
-		portsContext.WriteString(fmt.Sprintf("- %s (%s): %s\n", port.Name, port.Type, port.ID))
+		fmt.Fprintf(&portsContext, "- %s (%s): %s\n", port.Name, port.Type, port.ID)
 	}
 
 	// Get the appropriate prompt with template
@@ -595,7 +595,7 @@ func buildTargetPortsContext(target model.Model) string {
 		if displayName == "" {
 			displayName = "(unnamed-port)"
 		}
-		b.WriteString(fmt.Sprintf("- %s (%s) [id=%s]\n", displayName, port.Type, port.ID))
+		fmt.Fprintf(&b, "- %s (%s) [id=%s]\n", displayName, port.Type, port.ID)
 	}
 	return b.String()
 }

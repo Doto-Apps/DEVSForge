@@ -26,10 +26,7 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 	modelClient := devspb.NewAtomicModelServiceClient(wrapper.GRPCConn)
 	runnerInstance := runner.CreateRunner(cfg, context.Background(), modelClient)
 
-	log.Println("======================================")
-	log.Println("   Debut de la boucle de simulation    ")
-	log.Println("======================================")
-
+	log.Println("Simulation loop starting...")
 	if err := runnerInstance.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
 		if msg.Target != cfg.Model.ID || msg.Sender == cfg.Model.ID {
 			return nil
@@ -94,8 +91,6 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 		return err
 	}
 
-	log.Println("======================================")
-	log.Println("   Fin de la boucle de simulation    ")
-	log.Println("======================================")
+	log.Println("Simulation loop ended")
 	return nil
 }
