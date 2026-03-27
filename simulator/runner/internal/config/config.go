@@ -32,7 +32,7 @@ func pickFreePort() (int, error) {
 	}
 	defer func() {
 		if err = l.Close(); err != nil {
-			log.Println("cannot close listening: %w", err)
+			log.Println("cannot close listening: ", err)
 		}
 	}()
 

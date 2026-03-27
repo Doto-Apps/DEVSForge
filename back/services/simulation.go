@@ -187,7 +187,7 @@ func (s *SimulationService) runCoordinator(simulationID string, manifestFile str
 
 	// Clean up manifest file
 	if err = os.Remove(manifestFile); err != nil {
-		log.Println("cannot remove manifestFile: %w", err)
+		log.Println("cannot remove manifestFile: ", err)
 	}
 
 	result := db.Model(&model.Simulation{}).

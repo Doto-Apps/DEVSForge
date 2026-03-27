@@ -63,7 +63,7 @@ func copyFile(src, dst string, perm os.FileMode) error {
 	}
 	defer func() {
 		if err = in.Close(); err != nil {
-			log.Println("cannot close in file: %w", err)
+			log.Println("cannot close in file: ", err)
 		}
 	}()
 
@@ -73,7 +73,7 @@ func copyFile(src, dst string, perm os.FileMode) error {
 	}
 	defer func() {
 		if err = out.Close(); err != nil {
-			log.Println("cannot close out file: %w", err)
+			log.Println("cannot close out file: ", err)
 		}
 	}()
 

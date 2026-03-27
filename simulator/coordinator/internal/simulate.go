@@ -23,7 +23,7 @@ func RunSimulation(args []string) error {
 	topic := fs.String("topic", "", "The kafka topic (generated if not provided)")
 
 	if err := fs.Parse(args); err != nil {
-		return fmt.Errorf("error parsing flags: %w", err)
+		return fmt.Errorf("error parsing flags: ", err)
 	}
 
 	manifest, err := CreateManifest(jsonStr, filePath)
@@ -55,7 +55,7 @@ func RunSimulation(args []string) error {
 	}
 	defer func() {
 		if err = os.RemoveAll(tmpBase); err != nil {
-			log.Println("cannot remove tmpBase: %w", err)
+			log.Println("cannot remove tmpBase: ", err)
 		}
 	}()
 

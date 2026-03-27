@@ -26,7 +26,7 @@ func CreateTopic(brokerAddress, topic string, partitions int, replicationFactor 
 	}
 	defer func() {
 		if err = conn.Close(); err != nil {
-			log.Println("cannot close conn: %w", err)
+			log.Println("cannot close conn: ", err)
 		}
 	}()
 
@@ -52,7 +52,7 @@ func DeleteTopic(broker, topic string) error {
 	}
 	defer func() {
 		if err = conn.Close(); err != nil {
-			log.Println("cannot close conn: %w", err)
+			log.Println("cannot close conn: ", err)
 		}
 	}()
 
@@ -68,7 +68,7 @@ func DeleteTopic(broker, topic string) error {
 	}
 	defer func() {
 		if err = ctrlConn.Close(); err != nil {
-			log.Println("cannot close ctrlConn: %w", err)
+			log.Println("cannot close ctrlConn: ", err)
 		}
 	}()
 

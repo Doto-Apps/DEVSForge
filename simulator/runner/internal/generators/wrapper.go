@@ -40,7 +40,7 @@ func (w *WrapperInfo) Cleanup() error {
 
 		// Attendre que le processus se termine
 		if err := w.Cmd.Wait(); err != nil {
-			log.Println("Process wait error: %w", err)
+			log.Println("Process wait error: ", err)
 		}
 		log.Printf("Process stopped pid=%d", pid)
 		w.Cmd = nil

@@ -42,7 +42,7 @@ func GenerateRunnerYamlConfig(config shared.YamlInputConfig) (*os.File, error) {
 
 	defer func() {
 		if err = tmpFile.Close(); err != nil {
-			log.Println("cannot close tmpFile: %w", err)
+			log.Println("cannot close tmpFile: ", err)
 		}
 	}()
 	if _, err := tmpFile.Write(rawYAML); err != nil {
@@ -64,7 +64,7 @@ func GenerateJSONRunnerManifest(m *shared.RunnableModel, modelCount int, simulat
 	tmpFile, _ := os.CreateTemp("", "model-*.json")
 	defer func() {
 		if err = tmpFile.Close(); err != nil {
-			log.Println("cannot close tmpFile: %w", err)
+			log.Println("cannot close tmpFile: ", err)
 		}
 	}()
 	if _, err := tmpFile.Write(rawJSON); err != nil {
