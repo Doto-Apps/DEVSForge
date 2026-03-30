@@ -1,6 +1,10 @@
-package internal
+package types
 
-import "devsforge-shared/kafka"
+import (
+	"devsforge-shared/kafka"
+
+	"github.com/twmb/franz-go/pkg/kgo"
+)
 
 type RunnerState struct {
 	ID       string
@@ -17,3 +21,8 @@ type SimulationParams struct {
 }
 
 type RunnerStates = map[string]*RunnerState
+
+type CoordConfig struct {
+	KafkaConfig kafka.KafkaConfig
+	KafkaClient *kgo.Client
+}

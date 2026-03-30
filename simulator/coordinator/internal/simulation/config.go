@@ -1,6 +1,7 @@
-package internal
+package simulation
 
 import (
+	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
 	"fmt"
@@ -11,14 +12,9 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type CoordConfig struct {
-	KafkaConfig kafka.KafkaConfig
-	KafkaClient *kgo.Client
-}
+var config *types.CoordConfig
 
-var config *CoordConfig
-
-func InitConfig(yamlConfig shared.YamlInputConfig) *CoordConfig {
+func InitConfig(yamlConfig shared.YamlInputConfig) *types.CoordConfig {
 	// Charge la config YAML (Kafka, gRPC, etc.)
 
 	slog.Info("Connecting to kafka", "broker",
@@ -36,7 +32,7 @@ func InitConfig(yamlConfig shared.YamlInputConfig) *CoordConfig {
 		return nil
 	}
 
-	config = &CoordConfig{
+	config = &types.CoordConfig{
 		KafkaConfig: *kafkaConfig,
 		KafkaClient: client,
 	}
@@ -59,6 +55,6 @@ func LoadYamlConfig(path string) (*shared.YamlInputConfig, error) {
 	return &cfg, nil
 }
 
-func GetConfig() *CoordConfig {
+func GetConfig() *types.CoordConfig {
 	return config
 }

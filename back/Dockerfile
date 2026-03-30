@@ -35,14 +35,18 @@ CMD ["/app/devsforge-backend"]
 
 # Coordinator target
 FROM alpine:3.23.3 AS coordinator
+ENV LOG_DIR="/app/sim-logs"
+ENV DEVSFORGE_SIM_ROOT="/app"
 WORKDIR /app
 COPY --from=builder /app/bin/devsforge-coordinator /app/devsforge-coordinator
 EXPOSE 8080
-VOLUME [ "/sim-logs" ]
+VOLUME [ "/app/sim-logs" ]
 CMD ["/app/devsforge-coordinator", "--daemon"]
 
 # Runner target
 FROM python:3.12-slim AS runner
+ENV LOG_DIR="/app/sim-logs"
+ENV DEVSFORGE_SIM_ROOT="/app"
 WORKDIR /app
 COPY --from=builder /usr/local/go /usr/local/go
 ENV PATH="/usr/local/go/bin:${PATH}"
@@ -65,15 +69,19 @@ CMD ["/app/devsforge-runner"]
 
 # Simulator target
 FROM runner AS simulator
+ENV LOG_DIR="/app/sim-logs"
+ENV DEVSFORGE_SIM_ROOT="/app"
+ENV SIM_CMD="/app/devsforge-coordinator"
+ENV RUNNER_CMD="/app/devsforge-runner"
 COPY --from=builder /app/bin/devsforge-coordinator /app/devsforge-coordinator
 EXPOSE 8080
-VOLUME [ "/sim-logs" ]
+VOLUME [ "/app/sim-logs" ]
 CMD ["/app/devsforge-coordinator", "--daemon"]
 
 # All in one image target
-FROM runner AS all-in-one
+FROM simulator AS all-in-one
 COPY --from=builder /app/bin/devsforge-backend /app/devsforge-backend
 COPY --from=builder /app/bin/devsforge-coordinator /app/devsforge-coordinator
 EXPOSE 3000
-VOLUME [ "/sim-logs" ]
+VOLUME [ "/app/sim-logs" ]
 CMD ["/app/devsforge-backend"]

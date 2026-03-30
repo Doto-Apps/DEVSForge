@@ -1,4 +1,4 @@
-package internal
+package simulation
 
 import (
 	"crypto/rand"
@@ -76,11 +76,11 @@ func GenerateJSONRunnerManifest(m *shared.RunnableModel, modelCount int, simulat
 
 func CreateManifest(jsonStr *string, filePath *string) (shared.RunnableManifest, error) {
 	var manifest shared.RunnableManifest
-	if *jsonStr != "" {
+	if jsonStr != nil && *jsonStr != "" {
 		if err := utils.ParseManifest(*jsonStr, &manifest); err != nil {
 			return manifest, fmt.Errorf("error parsing JSON: %w", err)
 		}
-	} else if *filePath != "" {
+	} else if filePath != nil && *filePath != "" {
 		data, err := os.ReadFile(*filePath)
 		if err != nil {
 			return manifest, fmt.Errorf("error reading file: %w", err)

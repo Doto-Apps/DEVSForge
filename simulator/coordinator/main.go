@@ -1,11 +1,11 @@
 package main
 
 import (
-	"devsforge-coordinator/internal"
+	"devsforge-coordinator/cmd"
+	"devsforge-coordinator/internal/types"
 	"flag"
 	"fmt"
 	"os"
-	"strconv"
 )
 
 func main() {
@@ -22,29 +22,23 @@ func main() {
 	}
 
 	if *daemon {
-		port := 8080
-		if portStr := os.Getenv("SIMULATOR_PORT"); portStr != "" {
-			if parsed, err := strconv.Atoi(portStr); err == nil {
-				port = parsed
-			}
-		}
-
-		if err := internal.StartDaemonServer(port); err != nil {
+		if err := cmd.StartDaemonServer(); err != nil {
 			fmt.Println("❌", err)
 			os.Exit(1)
 		}
 		return
-	}
+	} else {
+		params := types.SimulationParams{
+			File:         filePath,
+			Json:         jsonStr,
+			KafkaAddress: kafka,
+			KafkaTopic:   topic,
+		}
 
-	params := internal.SimulationParams{
-		File:         filePath,
-		Json:         jsonStr,
-		KafkaAddress: kafka,
-		KafkaTopic:   topic,
-	}
+		if err := cmd.RunOneSimulation(params); err != nil {
+			fmt.Println("❌", err)
+			os.Exit(1)
+		}
 
-	if err := internal.RunSimulation(params); err != nil {
-		fmt.Println("❌", err)
-		os.Exit(1)
 	}
 }

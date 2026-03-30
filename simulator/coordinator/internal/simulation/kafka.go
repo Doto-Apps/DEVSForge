@@ -1,4 +1,4 @@
-package internal
+package simulation
 
 import (
 	"context"
@@ -114,20 +114,28 @@ func (c *Coordinator) SendMessage(msg kafkaShared.KafkaMessageI) error {
 		return fmt.Errorf("cannot marshal kafka message : %w", err)
 	}
 
+	if c.Logger != nil {
+		c.Logger.Info("kafka_message",
+			"sender", "coordinator",
+			"devsType", getDevsType(msg),
+			"data", msg,
+		)
+	}
+
 	return c.Config.KafkaClient.ProduceSync(c.Context, &kgo.Record{Value: data}).FirstErr()
 }
 
 func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessage) error) error {
 	client := c.Config.KafkaClient
+	if c.Logger == nil {
+		slog.Debug("Logger is nil in StartReceiveLoop")
+	}
 	for {
 		fetches := client.PollFetches(c.Context)
 		if errs := fetches.Errors(); len(errs) > 0 {
-			// All errors are retried internally when fetching, but non-retriable errors are
-			// returned from polls so that users can notice and take action.
 			return fmt.Errorf("kafka poll error: %v", errs)
 		}
 
-		// We can iterate through a record iterator...
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			record := iter.Next()
@@ -136,10 +144,43 @@ func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessag
 				return fmt.Errorf("cannot unmarshall kafka message : %w", err)
 			}
 
+			if c.Logger != nil {
+				c.Logger.Info("kafka_message",
+					"sender", msg.Sender,
+					"devsType", msg.DevsType.String(),
+					"data", msg,
+				)
+			}
+
 			err = handler(msg)
 			if err != nil {
 				return err
 			}
 		}
+	}
+}
+
+func getDevsType(msg kafkaShared.KafkaMessageI) string {
+	switch m := msg.(type) {
+	case *kafkaShared.BaseKafkaMessage:
+		return m.DevsType.String()
+	case *kafkaShared.KafkaMessageInitSim:
+		return m.DevsType.String()
+	case *kafkaShared.KafkaMessageNextTime:
+		return m.DevsType.String()
+	case *kafkaShared.KafkaMessageExecuteTransition:
+		return m.DevsType.String()
+	case *kafkaShared.KafkaMessageTransitionDone:
+		return m.DevsType.String()
+	case *kafkaShared.KafkaMessageSendOutput:
+		return m.DevsType.String()
+	case *kafkaShared.KafkaMessageModelOutput:
+		return m.DevsType.String()
+	case *kafkaShared.KafkaMessageSimulationDone:
+		return m.DevsType.String()
+	case *kafkaShared.KafkaMessageErrorReport:
+		return m.MessageType.String()
+	default:
+		return "unknown"
 	}
 }

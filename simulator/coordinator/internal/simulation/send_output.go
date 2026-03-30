@@ -1,11 +1,12 @@
-package internal
+package simulation
 
 import (
+	"devsforge-coordinator/internal/types"
 	"devsforge-shared/kafka"
 	"fmt"
 )
 
-func (c *Coordinator) RunSendOutput(imminents []*RunnerState, tmin float64) error {
+func (c *Coordinator) RunSendOutput(imminents []*types.RunnerState, tmin float64) error {
 	for _, st := range imminents {
 		msg := &kafka.KafkaMessageSendOutput{
 			DevsType: kafka.DevsTypeSendOutput,

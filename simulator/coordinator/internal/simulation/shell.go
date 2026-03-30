@@ -1,7 +1,9 @@
-package internal
+package simulation
 
 import (
 	"context"
+	"devsforge-coordinator/internal/logstore"
+	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
 	"devsforge-shared/utils"
 	"fmt"
@@ -12,8 +14,8 @@ import (
 	"path/filepath"
 )
 
-func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, cfg *CoordConfig) error {
-	slog.Info("Launching runners using shell", "count", len(manifest.Models))
+func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, cfg *types.CoordConfig, logStore logstore.LogStore, logger *slog.Logger) error {
+	slog.Info("Launching runners using shell", "count", len(manifest.Models), "loggerIsNil", logger == nil)
 	errCh := make(chan error, len(manifest.Models))
 	runnerCmd := os.Getenv("RUNNER_CMD")
 
@@ -40,9 +42,9 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	}
 
 	// Building initial runner states
-	runnerStates := make(map[string]*RunnerState)
+	runnerStates := make(map[string]*types.RunnerState)
 	for _, m := range manifest.Models {
-		runnerStates[m.ID] = &RunnerState{
+		runnerStates[m.ID] = &types.RunnerState{
 			ID:       m.ID,
 			NextTime: math.Inf(1),
 			HasInit:  false,
@@ -85,6 +87,7 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	}
 
 	coordinator := CreateCoordinnator(cfg, context.Background(), runnerStates)
+	coordinator.Logger = logger
 	slog.Info("All models started, launching coordinator main loop")
 
 	if err := coordinator.RunCoordinator(&manifest); err != nil {
