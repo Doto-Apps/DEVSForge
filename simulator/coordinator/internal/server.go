@@ -25,6 +25,7 @@ type SimulateRequest struct {
 type SimulateResponse struct {
 	SimulationID string `json:"simulationId"`
 	Status       string `json:"status"`
+	Error        string `json:"error,omitempty"`
 }
 
 type ErrorResponse struct {
@@ -33,7 +34,7 @@ type ErrorResponse struct {
 
 func StartDaemonServer(port int) error {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/simulate-async", handleSimulate)
+	mux.HandleFunc("/simulate", handleSimulate)
 
 	addr := fmt.Sprintf(":%d", port)
 	server := &http.Server{
@@ -129,19 +130,31 @@ func handleSimulate(w http.ResponseWriter, r *http.Request) {
 		simulationID = "unknown"
 	}
 
-	go launchSimulationAsync(req, simulationID)
+	if err := launchSimulation(req, simulationID); err == nil {
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusCreated)
-	if err := json.NewEncoder(w).Encode(SimulateResponse{
-		SimulationID: simulationID,
-		Status:       "running",
-	}); err != nil {
-		slog.Error("cannot encode response simulation is running")
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusCreated)
+		if err := json.NewEncoder(w).Encode(SimulateResponse{
+			SimulationID: simulationID,
+			Status:       "completed",
+		}); err != nil {
+			slog.Error("cannot encode response simulation is completed")
+		}
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		if err := json.NewEncoder(w).Encode(SimulateResponse{
+			SimulationID: simulationID,
+			Status:       "launch_error",
+			Error:        err.Error(),
+		}); err != nil {
+			slog.Error("cannot encode response simulation is completed")
+		}
+
 	}
 }
 
-func launchSimulationAsync(req SimulateRequest, simulationID string) {
+func launchSimulation(req SimulateRequest, simulationID string) error {
 	jsonVal := req.JSON
 	fileVal := req.File
 	kafkaVal := req.Kafka
@@ -154,10 +167,13 @@ func launchSimulationAsync(req SimulateRequest, simulationID string) {
 		KafkaTopic:   &topicVal,
 	}
 
-	slog.Info("Launching simulation asynchronously", "simulationId", simulationID)
+	slog.Info("Launching simulation synchronously", "simulationId", simulationID)
 	if err := RunSimulation(params); err != nil {
-		slog.Error("Async simulation error", "simulationId", simulationID, "error", err)
+		slog.Error("Sync simulation error", "simulationId", simulationID, "error", err)
+		return err
 	} else {
-		slog.Info("Async simulation completed", "simulationId", simulationID)
+		slog.Info("Sync simulation completed", "simulationId", simulationID)
 	}
+
+	return nil
 }

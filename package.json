@@ -14,6 +14,7 @@
 		"start:back": "docker compose -f docker-compose.back.yml up --build",
 		"start": "docker compose -f docker-compose.local.yml up --build",
 		"start:prod": "docker compose -f docker-compose.yml up --pull always",
+		"start:islands": "docker compose -f docker-compose.islands.yml up",
 		"clean:back": "docker compose -f docker-compose.back.yml down -v",
 		"typecheck": "cd front && pnpm tsc --noEmit",
     "lint:back": "task lint",

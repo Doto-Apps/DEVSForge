@@ -183,7 +183,7 @@ func (s *SimulationService) runRemoteCoordinator(simulatorAddr string, simulatio
 	if !strings.HasPrefix(simulatorAddr, "http://") && !strings.HasPrefix(simulatorAddr, "https://") {
 		simulatorAddr = "http://" + simulatorAddr
 	}
-	url := simulatorAddr + "/simulate-async"
+	url := simulatorAddr + "/simulate"
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
