@@ -69,7 +69,7 @@ In All-in-One Mode, Backend, Coordinator, and Runner are bundled in a single ima
 │         AIO Container               │
 │  ┌──────────┐  ┌─────────────────┐  │
 │  │ Backend  │  │   Coordinator   │  │
-│  │(Port 3000)│  │   + Runner      │  │
+│  │  :3000   │  │   + Runner      │  │
 │  └──────────┘  └─────────────────┘  │
 └─────────────────────────────────────┘
 ```
@@ -132,9 +132,6 @@ docker compose up -d
 ```bash
 # Docker Compose
 docker compose -f docker-compose.islands.yml up -d --scale simulator=5
-
-# Kubernetes
-kubectl scale deployment coordinator --replicas=10
 ```
 
 **AIO Mode - Cannot scale Coordinator independently:**

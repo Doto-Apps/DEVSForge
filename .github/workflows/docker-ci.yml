@@ -12,9 +12,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
       - name: Prepare env files for compose validation
         run: cp .env.dist .env
-
-      - name: Validate release compose
+      - name: Validate aio release compose
         run: docker compose -f docker-compose.yml config
+      - name: Validate islands release compose
+        run: docker compose -f docker-compose.islands.yml config

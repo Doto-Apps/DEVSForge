@@ -10,8 +10,9 @@ services:
       - "3000:3000"
     volumes:
       - ./back:/app/back
+      - ./go.work:/app/go.work
+      - ./go.work.sum:/app/go.work.sum
       - ./simulator:/app/simulator
-      - ./.env:/app/back/.env
     depends_on:
       db:
         condition: service_healthy
@@ -22,6 +23,9 @@ services:
         - action: sync
           path: ./back
           target: /app/back
+        - action: sync
+          path: ./simulator/
+          target: /app/simulator
 
   db:
     image: postgres:17-alpine
