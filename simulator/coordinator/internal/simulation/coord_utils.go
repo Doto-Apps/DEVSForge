@@ -1,6 +1,7 @@
-package internal
+package simulation
 
 import (
+	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
 	"log/slog"
@@ -8,7 +9,7 @@ import (
 )
 
 // t_min global
-func computeMinTime(runners map[string]*RunnerState) float64 {
+func computeMinTime(runners map[string]*types.RunnerState) float64 {
 	tmin := math.MaxFloat64
 	for _, st := range runners {
 		if st.NextTime < tmin {
@@ -26,7 +27,7 @@ func computeMinTime(runners map[string]*RunnerState) float64 {
 // des modèles destinataires, en utilisant les connections du RunnableManifest.
 func routeOutputs(
 	manifest *shared.RunnableManifest,
-	runners RunnerStates,
+	runners types.RunnerStates,
 	outputsBySender map[string]*kafka.ModelOutput,
 ) {
 	for senderID, out := range outputsBySender {

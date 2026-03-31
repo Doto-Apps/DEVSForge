@@ -1,7 +1,8 @@
-package internal
+package simulation
 
 import (
 	"context"
+	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
 	"log/slog"
@@ -9,12 +10,13 @@ import (
 )
 
 type Coordinator struct {
-	Config       *CoordConfig
+	Config       *types.CoordConfig
 	Context      context.Context
-	RunnerStates RunnerStates
+	RunnerStates types.RunnerStates
+	Logger       *slog.Logger
 }
 
-func CreateCoordinnator(cfg *CoordConfig, ctx context.Context, runnerStates RunnerStates) Coordinator {
+func CreateCoordinnator(cfg *types.CoordConfig, ctx context.Context, runnerStates types.RunnerStates) Coordinator {
 	return Coordinator{
 		Config:       cfg,
 		Context:      ctx,
@@ -24,13 +26,10 @@ func CreateCoordinnator(cfg *CoordConfig, ctx context.Context, runnerStates Runn
 
 // RunCoordinator lance la boucle de coordination DEVS
 func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
-	// Channels pour recevoir les messages importants
 	nextTimeCh := make(chan *kafka.BaseKafkaMessage)
 	transitionDoneCh := make(chan *kafka.BaseKafkaMessage)
 	outputCh := make(chan *kafka.BaseKafkaMessage)
-	// Logger prefix removed - using structured logging
 
-	// Goroutine qui écoute Kafka côté coordi
 	go func() {
 		err := c.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
 			if msg.Sender == "" {
@@ -79,7 +78,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 		}
 
 		// 1) trouver les imminents
-		imminents := []*RunnerState{}
+		imminents := []*types.RunnerState{}
 		for _, st := range c.RunnerStates {
 			if st.NextTime == tmin {
 				imminents = append(imminents, st)
@@ -107,7 +106,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 		routeOutputs(manifest, c.RunnerStates, outputsBySender)
 
 		// 5) déterminer qui transitionne
-		transitionTargets := map[string]*RunnerState{}
+		transitionTargets := map[string]*types.RunnerState{}
 		for _, st := range imminents {
 			transitionTargets[st.ID] = st
 		}

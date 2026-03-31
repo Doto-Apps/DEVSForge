@@ -1,29 +1,34 @@
 services:
-  frontend:
-    image: ghcr.io/doto-apps/devsforge-frontend:${DEVSFORGE_IMAGE_TAG:-latest}
-    restart: unless-stopped
-    ports:
-      - "80:80"
-    depends_on:
-      backend:
-        condition: service_started
-
   backend:
-    image: ghcr.io/doto-apps/devsforge-backend-aio:${DEVSFORGE_IMAGE_TAG:-latest}
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
+    build:
+      context: ./
+      dockerfile: ./back/Dockerfile.dev
     env_file:
       - ./.env
+    working_dir: /app/back
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./back:/app/back
+      - ./go.work:/app/go.work
+      - ./go.work.sum:/app/go.work.sum
+      - ./simulator:/app/simulator
     depends_on:
       db:
         condition: service_healthy
       kafka:
         condition: service_started
+    develop:
+      watch:
+        - action: sync
+          path: ./back
+          target: /app/back
+        - action: sync
+          path: ./simulator/
+          target: /app/simulator
 
   db:
     image: postgres:17-alpine
-    restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-devsforge}
       POSTGRES_DB: ${DB_NAME:-devsforge}
@@ -31,8 +36,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
-      - ./db-init:/docker-entrypoint-initdb.d:ro
+      - postgres-db:/var/lib/postgresql/data
+      - ./db-init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 10s
@@ -41,7 +46,7 @@ services:
 
   kafka:
     image: apache/kafka:latest
-    restart: unless-stopped
+    container_name: kafka
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
@@ -61,4 +66,4 @@ services:
       - "9092:9092"
 
 volumes:
-  db_data:
+  postgres-db:

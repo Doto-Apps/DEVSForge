@@ -1,11 +1,12 @@
-package internal
+package simulation
 
 import (
+	"devsforge-coordinator/internal/types"
 	"devsforge-shared/kafka"
 	"fmt"
 )
 
-func (c *Coordinator) RunExecuteTransition(transitionTargets RunnerStates, tmin float64) error {
+func (c *Coordinator) RunExecuteTransition(transitionTargets types.RunnerStates, tmin float64) error {
 	for _, st := range transitionTargets {
 		var inputs kafka.ModelInputsOption
 		if len(st.Inbox) > 0 {

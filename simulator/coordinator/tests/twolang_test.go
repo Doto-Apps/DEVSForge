@@ -1,14 +1,15 @@
 package tests
 
 import (
+	"devsforge-coordinator/internal/simulation"
+	"devsforge-coordinator/internal/types"
+	"devsforge-shared/utils"
 	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
 
-	"devsforge-coordinator/internal"
 	shared "devsforge-shared"
-	"devsforge-shared/utils"
 )
 
 func TestRunWithFileKafka(t *testing.T) {
@@ -79,7 +80,13 @@ func TestRunWithFileKafka(t *testing.T) {
 		_ = os.Setenv("KAFKA_TOPIC", prevTopic)
 	})
 
-	if err := internal.RunSimulation([]string{"--file", jsonPath, "--kafka", KafkaAddr}); err != nil {
+	params := types.SimulationParams{
+		KafkaAddress: &KafkaAddr,
+		Json:         nil,
+		File:         &jsonPath,
+		KafkaTopic:   nil,
+	}
+	if err := simulation.RunSimulation(params); err != nil {
 		t.Fatalf("Expected no error, got: %v", err)
 	}
 }

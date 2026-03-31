@@ -1,6 +1,7 @@
 # Reproducibility Guide - Smart Parking Case Study (DEVSForge)
 
 This document describes a click-by-click reproducibility path for the Smart Parking case study presented in the paper, focusing on:
+
 - Coupled structure generation (conflict-management topology)
 - Atomic behavior generation (Sensor, Broadcaster, User, ConflictManager)
 - Deterministic verification ("Validate diagram" gates)
@@ -21,11 +22,13 @@ Note: the sensor behavior refinement step is excluded from the main path (no P2 
 ## 0) Prerequisites
 
 Required:
+
 - Git
 - Docker Desktop (or Docker Engine + Docker Compose v2)
 - Free ports: `5173` (front), `3000` (back), `5432` (PostgreSQL)
 
 Optional (only for dev mode outside Docker):
+
 - Node.js 20+
 - pnpm 10+
 - Go 1.24+
@@ -58,13 +61,14 @@ Bash:
 cp .env.dist .env
 ```
 
-### 1.3 Start the platform (development)
+### 1.3 Start the platform
 
 ```bash
-docker compose -f docker-compose.yml up --build
+docker compose -f docker-compose.yml up -d
 ```
 
 Default services:
+
 - Frontend: `http://localhost`
 - Backend: `http://localhost:3000`
 - PostgreSQL: `localhost:5432`
@@ -92,6 +96,7 @@ This step is mandatory before using AI model/diagram/EF generation.
 4. Verify that a masked key badge appears (`Stored key`).
 
 If this step is skipped, AI endpoints will fail with errors such as:
+
 - `AI settings are not configured for this user`
 - `AI settings are incomplete: apiUrl, apiKey and apiModel are required`
 
@@ -121,6 +126,7 @@ through a separate port.
 ```
 
 Expected outcome:
+
 - A generated topology with `3 Sensors -> 1 Broadcaster -> 3 Users -> 1 ConflictManager`
 - A feedback link `ConflictManager -> Broadcaster`
 
@@ -133,6 +139,7 @@ After structure generation, DEVSForge switches to the second step: **behavior ge
 ### 4.1 Choose language and reuse mode
 
 For each atomic model:
+
 - Select the target language (Python or Go)
 - Choose **From scratch** for strict de novo generation
 - Or leave **From scratch** unchecked to let the platform attempt reuse-first retrieval/adaptation
@@ -276,6 +283,7 @@ Once all atomic behaviors are generated:
 1. Click the **Validate diagram** button (top area of the editor).
 
 You should obtain a valid status after gates such as:
+
 - schema compliance
 - port integrity
 - coupling validity
@@ -283,6 +291,7 @@ You should obtain a valid status after gates such as:
 - runner availability (depending on selected languages)
 
 After validation:
+
 - A new library entry is added automatically
 - The coupled model and all generated atomic models appear in that library
 
@@ -294,6 +303,7 @@ After validation:
 2. Open the coupled model `SmartParking_Conflict`.
 
 In the coupled-model page you should see:
+
 - The properties panel (editable metadata, ports, graphical colors, etc.)
 - Main buttons (top-right):
   - **Generate Experimental Frame** (shield icon)
@@ -357,11 +367,13 @@ Output:
 2. Run the simulation.
 
 Expected observations (qualitative):
+
 - If two users pick the same target at the same time, a `conflict_result` is emitted with exactly one `winner_id`.
 - Losing users reroute and later emit a `user_state` with `actual_state: "parked"` when reaching a new target.
 - In EF mode, the acceptor should output PASS (unless a logic error is present).
 
 You can use:
+
 - logs for per-event inspection
 - trace/plot tools to visualize activity (counts over time, etc.)
 
@@ -377,6 +389,7 @@ Explain all the different model.
 ```
 
 Expected outcome:
+
 - An explanation for each model in the `EF_SmartParking_Conflicts`
 - A **Simulate** action calling the REST simulation API
 - The deployed app appears under the **WebApps** tab
@@ -386,6 +399,7 @@ Expected outcome:
 ## 10) Expected artifacts to cite / archive
 
 For a full reproducibility package, archive:
+
 - The generated coupled structure JSON (topology)
 - Each atomic model source file (Sensor, Broadcaster, User, ConflictManager)
 - Validation logs (pre/post gates)

@@ -1,7 +1,8 @@
-package internal
+package simulation
 
 import (
 	"context"
+	"devsforge-coordinator/internal/types"
 	"log/slog"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func sendCoordinatorErrorReport(cfg *CoordConfig, simulationRunID string, errorCode string, err error) {
+func sendCoordinatorErrorReport(cfg *types.CoordConfig, simulationRunID string, errorCode string, err error) {
 	if err == nil || cfg == nil || cfg.KafkaClient == nil {
 		return
 	}

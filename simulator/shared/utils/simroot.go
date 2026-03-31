@@ -55,3 +55,8 @@ func CreateTempDir(simRoot string) (string, error) {
 	}
 	return os.MkdirTemp(base, "devsforge_test_")
 }
+
+func RemoveRootTempDir(simRoot string) error {
+	base := filepath.Join(simRoot, "tmp")
+	return os.RemoveAll(base)
+}
