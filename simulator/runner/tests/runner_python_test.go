@@ -26,7 +26,7 @@ func TestRunPythonModel(t *testing.T) {
 
 	var manifest shared.RunnableManifest
 
-	codeContent, err := os.ReadFile("./tests/m1py/m1.py")
+	codeContent, err := os.ReadFile("tests/m1py/m1.py")
 	if err != nil {
 		t.Fatalf("Error while reading test code\n %v", err)
 	}
@@ -41,7 +41,8 @@ func TestRunPythonModel(t *testing.T) {
 			}
 		],
 		"count": 1,
-		"id": "test"
+		"id": "test",
+		"simulationID": "test-python-sim"
 	}`, runnerPythonID, string(codeContent))
 
 	err = utils.ParseManifest(jsonContent, &manifest)

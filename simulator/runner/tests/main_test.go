@@ -16,7 +16,12 @@ import (
 
 var (
 	SimRoot   string
-	KafkaAddr = "localhost:9092"
+	KafkaAddr = func() string {
+		if addr := os.Getenv("KAFKA_ADDRESS"); addr != "" {
+			return addr
+		}
+		return "localhost:9092"
+	}()
 
 	ErrSimulationDone = errors.New("simulation completed normally")
 	Sender            = "fakecoordinator"
@@ -84,6 +89,10 @@ func teardownGlobal(ctx context.Context) {
 	log.Println("Stopping Docker stack...")
 	if err := stack.Down(ctx, tccompose.RemoveOrphans(true), tccompose.RemoveImagesLocal); err != nil {
 		log.Printf("Stack down error: %v", err)
+	}
+
+	if err := utils.RemoveRootTempDir(SimRoot); err != nil {
+		log.Printf("Failed to remove tmp directory: %v", err)
 	}
 }
 

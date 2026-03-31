@@ -1,6 +1,7 @@
 # Logs
 logs
 tmp-*/
+sim-logs/
 *.log
 npm-debug.log*
 

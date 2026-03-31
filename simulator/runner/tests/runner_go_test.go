@@ -41,7 +41,8 @@ func TestRunGoModel(t *testing.T) {
 			}
 		],
 		"count": 1,
-		"id": "test"
+		"id": "test",
+		"simulationID": "test-go-sim"
 	}`, RunnerGoID, string(codeContent))
 
 	err = utils.ParseManifest(jsonContent, &manifest)

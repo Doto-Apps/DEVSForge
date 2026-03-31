@@ -55,7 +55,8 @@ ENV GOMODCACHE=/opt/go-cache/mod
 ENV GOCACHE=/opt/go-cache/build
 RUN mkdir -p $GOMODCACHE $GOCACHE && chmod -R 777 /opt/go-cache
 # python deps install and cache
-RUN pip install --no-cache-dir grpcio grpcio-tools protobuf
+COPY simulator/wrappers/python/requirements.txt /tmp/requirements.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt
 ENV PYTHONPYCACHEPREFIX=/opt/python-cache
 RUN mkdir -p /opt/python-cache && chmod -R 777 /opt/python-cache
 COPY --from=builder /app/simulator/wrappers /app/wrappers
