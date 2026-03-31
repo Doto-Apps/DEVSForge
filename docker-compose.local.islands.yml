@@ -1,20 +1,31 @@
 services:
   frontend:
-    image: ghcr.io/doto-apps/devsforge-frontend:${DEVSFORGE_IMAGE_TAG:-latest}
-    restart: unless-stopped
+    build:
+      context: ./front
+      dockerfile: Dockerfile
+    env_file:
+      - ./.env
     ports:
-      - "80:80"
+      - 5173:80
     depends_on:
       backend:
         condition: service_started
 
   simulator:
-    image: ghcr.io/doto-apps/devsforge-simulator:${DEVSFORGE_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+      target: simulator
     volumes:
       - ./tmp/logs:/app/sim-logs
 
   backend:
-    image: ghcr.io/doto-apps/devsforge-backend:${DEVSFORGE_IMAGE_TAG:-latest}
+    build:
+      context: .
+      dockerfile: back/Dockerfile
+      target: backend
+    environment:
+      SIMULATOR_ADDR: simulator:8080
     env_file:
       - ./.env
     ports:
