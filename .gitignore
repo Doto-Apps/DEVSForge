@@ -86,4 +86,6 @@ __pycache__/
 *.exe
 
 # binaries
-devsforge
+**/devsforge
+#For java
+!**/devsforge/

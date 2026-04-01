@@ -3,6 +3,9 @@ syntax = "proto3";
 package devsforge.devs;
 
 option go_package = "devsforge/simulator/runner/proto;devspb";
+option java_multiple_files = true;
+option java_outer_classname = "DEVSForge";
+option java_package = "com.devsforge.models";
 
 import "google/protobuf/empty.proto";
 

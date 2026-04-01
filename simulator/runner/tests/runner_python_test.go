@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"testing"
@@ -97,12 +98,12 @@ func TestRunPythonModel(t *testing.T) {
 	client := InitKafkaClient(kafkaTopic, KafkaAddr)
 	err = CreateTopic(kafkaTopic, client)
 	if err != nil {
-		testLogger.Fatalf("cant create kafka topic : %v", err)
+		log.Fatalf("cant create kafka topic : %v", err)
 	}
 
 	go func() {
 		if err := cmd.LaunchRunner(args); err != nil {
-			testLogger.Fatalf("expected runner to exit cleanly, got error:\n%v", err)
+			log.Fatalf("expected runner to exit cleanly, got error:\n%v", err)
 		}
 	}()
 
@@ -110,7 +111,7 @@ func TestRunPythonModel(t *testing.T) {
 	currentTime := 0.0
 
 	// Send init to model
-	testLogger.Println("Sending init message")
+	log.Println("Sending init message")
 	err = SendMessage(
 		client, &kafka.KafkaMessageInitSim{
 			DevsType: kafka.DevsTypeInitSim,
@@ -123,7 +124,7 @@ func TestRunPythonModel(t *testing.T) {
 		},
 	)
 	if err != nil {
-		testLogger.Fatalf("❌ collector error in coordinator: %v", err)
+		log.Fatalf("❌ collector error in coordinator: %v", err)
 	}
 
 	err = StartReceiveLoop(client, func(msg *kafka.BaseKafkaMessage) error {
@@ -165,7 +166,7 @@ func TestRunPythonModel(t *testing.T) {
 			})
 			return ErrSimulationDone
 		default:
-			testLogger.Printf("Unreconized message : %s\n", msg.DevsType.String())
+			log.Printf("Unreconized message : %s\n", msg.DevsType.String())
 		}
 		return nil
 	})

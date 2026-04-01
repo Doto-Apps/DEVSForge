@@ -1,4 +1,3 @@
-// main_test.go — dans runners/go/
 package tests
 
 import (
@@ -17,17 +16,15 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var RunnerGoID = "m1-go"
+var runnerJavaID = "m1-java"
 
-// TestLaunchRunnerWithKafka démarre Kafka via docker-compose, puis lance UN runner
-// avec un manifest JSON (contenant ton DumbModel) + un YAML de config généré.
-func TestRunGoModel(t *testing.T) {
+func TestRunJavaModel(t *testing.T) {
 	t.Helper()
 	setupTest(t)
 
 	var manifest shared.RunnableManifest
 
-	codeContent, err := os.ReadFile("./tests/m1go/m1.go")
+	codeContent, err := os.ReadFile("tests/m1java/GeneratorIncremental.java")
 	if err != nil {
 		t.Fatalf("Error while reading test code\n %v", err)
 	}
@@ -35,7 +32,7 @@ func TestRunGoModel(t *testing.T) {
 	jsonContent := fmt.Sprintf(`{
 		"models": [
 			{
-			"language": "go",
+			"language": "java",
 			"id": "%s",
 			"name": "GeneratorIncremental",
 			"code": %q
@@ -43,8 +40,8 @@ func TestRunGoModel(t *testing.T) {
 		],
 		"count": 1,
 		"id": "test",
-		"simulationID": "test-go-sim"
-	}`, RunnerGoID, string(codeContent))
+		"simulationID": "test-java-sim"
+	}`, runnerJavaID, string(codeContent))
 
 	err = utils.ParseManifest(jsonContent, &manifest)
 	if err != nil {
@@ -65,8 +62,7 @@ func TestRunGoModel(t *testing.T) {
 		t.Fatalf("failed to write temp manifest: %v", err)
 	}
 
-	// 3️⃣ Générer un fichier YAML de config pour le runner
-	kafkaTopic := "runner-test-go"
+	kafkaTopic := "runner-test-java"
 
 	yamlCfg := shared.YamlInputConfig{
 		Kafka: shared.YamlInputConfigKafka{
@@ -87,9 +83,6 @@ func TestRunGoModel(t *testing.T) {
 		t.Fatalf("failed to write yaml config: %v", err)
 	}
 
-	// 4️⃣ Lancer le runner directement via LaunchRunner
-	//    On simule la ligne de commande :
-	//    go run runners/go/main.go --file <manifest> --config <config>
 	args := []string{
 		"--file", jsonPath,
 		"--config", cfgPath,
@@ -110,7 +103,6 @@ func TestRunGoModel(t *testing.T) {
 	i := 0.0
 	currentTime := 0.0
 
-	// Send init to model
 	log.Println("Sending init message")
 	err = SendMessage(
 		client, &kafka.KafkaMessageInitSim{
@@ -119,7 +111,7 @@ func TestRunGoModel(t *testing.T) {
 				TimeType: kafka.DevsDoubleSimTime.String(),
 				T:        i,
 			},
-			Target: RunnerGoID,
+			Target: runnerJavaID,
 			Sender: Sender,
 		},
 	)
@@ -145,7 +137,7 @@ func TestRunGoModel(t *testing.T) {
 					TimeType: kafka.DevsDoubleSimTime.String(),
 					T:        currentTime,
 				},
-				Target: RunnerGoID,
+				Target: runnerJavaID,
 			})
 			i = i + 1
 		case kafka.DevsTypeTransitionDone:
@@ -155,13 +147,13 @@ func TestRunGoModel(t *testing.T) {
 					TimeType: kafka.DevsDoubleSimTime.String(),
 					T:        currentTime,
 				},
-				Target: RunnerGoID,
+				Target: runnerJavaID,
 				Sender: Sender,
 			})
 		case kafka.DevsTypeModelOutput:
 			err = SendMessage(client, &kafka.KafkaMessageSimulationDone{
 				DevsType: kafka.DevsTypeSimulationDone,
-				Target:   RunnerGoID,
+				Target:   runnerJavaID,
 				Sender:   Sender,
 			})
 			return ErrSimulationDone
