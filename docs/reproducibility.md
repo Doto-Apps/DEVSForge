@@ -12,10 +12,16 @@ The scenario demonstrates:
 
 ---
 
+## Step by step video for Reproducibility - Check that !
+- [Youtube tutorial](https://www.youtube.com/watch?v=6Xncy-RbDMc)
+
+
 ## DOI
 
 [![DOI](https://zenodo.org/badge/887624150.svg)](https://doi.org/10.5281/zenodo.19219365)
 
+- version : v0.0.4
+- zenodo DOI for the version : https://zenodo.org/records/19389671
 ---
 
 ## 0) Prerequisites
@@ -434,22 +440,7 @@ Expected outcome:
 
 ---
 
-## 9) Artifacts to archive for reproducibility package
-
-Archive at least:
-
-- Generated structure
-- Atomic behavior code for: `TempSensor`, `DoorSensor`, `Supervisor`, `CoolingUnit`, `AlarmUnit`
-- Validation outputs/logs
-- EF artifacts (if generated)
-- Simulation traces/logs
-- Optional WebApp config/code
-
-This set is sufficient for an external reviewer to re-run the same scenario end-to-end in DEVSForge.
-
----
-
-## 10) Optional: external analysis with Grafana + JSON export
+## 9) Optional: external analysis with Grafana + JSON export
 
 If you want to analyze outputs outside DEVSForge:
 
