@@ -15,6 +15,10 @@ inputs:
     description: 'Build target (leave empty for no target)'
     required: false
     default: ''
+  token:
+    description: 'GitHub token for authentication'
+    required: false
+    default: ${{ github.token }}
 
 runs:
   using: 'composite'
@@ -30,7 +34,7 @@ runs:
       with:
         registry: ghcr.io
         username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        password: ${{ inputs.token }}
 
     - name: Extract Docker metadata
       id: meta
