@@ -1,6 +1,6 @@
-# Reproducibility Guide - Satellite Solar Panel Management (DEVSForge)
+# Reproducibility Guide - Cold-Chain Warehouse Supervisor (DEVSForge)
 
-This document defines a full, copy-paste reproducibility scenario for DEVSForge based on a simple satellite power subsystem.
+This document defines a full, copy-paste reproducibility scenario for DEVSForge based on a cold-chain warehouse control subsystem.
 
 The scenario demonstrates:
 
@@ -62,10 +62,17 @@ cd DEVSForge
 cp .env.dist .env
 ```
 
+### 1.2 Modify `DEVSFORGE_IMAGE_TAG` in `.env` 
+
+```text
+DEVSFORGE_IMAGE_TAG=v0.0.4
+```
+
 ### 1.3 Start the platform
 
 ```bash
-docker compose -f docker-compose.yml up -d
+docker compose pull
+docker compose up -d
 ```
 
 Default services:
@@ -88,8 +95,8 @@ Default services:
 
 1. Open user menu (bottom-left avatar) -> **Settings**.
 2. Fill:
-   - **API URL** (example: `https://api.openai.com/v1`)
-   - **API Model** (example: `gpt-5.2-2025-12-11`)
+   - **API URL** : `https://api.openai.com/v1`
+   - **API Model** : `gpt-5.2-2025-12-11`
    - **API Key**
 3. Click **Save settings**.
 4. Confirm a masked key badge appears (`Stored key`).
@@ -105,20 +112,21 @@ Open **Devs Model Generator**, submit a tiny prompt, confirm generated output is
 
 ---
 
-## 3) Scenario definition (satellite solar panel manager)
+## 3) Scenario definition (cold-chain warehouse supervisor)
 
 System components:
 
-- `SunSensor`: detects sun presence (`sun_detected = true/false`)
-- `Battery`: states `NOT_FULL`, `CHARGING`, `FULL`
-- `Controller`: central policy decision
-- `PanelMotor`: opens/closes one solar panel
+- `TempSensor`: publishes cold-room temperature
+- `DoorSensor`: publishes whether the loading door is open
+- `Supervisor`: central policy decision
+- `CoolingUnit`: applies cooling commands
+- `AlarmUnit`: applies alarm commands
 
 Target policy:
 
-- If sun is detected and battery is `NOT_FULL`, controller open panel.
-- When panel is open under charging condition, battery can move to `CHARGING`.
-- If no sun, or battery is `FULL`, controller stops charging and close panel.
+- If temperature is high, supervisor enables cooling.
+- If door is open while temperature is still high, supervisor raises warning alarm.
+- When room is cold enough and door is closed, supervisor disables cooling and alarm.
 
 ### 3.1 Reproducibility interpretation for LLM-generated artifacts
 
@@ -149,33 +157,37 @@ For reproducibility reporting, keep the final prompts, the final accepted models
 ### 4.1 Open generator
 
 1. Click **Devs Model Generator**.
-2. Set **Diagram name**: `SatellitePowerSystem`.
+2. Set **Diagram name**: `ColdChainSupervisorSystem`.
 
 ### 4.2 Structure prompt (copy/paste)
 
 ```text
-Create one coupled DEVS model named SatellitePowerSystem with exactly 4 atomic components:
-- SunSensor
-- Battery
-- Controller
-- PanelMotor
+Create one coupled DEVS model named ColdChainSupervisorSystem with exactly 5 atomic components:
+- TempSensor
+- DoorSensor
+- Supervisor
+- CoolingUnit
+- AlarmUnit
 
 Use EXACT port names and directions (do not rename):
-- SatellitePowerSystem (coupled): out port controller_status
-- SunSensor: out port sun_state
-- Battery: in port charge_cmd, out port battery_state
-- PanelMotor: in port panel_cmd, out port panel_state
-- Controller: in ports sun_state, battery_state, panel_state; out ports panel_cmd, charge_cmd, controller_status
+- ColdChainSupervisorSystem (coupled): out port supervisor_status
+- TempSensor: out port temp_state
+- DoorSensor: out port door_state
+- CoolingUnit: in port cooling_cmd, out port cooling_state
+- AlarmUnit: in port alarm_cmd, out port alarm_state
+- Supervisor: in ports temp_state, door_state; out ports cooling_cmd, alarm_cmd, supervisor_status
 
 Use EXACT couplings:
-- SunSensor.sun_state -> Controller.sun_state
-- Battery.battery_state -> Controller.battery_state
-- Controller.panel_cmd -> PanelMotor.panel_cmd
-- PanelMotor.panel_state -> Controller.panel_state
-- Controller.charge_cmd -> Battery.charge_cmd
-- Controller.controller_status -> SatellitePowerSystem.controller_status
+- TempSensor.temp_state -> Supervisor.temp_state
+- DoorSensor.door_state -> Supervisor.door_state
+- Supervisor.cooling_cmd -> CoolingUnit.cooling_cmd
+- Supervisor.alarm_cmd -> AlarmUnit.alarm_cmd
+- Supervisor.supervisor_status -> ColdChainSupervisorSystem.supervisor_status
 
-No extra models, no extra ports, no extra couplings.
+Important constraints for reproducibility:
+- Do not add feedback couplings from CoolingUnit or AlarmUnit back to Supervisor.
+- Keep exactly one coupling per pair (no duplicates).
+- No extra models, no extra ports, no extra couplings.
 ```
 
 Expected outcome:
@@ -197,12 +209,13 @@ Recommended options for reproducibility:
 
 ### 5.0 Shared I/O contract (must be reused by all prompts)
 
-- `sun_state`: `{ "type":"sun_state", "sun_detected": true|false }`
-- `panel_cmd`: `{ "type":"panel_cmd", "target":"OPEN"|"CLOSE" }`
-- `panel_state`: `{ "type":"panel_state", "position":"OPEN"|"CLOSED" }`
-- `charge_cmd`: `{ "type":"charge_cmd", "action":"START"|"STOP" }`
-- `battery_state`: `{ "type":"battery_state", "level":"NOT_FULL"|"CHARGING"|"FULL" }`
-- `controller_status`: `{ "type":"controller_status", "sun_detected":bool, "battery_level":"NOT_FULL"|"CHARGING"|"FULL", "panel_position":"OPEN"|"CLOSED", "panel_target":"OPEN"|"CLOSE", "charge_action":"START"|"STOP" }`
+- `temp_state`: `{ "type":"temp_state", "celsius": number }`
+- `door_state`: `{ "type":"door_state", "open": true|false }`
+- `cooling_cmd`: `{ "type":"cooling_cmd", "mode":"ON"|"OFF" }`
+- `alarm_cmd`: `{ "type":"alarm_cmd", "level":"NONE"|"WARN" }`
+- `cooling_state`: `{ "type":"cooling_state", "mode":"ON"|"OFF" }`
+- `alarm_state`: `{ "type":"alarm_state", "level":"NONE"|"WARN" }`
+- `supervisor_status`: `{ "type":"supervisor_status", "celsius": number, "door_open": bool, "cooling_mode":"ON"|"OFF", "alarm_level":"NONE"|"WARN" }`
 
 Critical rule for all generated atomics:
 
@@ -210,85 +223,98 @@ Critical rule for all generated atomics:
 - Use the exact JSON keys from this contract.
 - Do not rename ports or keys.
 
-### 5.1 Prompt B1 - SunSensor
+### 5.1 Prompt B1 - TempSensor
 
 ```text
-Create atomic model SunSensor.
-Use exactly one output port: sun_state.
-Emit only this JSON format: { "type":"sun_state", "sun_detected": true|false }.
+Create atomic model TempSensor.
+Use exactly one output port: temp_state.
+Emit only this JSON format: { "type":"temp_state", "celsius": number }.
 Deterministic timeline:
-- t in [0,20): false
-- t in [20,80): true
-- t >= 80: false
+- t in [0,20): 2
+- t in [20,50): 9
+- t in [50,80): 6
+- t >= 80: 3
 Emit on initialization and whenever value changes.
 Do not add extra ports or extra message keys.
 ```
 
-### 5.2 Prompt B2 - Battery
+### 5.2 Prompt B2 - DoorSensor
 
 ```text
-Create atomic model Battery with states: NOT_FULL, CHARGING, FULL.
-Use exactly:
-- input port charge_cmd with { "type":"charge_cmd", "action":"START"|"STOP" }
-- output port battery_state with { "type":"battery_state", "level":"NOT_FULL"|"CHARGING"|"FULL" }
-Rules (deterministic):
-- initial state NOT_FULL
-- START from NOT_FULL -> CHARGING
-- after 20 time units in CHARGING -> FULL
-- STOP from CHARGING -> NOT_FULL
-Emit initial state and each state change.
+Create atomic model DoorSensor.
+Use exactly one output port: door_state.
+Emit only this JSON format: { "type":"door_state", "open": true|false }.
+Deterministic timeline:
+- t in [0,30): false
+- t in [30,45): true
+- t >= 45: false
+Emit on initialization and whenever value changes.
 Do not rename ports or JSON keys.
 ```
 
-### 5.3 Prompt B3 - PanelMotor
+### 5.3 Prompt B3 - CoolingUnit
 
 ```text
-Create atomic model PanelMotor.
-State: OPEN or CLOSED (initial CLOSED).
+Create atomic model CoolingUnit.
+State: ON or OFF (initial OFF).
 Use exactly:
-- input port panel_cmd with { "type":"panel_cmd", "target":"OPEN"|"CLOSE" }
-- output port panel_state with { "type":"panel_state", "position":"OPEN"|"CLOSED" }
+- input port cooling_cmd with { "type":"cooling_cmd", "mode":"ON"|"OFF" }
+- output port cooling_state with { "type":"cooling_state", "mode":"ON"|"OFF" }
 Rules (deterministic):
-- OPEN command when CLOSED -> OPEN after 1 time unit
-- CLOSE command when OPEN -> CLOSED after 1 time unit
+- ON command when OFF -> ON after 1 time unit
+- OFF command when ON -> OFF after 1 time unit
 - ignore redundant commands
 Emit initial state and each transition.
-Do not add panel_id and do not rename keys.
+Do not rename ports or JSON keys.
 ```
 
-### 5.4 Prompt B4 - Controller
+### 5.4 Prompt B4 - AlarmUnit
 
 ```text
-Create atomic model Controller.
-Inputs: sun_state, battery_state, panel_state.
-Outputs: panel_cmd, charge_cmd, controller_status.
+Create atomic model AlarmUnit.
+State: NONE or WARN (initial NONE).
+Use exactly:
+- input port alarm_cmd with { "type":"alarm_cmd", "level":"NONE"|"WARN" }
+- output port alarm_state with { "type":"alarm_state", "level":"NONE"|"WARN" }
+Rules (deterministic):
+- WARN command when NONE -> WARN after 1 time unit
+- NONE command when WARN -> NONE after 1 time unit
+- ignore redundant commands
+Emit initial state and each transition.
+Do not rename ports or JSON keys.
+```
+
+### 5.5 Prompt B5 - Supervisor
+
+```text
+Create atomic model Supervisor.
+Inputs: temp_state, door_state.
+Outputs: cooling_cmd, alarm_cmd, supervisor_status.
 
 Policy:
-- if sun_detected=true and battery level=NOT_FULL:
-  - open panel
-  - when panel position is OPEN, send charge_cmd START
-- otherwise:
-  - send charge_cmd STOP
-  - close panel
+- if celsius >= 8: send cooling_cmd ON
+- if celsius <= 4: send cooling_cmd OFF
+- if door_open=true and celsius > 6: send alarm_cmd WARN
+- otherwise: send alarm_cmd NONE
 
 Read exact input formats:
-- sun_state: { "type":"sun_state", "sun_detected": true|false }
-- battery_state: { "type":"battery_state", "level":"NOT_FULL"|"CHARGING"|"FULL" }
-- panel_state: { "type":"panel_state", "position":"OPEN"|"CLOSED" }
+- temp_state: { "type":"temp_state", "celsius": number }
+- door_state: { "type":"door_state", "open": true|false }
 
 Emit exact output formats:
-- panel_cmd: { "type":"panel_cmd", "target":"OPEN"|"CLOSE" }
-- charge_cmd: { "type":"charge_cmd", "action":"START"|"STOP" }
-- controller_status: {
-    "type":"controller_status",
-    "sun_detected": bool,
-    "battery_level": "NOT_FULL"|"CHARGING"|"FULL",
-    "panel_position": "OPEN"|"CLOSED",
-    "panel_target": "OPEN"|"CLOSE",
-    "charge_action": "START"|"STOP"
+- cooling_cmd: { "type":"cooling_cmd", "mode":"ON"|"OFF" }
+- alarm_cmd: { "type":"alarm_cmd", "level":"NONE"|"WARN" }
+- supervisor_status: {
+    "type":"supervisor_status",
+    "celsius": number,
+    "door_open": bool,
+    "cooling_mode": "ON"|"OFF",
+    "alarm_level": "NONE"|"WARN"
   }
 
 Only emit command changes (no spam), deterministic behavior.
+Keep memory of last emitted cooling_cmd and alarm_cmd, and never re-emit identical commands.
+Emit supervisor_status only when one of its fields changes.
 Do not rename ports or JSON keys.
 ```
 
@@ -300,9 +326,10 @@ Do not rename ports or JSON keys.
 
 Validate these reproducibility properties with a minimal EF workflow:
 
-- `START` charging is never issued unless panel is OPEN and sun is true.
-- When battery is FULL, charging command is STOP and panel eventually becomes CLOSED.
-- With no sun, charging remains STOP.
+- If `celsius >= 8`, cooling command must become `ON`.
+- If `celsius <= 4`, cooling command must become `OFF`.
+- If `door_open=true` and `celsius > 6`, alarm must be `WARN`.
+- In normal condition (`door_open=false` and `celsius <= 6`), alarm must be `NONE`.
 
 No transducer is required here. Use a single validator/acceptor model.
 
@@ -315,10 +342,10 @@ No transducer is required here. Use a single validator/acceptor model.
 ### 6.3 EF structural prompt - Validator only (copy/paste)
 
 ```text
-Create the EF structure for SatellitePowerSystem using only one validator model.
+Create the EF structure for ColdChainSupervisorSystem using only one validator model.
 
-Create exactly one atomic model named SatelliteValidator with:
-- input port: controller_status
+Create exactly one atomic model named ColdChainValidator with:
+- input port: supervisor_status
 - output port: validation_result
 
 Do not create generator or transducer.
@@ -326,13 +353,13 @@ Do not add extra models, ports, or couplings.
 Keep it minimal: validator-only EF structure.
 ```
 
-### 6.4 EF behavior prompt - SatelliteValidator (copy/paste)
+### 6.4 EF behavior prompt - ColdChainValidator (copy/paste)
 
 ```text
-Create behavior code for atomic model SatelliteValidator.
+Create behavior code for atomic model ColdChainValidator.
 
 Ports:
-- input: controller_status
+- input: supervisor_status
 - output: validation_result
 
 Behavior:
@@ -341,15 +368,13 @@ Behavior:
 - Keep internal memory of the latest sequence of controller decisions.
 
 Expected behavior to validate:
-1) START is allowed only when:
-   - sun_detected=true
-   - battery_level=NOT_FULL
-   - panel_position=OPEN
-2) If battery=FULL, controller must issue STOP and eventually panel becomes CLOSED.
-3) If sun_detected=false, controller must not request START.
+1) If celsius >= 8, cooling_mode must become ON.
+2) If celsius <= 4, cooling_mode must become OFF.
+3) If door_open=true and celsius > 6, alarm_level must be WARN.
+4) If door_open=false and celsius <= 6, alarm_level must be NONE.
 
 Verdict policy:
-- FAIL if rule (1) is violated at least once, or if rules (2)/(3) are clearly violated.
+- FAIL if any rule above is violated at least once.
 - WARN if behavior is incomplete at end of run (for example waiting for eventual close).
 - PASS if all rules are satisfied over the run.
 
@@ -366,19 +391,19 @@ Keep logic simple, explainable, and suitable for reproducibility demos.
 
 Expected qualitative timeline:
 
-- Near `t=0`: no sun, panel closed, charging STOP.
-- Around `t=20`: sun becomes true -> controller opens panel.
-- Shortly after panel opens: controller sends `START` -> battery enters `CHARGING`.
-- About 20 time units after charging start: battery becomes `FULL`.
-- After battery is FULL: controller sends `STOP` and closes panel.
-- Around `t=80`: sun becomes false (system already in non-collection mode).
+- Near `t=0`: temp=2, door closed, cooling OFF, alarm NONE.
+- Around `t=20`: temp rises to 9 -> supervisor sends cooling ON.
+- Around `t=30`: door opens while hot -> supervisor sends alarm WARN.
+- Around `t=45`: door closes -> supervisor can clear alarm.
+- Around `t=80`: temp drops to 3 -> supervisor sends cooling OFF.
 
 Expected traces to observe:
 
-- `sun_state` toggles at deterministic times
-- `panel_state` transitions for panel motor
-- `battery_state` transitions `NOT_FULL -> CHARGING -> FULL`
-- `controller_status` decisions matching policy
+- `temp_state` changes at deterministic times
+- `door_state` changes at deterministic times
+- `cooling_state` transitions `OFF -> ON -> OFF`
+- `alarm_state` transitions `NONE -> WARN -> NONE`
+- `supervisor_status` decisions matching policy
 
 Example exported result (JSON):
 
@@ -393,10 +418,11 @@ Example exported result (JSON):
 
 ```text
 Build a simple UI for this model:
-- show sun status
-- show battery state
-- show panel state
-- show current controller decision
+- show room temperature
+- show door status
+- show cooling state
+- show alarm state
+- show current supervisor decision
 - keep the Simulate action visible
 ```
 
@@ -413,7 +439,7 @@ Expected outcome:
 Archive at least:
 
 - Generated structure
-- Atomic behavior code for: `SunSensor`, `Battery`, `Controller`, `PanelMotor`
+- Atomic behavior code for: `TempSensor`, `DoorSensor`, `Supervisor`, `CoolingUnit`, `AlarmUnit`
 - Validation outputs/logs
 - EF artifacts (if generated)
 - Simulation traces/logs
