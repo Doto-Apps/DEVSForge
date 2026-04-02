@@ -1,20 +1,108 @@
-name: Deploy
+name: Build Docker and Deploy
 
 on:
-  workflow_run:
-    workflows:
-      - Publish Frontend
-      - Publish Backend
-      - Publish Simulator
-      - Publish Backend AIO
-    types:
-      - completed
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+    paths:
+      - "front/**"
+      - "back/**"
+      - "simulator/**"
+  workflow_dispatch:
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      front: ${{ steps.filter.outputs.front }}
+      back: ${{ steps.filter.outputs.back }}
+      simulator: ${{ steps.filter.outputs.simulator }}
+      is_tag: ${{ startsWith(github.ref, 'refs/tags/v') }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            front:
+              - 'front/**'
+            back:
+              - 'back/**'
+            simulator:
+              - 'simulator/**'
+
+  build-frontend:
+    name: Build and Push Docker Frontend
+    needs: changes
+    if: needs.changes.outputs.front == 'true' || needs.changes.outputs.is_tag == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/docker-build
+        with:
+          image_name: devsforge-frontend
+          context: ./front
+          dockerfile: ./front/Dockerfile
+
+  build-backend:
+    name: Build and Push Docker Backend
+    needs: changes
+    if: needs.changes.outputs.back == 'true' || needs.changes.outputs.is_tag == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/docker-build
+        with:
+          image_name: devsforge-backend
+          context: ./
+          dockerfile: ./back/Dockerfile
+          target: backend
+
+  build-simulator:
+    name: Build and Push Docker Simulator
+    needs: changes
+    if: needs.changes.outputs.simulator == 'true' || needs.changes.outputs.is_tag == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/docker-build
+        with:
+          image_name: devsforge-simulator
+          context: ./
+          dockerfile: ./back/Dockerfile
+          target: simulator
+
+  build-backend-aio:
+    name: Build and Push Docker Backend AIO
+    needs: changes
+    if: needs.changes.outputs.back == 'true' || needs.changes.outputs.simulator == 'true' || needs.changes.outputs.is_tag == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/docker-build
+        with:
+          image_name: devsforge-backend-aio
+          context: ./
+          dockerfile: ./back/Dockerfile
+          target: all-in-one
+
   deploy:
     name: Deploy on server
+    needs: [build-frontend, build-backend, build-simulator, build-backend-aio]
+    if: |
+      always() && (
+        needs.build-frontend.result == 'success' ||
+        needs.build-backend.result == 'success' ||
+        needs.build-simulator.result == 'success' ||
+        needs.build-backend-aio.result == 'success'
+      )
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Install ssh keys
         run: |
