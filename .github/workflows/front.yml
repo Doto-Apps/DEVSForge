@@ -1,0 +1,49 @@
+name: Front CI
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "front/**"
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "front/**"
+
+jobs:
+  front-ci:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: "10.6.5"
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            front/node_modules
+            ~/.pnpm-store
+          key: ${{ runner.os }}-pnpm-front-${{ hashFiles('front/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-front-
+
+      - name: Install dependencies
+        run: pnpm install
+        working-directory: ./front
+
+      - name: Type check
+        run: pnpm run typecheck
+        working-directory: ./front
+
+      - name: Install main dependencies
+        run: pnpm install
+
+      - name: Biome check
+        run: pnpm biome check --diagnostic-level=error

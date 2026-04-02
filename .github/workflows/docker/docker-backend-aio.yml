@@ -1,0 +1,30 @@
+name: Publish Backend AIO
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+    paths:
+      - 'back/**'
+      - 'simulator/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: Publish devsforge-backend-aio
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/docker-build
+        with:
+          image_name: devsforge-backend-aio
+          context: ./
+          dockerfile: ./back/Dockerfile
+          target: all-in-one
