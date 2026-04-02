@@ -93,6 +93,11 @@ func LaunchRunner(args []string) error {
 			emitRunnerErrorReport(wrapper.Cfg, "RUNNER_PREPARE_PYTHON_ERROR", err)
 			return err
 		}
+	case "java":
+		if err := generators.PrepareJavaWrapper(wrapper, manifest); err != nil {
+			emitRunnerErrorReport(wrapper.Cfg, "RUNNER_PREPARE_JAVA_ERROR", err)
+			return err
+		}
 	default:
 		err := fmt.Errorf("runner cannot handle language %s", manifest.Models[0].Language)
 		emitRunnerErrorReport(wrapper.Cfg, "RUNNER_UNSUPPORTED_LANGUAGE", err)

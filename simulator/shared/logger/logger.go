@@ -52,6 +52,12 @@ func DefaultConfig(simulationID string) Config {
 // processType: "coordinator" or "runner"
 // processID: model ID for runners, empty for coordinator
 func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error) {
+	// Parse log mode
+	logMode := strings.ToLower(cfg.LogMode)
+	if logMode == "" {
+		logMode = "all"
+	}
+
 	if cfg.SimulationID == "" {
 		return nil, fmt.Errorf("simulationID is required")
 	}
@@ -70,46 +76,44 @@ func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error)
 		cfg.DirMode = 0o777
 	}
 
-	// Create log directory with proper permissions
-	logDir := filepath.Join(cfg.LogDir, cfg.SimulationID)
-	if err := os.MkdirAll(logDir, os.FileMode(cfg.DirMode)); err != nil {
-		return nil, fmt.Errorf("failed to create log directory: %w", err)
-	}
-
-	// Determine log filename
-	var logFilename string
-	if processType == "runner" && processID != "" {
-		logFilename = fmt.Sprintf("runner-%s.log", processID)
-	} else {
-		logFilename = fmt.Sprintf("%s.log", processType)
-	}
-
-	logPath := filepath.Join(logDir, logFilename)
-	if f, err := os.Create(logPath); err != nil {
-		return nil, fmt.Errorf("cannot create log file: %w", err)
-	} else {
-		if err = f.Chmod(os.FileMode(cfg.DirMode)); err != nil {
-			return nil, fmt.Errorf("cannot set log file permissions: %w", err)
+	var fileWriter *lumberjack.Logger
+	if logMode != "console" {
+		// Create log directory with proper permissions
+		logDir := filepath.Join(cfg.LogDir, cfg.SimulationID)
+		if err := os.MkdirAll(logDir, os.FileMode(cfg.DirMode)); err != nil {
+			return nil, fmt.Errorf("failed to create log directory: %w", err)
 		}
-	}
 
-	// Create lumberjack writer for file logging
-	fileWriter := &lumberjack.Logger{
-		Filename:   logPath,
-		MaxSize:    cfg.MaxSize,
-		MaxBackups: cfg.MaxBackups,
-		Compress:   cfg.Compress,
-		LocalTime:  true,
+		// Determine log filename
+		var logFilename string
+		if processType == "runner" && processID != "" {
+			logFilename = fmt.Sprintf("runner-%s.log", processID)
+		} else {
+			logFilename = fmt.Sprintf("%s.log", processType)
+		}
+
+		logPath := filepath.Join(logDir, logFilename)
+		if f, err := os.Create(logPath); err != nil {
+			return nil, fmt.Errorf("cannot create log file: %w", err)
+		} else {
+			if err = f.Chmod(os.FileMode(cfg.DirMode)); err != nil {
+				return nil, fmt.Errorf("cannot set log file permissions: %w", err)
+			}
+		}
+
+		// Create lumberjack writer for file logging
+		fileWriter = &lumberjack.Logger{
+			Filename:   logPath,
+			MaxSize:    cfg.MaxSize,
+			MaxBackups: cfg.MaxBackups,
+			Compress:   cfg.Compress,
+			LocalTime:  true,
+		}
+
 	}
 
 	// Parse log level
 	level := parseLevel(cfg.Level)
-
-	// Parse log mode
-	logMode := strings.ToLower(cfg.LogMode)
-	if logMode == "" {
-		logMode = "all"
-	}
 
 	// Create custom attributes
 	attrs := []any{

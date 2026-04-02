@@ -25,7 +25,6 @@ var (
 
 	ErrSimulationDone = errors.New("simulation completed normally")
 	Sender            = "fakecoordinator"
-	testLogger        = log.New(os.Stdout, "[TEST FAKE COORDINATOR] ", log.LstdFlags)
 
 	// Global compose stack to ensure we can stop it reliably.
 	stack *tccompose.DockerCompose
@@ -36,6 +35,10 @@ func TestMain(m *testing.M) {
 	defer cancel()
 
 	var err error
+	err = os.Setenv("LOG_MODE", "console")
+	if err != nil {
+		log.Fatalf("Cannot set LOG_MODE env var: %v", err)
+	}
 	SimRoot, err = utils.SimulatorRoot()
 	if err != nil {
 		log.Fatalf("Failed to locate simulator root: %v", err)
