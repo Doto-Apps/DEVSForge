@@ -1,0 +1,2249 @@
+{
+  "exportedAt": "2026-04-02T10:20:11.846Z",
+  "modelId": "9ae48654-2f81-47ed-9cbf-633b623f7762",
+  "modelName": "EF_Root_Room_test_power",
+  "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+  "simulationStatus": "completed",
+  "eventCount": 95,
+  "events": [
+    {
+      "id": "2c352899-0393-4c0c-8e62-c3ae9efb4c49",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:14.153123Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.InitSim",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.InitSim",
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "fe2b7361-fe64-46df-be04-dd2a031b1157",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:14.153123Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.InitSim",
+      "sender": "",
+      "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "payload": {
+        "devsType": "devs.msg.InitSim",
+        "sender": "",
+        "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "a726cab9-7449-47a9-aba1-d89b63d87896",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:14.153123Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.InitSim",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.InitSim",
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "9a678de3-bb5b-4cff-8c09-fbb69b151558",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:14.153123Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.InitSim",
+      "sender": "",
+      "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "payload": {
+        "devsType": "devs.msg.InitSim",
+        "sender": "",
+        "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "b19ae5b1-de90-45a9-98cf-0563e1d1c1c1",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:15.4424Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.InitSim",
+      "sender": "",
+      "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "payload": {
+        "devsType": "devs.msg.InitSim",
+        "sender": "",
+        "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "c62e98aa-b13a-40b2-9c40-c76c58e7c384",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:15.4424Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.NextTime",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.NextTime",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.NextTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "586d7845-a982-48f8-85ae-7e5d3bb8d097",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.732177Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.NextTime",
+      "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.NextTime",
+        "nextTime": {
+          "t": 0,
+          "timeType": "devs.msg.NextTime"
+        },
+        "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "68f155d8-a1a4-418a-9a09-c7ffff9bdaaf",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.732177Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.NextTime",
+      "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.NextTime",
+        "nextTime": {
+          "t": 0,
+          "timeType": "devs.msg.NextTime"
+        },
+        "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "6fedf401-c75a-4e78-bf17-52b29b90cd44",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.NextTime",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.NextTime",
+        "nextTime": {
+          "t": 0,
+          "timeType": "devs.msg.NextTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "201a9d0f-b57a-4fee-9c85-864a54c8db3b",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.NextTime",
+      "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.NextTime",
+        "nextTime": {
+          "t": 0,
+          "timeType": "devs.msg.NextTime"
+        },
+        "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "f938dc0d-9592-4379-9d3c-631b77d2cbc4",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "13aec25a-907e-4a33-b7ba-f7dd256ff183",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "8c18171b-7a10-47d3-a6eb-8f2553fd37a4",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_cmd",
+              "portType": "TODO",
+              "value": {
+                "target": "CLOSE",
+                "type": "panel_cmd"
+              }
+            },
+            {
+              "portIdentifier": "charge_cmd",
+              "portType": "TODO",
+              "value": {
+                "action": "STOP",
+                "type": "charge_cmd"
+              }
+            },
+            {
+              "portIdentifier": "controller_status",
+              "portType": "TODO",
+              "value": {
+                "battery_level": "NOT_FULL",
+                "charge_action": "STOP",
+                "panel_position": "CLOSED",
+                "panel_target": "CLOSE",
+                "sun_detected": false,
+                "type": "controller_status"
+              }
+            }
+          ]
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "cf5849e9-16eb-4b2f-8453-fd4c5bbdf4a2",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "4ae69681-03fc-4b87-bea1-a02918a8e500",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_state",
+              "portType": "TODO",
+              "value": {
+                "position": "CLOSED",
+                "type": "panel_state"
+              }
+            }
+          ]
+        },
+        "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "e6d5c1dc-32cf-4417-9daf-494b545d5bd2",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "da9967aa-5a6f-4786-9f4c-5946e6eb63e6",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "battery_state",
+              "portType": "TODO",
+              "value": {
+                "level": "NOT_FULL",
+                "type": "battery_state"
+              }
+            }
+          ]
+        },
+        "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "d15c8ba8-f590-4783-b863-7cfb6b7ed142",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "sun_state",
+              "portType": "TODO",
+              "value": {
+                "sun_detected": false,
+                "type": "sun_state"
+              }
+            }
+          ]
+        },
+        "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "917f421b-a25d-4f55-aa03-f3d3343ef6ce",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_state",
+              "portType": "TODO",
+              "value": {
+                "position": "CLOSED",
+                "type": "panel_state"
+              }
+            },
+            {
+              "portIdentifier": "battery_state",
+              "portType": "TODO",
+              "value": {
+                "level": "NOT_FULL",
+                "type": "battery_state"
+              }
+            },
+            {
+              "portIdentifier": "sun_state",
+              "portType": "TODO",
+              "value": {
+                "sun_detected": false,
+                "type": "sun_state"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "fd762fc6-2b50-4f5b-bbe8-f38455b893e1",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_cmd",
+              "portType": "TODO",
+              "value": {
+                "target": "CLOSE",
+                "type": "panel_cmd"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "3f5c46a5-306f-4dff-9581-111de19b2810",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "bf0593d7-f389-4863-ae34-3cfb637e47f3",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "charge_cmd",
+              "portType": "TODO",
+              "value": {
+                "action": "STOP",
+                "type": "charge_cmd"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "3005e366-52c9-4954-beac-55a32519964c",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "c7ae1878-cad9-4230-a779-b5e7fbaa1a19",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "ab1a4237-c196-4bca-b2d0-287d712afe5a",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "b521934a-55d8-4204-b1cd-e147a17707ce",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:16.860779Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "controller_status",
+              "portType": "TODO",
+              "value": {
+                "battery_level": "NOT_FULL",
+                "charge_action": "STOP",
+                "panel_position": "CLOSED",
+                "panel_target": "CLOSE",
+                "sun_detected": false,
+                "type": "controller_status"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "5e49b2a7-2cc3-4616-8832-64320caf7a02",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 20,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "8ebe1bcd-a34f-48f3-b7fe-82324868b7ce",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "672e5dea-8261-4b4c-ad49-1dd946a0e512",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "f4e13bbe-6c49-405f-beb3-7b314596b189",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "validation_result",
+              "portType": "TODO",
+              "value": {
+                "reason": "All rules satisfied so far.",
+                "status": "PASS",
+                "type": "validation_result"
+              }
+            }
+          ]
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "48f0e3d5-7cf4-45b8-8fc0-39046ded9118",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "3105c98a-669a-4d08-be73-1fb15d5a0371",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 0,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 0,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "214907ab-0c07-4768-a2f0-c3229f062990",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 20,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 20,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "80a33bd1-62ea-4fb2-9be2-308b8ce625ff",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 20,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "sun_state",
+              "portType": "TODO",
+              "value": {
+                "sun_detected": false,
+                "type": "sun_state"
+              }
+            }
+          ]
+        },
+        "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 20,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "d5b33461-d9de-4138-abf4-7a0cfddf37f2",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 20,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 20,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "c37bec10-a710-47b9-ac65-d46c9e6dc33b",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 20,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "sun_state",
+              "portType": "TODO",
+              "value": {
+                "sun_detected": false,
+                "type": "sun_state"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 20,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "dcad426b-1250-4842-8da1-980b97467a95",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 20,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 20,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "75e764ac-bf79-44b2-8906-e86f212d7812",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 20,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 20,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "6747923f-c2be-4a48-9acd-5ca594a0e525",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "8f746bcd-2760-4281-9352-fe470505b568",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "sun_state",
+              "portType": "TODO",
+              "value": {
+                "sun_detected": true,
+                "type": "sun_state"
+              }
+            }
+          ]
+        },
+        "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "9c7e5e85-d148-4d76-83a7-fa1ae2fc7d3c",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "6b9d440b-bbc2-47bc-a91c-923548ce9f72",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "sun_state",
+              "portType": "TODO",
+              "value": {
+                "sun_detected": true,
+                "type": "sun_state"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "507bcd97-22e4-4794-aefa-621afb28c120",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "2fb9e7f1-bf7c-437b-8482-6e9e20a28e6e",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "4e323ed9-cc40-4cfa-86c6-e18d8596eb8a",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "a4cb3058-9e05-471d-861b-2695a1044c39",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "cf4a7c65-1212-41bc-a1f4-56746d7b4142",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_cmd",
+              "portType": "TODO",
+              "value": {
+                "target": "OPEN",
+                "type": "panel_cmd"
+              }
+            },
+            {
+              "portIdentifier": "controller_status",
+              "portType": "TODO",
+              "value": {
+                "battery_level": "NOT_FULL",
+                "charge_action": "STOP",
+                "panel_position": "CLOSED",
+                "panel_target": "OPEN",
+                "sun_detected": true,
+                "type": "controller_status"
+              }
+            }
+          ]
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "25e8a4ca-2521-4384-b916-d95b06b9710b",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "7a6e73fb-3a00-4ec7-b73d-593b96a415cd",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "controller_status",
+              "portType": "TODO",
+              "value": {
+                "battery_level": "NOT_FULL",
+                "charge_action": "STOP",
+                "panel_position": "CLOSED",
+                "panel_target": "OPEN",
+                "sun_detected": true,
+                "type": "controller_status"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "33c67bcf-448b-4dfe-8d77-10b9b5439fe6",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "7bc78da3-515f-4054-8c9b-fe76de3790cb",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_cmd",
+              "portType": "TODO",
+              "value": {
+                "target": "OPEN",
+                "type": "panel_cmd"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "fe5ff7f2-9cee-4b7b-9568-743544ef379c",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "2e37e435-4b25-4778-8397-80eb71ac21cb",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "b04d02e6-9c57-4fc7-b308-875873375364",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "deef38ce-26f1-4ed4-87f1-3f9f08c228fe",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "validation_result",
+              "portType": "TODO",
+              "value": {
+                "reason": "All rules satisfied so far.",
+                "status": "PASS",
+                "type": "validation_result"
+              }
+            }
+          ]
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "a4c070e7-fc8d-469a-9055-9f2a90497797",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "d6940bdc-1056-4499-8bc5-3befee55d310",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 80,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 80,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "bda4a306-6e47-4faf-82d6-5daefa216432",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "b4894eec-9520-420d-b5d9-356b2da95135",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_state",
+              "portType": "TODO",
+              "value": {
+                "position": "OPEN",
+                "type": "panel_state"
+              }
+            }
+          ]
+        },
+        "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "56c9b710-79b9-4a16-877e-0187bfed7084",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "cbda1b0c-889e-4ca9-9237-07d7ae39504d",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_state",
+              "portType": "TODO",
+              "value": {
+                "position": "OPEN",
+                "type": "panel_state"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "7d5d3c02-3fb7-451c-9257-52e06923b080",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "d472f3ca-aac4-4828-b325-f5645aea0d5c",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "5dfb423c-8b50-4975-a844-0236315e8427",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "21fbb2c8-b1b3-44bc-808a-3a0182b96139",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "5f110361-320a-435e-8f60-f51baad1ea6f",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "charge_cmd",
+              "portType": "TODO",
+              "value": {
+                "action": "START",
+                "type": "charge_cmd"
+              }
+            },
+            {
+              "portIdentifier": "controller_status",
+              "portType": "TODO",
+              "value": {
+                "battery_level": "NOT_FULL",
+                "charge_action": "START",
+                "panel_position": "OPEN",
+                "panel_target": "OPEN",
+                "sun_detected": true,
+                "type": "controller_status"
+              }
+            }
+          ]
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "680581d2-9697-47d9-8e8f-908705d20081",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_state",
+              "portType": "TODO",
+              "value": {
+                "position": "OPEN",
+                "type": "panel_state"
+              }
+            }
+          ]
+        },
+        "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "07feaf78-f88c-4e58-a200-4c770959316a",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "panel_state",
+              "portType": "TODO",
+              "value": {
+                "position": "OPEN",
+                "type": "panel_state"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "93909b47-c681-4810-9a23-622d6355c953",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "097a37ef-05f4-487a-9f47-0181d8669e69",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "1a531c3b-474e-4429-b375-c962e6c7d4a6",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "charge_cmd",
+              "portType": "TODO",
+              "value": {
+                "action": "START",
+                "type": "charge_cmd"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "832c4c3b-e555-4443-8761-283c757e07e6",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "f01dbb3f-3e93-462c-b01f-15b9126a023a",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "ecf26ffd-5261-4aa2-bb10-de3a174abbdd",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "controller_status",
+              "portType": "TODO",
+              "value": {
+                "battery_level": "NOT_FULL",
+                "charge_action": "START",
+                "panel_position": "OPEN",
+                "panel_target": "OPEN",
+                "sun_detected": true,
+                "type": "controller_status"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "842a032b-2e03-4913-8314-1ec33443c1ff",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "1a540c71-7c03-41bb-a37a-f925825957c4",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "f73e7ff0-43a1-4d83-9f93-71fac83e786e",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.359643Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "b8c8e943-378c-49a7-bdcc-18653f40a181",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "8ea1b295-d9cc-46ca-881d-5b12fdccc37a",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "fb704cdd-6d30-4817-8d0d-9bb1cb3c5236",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "21eb783e-298b-4199-9312-500d3441bc01",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "e4cb0a3b-a722-4588-860e-f70de59ef0cf",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "eab923c1-3cd3-48cb-aff9-a2964cb7f9f0",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "validation_result",
+              "portType": "TODO",
+              "value": {
+                "reason": "All rules satisfied so far.",
+                "status": "PASS",
+                "type": "validation_result"
+              }
+            }
+          ]
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "c2719a60-26db-4c38-9741-775993430e08",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "battery_state",
+              "portType": "TODO",
+              "value": {
+                "level": "CHARGING",
+                "type": "battery_state"
+              }
+            }
+          ]
+        },
+        "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "cf94cc04-4edc-4cef-8a16-bd060eb5cdeb",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "73af0cf9-5941-4235-8737-ffa18557c5f5",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "battery_state",
+              "portType": "TODO",
+              "value": {
+                "level": "CHARGING",
+                "type": "battery_state"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "8114643b-3706-48b5-a605-7f584e247252",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 101,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "bf82d660-0ac4-4095-abd2-11a91bb4b5ca",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "f8947b88-f0e0-4cee-b70d-6fda3f01f1a4",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "90d147b1-59c1-41f0-966f-c420d21cb5fe",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "60c5c7bc-828d-4c5c-a0f9-9a847f42df3c",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "6a59c404-fe20-4ce8-a981-d6cb95449812",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.SendOutput",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.SendOutput",
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "3070087e-9ad2-43eb-984b-b23a90ee3086",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "controller_status",
+              "portType": "TODO",
+              "value": {
+                "battery_level": "CHARGING",
+                "charge_action": "START",
+                "panel_position": "OPEN",
+                "panel_target": "OPEN",
+                "sun_detected": true,
+                "type": "controller_status"
+              }
+            }
+          ]
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "55e2d85f-0e4d-4ce1-adbc-ac11b1ea9e11",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {},
+        "sender": "",
+        "target": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "2fc87490-0b9c-4a27-a724-43783222f835",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ExecuteTransition",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.ExecuteTransition",
+        "modelInputsOption": {
+          "portValueList": [
+            {
+              "portIdentifier": "controller_status",
+              "portType": "TODO",
+              "value": {
+                "battery_level": "CHARGING",
+                "charge_action": "START",
+                "panel_position": "OPEN",
+                "panel_target": "OPEN",
+                "sun_detected": true,
+                "type": "controller_status"
+              }
+            }
+          ]
+        },
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "82245b8c-1dde-4bec-babf-b87f0d041635",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.TransitionDone",
+      "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.TransitionDone",
+        "nextTime": {
+          "t": 1.7976931348623157e+308,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        },
+        "sender": "30e538f4-92cb-489b-9f97-a25eafb949b2",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "9fe2e991-eb0a-408a-a9dd-e7563202cb9b",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": 81,
+      "devsType": "devs.msg.ModelOutputMessage",
+      "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "target": null,
+      "payload": {
+        "devsType": "devs.msg.ModelOutputMessage",
+        "modelOutput": {
+          "portValueList": [
+            {
+              "portIdentifier": "validation_result",
+              "portType": "TODO",
+              "value": {
+                "reason": "All rules satisfied so far.",
+                "status": "PASS",
+                "type": "validation_result"
+              }
+            }
+          ]
+        },
+        "sender": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+        "time": {
+          "t": 81,
+          "timeType": "devs.msg.time.DoubleSimTime"
+        }
+      }
+    },
+    {
+      "id": "eb92a6b6-25fe-4623-877d-4f0747040e66",
+      "simulationId": "0f0e5f4e-2bd1-49c4-a73b-fd934f0ea892",
+      "createdAt": "2026-04-02T10:19:17.558768Z",
+      "simulationTime": null,
+      "devsType": "devs.msg.SimulationDone",
+      "sender": "",
+      "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966",
+      "payload": {
+        "devsType": "devs.msg.SimulationDone",
+        "sender": "",
+        "target": "cf2dac7e-b5f8-46db-99e5-5f3c5a4fb966"
+      }
+    }
+  ]
+}

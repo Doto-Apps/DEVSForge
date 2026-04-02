@@ -1,5 +1,9 @@
 import type { components } from "@/api/v1";
-import { DEFAULT_NODE_SIZE, DEFAULT_POSITION } from "@/constants";
+import {
+	DEFAULT_NODE_SIZE,
+	DEFAULT_POSITION,
+	INTERNAL_PREFIX,
+} from "@/constants";
 import type {
 	EdgeData,
 	GeneratedDiagram,
@@ -508,21 +512,25 @@ export const generatedDiagramToReactFlow = (
 
 	// Créer les edges à partir des connexions
 	for (const conn of diagram.connections) {
-		const sourceId =
-			conn.from.model === rootModel.id
-				? rootModel.id
-				: `${rootModel.id}/${conn.from.model}`;
-		const targetId =
-			conn.to.model === rootModel.id
-				? rootModel.id
-				: `${rootModel.id}/${conn.to.model}`;
+		const sourceIsRoot = conn.from.model === rootModel.id;
+		const targetIsRoot = conn.to.model === rootModel.id;
+		const sourceId = sourceIsRoot
+			? rootModel.id
+			: `${rootModel.id}/${conn.from.model}`;
+		const targetId = targetIsRoot
+			? rootModel.id
+			: `${rootModel.id}/${conn.to.model}`;
 
 		const edge: Edge<EdgeData> = {
-			id: `${sourceId}->${targetId}`,
+			id: `${sourceId}:${conn.from.port}->${targetId}:${conn.to.port}`,
 			source: sourceId,
 			target: targetId,
-			sourceHandle: `${sourceId}:${conn.from.port}`,
-			targetHandle: `${targetId}:${conn.to.port}`,
+			sourceHandle: sourceIsRoot
+				? `${INTERNAL_PREFIX}${sourceId}:${conn.from.port}`
+				: `${sourceId}:${conn.from.port}`,
+			targetHandle: targetIsRoot
+				? `${INTERNAL_PREFIX}${targetId}:${conn.to.port}`
+				: `${targetId}:${conn.to.port}`,
 			data: {
 				holderId: rootModel.id,
 			},

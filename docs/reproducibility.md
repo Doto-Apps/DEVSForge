@@ -1,15 +1,14 @@
-# Reproducibility Guide - Smart Parking Case Study (DEVSForge)
+# Reproducibility Guide - Satellite Solar Panel Management (DEVSForge)
 
-This document describes a click-by-click reproducibility path for the Smart Parking case study presented in the paper, focusing on:
+This document defines a full, copy-paste reproducibility scenario for DEVSForge based on a simple satellite power subsystem.
 
-- Coupled structure generation (conflict-management topology)
-- Atomic behavior generation (Sensor, Broadcaster, User, ConflictManager)
-- Deterministic verification ("Validate diagram" gates)
-- Experimental-Frame (EF) generation (Transducer + Acceptor focused on conflict semantics)
+The scenario demonstrates:
+
+- AI-assisted structure generation
+- AI-assisted atomic behavior generation
+- Optional Experimental Frame (EF) generation for behavioral checks
 - Simulation and trace inspection
-- WebApp deployment (UI generation from the validated model contract)
-
-Note: the sensor behavior refinement step is excluded from the main path (no P2 loop). An optional note is still provided at the end.
+- Optional WebApp deployment
 
 ---
 
@@ -25,7 +24,7 @@ Required:
 
 - Git
 - Docker Desktop (or Docker Engine + Docker Compose v2)
-- Free ports: `5173` (front), `3000` (back), `5432` (PostgreSQL)
+- Free ports: `80` (front), `3000` (back), `5432` (PostgreSQL)
 
 Optional (only for dev mode outside Docker):
 
@@ -42,6 +41,10 @@ Optional (only for dev mode outside Docker):
 - Storage: 3 SSDs of 931.5 GB each (CT1000BX500SSD1, Samsung 990 EVO Plus 1TB, Samsung 860 QVO 1TB)
 - OS: Microsoft Windows 11 Professional (10.0.26100)
 
+Expected duration:
+
+- One full reproducibility run (structure + behavior + simulate): ~30 minutes
+
 ---
 
 ## 1) Install and run DEVSForge locally
@@ -53,9 +56,7 @@ git clone https://github.com/Doto-Apps/DEVSForge
 cd DEVSForge
 ```
 
-### 1.2 Create `.env` files
-
-Bash:
+### 1.2 Create `.env` file
 
 ```bash
 cp .env.dist .env
@@ -83,332 +84,352 @@ Default services:
 2. Click **Sign up**.
 3. Register, then login.
 
-### 2.2 Configure your AI provider settings
+### 2.2 Configure AI provider settings
 
-This step is mandatory before using AI model/diagram/EF generation.
-
-1. Open user menu (bottom-left avatar) -> **Settings** (or go to `/settings`).
+1. Open user menu (bottom-left avatar) -> **Settings**.
 2. Fill:
    - **API URL** (example: `https://api.openai.com/v1`)
-   - **API Model** (example: `gpt-4.1-mini`)
+   - **API Model** (example: `gpt-5.2-2025-12-11`)
    - **API Key**
 3. Click **Save settings**.
-4. Verify that a masked key badge appears (`Stored key`).
+4. Confirm a masked key badge appears (`Stored key`).
 
-If this step is skipped, AI endpoints will fail with errors such as:
+If skipped, AI endpoints fail with messages such as:
 
 - `AI settings are not configured for this user`
 - `AI settings are incomplete: apiUrl, apiKey and apiModel are required`
 
 ### 2.3 Quick smoke check
 
-Open **Devs Model Generator**, submit a small prompt, and confirm the request returns generated content.
+Open **Devs Model Generator**, submit a tiny prompt, confirm generated output is returned.
 
 ---
 
-## 3) Case study step A - Generate the coupled structure (conflict management topology)
+## 3) Scenario definition (satellite solar panel manager)
 
-### 3.1 Open the generator
+System components:
+
+- `SunSensor`: detects sun presence (`sun_detected = true/false`)
+- `Battery`: states `NOT_FULL`, `CHARGING`, `FULL`
+- `Controller`: central policy decision
+- `PanelMotor`: opens/closes one solar panel
+
+Target policy:
+
+- If sun is detected and battery is `NOT_FULL`, controller open panel.
+- When panel is open under charging condition, battery can move to `CHARGING`.
+- If no sun, or battery is `FULL`, controller stops charging and close panel.
+
+### 3.1 Reproducibility interpretation for LLM-generated artifacts
+
+In this project, reproducibility does **not** mean byte-for-byte identical generated code across runs.
+LLM generation is probabilistic, so implementations can differ while still being correct.
+
+What must be reproducible is:
+
+- The ability to generate a valid **structural model** (components + couplings).
+- The ability to generate valid **behavioral atomics** that respect the shared I/O contract.
+- Successful communication between models (messages flow through the expected ports).
+- A coherent global behavior matching the policy-level checkpoints.
+
+Generation errors can occur and are part of normal usage.
+When they occur, correction can be done by:
+
+- AI-assisted regeneration/refinement.
+- Expert manual edits by a developer/modeler.
+
+For reproducibility reporting, keep the final prompts, the final accepted models, and a short note about fixes applied.
+
+
+
+---
+
+## 4) Step A - Generate structure
+
+### 4.1 Open generator
 
 1. Click **Devs Model Generator**.
-2. Fill **Diagram name** (example): `SmartParking_Conflict`.
+2. Set **Diagram name**: `SatellitePowerSystem`.
 
-### 3.2 Paste the structure prompt (P3)
-
-Paste the prompt below into the structure-generation textbox and run generation.
+### 4.2 Structure prompt (copy/paste)
 
 ```text
-Define a DEVS model where three atomic sensors connect to a single broadcaster
-through the same port. The broadcaster distributes messages to three atomic users,
-which in turn connect to one atomic conflict manager via a shared port.
-The conflict manager sends detected conflicts back to the broadcaster
-through a separate port.
+Create one coupled DEVS model named SatellitePowerSystem with exactly 4 atomic components:
+- SunSensor
+- Battery
+- Controller
+- PanelMotor
+
+Use EXACT port names and directions (do not rename):
+- SatellitePowerSystem (coupled): out port controller_status
+- SunSensor: out port sun_state
+- Battery: in port charge_cmd, out port battery_state
+- PanelMotor: in port panel_cmd, out port panel_state
+- Controller: in ports sun_state, battery_state, panel_state; out ports panel_cmd, charge_cmd, controller_status
+
+Use EXACT couplings:
+- SunSensor.sun_state -> Controller.sun_state
+- Battery.battery_state -> Controller.battery_state
+- Controller.panel_cmd -> PanelMotor.panel_cmd
+- PanelMotor.panel_state -> Controller.panel_state
+- Controller.charge_cmd -> Battery.charge_cmd
+- Controller.controller_status -> SatellitePowerSystem.controller_status
+
+No extra models, no extra ports, no extra couplings.
 ```
 
 Expected outcome:
 
-- A generated topology with `3 Sensors -> 1 Broadcaster -> 3 Users -> 1 ConflictManager`
-- A feedback link `ConflictManager -> Broadcaster`
+- Root coupled model + 4 atomics
+- Port names exactly as specified
+- Valid couplings
 
 ---
 
-## 4) Case study step B - Generate atomic behaviors (per component)
+## 5) Step B - Generate atomic behaviors
 
-After structure generation, DEVSForge switches to the second step: **behavior generation**.
+After structure generation, DEVSForge enters behavior generation.
 
-### 4.1 Choose language and reuse mode
+Recommended options for reproducibility:
 
-For each atomic model:
+- Language: `Python` (or `Go`, but keep one language for all atomics)
+- Reuse mode: **From scratch**
 
-- Select the target language (Python or Go)
-- Choose **From scratch** for strict de novo generation
-- Or leave **From scratch** unchecked to let the platform attempt reuse-first retrieval/adaptation
+### 5.0 Shared I/O contract (must be reused by all prompts)
 
-For reproducibility in a clean environment, **From scratch** is the simplest.
+- `sun_state`: `{ "type":"sun_state", "sun_detected": true|false }`
+- `panel_cmd`: `{ "type":"panel_cmd", "target":"OPEN"|"CLOSE" }`
+- `panel_state`: `{ "type":"panel_state", "position":"OPEN"|"CLOSED" }`
+- `charge_cmd`: `{ "type":"charge_cmd", "action":"START"|"STOP" }`
+- `battery_state`: `{ "type":"battery_state", "level":"NOT_FULL"|"CHARGING"|"FULL" }`
+- `controller_status`: `{ "type":"controller_status", "sun_detected":bool, "battery_level":"NOT_FULL"|"CHARGING"|"FULL", "panel_position":"OPEN"|"CLOSED", "panel_target":"OPEN"|"CLOSE", "charge_action":"START"|"STOP" }`
 
-### 4.2 Prompts to use (one per atomic model)
+Critical rule for all generated atomics:
 
-Below are ready-to-paste prompts.
-They are designed to keep message schemas consistent across the pipeline.
+- Use the exact port names from structure.
+- Use the exact JSON keys from this contract.
+- Do not rename ports or keys.
 
-#### B1 - Sensor (occupancy + predicted duration class)
+### 5.1 Prompt B1 - SunSensor
 
 ```text
-Create an atomic DEVS model named "Sensor" representing an on-street parking presence sensor.
+Create atomic model SunSensor.
+Use exactly one output port: sun_state.
+Emit only this JSON format: { "type":"sun_state", "sun_detected": true|false }.
+Deterministic timeline:
+- t in [0,20): false
+- t in [20,80): true
+- t >= 80: false
+Emit on initialization and whenever value changes.
+Do not add extra ports or extra message keys.
+```
+
+### 5.2 Prompt B2 - Battery
+
+```text
+Create atomic model Battery with states: NOT_FULL, CHARGING, FULL.
+Use exactly:
+- input port charge_cmd with { "type":"charge_cmd", "action":"START"|"STOP" }
+- output port battery_state with { "type":"battery_state", "level":"NOT_FULL"|"CHARGING"|"FULL" }
+Rules (deterministic):
+- initial state NOT_FULL
+- START from NOT_FULL -> CHARGING
+- after 20 time units in CHARGING -> FULL
+- STOP from CHARGING -> NOT_FULL
+Emit initial state and each state change.
+Do not rename ports or JSON keys.
+```
+
+### 5.3 Prompt B3 - PanelMotor
+
+```text
+Create atomic model PanelMotor.
+State: OPEN or CLOSED (initial CLOSED).
+Use exactly:
+- input port panel_cmd with { "type":"panel_cmd", "target":"OPEN"|"CLOSE" }
+- output port panel_state with { "type":"panel_state", "position":"OPEN"|"CLOSED" }
+Rules (deterministic):
+- OPEN command when CLOSED -> OPEN after 1 time unit
+- CLOSE command when OPEN -> CLOSED after 1 time unit
+- ignore redundant commands
+Emit initial state and each transition.
+Do not add panel_id and do not rename keys.
+```
+
+### 5.4 Prompt B4 - Controller
+
+```text
+Create atomic model Controller.
+Inputs: sun_state, battery_state, panel_state.
+Outputs: panel_cmd, charge_cmd, controller_status.
+
+Policy:
+- if sun_detected=true and battery level=NOT_FULL:
+  - open panel
+  - when panel position is OPEN, send charge_cmd START
+- otherwise:
+  - send charge_cmd STOP
+  - close panel
+
+Read exact input formats:
+- sun_state: { "type":"sun_state", "sun_detected": true|false }
+- battery_state: { "type":"battery_state", "level":"NOT_FULL"|"CHARGING"|"FULL" }
+- panel_state: { "type":"panel_state", "position":"OPEN"|"CLOSED" }
+
+Emit exact output formats:
+- panel_cmd: { "type":"panel_cmd", "target":"OPEN"|"CLOSE" }
+- charge_cmd: { "type":"charge_cmd", "action":"START"|"STOP" }
+- controller_status: {
+    "type":"controller_status",
+    "sun_detected": bool,
+    "battery_level": "NOT_FULL"|"CHARGING"|"FULL",
+    "panel_position": "OPEN"|"CLOSED",
+    "panel_target": "OPEN"|"CLOSE",
+    "charge_action": "START"|"STOP"
+  }
+
+Only emit command changes (no spam), deterministic behavior.
+Do not rename ports or JSON keys.
+```
+
+---
+
+## 6) Optional Step C - Generate an Experimental Frame (EF)
+
+### 6.1 EF objective
+
+Validate these reproducibility properties with a minimal EF workflow:
+
+- `START` charging is never issued unless panel is OPEN and sun is true.
+- When battery is FULL, charging command is STOP and panel eventually becomes CLOSED.
+- With no sun, charging remains STOP.
+
+No transducer is required here. Use a single validator/acceptor model.
+
+### 6.2 Open the EF panel in the UI
+
+1. Open your target model in the model editor.
+2. In the top-right toolbar, click the small **shield icon** (Validation / EF).
+3. This opens the EF generation window where you can submit the structural prompt first, then the behavior prompt.
+
+### 6.3 EF structural prompt - Validator only (copy/paste)
+
+```text
+Create the EF structure for SatellitePowerSystem using only one validator model.
+
+Create exactly one atomic model named SatelliteValidator with:
+- input port: controller_status
+- output port: validation_result
+
+Do not create generator or transducer.
+Do not add extra models, ports, or couplings.
+Keep it minimal: validator-only EF structure.
+```
+
+### 6.4 EF behavior prompt - SatelliteValidator (copy/paste)
+
+```text
+Create behavior code for atomic model SatelliteValidator.
+
+Ports:
+- input: controller_status
+- output: validation_result
 
 Behavior:
-- Two states: "free" and "occupied".
-- When the state changes, emit a message on the output port that contains:
-  - sensor_id (string)
-  - position {x:int, y:int} in a 100x100 map
-  - state: "free" | "occupied"
-  - duration_class: int in [0..9] ONLY when switching to "occupied"
-- Time advance (ta) depends on the hour of day (virtual time computed from timenext, integer simulation time).
-- Use the inverse Poisson distribution (Poisson quantile) to generate durations so that:
-  - low activity at night,
-  - arrivals in the morning,
-  - high turnover at noon,
-  - releases in the evening.
+- Consume observations and produce a verdict message:
+  { "type":"validation_result", "status":"PASS"|"WARN"|"FAIL", "reason":"..." }
+- Keep internal memory of the latest sequence of controller decisions.
 
-I/O conventions:
-- Output message type field must be: "sensor_update"
-- Output schema:
-  { "type":"sensor_update", "sensor_id": "...", "position":{"x":..,"y":..}, "state":"free|occupied", "duration_class":0..9|null }
+Expected behavior to validate:
+1) START is allowed only when:
+   - sun_detected=true
+   - battery_level=NOT_FULL
+   - panel_position=OPEN
+2) If battery=FULL, controller must issue STOP and eventually panel becomes CLOSED.
+3) If sun_detected=false, controller must not request START.
 
-Constraints:
-- Emit ONLY on state change.
-- Keep computations deterministic given the same RNG seed if a seed parameter is provided.
-```
+Verdict policy:
+- FAIL if rule (1) is violated at least once, or if rules (2)/(3) are clearly violated.
+- WARN if behavior is incomplete at end of run (for example waiting for eventual close).
+- PASS if all rules are satisfied over the run.
 
-#### B2 - Broadcaster (relay + conflict decisions)
-
-```text
-Create an atomic DEVS model named "Broadcaster" that relays messages between sensors, users, and the conflict manager.
-
-Inputs:
-- sensor_update messages from any Sensor
-- conflict_result messages from ConflictManager
-- user_state messages from Users (optional, for monitoring)
-
-Outputs:
-- Broadcast sensor_update to all Users
-- Broadcast conflict_result to all Users
-
-Message conventions:
-- Preserve the input payload as-is (no schema drift), only ensure a consistent envelope:
-  - For relayed messages, keep the original "type" and fields.
-- Do not invent new required fields.
-- If multiple messages arrive, relay them all (order can be FIFO).
-
-Constraints:
-- The model must not decide conflicts itself; it only relays.
-```
-
-#### B3 - User (movement + intent emission + obey conflict decisions)
-
-```text
-Create an atomic DEVS model named "User" representing a driver searching for a parking space on a 100x100 grid.
-
-State:
-- position {x:int, y:int}
-- target_sensor_id (string|null)
-- actual_state: "idle" | "moving" | "parked"
-
-Inputs:
-- sensor_update from Broadcaster
-- conflict_result from Broadcaster
-
-Outputs:
-- user_intent to ConflictManager when choosing / re-choosing a target.
-- user_state to Broadcaster for traceability.
-
-Decision policy:
-- Maintain a local view of latest sensor states.
-- Choose a target among sensors that are currently "free".
-- When a conflict_result indicates another winner for the current target, reroute:
-  - pick another free sensor and emit a new user_intent.
-- When reaching the target position, emit user_state with actual_state="parked" and stop moving.
-
-Message conventions:
-- user_intent schema:
-  { "type":"user_intent", "user_id":"UserX", "position":{"x":..,"y":..}, "target_sensor_id":"...", "actual_state":"moving" }
-- user_state schema:
-  { "type":"user_state", "user_id":"UserX", "position":{"x":..,"y":..}, "target_sensor_id":"..."|null, "actual_state":"idle|moving|parked" }
-
-Constraints:
-- Ensure termination: eventually, each user reaches "parked" if at least one sensor remains available.
-```
-
-#### B4 - ConflictManager (resolve conflicts + strategy parameter)
-
-```text
-Create an atomic DEVS model named "ConflictManager" that receives user intentions and decides a winner when multiple users target the same sensor.
-
-Inputs:
-- user_intent messages from Users (shared input port)
-
-Outputs:
-- conflict_result messages to Broadcaster
-
-Behavior:
-- At each decision point, group intents by target_sensor_id.
-- If only one user targets a sensor -> no conflict_result needed.
-- If 2+ users target the same sensor -> emit exactly one conflict_result with:
-  - sensor_id
-  - users_in_conflict (array of user_id)
-  - winner_id (single user_id)
-  - strategy_used ("closest" | "first" | "random")
-
-Strategy:
-- Support a parameter/config called "strategy" with values:
-  - "closest": winner is the user with minimum Euclidean distance to the target sensor position (if position known from last sensor_update; otherwise fall back to "first")
-  - "first": winner is the earliest intent received
-  - "random": winner is sampled uniformly among competitors
-
-Message conventions:
-- conflict_result schema:
-  { "type":"conflict_result", "sensor_id":"...", "users_in_conflict":["UserA","UserB"], "winner_id":"UserA", "strategy_used":"closest|first|random" }
-
-Constraints:
-- Never produce two winners for the same sensor at the same simulated time.
-- Ensure determinism for "first" and "closest". For "random", allow seed if provided.
+Keep logic simple, explainable, and suitable for reproducibility demos.
 ```
 
 ---
 
-## 5) Validate the diagram (deterministic gates)
+## 7) Simulation run and expected checkpoints
 
-Once all atomic behaviors are generated:
+1. Open the validated coupled model.
+2. Click **Play**.
+3. Run until at least simulation time `100`.
 
-1. Click the **Validate diagram** button (top area of the editor).
+Expected qualitative timeline:
 
-You should obtain a valid status after gates such as:
+- Near `t=0`: no sun, panel closed, charging STOP.
+- Around `t=20`: sun becomes true -> controller opens panel.
+- Shortly after panel opens: controller sends `START` -> battery enters `CHARGING`.
+- About 20 time units after charging start: battery becomes `FULL`.
+- After battery is FULL: controller sends `STOP` and closes panel.
+- Around `t=80`: sun becomes false (system already in non-collection mode).
 
-- schema compliance
-- port integrity
-- coupling validity
-- unused/orphan checks
-- runner availability (depending on selected languages)
+Expected traces to observe:
 
-After validation:
+- `sun_state` toggles at deterministic times
+- `panel_state` transitions for panel motor
+- `battery_state` transitions `NOT_FULL -> CHARGING -> FULL`
+- `controller_status` decisions matching policy
 
-- A new library entry is added automatically
-- The coupled model and all generated atomic models appear in that library
+Example exported result (JSON):
 
----
-
-## 6) Open the coupled model and locate key actions
-
-1. Go to **Home** and find the newly created library.
-2. Open the coupled model `SmartParking_Conflict`.
-
-In the coupled-model page you should see:
-
-- The properties panel (editable metadata, ports, graphical colors, etc.)
-- Main buttons (top-right):
-  - **Generate Experimental Frame** (shield icon)
-  - **WebApp deployment**
-  - **Play** (simulate)
-  - **Save**
+- [Example generation output (`exemple-result.json`)](./exemple-result.json)
 
 ---
 
-## 7) Case study step C - Generate an Experimental Frame (EF) for conflict semantics
+## 8) Optional Step D - WebApp deployment
 
-### 7.1 Open EF generator
-
-1. Click **Generate Experimental Frame** (shield).
-2. Set an EF name, for example: `EF_SmartParking_Conflicts`.
-3. Choose EF components:
-   - Generators = 0 (the system already produces events)
-   - Transducers = 1
-   - Acceptors = 1
-
-If the UI requires explicit wiring, connect model-under-test outputs to transducer input, and transducer outputs to acceptor input.
-
-### 7.2 EF prompt (if the EF tool asks for one)
+1. In model page, click **WebApp deployment**.
+2. Use this prompt:
 
 ```text
-Wrap the existing SmartParking conflict-management coupled model inside an Experimental Frame (EF) focusing on conflict correctness.
-
-EF requirements:
-- No Generator component is needed (stimuli come from the model itself).
-- Create:
-  1) A Transducer that listens to the observable outputs of the model under test (sensor_update, conflict_result, user_state).
-     It must compute and expose the following observables:
-     - number_of_conflicts (count of conflict_result)
-     - per_sensor_winner_uniqueness (boolean: at most one winner_id per sensor_id per time t)
-     - no_double_assignment (boolean: no two users reach parked on the same sensor_id)
-     - all_users_eventually_parked (boolean by end of run)
-  2) An Acceptor that consumes the transducer observables and emits a PASS/FAIL verdict with a short diagnostic.
-
-Oracle (PASS if all true):
-- per_sensor_winner_uniqueness == true
-- no_double_assignment == true
-- all_users_eventually_parked == true
-
-Output:
-- Generate EF as DEVS artifacts (Transducer + Acceptor) and compose them with the existing coupled model.
-- Preserve existing message schemas (do not modify sensor_update / user_intent / conflict_result / user_state).
-```
-
-### 7.3 Run validation on the EF-wrapped system
-
-- Validate the EF diagram (same **Validate** mechanism).
-- You can now simulate either:
-  - the original coupled model
-  - the EF-wrapped coupled model
-
----
-
-## 8) Simulation and trace inspection
-
-1. Click **Play** (simulate).
-2. Run the simulation.
-
-Expected observations (qualitative):
-
-- If two users pick the same target at the same time, a `conflict_result` is emitted with exactly one `winner_id`.
-- Losing users reroute and later emit a `user_state` with `actual_state: "parked"` when reaching a new target.
-- In EF mode, the acceptor should output PASS (unless a logic error is present).
-
-You can use:
-
-- logs for per-event inspection
-- trace/plot tools to visualize activity (counts over time, etc.)
-
----
-
-## 9) Case study step D - WebApp deployment (UI from contract)
-
-1. In the coupled-model page, click **WebApp deployment**.
-2. Provide the UI prompt (P4):
-
-```text
-Explain all the different model.
+Build a simple UI for this model:
+- show sun status
+- show battery state
+- show panel state
+- show current controller decision
+- keep the Simulate action visible
 ```
 
 Expected outcome:
 
-- An explanation for each model in the `EF_SmartParking_Conflicts`
-- A **Simulate** action calling the REST simulation API
-- The deployed app appears under the **WebApps** tab
+- A generated UI aligned with model I/O contract
+- A visible simulation trigger
+- Traceable status fields
 
 ---
 
-## 10) Expected artifacts to cite / archive
+## 9) Artifacts to archive for reproducibility package
 
-For a full reproducibility package, archive:
+Archive at least:
 
-- The generated coupled structure JSON (topology)
-- Each atomic model source file (Sensor, Broadcaster, User, ConflictManager)
-- Validation logs (pre/post gates)
-- EF artifacts (Transducer + Acceptor)
-- Simulation traces (port traces + state snapshots if available)
-- WebApp configuration/code
+- Generated structure
+- Atomic behavior code for: `SunSensor`, `Battery`, `Controller`, `PanelMotor`
+- Validation outputs/logs
+- EF artifacts (if generated)
+- Simulation traces/logs
+- Optional WebApp config/code
+
+This set is sufficient for an external reviewer to re-run the same scenario end-to-end in DEVSForge.
 
 ---
 
-## 11) Optional note (excluded from the main path): sensor refinement
+## 10) Optional: external analysis with Grafana + JSON export
 
-If you later want to match the paper's arrival peaks more closely, you can run an additional behavior refinement prompt on the Sensor model (not included above per your request).
+If you want to analyze outputs outside DEVSForge:
+
+1. Run the simulation, then click **Export JSON** in the Simulation panel.
+2. In Grafana, use the **Infinity** plugin.
+3. Create an Infinity datasource/query with **JSON Inline** and paste the exported JSON content.
+4. Build simple charts/tables using fields like `simulationTime`, `devsType`, `sender`, `target`, and payload values.
+
+Use this mainly to compare runs at the **behavior/invariant** level (message consistency, policy compliance), not strict text/code equality.

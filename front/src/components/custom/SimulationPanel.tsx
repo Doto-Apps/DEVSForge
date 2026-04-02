@@ -32,6 +32,7 @@ import {
 	ArrowRight,
 	ArrowRightLeft,
 	Clock3,
+	Download,
 	Filter,
 	ListTree,
 	Loader2,
@@ -368,6 +369,39 @@ export function SimulationPanel({
 		clearEvents();
 	};
 
+	const handleExportEventsJSON = () => {
+		if (events.length === 0) return;
+
+		const now = new Date();
+		const safeModelName = (modelName ?? modelId ?? "simulation")
+			.trim()
+			.toLowerCase()
+			.replace(/[^a-z0-9_-]+/g, "_");
+		const timestamp = now.toISOString().replace(/[:.]/g, "-");
+
+		const payload = {
+			exportedAt: now.toISOString(),
+			modelId,
+			modelName: modelName ?? null,
+			simulationId: simulation?.id ?? null,
+			simulationStatus: simulation?.status ?? null,
+			eventCount: events.length,
+			events,
+		};
+
+		const blob = new Blob([JSON.stringify(payload, null, 2)], {
+			type: "application/json",
+		});
+		const url = URL.createObjectURL(blob);
+		const anchor = document.createElement("a");
+		anchor.href = url;
+		anchor.download = `${safeModelName}-events-${timestamp}.json`;
+		document.body.appendChild(anchor);
+		anchor.click();
+		anchor.remove();
+		URL.revokeObjectURL(url);
+	};
+
 	const handleClearOverrides = () => {
 		setParameterOverrides({});
 		setObjectInputs({});
@@ -614,6 +648,14 @@ export function SimulationPanel({
 								disabled={events.length === 0}
 							>
 								Clear
+							</Button>
+							<Button
+								variant="outline"
+								onClick={handleExportEventsJSON}
+								disabled={events.length === 0}
+							>
+								<Download className="mr-2 h-4 w-4" />
+								Export JSON
 							</Button>
 						</div>
 					</div>
