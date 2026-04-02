@@ -1,8 +1,8 @@
 import {
+	createContext,
 	type Dispatch,
 	type ReactNode,
 	type SetStateAction,
-	createContext,
 	useContext,
 	useState,
 } from "react";
@@ -24,8 +24,6 @@ export const DnDProvider = ({ children }: Props) => {
 		</DnDContext.Provider>
 	);
 };
-
-export default DnDContext;
 
 export const useDnD = () => {
 	return useContext(DnDContext);

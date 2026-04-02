@@ -18,9 +18,9 @@ const edgeTypes = {
 };
 
 const defaultEdgeOptions = {
-	type: "step",
 	animated: true,
 	style: { zIndex: 1000 },
+	type: "step",
 };
 
 type Props = {
@@ -35,14 +35,14 @@ export function ModelView({ models }: Props) {
 		<div className="h-full w-full flex flex-col">
 			<ReactFlowProvider>
 				<ReactFlow
-					nodes={nodes}
+					connectionMode={ConnectionMode.Loose}
+					defaultEdgeOptions={defaultEdgeOptions}
 					edges={edges}
-					nodeTypes={nodeTypes}
 					edgeTypes={edgeTypes}
 					fitView
 					minZoom={0.1}
-					defaultEdgeOptions={defaultEdgeOptions}
-					connectionMode={ConnectionMode.Loose}
+					nodes={nodes}
+					nodeTypes={nodeTypes}
 					onInit={(instance) => {
 						setTimeout(() => {
 							instance.fitView();

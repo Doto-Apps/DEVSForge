@@ -27,20 +27,20 @@ export const Form = <TFieldValues extends FieldValues>({
 
 			if (result) {
 				methods.setError("root.submit", {
-					type: "custom",
 					message: result,
+					type: "custom",
 				});
 			}
 		} catch (error) {
 			if (error instanceof Error) {
 				methods.setError("root.submit", {
-					type: "custom",
 					message: error.message,
+					type: "custom",
 				});
 			} else {
 				methods.setError("root.submit", {
-					type: "custom",
 					message: "An error occured",
+					type: "custom",
 				});
 			}
 		}

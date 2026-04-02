@@ -7,13 +7,12 @@ import {
 	useStore,
 	useViewport,
 } from "@xyflow/react";
-import { Info, Maximize, Minus, Plus, ReplaceAll } from "lucide-react";
+import { Maximize, Minus, Plus, ReplaceAll } from "lucide-react";
 import * as React from "react";
 
 import { Slider } from "../components/ui/slider";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";
-import { Toggle } from "./ui/toggle";
 
 type ZoomSliderProps = Omit<PanelProps, "children"> & {
 	onOrganizeClick?: () => void;
@@ -26,8 +25,8 @@ const ZoomSlider = React.forwardRef<HTMLDivElement, ZoomSliderProps>(
 
 		const { minZoom, maxZoom } = useStore(
 			(state) => ({
-				minZoom: state.minZoom,
 				maxZoom: state.maxZoom,
+				minZoom: state.minZoom,
 			}),
 			(a, b) => a.minZoom !== b.minZoom || a.maxZoom !== b.maxZoom,
 		);
@@ -38,43 +37,43 @@ const ZoomSlider = React.forwardRef<HTMLDivElement, ZoomSliderProps>(
 				{...props}
 			>
 				<Button
-					variant="ghost"
-					size="icon"
 					onClick={() => zoomOut({ duration: 300 })}
+					size="icon"
+					variant="ghost"
 				>
 					<Minus className="h-4 w-4" />
 				</Button>
 				<Slider
 					className="w-[140px]"
-					value={[zoom]}
-					min={minZoom}
 					max={maxZoom}
-					step={0.01}
+					min={minZoom}
 					onValueChange={(values) => zoomTo(values[0])}
+					step={0.01}
+					value={[zoom]}
 				/>
 				<Button
-					variant="ghost"
-					size="icon"
 					onClick={() => zoomIn({ duration: 300 })}
+					size="icon"
+					variant="ghost"
 				>
 					<Plus className="h-4 w-4" />
 				</Button>
 				<Button
 					className="min-w-20 tabular-nums"
-					variant="ghost"
 					onClick={() => zoomTo(1, { duration: 300 })}
+					variant="ghost"
 				>
 					{(100 * zoom).toFixed(0)}%
 				</Button>
 				<Button
-					variant="ghost"
-					size="icon"
 					onClick={() => fitView({ duration: 300 })}
+					size="icon"
+					variant="ghost"
 				>
 					<Maximize className="h-4 w-4" />
 				</Button>
 				{onOrganizeClick && (
-					<Button variant="ghost" size="icon" onClick={onOrganizeClick}>
+					<Button onClick={onOrganizeClick} size="icon" variant="ghost">
 						<ReplaceAll className="h-4 w-4" />
 					</Button>
 				)}

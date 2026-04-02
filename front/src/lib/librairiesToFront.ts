@@ -1,4 +1,3 @@
-import type { components } from "@/api/v1";
 import {
 	CheckCircle2,
 	GaugeCircle,
@@ -9,6 +8,7 @@ import {
 	Square,
 } from "lucide-react";
 import type { ComponentType } from "react";
+import type { components } from "@/api/v1";
 
 type SidebarIcon = ComponentType<{ className?: string }>;
 
@@ -28,10 +28,10 @@ type Library = {
 };
 
 const roleIconMap: Record<string, LucideIcon> = {
-	generator: GaugeCircle,
-	transducer: Shuffle,
 	acceptor: CheckCircle2,
 	"experimental-frame": ShieldCheck,
+	generator: GaugeCircle,
+	transducer: Shuffle,
 };
 
 const getModelIcon = (
@@ -47,17 +47,17 @@ export function librairiesToFront(
 	modelData: components["schemas"]["response.ModelResponse"][],
 ): Library["items"] {
 	return libraryData.map((lib) => ({
-		title: lib.title ?? "Sans titre",
-		url: `/library/${lib.id}`,
 		id: lib.id,
 		isActive: false,
 		items: modelData
 			.filter((model) => model.libId === lib.id)
 			.map((model) => ({
 				icon: getModelIcon(model),
-				title: model.name ?? "Modele sans titre",
 				id: model.id,
+				title: model.name ?? "Modele sans titre",
 				url: `/model/${model.id}`,
 			})),
+		title: lib.title ?? "Sans titre",
+		url: `/library/${lib.id}`,
 	}));
 }

@@ -1,3 +1,6 @@
+import { Globe, Loader2, Lock, Rocket } from "lucide-react";
+import { type ReactNode, useMemo } from "react";
+import { useParams } from "react-router-dom";
 import type { components } from "@/api/v1";
 import {
 	SimulationPanel,
@@ -13,9 +16,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { useGetWebAppDeploymentById } from "@/queries/webapp/useGetWebAppDeploymentById";
-import { Globe, Loader2, Lock, Rocket } from "lucide-react";
-import { type ReactNode, useMemo } from "react";
-import { useParams } from "react-router-dom";
 
 type WebAppDeploymentResponse =
 	components["schemas"]["response.WebAppDeploymentResponse"];
@@ -61,10 +61,10 @@ const buildParameterTargets = (
 		if (!target) continue;
 
 		target.parameters.push({
+			description: binding.description ?? "",
 			name: binding.name ?? "param",
 			type: toParameterType(binding.type as ParameterType | undefined),
 			value: binding.defaultValue,
-			description: binding.description ?? "",
 		});
 	}
 
@@ -139,43 +139,39 @@ export function WebAppDeployment() {
 				? schemaSections
 				: [
 						{
+							description: "",
 							id: "parameters",
 							kind: "parameters",
-							title: "Parameters",
-							description: "",
 							parameterBindingKeys: [],
 							portBindingKeys: [],
+							title: "Parameters",
 						},
 						{
+							description: "",
 							id: "inputs",
 							kind: "inputs",
-							title: "Input Interface",
-							description: "",
 							parameterBindingKeys: [],
 							portBindingKeys: [],
+							title: "Input Interface",
 						},
 						{
+							description: "",
 							id: "outputs",
 							kind: "outputs",
-							title: "Output Interface",
-							description: "",
 							parameterBindingKeys: [],
 							portBindingKeys: [],
+							title: "Output Interface",
 						},
 						{
+							description: "",
 							id: "run",
 							kind: "run",
-							title: "Simulation",
-							description: "",
 							parameterBindingKeys: [],
 							portBindingKeys: [],
+							title: "Simulation",
 						},
 					],
 		[schemaSections],
-	);
-	const runSection = useMemo(
-		() => getSectionByKind(effectiveSections, "run"),
-		[effectiveSections],
 	);
 	const parameterSection = useMemo(
 		() => getSectionByKind(effectiveSections, "parameters"),
@@ -190,7 +186,7 @@ export function WebAppDeployment() {
 		);
 	}
 
-	if (!deployment || !deployment.modelId) {
+	if (!deployment?.modelId) {
 		return <div>Deployment not found</div>;
 	}
 
@@ -215,8 +211,8 @@ export function WebAppDeployment() {
 							) : (
 								parameterTargets.map((target) => (
 									<div
-										key={target.instanceModelId}
 										className="rounded border p-2"
+										key={target.instanceModelId}
 									>
 										<div className="text-sm font-medium">
 											{target.modelName}
@@ -279,28 +275,28 @@ export function WebAppDeployment() {
 			);
 		}
 
-		if (section.kind === "run") {
+		if (section.kind === "run" && deployment.modelId) {
 			return (
 				<SimulationPanel
 					key={section.id}
 					modelId={deployment.modelId}
 					modelName={deployment.name || deployment.contract?.modelName}
 					modelNameById={modelNameById}
-					parameterTargets={parameterTargets}
-					panelTitle={section.title || "Simulation"}
 					panelDescription={
 						section.description ||
 						"Run the deployed WebApp contract against the simulation backend."
 					}
-					runButtonLabel={deployment.uiSchema?.runButtonLabel || "Start"}
-					showParameterOverrides={Boolean(parameterSection)}
-					parameterSectionTitle={
-						parameterSection?.title || "Runtime Parameter Overrides"
-					}
+					panelTitle={section.title || "Simulation"}
 					parameterSectionDescription={
 						parameterSection?.description ||
 						"Optional. Overrides are applied only for this simulation run."
 					}
+					parameterSectionTitle={
+						parameterSection?.title || "Runtime Parameter Overrides"
+					}
+					parameterTargets={parameterTargets}
+					runButtonLabel={deployment.uiSchema?.runButtonLabel || "Start"}
+					showParameterOverrides={Boolean(parameterSection)}
 				/>
 			);
 		}
@@ -328,12 +324,12 @@ export function WebAppDeployment() {
 		<div className="flex h-screen w-full flex-col">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Home", href: "/" },
-					{ label: "WebApps", href: "/webapps" },
+					{ href: "/", label: "Home" },
+					{ href: "/webapps", label: "WebApps" },
 					{ label: deployment.name || "Deployment" },
 				]}
-				showNavActions={false}
 				showModeToggle
+				showNavActions={false}
 			/>
 
 			<div className="flex-1 overflow-auto p-6 space-y-6">
@@ -350,7 +346,7 @@ export function WebAppDeployment() {
 										{deployment.description || "Deployable runtime interface"}
 									</CardDescription>
 								</div>
-								<Badge variant="outline" className="flex items-center gap-1">
+								<Badge className="flex items-center gap-1" variant="outline">
 									{deployment.isPublic ? (
 										<>
 											<Globe className="h-3.5 w-3.5" />
@@ -404,8 +400,8 @@ export function WebAppDeployment() {
 					>
 						{effectiveSections.map((section) => (
 							<div
-								key={section.id}
 								className={section.kind === "run" ? "lg:col-span-2" : ""}
+								key={section.id}
 							>
 								{renderSection(section)}
 							</div>

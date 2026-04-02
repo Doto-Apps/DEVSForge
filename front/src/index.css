@@ -1,3 +1,4 @@
+/* biome-ignore-all lint/suspicious/noUnknownAtRules: Using TailwindCSS 3 */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -5,7 +6,6 @@
 /* ... */
 
 @layer base {
-	@import "codemirror/lib/codemirror.css";
 	:root {
 		--background: 0 0% 100%;
 

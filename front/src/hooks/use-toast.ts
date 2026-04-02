@@ -61,8 +61,8 @@ const addToRemoveQueue = (toastId: string) => {
 	const timeout = setTimeout(() => {
 		toastTimeouts.delete(toastId);
 		dispatch({
-			type: "REMOVE_TOAST",
 			toastId: toastId,
+			type: "REMOVE_TOAST",
 		});
 	}, TOAST_REMOVE_DELAY);
 
@@ -142,26 +142,26 @@ function toast({ ...props }: Toast) {
 
 	const update = (props: ToasterToast) =>
 		dispatch({
-			type: "UPDATE_TOAST",
 			toast: { ...props, id },
+			type: "UPDATE_TOAST",
 		});
-	const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id });
+	const dismiss = () => dispatch({ toastId: id, type: "DISMISS_TOAST" });
 
 	dispatch({
-		type: "ADD_TOAST",
 		toast: {
 			...props,
 			id,
-			open: true,
 			onOpenChange: (open) => {
 				if (!open) dismiss();
 			},
+			open: true,
 		},
+		type: "ADD_TOAST",
 	});
 
 	return {
-		id: id,
 		dismiss,
+		id: id,
 		update,
 	};
 }
@@ -182,9 +182,9 @@ function useToast() {
 
 	return {
 		...state,
+		dismiss: (toastId?: string) => dispatch({ toastId, type: "DISMISS_TOAST" }),
 		toast,
-		dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
 	};
 }
 
-export { useToast, toast };
+export { toast, useToast };

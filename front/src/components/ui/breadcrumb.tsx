@@ -9,7 +9,7 @@ const Breadcrumb = React.forwardRef<
 	React.ComponentPropsWithoutRef<"nav"> & {
 		separator?: React.ReactNode;
 	}
->(({ ...props }, ref) => <nav ref={ref} aria-label="breadcrumb" {...props} />);
+>(({ ...props }, ref) => <nav aria-label="breadcrumb" ref={ref} {...props} />);
 Breadcrumb.displayName = "Breadcrumb";
 
 const BreadcrumbList = React.forwardRef<
@@ -17,11 +17,11 @@ const BreadcrumbList = React.forwardRef<
 	React.ComponentPropsWithoutRef<"ol">
 >(({ className, ...props }, ref) => (
 	<ol
-		ref={ref}
 		className={cn(
 			"flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
 			className,
 		)}
+		ref={ref}
 		{...props}
 	/>
 ));
@@ -32,8 +32,8 @@ const BreadcrumbItem = React.forwardRef<
 	React.ComponentPropsWithoutRef<"li">
 >(({ className, ...props }, ref) => (
 	<li
-		ref={ref}
 		className={cn("inline-flex items-center gap-1.5", className)}
+		ref={ref}
 		{...props}
 	/>
 ));
@@ -49,8 +49,8 @@ const BreadcrumbLink = React.forwardRef<
 
 	return (
 		<Comp
-			ref={ref}
 			className={cn("transition-colors hover:text-foreground", className)}
+			ref={ref}
 			{...props}
 		/>
 	);
@@ -62,12 +62,13 @@ const BreadcrumbPage = React.forwardRef<
 	React.ComponentPropsWithoutRef<"span">
 >(({ className, ...props }, ref) => (
 	// biome-ignore lint/a11y/useFocusableInteractive: Provided by shadcn
+	// biome-ignore lint/a11y/useSemanticElements: Provided by shadcn
 	<span
+		aria-current="page"
+		aria-disabled="true"
+		className={cn("font-normal text-foreground", className)}
 		ref={ref}
 		role="link"
-		aria-disabled="true"
-		aria-current="page"
-		className={cn("font-normal text-foreground", className)}
 		{...props}
 	/>
 ));
@@ -79,9 +80,9 @@ const BreadcrumbSeparator = ({
 	...props
 }: React.ComponentProps<"li">) => (
 	<li
-		role="presentation"
 		aria-hidden="true"
 		className={cn("[&>svg]:w-3.5 [&>svg]:h-3.5", className)}
+		role="presentation"
 		{...props}
 	>
 		{children ?? <ChevronRight />}
@@ -94,9 +95,9 @@ const BreadcrumbEllipsis = ({
 	...props
 }: React.ComponentProps<"span">) => (
 	<span
-		role="presentation"
 		aria-hidden="true"
 		className={cn("flex h-9 w-9 items-center justify-center", className)}
+		role="presentation"
 		{...props}
 	>
 		<MoreHorizontal className="h-4 w-4" />
@@ -107,10 +108,10 @@ BreadcrumbEllipsis.displayName = "BreadcrumbElipssis";
 
 export {
 	Breadcrumb,
-	BreadcrumbList,
+	BreadcrumbEllipsis,
 	BreadcrumbItem,
 	BreadcrumbLink,
+	BreadcrumbList,
 	BreadcrumbPage,
 	BreadcrumbSeparator,
-	BreadcrumbEllipsis,
 };

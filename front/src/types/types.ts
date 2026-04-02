@@ -1,5 +1,5 @@
-import type { components } from "@/api/v1";
 import type { Edge, Node } from "@xyflow/react";
+import type { components } from "@/api/v1";
 
 export type ReactFlowInput = {
 	nodes: Node<ReactFlowModelData>[];

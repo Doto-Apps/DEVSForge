@@ -1,25 +1,25 @@
-import type { components, paths } from "@/api/v1";
-import { useToast } from "@/hooks/use-toast";
 import createClient from "openapi-fetch";
 import {
-	type ReactNode,
 	createContext,
+	type ReactNode,
 	useContext,
 	useEffect,
 	useState,
 } from "react";
 import { useNavigate } from "react-router-dom";
+import type { components, paths } from "@/api/v1";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthContextProps {
-	user: components["schemas"]["response.UserResponse"] | null;
-	token: string | null | undefined;
-	login: (email: string, password: string) => Promise<void>;
-	register: (email: string, password: string) => Promise<void>;
-	logout: () => void;
-	refreshAccessToken: () => Promise<string | null>;
 	isAuthenticated: boolean;
 	isInitialized: boolean;
 	isLoading: boolean;
+	login: (email: string, password: string) => Promise<void>;
+	logout: () => void;
+	refreshAccessToken: () => Promise<string | null>;
+	register: (email: string, password: string) => Promise<void>;
+	token: string | null | undefined;
+	user: components["schemas"]["response.UserResponse"] | null;
 }
 
 const ACCESS_TOKEN_STORAGE_KEY = "accessToken";
@@ -179,7 +179,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 			if (data?.accessToken && data?.refreshToken) {
 				setToken(data.accessToken);
-				setUser({ username: data.username, email: data.email });
+				setUser({ email: data.email, username: data.username });
 				localStorage.setItem(ACCESS_TOKEN_STORAGE_KEY, data.accessToken);
 				localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, data.refreshToken);
 			}
@@ -226,15 +226,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 	return (
 		<AuthContext.Provider
 			value={{
-				user,
-				token,
-				isInitialized: token !== undefined,
 				isAuthenticated: !!token,
+				isInitialized: token !== undefined,
 				isLoading,
 				login,
-				register,
 				logout,
 				refreshAccessToken,
+				register,
+				token,
+				user,
 			}}
 		>
 			{children}

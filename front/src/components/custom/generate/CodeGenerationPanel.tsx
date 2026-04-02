@@ -1,5 +1,16 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	CheckCircle2,
+	ChevronRight,
+	Code2,
+	Loader2,
+	Sparkles,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,17 +36,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
 import type { CodeGenerationPanelProps, ReuseCandidate } from "@/types";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	CheckCircle2,
-	ChevronRight,
-	Code2,
-	Loader2,
-	Sparkles,
-} from "lucide-react";
-import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 const promptSchema = z.object({
 	prompt: z.string().min(5, {
@@ -72,14 +72,14 @@ export function CodeGenerationPanel({
 	const currentModel = atomicModels[currentModelIndex];
 
 	const form = useForm<z.infer<typeof promptSchema>>({
-		resolver: zodResolver(promptSchema),
 		defaultValues: {
 			prompt: "",
 		},
+		resolver: zodResolver(promptSchema),
 	});
 
 	useEffect(() => {
-		if (currentModel) {
+		if (currentModel?.id) {
 			setSelectedModelId(currentModel.id);
 			setReuseCandidates([]);
 			setSelectedReuse("__pending__");
@@ -130,22 +130,22 @@ export function CodeGenerationPanel({
 
 		if (awaitingReuseSelection && !forceScratch && !hasSelectedCandidate) {
 			toast({
-				title: "Selection required",
 				description:
 					"Choose one reuse candidate or force scratch before generating code.",
+				title: "Selection required",
 				variant: "destructive",
 			});
 			return;
 		}
 
 		const generated = await generateCode({
-			modelName: currentModel.name,
+			forceScratch,
 			language: selectedLanguage,
+			modelName: currentModel.name,
 			ports: convertPorts(currentModel),
 			previousModelsCode: getPreviousModelsCode(),
-			userPrompt: values.prompt,
 			reuseModelId,
-			forceScratch,
+			userPrompt: values.prompt,
 		});
 
 		if (generated) {
@@ -155,17 +155,17 @@ export function CodeGenerationPanel({
 				setAwaitingReuseSelection(true);
 				setSelectedReuse("__pending__");
 				toast({
-					title: "Reuse candidates found",
 					description:
 						"Select one of the proposed candidates (top 4) or choose scratch, then generate again.",
+					title: "Reuse candidates found",
 				});
 				return;
 			}
 
 			if (!generated.code?.trim()) {
 				toast({
-					title: "Generation error",
 					description: "No code was returned by the generation service.",
+					title: "Generation error",
 					variant: "destructive",
 				});
 				return;
@@ -178,13 +178,13 @@ export function CodeGenerationPanel({
 				? ` (reuse: ${generated.reuseUsed.name})`
 				: " (scratch)";
 			toast({
-				title: "Code generated successfully",
 				description: `Code for ${currentModel.name} has been generated${reuseNote}.`,
+				title: "Code generated successfully",
 			});
 		} else if (error) {
 			toast({
-				title: "Generation error",
 				description: error,
+				title: "Generation error",
 				variant: "destructive",
 			});
 		}
@@ -194,8 +194,8 @@ export function CodeGenerationPanel({
 		if (currentModel?.code) {
 			onModelValidated();
 			toast({
-				title: "Model validated",
 				description: `${currentModel.name} has been validated. Moving to next model.`,
+				title: "Model validated",
 			});
 		}
 	};
@@ -258,12 +258,12 @@ export function CodeGenerationPanel({
 
 							return (
 								<button
-									key={model.id}
-									type="button"
-									onClick={() => setSelectedModelId(model.id)}
 									className={`w-full text-left p-2 rounded-md transition-colors flex items-center gap-2 ${
 										isSelected ? "bg-accent" : "hover:bg-accent/50"
 									}`}
+									key={model.id}
+									onClick={() => setSelectedModelId(model.id)}
+									type="button"
 								>
 									<span className="flex-shrink-0">
 										{isGenerated ? (
@@ -299,12 +299,12 @@ export function CodeGenerationPanel({
 
 									return (
 										<button
-											key={model.id}
-											type="button"
-											onClick={() => setSelectedModelId(model.id)}
 											className={`w-full text-left p-2 rounded-md transition-colors flex items-center gap-2 ${
 												isSelected ? "bg-accent" : "hover:bg-accent/50"
 											}`}
+											key={model.id}
+											onClick={() => setSelectedModelId(model.id)}
+											type="button"
 										>
 											<span className="flex-shrink-0">
 												<CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -361,16 +361,16 @@ export function CodeGenerationPanel({
 				{isCurrentModel && isSelectedAtomic && (
 					<Form {...form}>
 						<form
-							onSubmit={form.handleSubmit(handleGenerateCode)}
 							className="flex-1 min-h-0 flex flex-col overflow-y-auto pr-1"
+							onSubmit={form.handleSubmit(handleGenerateCode)}
 						>
 							<div className="mb-4">
 								<FormLabel>Language</FormLabel>
 								<Select
-									value={selectedLanguage}
 									onValueChange={(value: "python" | "go") =>
 										setSelectedLanguage(value)
 									}
+									value={selectedLanguage}
 								>
 									<SelectTrigger className="mt-1.5">
 										<SelectValue placeholder="Select language" />
@@ -386,9 +386,9 @@ export function CodeGenerationPanel({
 								<FormLabel>Reuse strategy</FormLabel>
 								<div className="rounded-md border bg-muted/20 p-2">
 									<RadioGroup
-										value={selectedReuse}
-										onValueChange={setSelectedReuse}
 										className="gap-2"
+										onValueChange={setSelectedReuse}
+										value={selectedReuse}
 									>
 										{reuseCandidates.length === 0 && (
 											<div className="text-xs text-muted-foreground px-1 py-1">
@@ -402,27 +402,27 @@ export function CodeGenerationPanel({
 												const isActive = selectedReuse === candidate.modelId;
 												return (
 													<div
-														key={candidate.modelId}
 														className={`flex items-start gap-2 rounded-md border p-2 ${
 															isActive
 																? "border-primary bg-background"
 																: "border-border bg-background/70"
 														}`}
+														key={candidate.modelId}
 													>
 														<RadioGroupItem
-															value={candidate.modelId}
-															id={optionId}
 															className="mt-0.5 shrink-0"
+															id={optionId}
+															value={candidate.modelId}
 														/>
 														<Label
-															htmlFor={optionId}
 															className="flex-1 min-w-0 cursor-pointer"
+															htmlFor={optionId}
 														>
 															<div className="flex items-center justify-between gap-2">
 																<span className="truncate text-xs font-medium">
 																	{candidate.name}
 																</span>
-																<Badge variant="outline" className="shrink-0">
+																<Badge className="shrink-0" variant="outline">
 																	{candidate.score.toFixed(3)}
 																</Badge>
 															</div>
@@ -446,13 +446,13 @@ export function CodeGenerationPanel({
 											}`}
 										>
 											<RadioGroupItem
-												value="__scratch__"
-												id="reuse-force-scratch"
 												className="mt-0.5 shrink-0"
+												id="reuse-force-scratch"
+												value="__scratch__"
 											/>
 											<Label
-												htmlFor="reuse-force-scratch"
 												className="cursor-pointer"
+												htmlFor="reuse-force-scratch"
 											>
 												<span className="text-xs font-medium">
 													Force scratch
@@ -480,7 +480,7 @@ export function CodeGenerationPanel({
 							</div>
 
 							<div className="space-y-2 mt-4">
-								<Button type="submit" className="w-full" disabled={isLoading}>
+								<Button className="w-full" disabled={isLoading} type="submit">
 									{isLoading ? (
 										<>
 											<Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -500,10 +500,10 @@ export function CodeGenerationPanel({
 
 								{canValidate && (
 									<Button
-										type="button"
-										variant="outline"
 										className="w-full"
 										onClick={handleValidateModel}
+										type="button"
+										variant="outline"
 									>
 										<CheckCircle2 className="w-4 h-4 mr-2" />
 										Validate & Continue
@@ -519,8 +519,8 @@ export function CodeGenerationPanel({
 										<FormLabel>Describe the model behavior</FormLabel>
 										<FormControl>
 											<Textarea
-												placeholder={`Describe how ${selectedModel?.name} should behave. e.g., This model should alternate between ON and OFF states every 10 seconds...`}
 												className="resize-none min-h-[110px] max-h-[170px]"
+												placeholder={`Describe how ${selectedModel?.name} should behave. e.g., This model should alternate between ON and OFF states every 10 seconds...`}
 												{...field}
 											/>
 										</FormControl>
@@ -582,10 +582,10 @@ export function CodeGenerationPanel({
 					{isSelectedAtomic && selectedModel?.code ? (
 						<ModelCodeEditor
 							code={selectedModel.code}
+							modelId={selectedModel.id}
 							onCodeChange={(newCode) =>
 								onCodeChange(selectedModel.id, newCode)
 							}
-							modelId={selectedModel.id}
 						/>
 					) : isSelectedAtomic ? (
 						<div className="h-full flex items-center justify-center bg-muted/20">

@@ -1,3 +1,5 @@
+import { Globe, Lock, Rocket, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import NavHeader from "@/components/nav/nav-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,8 +12,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { useGetWebAppDeployments } from "@/queries/webapp/useGetWebAppDeployments";
-import { Globe, Lock, Rocket, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 export function WebAppDeployments() {
 	const navigate = useNavigate();
@@ -20,9 +20,9 @@ export function WebAppDeployments() {
 	return (
 		<div className="flex h-screen w-full flex-col">
 			<NavHeader
-				breadcrumbs={[{ label: "Home", href: "/" }, { label: "WebApps" }]}
-				showNavActions={false}
+				breadcrumbs={[{ href: "/", label: "Home" }, { label: "WebApps" }]}
 				showModeToggle
+				showNavActions={false}
 			/>
 
 			<div className="flex-1 overflow-auto p-6">
@@ -36,9 +36,9 @@ export function WebAppDeployments() {
 							</p>
 						</div>
 						<Button
-							variant="outline"
-							onClick={() => navigate("/")}
 							className="shrink-0"
+							onClick={() => navigate("/")}
+							variant="outline"
 						>
 							<Sparkles className="mr-2 h-4 w-4" />
 							From a model editor
@@ -76,8 +76,8 @@ export function WebAppDeployments() {
 												</CardDescription>
 											</div>
 											<Badge
-												variant="outline"
 												className="flex items-center gap-1"
+												variant="outline"
 											>
 												{deployment.isPublic ? (
 													<>

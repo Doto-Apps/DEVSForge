@@ -1,3 +1,4 @@
+import React from "react";
 import { ModeToggle } from "@/components/mode-toggle";
 import {
 	Breadcrumb,
@@ -8,7 +9,6 @@ import {
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import React from "react";
 import { SidebarTrigger } from "../ui/sidebar";
 import { NavActions } from "./nav-actions";
 
@@ -45,7 +45,7 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 			className={`flex sticky top-0 ${headerBgClass} h-16 shrink-0 items-center gap-2 border-b px-4 ${headerExtraClass}`}
 		>
 			<SidebarTrigger className="-ml-1" />
-			<Separator orientation="vertical" className="mr-2 h-4" />
+			<Separator className="mr-2 h-4" orientation="vertical" />
 			<Breadcrumb>
 				<BreadcrumbList>
 					{breadcrumbs.map((item, index) => (
@@ -69,10 +69,10 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 			<div className="ml-auto px-3 flex items-center gap-2">
 				{showNavActions && (
 					<NavActions
+						deployFunction={deployFunction}
 						saveFunction={saveFunction}
 						simulateFunction={simulateFunction}
 						validateFunction={validateFunction}
-						deployFunction={deployFunction}
 					/>
 				)}
 				{showModeToggle && <ModeToggle />}

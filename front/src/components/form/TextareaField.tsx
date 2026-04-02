@@ -1,4 +1,3 @@
-import { Textarea } from "@/components/ui/textarea";
 import type { ComponentProps, ReactNode } from "react";
 import {
 	type FieldPath,
@@ -6,6 +5,7 @@ import {
 	type UseControllerProps,
 	useController,
 } from "react-hook-form";
+import { Textarea } from "@/components/ui/textarea";
 import {
 	FormControl,
 	FormDescription,
@@ -36,17 +36,17 @@ export const TextareaField = <
 	...props
 }: TextareaFieldProps<TFieldValues, TName>) => {
 	const { field } = useController({
-		name: props.name,
 		control,
-		disabled: props.disabled,
 		defaultValue,
-		shouldUnregister,
+		disabled: props.disabled,
+		name: props.name,
 		rules: {
-			required: props.required,
-			minLength: props.minLength,
 			maxLength: props.maxLength,
+			minLength: props.minLength,
+			required: props.required,
 			...rules,
 		},
+		shouldUnregister,
 	});
 
 	return (
@@ -55,18 +55,18 @@ export const TextareaField = <
 			<FormControl>
 				<Textarea
 					{...props}
+					className="ena"
+					disabled={field.disabled || props.disabled}
 					name={field.name}
-					onChange={(event) => {
-						field.onChange(event);
-						props.onChange?.(event);
-					}}
 					onBlur={(event) => {
 						field.onBlur();
 						props.onBlur?.(event);
 					}}
+					onChange={(event) => {
+						field.onChange(event);
+						props.onChange?.(event);
+					}}
 					ref={field.ref}
-					disabled={field.disabled || props.disabled}
-					className="ena"
 					value={`${field.value ?? ""}`}
 				/>
 			</FormControl>

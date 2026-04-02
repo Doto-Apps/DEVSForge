@@ -1,9 +1,9 @@
+import { Plus, Trash2 } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ReactFlowPort } from "@/types";
-import { Plus, Trash2 } from "lucide-react";
-import { v4 as uuidv4 } from "uuid";
 
 type PortEditorProps = {
 	label: string;
@@ -41,11 +41,11 @@ export function PortEditor({
 			<div className="flex items-center justify-between">
 				<Label className="text-sm">{label}</Label>
 				<Button
+					className="h-7 px-2"
+					disabled={disabled}
+					onClick={handleAdd}
 					size="sm"
 					variant="outline"
-					onClick={handleAdd}
-					disabled={disabled}
-					className="h-7 px-2"
 				>
 					<Plus className="w-3 h-3 mr-1" />
 					Add
@@ -58,20 +58,20 @@ export function PortEditor({
 			) : (
 				<div className="space-y-1">
 					{ports.map((port, index) => (
-						<div key={port.id} className="flex items-center gap-2">
+						<div className="flex items-center gap-2" key={port.id}>
 							<Input
-								value={port.name}
-								onChange={(e) => handleNameChange(index, e.target.value)}
-								disabled={disabled}
 								className="h-8 text-sm flex-1"
+								disabled={disabled}
+								onChange={(e) => handleNameChange(index, e.target.value)}
 								placeholder="Port name"
+								value={port.name}
 							/>
 							<Button
+								className="h-8 w-8 text-muted-foreground hover:text-destructive"
+								disabled={disabled}
+								onClick={() => handleRemove(index)}
 								size="icon"
 								variant="ghost"
-								onClick={() => handleRemove(index)}
-								disabled={disabled}
-								className="h-8 w-8 text-muted-foreground hover:text-destructive"
 							>
 								<Trash2 className="w-4 h-4" />
 							</Button>

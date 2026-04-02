@@ -1,6 +1,6 @@
+import { useEffect, useState } from "react";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
-import { useEffect, useState } from "react";
 
 // Types from OpenAPI
 export type LanguageInfo = components["schemas"]["response.LanguageInfo"];
@@ -36,52 +36,7 @@ export function useGetLanguages() {
 		fetchLanguages();
 	}, []);
 
-	return { data, isLoading, error };
-}
-
-/**
- * Hook to fetch the code template for a specific language
- * @param language - The language ID (e.g., "go", "python")
- * @param modelName - The model name to inject into the template
- */
-export function useGetLanguageTemplate(
-	language: string | null,
-	modelName: string,
-) {
-	const [data, setData] = useState<TemplateResponse | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
-	useEffect(() => {
-		if (!language) {
-			setData(null);
-			return;
-		}
-
-		const fetchTemplate = async () => {
-			try {
-				setIsLoading(true);
-				const response = await client.GET("/languages/{lang}/template", {
-					params: {
-						path: { lang: language },
-						query: { name: modelName },
-					},
-				});
-				if (!response.data) {
-					throw new Error("Failed to fetch language template");
-				}
-				setData(response.data);
-			} catch (err) {
-				setError(err instanceof Error ? err.message : "An error occurred");
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		fetchTemplate();
-	}, [language, modelName]);
-
-	return { data, isLoading, error };
+	return { data, error, isLoading };
 }
 
 /**

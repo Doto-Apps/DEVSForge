@@ -1,6 +1,6 @@
-import type { ReactFlowModelData } from "@/types";
 import clsx from "clsx";
 import { memo } from "react";
+import type { ReactFlowModelData } from "@/types";
 
 type ModelNodeProps = {
 	data: ReactFlowModelData;
@@ -8,7 +8,7 @@ type ModelNodeProps = {
 	id: string;
 };
 
-function ModelHeader({ data, selected, id }: ModelNodeProps) {
+function ModelHeader({ data }: ModelNodeProps) {
 	return (
 		<div
 			className={clsx(

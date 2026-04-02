@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
-import { useState } from "react";
 
 type GenerateDocumentationRequest =
 	components["schemas"]["request.GenerateDocumentationRequest"];
@@ -61,8 +61,8 @@ export const useGenerateDocumentation = (): UseGenerateDocumentationResult => {
 	};
 
 	return {
+		error,
 		generateDocumentation,
 		isLoading,
-		error,
 	};
 };

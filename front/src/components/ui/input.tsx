@@ -1,7 +1,6 @@
-import * as React from "react";
-
-import { cn } from "@/lib/utils";
 import { Minus, Plus } from "lucide-react";
+import * as React from "react";
+import { cn } from "@/lib/utils";
 import { Button } from "./button";
 
 const inputClassNames =
@@ -22,16 +21,14 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 				)}
 			>
 				<input
-					type={type}
 					className={cn(
 						"min-w-0 pl-3 appearance-none bg-background flex-grow text-base border-none py-0 h-full focus-visible:ring-0 focus-visible:outline-none rounded-r-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
 					)}
 					ref={inputRef}
+					type={type}
 					{...props}
 				/>
 				<Button
-					size="icon"
-					variant="ghost"
 					className="h-full border-l rounded-none px-4"
 					onClick={() => {
 						if (inputRef.current) {
@@ -40,12 +37,12 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 							}
 						}
 					}}
+					size="icon"
+					variant="ghost"
 				>
 					<Plus className="h-full" />
 				</Button>
 				<Button
-					size="icon"
-					variant="ghost"
 					className="h-full border-l rounded-none px-4"
 					onClick={() => {
 						if (inputRef.current) {
@@ -54,15 +51,17 @@ const Input = React.forwardRef<HTMLInputElement, React.ComponentProps<"input">>(
 							}
 						}
 					}}
+					size="icon"
+					variant="ghost"
 				>
 					<Minus className="h-full" />
 				</Button>
 			</div>
 		) : (
 			<input
-				type={type}
 				className={cn(inputClassNames, className)}
 				ref={inputRef}
+				type={type}
 				{...props}
 			/>
 		);

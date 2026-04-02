@@ -1,6 +1,6 @@
+import { useCallback, useState } from "react";
 import type { components } from "@/api/v1";
 import type { Simulation } from "@/types";
-import { useCallback, useState } from "react";
 import { useSimulationPolling } from "./useSimulationPolling";
 
 const API_BASE_URL = window.API_URL?.replace(/\/+$/, "");
@@ -77,12 +77,12 @@ export const useStartSimulation = (): StartSimulationResult => {
 				const createResponse = await fetch(
 					`${API_BASE_URL}/simulation/${modelId}`,
 					{
-						method: "POST",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-						},
 						body: JSON.stringify(payload),
+						headers: {
+							Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+							"Content-Type": "application/json",
+						},
+						method: "POST",
 					},
 				);
 
@@ -104,10 +104,10 @@ export const useStartSimulation = (): StartSimulationResult => {
 				const startResponse = await fetch(
 					`${API_BASE_URL}/simulation/${simulationData.id}/start`,
 					{
-						method: "POST",
 						headers: {
 							Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
 						},
+						method: "POST",
 					},
 				);
 
@@ -131,103 +131,13 @@ export const useStartSimulation = (): StartSimulationResult => {
 	);
 
 	return {
-		startSimulation,
-		simulation,
-		isLoading,
-		error: error ?? polling.error,
-		isPolling: polling.isPolling,
-		events: polling.events,
-		stopPolling: polling.stopPolling,
 		clearEvents: polling.clearEvents,
-	};
-};
-
-// Hook to get a specific simulation
-export const useGetSimulation = (simulationId: string | null) => {
-	const [simulation, setSimulation] = useState<Simulation | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
-	const fetchSimulation = useCallback(async () => {
-		if (!simulationId) return;
-
-		setIsLoading(true);
-		setError(null);
-
-		try {
-			const response = await fetch(
-				`${API_BASE_URL}/simulation/${simulationId}`,
-				{
-					headers: {
-						Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-					},
-				},
-			);
-
-			if (!response.ok) {
-				throw new Error("Failed to fetch simulation");
-			}
-
-			const data = (await response.json()) as Simulation;
-			setSimulation(data);
-		} catch (err) {
-			const errorMessage =
-				err instanceof Error ? err.message : "An error occurred";
-			setError(errorMessage);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [simulationId]);
-
-	return {
+		error: error ?? polling.error,
+		events: polling.events,
+		isLoading,
+		isPolling: polling.isPolling,
 		simulation,
-		isLoading,
-		error,
-		refetch: fetchSimulation,
-	};
-};
-
-// Hook to get simulations for a model
-export const useModelSimulations = (modelId: string | null) => {
-	const [simulations, setSimulations] = useState<Simulation[]>([]);
-	const [isLoading, setIsLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-
-	const fetchSimulations = useCallback(async () => {
-		if (!modelId) return;
-
-		setIsLoading(true);
-		setError(null);
-
-		try {
-			const response = await fetch(
-				`${API_BASE_URL}/simulation/model/${modelId}`,
-				{
-					headers: {
-						Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-					},
-				},
-			);
-
-			if (!response.ok) {
-				throw new Error("Failed to fetch simulations");
-			}
-
-			const data = (await response.json()) as Simulation[];
-			setSimulations(data);
-		} catch (err) {
-			const errorMessage =
-				err instanceof Error ? err.message : "An error occurred";
-			setError(errorMessage);
-		} finally {
-			setIsLoading(false);
-		}
-	}, [modelId]);
-
-	return {
-		simulations,
-		isLoading,
-		error,
-		refetch: fetchSimulations,
+		startSimulation,
+		stopPolling: polling.stopPolling,
 	};
 };

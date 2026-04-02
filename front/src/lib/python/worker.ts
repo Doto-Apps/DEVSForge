@@ -1,6 +1,6 @@
 import type { WorkerResponse } from "@/types";
 
-// @ts-ignore
+// @ts-expect-error
 importScripts("https://cdn.jsdelivr.net/pyodide/v0.21.0/full/pyodide.js");
 
 let working = false;
@@ -9,7 +9,7 @@ async function loadPyodideAndRun(code: string): Promise<WorkerResponse> {
 	// biome-ignore lint/suspicious/noImplicitAnyLet: <explanation>
 	let pyodide;
 	try {
-		// @ts-ignore
+		// @ts-expect-error
 		pyodide = await loadPyodide();
 		await pyodide.loadPackage(["micropip"]);
 		const micropip = pyodide.pyimport("micropip");

@@ -43,10 +43,9 @@ const getModelComponent = (
 		.filter((nodeInNodes) => nodeInNodes.parentId === parentNode.id)
 		.map((nodeInNodes) => ({
 			instanceId: nodeInNodes.id.split("/").pop() ?? "",
-			modelId: nodeInNodes.data.id,
 			instanceMetadata: {
-				modelRole: nodeInNodes.data.modelRole,
 				keyword: nodeInNodes.data.keyword,
+				modelRole: nodeInNodes.data.modelRole,
 				position: { x: nodeInNodes.position.x, y: nodeInNodes.position.y },
 				style: {
 					height: nodeInNodes.measured?.height ?? DEFAULT_NODE_SIZE,
@@ -57,6 +56,7 @@ const getModelComponent = (
 					: {}),
 				parameters: nodeInNodes.data.parameters ?? undefined,
 			},
+			modelId: nodeInNodes.data.id,
 		}));
 };
 
@@ -125,19 +125,21 @@ const nodeToModel = (
 ): components["schemas"]["request.ModelRequest"] => {
 	const comp = getModelComponent(node, nodesAndEdges.nodes);
 	return {
-		name: node.data.label,
-		id: node.data.id,
 		code: node.data.code,
 		components: comp,
-		ports: getModelPorts(node),
+		connections:
+			node.data.modelType === "coupled"
+				? getModelConnection(node, nodesAndEdges)
+				: [],
 		description: node.data.description,
-		type: node.data.modelType,
+		id: node.data.id,
+		libId: undefined,
 		metadata: {
+			keyword: node.data.keyword,
+			modelRole: node.data.modelRole,
 			position: !node.id.includes("/")
 				? { x: node.position.x, y: node.position.y }
 				: { x: 0, y: 0 },
-			modelRole: node.data.modelRole,
-			keyword: node.data.keyword,
 			style: !node.id.includes("/")
 				? {
 						height: node.measured?.height ?? DEFAULT_NODE_SIZE,
@@ -152,11 +154,9 @@ const nodeToModel = (
 				: {}),
 			parameters: node.data.parameters ?? undefined,
 		},
-		libId: undefined,
-		connections:
-			node.data.modelType === "coupled"
-				? getModelConnection(node, nodesAndEdges)
-				: [],
+		name: node.data.label,
+		ports: getModelPorts(node),
+		type: node.data.modelType,
 	};
 };
 

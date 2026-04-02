@@ -3,6 +3,12 @@
 import { ReactFlowProvider } from "@xyflow/react";
 import { SidebarInset, SidebarProvider } from "./components/ui/sidebar";
 import "@xyflow/react/dist/base.css";
+import {
+	Navigate,
+	Route,
+	BrowserRouter as Router,
+	Routes,
+} from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { DefaultLayout } from "@/layouts/defaultLayout";
@@ -10,12 +16,6 @@ import { MinimalLayout } from "@/layouts/minimalLayout";
 import { Login } from "@/pages/login/login";
 import { Register } from "@/pages/register/register";
 import { AuthProvider, useAuth } from "@/providers/AuthProvider";
-import {
-	Navigate,
-	Route,
-	BrowserRouter as Router,
-	Routes,
-} from "react-router-dom";
 
 import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
 import { GettingStarted } from "./pages/help/GettingStarted";
@@ -29,9 +29,9 @@ import { TestModel } from "./pages/model/TestModel";
 import { ValidationModel } from "./pages/model/ValidationModel";
 import { AccountSettings } from "./pages/settings/AccountSettings";
 import { WebAppBuilder } from "./pages/webapp/WebAppBuilder";
-import { DnDProvider } from "./providers/DnDContext";
 import { WebAppDeployment } from "./pages/webapp/WebAppDeployment";
 import { WebAppDeployments } from "./pages/webapp/WebAppDeployments";
+import { DnDProvider } from "./providers/DnDContext";
 
 const Main = () => {
 	const { isAuthenticated, isInitialized } = useAuth();
@@ -42,43 +42,43 @@ const Main = () => {
 		<MinimalLayout>
 			<Routes>
 				<Route element={<Login />} path="/login" />
-				<Route path="/register" element={<Register />} />
-				<Route path="*" element={<Navigate to="/login" />} />
+				<Route element={<Register />} path="/register" />
+				<Route element={<Navigate to="/login" />} path="*" />
 			</Routes>
 		</MinimalLayout>
 	) : (
 		<DefaultLayout>
 			<Routes>
-				<Route path="/library/new" element={<CreateLibrary />} />
-				<Route path="/library/:libId/model/new" element={<CreateModel />} />
+				<Route element={<CreateLibrary />} path="/library/new" />
+				<Route element={<CreateModel />} path="/library/:libId/model/new" />
 				<Route
-					path="/library/:libraryId/model/:modelId"
 					element={<EditModel />}
+					path="/library/:libraryId/model/:modelId"
 				/>
 				<Route
-					path="/library/:libraryId/model/:modelId/simulate"
 					element={<SimulateModel />}
+					path="/library/:libraryId/model/:modelId/simulate"
 				/>
 				<Route
-					path="/library/:libraryId/model/:modelId/validate"
 					element={<ValidationModel />}
+					path="/library/:libraryId/model/:modelId/validate"
 				/>
 				<Route
-					path="/library/:libraryId/model/:modelId/webapp"
 					element={<WebAppBuilder />}
+					path="/library/:libraryId/model/:modelId/webapp"
 				/>
-				<Route path="/webapps" element={<WebAppDeployments />} />
-				<Route path="/webapps/:deploymentId" element={<WebAppDeployment />} />
+				<Route element={<WebAppDeployments />} path="/webapps" />
+				<Route element={<WebAppDeployment />} path="/webapps/:deploymentId" />
 
-				<Route path="/devs-generator" element={<GeneratorFlow />} />
-				<Route path="/getting-started" element={<GettingStarted />} />
-				<Route path="/how-it-works" element={<HowItWorks />} />
-				<Route path="/settings" element={<AccountSettings />} />
+				<Route element={<GeneratorFlow />} path="/devs-generator" />
+				<Route element={<GettingStarted />} path="/getting-started" />
+				<Route element={<HowItWorks />} path="/how-it-works" />
+				<Route element={<AccountSettings />} path="/settings" />
 
-				<Route path="/" element={<ModelerHome />} />
-				<Route path="/test-model" element={<TestModel />} />
+				<Route element={<ModelerHome />} path="/" />
+				<Route element={<TestModel />} path="/test-model" />
 
-				<Route path="*" element={<Navigate to="/" />} />
+				<Route element={<Navigate to="/" />} path="*" />
 			</Routes>
 		</DefaultLayout>
 	);

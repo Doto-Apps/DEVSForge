@@ -1,7 +1,7 @@
+import { useState } from "react";
 import { client } from "@/api/client";
 import { llmResponseToGeneratedDiagram } from "@/lib/llmToReactFlow";
 import type { GenerateDiagramRequest, GeneratedDiagram } from "@/types";
-import { useState } from "react";
 
 type UseGenerateDiagramResult = {
 	generateDiagram: (
@@ -47,8 +47,8 @@ export const useGenerateDiagram = (): UseGenerateDiagramResult => {
 	};
 
 	return {
+		error,
 		generateDiagram,
 		isLoading,
-		error,
 	};
 };

@@ -1,7 +1,7 @@
-import { Button } from "@/components/ui/button";
 import { LoaderIcon } from "lucide-react";
 import type { ComponentProps } from "react";
 import { useFormState } from "react-hook-form";
+import { Button } from "@/components/ui/button";
 
 type SubmitProps = ComponentProps<typeof Button>;
 

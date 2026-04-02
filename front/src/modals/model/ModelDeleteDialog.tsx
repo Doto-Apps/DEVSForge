@@ -1,3 +1,5 @@
+import { type ReactNode, useState } from "react";
+import { useForm } from "react-hook-form";
 import { client } from "@/api/client";
 import { Form } from "@/components/form/Form";
 import { FormSubmitError } from "@/components/form/FormSubmitError";
@@ -12,8 +14,6 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { type ReactNode, useState } from "react";
-import { useForm } from "react-hook-form";
 
 type Props = {
 	modelName: string;
@@ -30,10 +30,10 @@ export function ModelDeleteDialog({
 }: Props) {
 	const [open, setOpen] = useState(false);
 	const methods = useForm({
-		mode: "onChange",
 		defaultValues: {
 			confirm: "",
 		},
+		mode: "onChange",
 	});
 	const { toast } = useToast();
 
@@ -47,8 +47,8 @@ export function ModelDeleteDialog({
 				},
 			});
 			toast({
-				variant: "default",
 				title: "Model successfully deleted",
+				variant: "default",
 			});
 			await onSubmitSuccess();
 			setOpen(false);
@@ -56,9 +56,9 @@ export function ModelDeleteDialog({
 		} catch (error) {
 			if (error instanceof Error) {
 				toast({
-					variant: "destructive",
-					title: "Error deleting model",
 					description: error.message,
+					title: "Error deleting model",
+					variant: "destructive",
 				});
 
 				return error.message;
@@ -69,7 +69,7 @@ export function ModelDeleteDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog onOpenChange={setOpen} open={open}>
 			<DialogTrigger asChild>{disclosure}</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>

@@ -1,10 +1,3 @@
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
 import type { ComponentProps, ReactNode } from "react";
 import {
 	type FieldPath,
@@ -12,6 +5,12 @@ import {
 	type UseControllerProps,
 	useController,
 } from "react-hook-form";
+import {
+	Select,
+	SelectContent,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	FormControl,
 	FormDescription,
@@ -45,11 +44,10 @@ export const SelectField = <
 	...props
 }: SelectFieldProps<TFieldValues, TName>) => {
 	const { field } = useController({
-		name: props.name,
 		control,
-		disabled: props.disabled,
 		defaultValue,
-		shouldUnregister,
+		disabled: props.disabled,
+		name: props.name,
 		rules: {
 			required: props.required,
 			// min: props.min,
@@ -58,6 +56,7 @@ export const SelectField = <
 			// maxLength: props.maxLength,
 			...rules,
 		},
+		shouldUnregister,
 	});
 
 	return (
@@ -66,18 +65,18 @@ export const SelectField = <
 			<FormControl>
 				<Select
 					{...props}
-					name={field.name}
 					disabled={field.disabled || props.disabled}
-					value={`${field.value ?? ""}`}
-					onValueChange={(value) => {
-						field.onChange(value);
-						props.onValueChange?.(value);
-					}}
+					name={field.name}
 					onOpenChange={(open) => {
 						if (!open) {
 							field.onBlur();
 						}
 					}}
+					onValueChange={(value) => {
+						field.onChange(value);
+						props.onValueChange?.(value);
+					}}
+					value={`${field.value ?? ""}`}
 				>
 					<SelectTrigger ref={field.ref}>
 						<SelectValue placeholder={placeholder} />

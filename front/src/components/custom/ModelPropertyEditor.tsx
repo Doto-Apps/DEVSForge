@@ -1,3 +1,6 @@
+import type { Node } from "@xyflow/react";
+import { Loader2, Sparkles, X } from "lucide-react";
+import { type KeyboardEvent, useState } from "react";
 import {
 	Accordion,
 	AccordionContent,
@@ -18,9 +21,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useGenerateDocumentation } from "@/hooks/useGenerateDocumentation";
 import type { ReactFlowModelData } from "@/types";
-import type { Node } from "@xyflow/react";
-import { Loader2, Sparkles, X } from "lucide-react";
-import { type KeyboardEvent, useState } from "react";
 import { Textarea } from "../ui/textarea";
 import { ModelParameterEditor } from "./ModelParameterEditor";
 import { PortEditor } from "./reactFlow/PortEditor";
@@ -118,13 +118,13 @@ export function ModelPropertyEditor({
 				modelRole: result.role,
 			});
 			toast({
-				title: "Documentation generated",
 				description: "Description, keywords, and role have been updated.",
+				title: "Documentation generated",
 			});
 		} else {
 			toast({
-				title: "Generation failed",
 				description: "Failed to generate documentation. Please try again.",
+				title: "Generation failed",
 				variant: "destructive",
 			});
 		}
@@ -132,19 +132,19 @@ export function ModelPropertyEditor({
 
 	return (
 		<div className="h-full w-full bg-card p-4 space-y-4 text-sm overflow-y-auto">
-			<Accordion type="multiple" className="w-full" defaultValue={["item-1"]}>
+			<Accordion className="w-full" defaultValue={["item-1"]} type="multiple">
 				<AccordionItem value="item-1">
 					<div className="flex items-center justify-between">
 						<AccordionTrigger className="font-semibold text-md flex-1">
 							Information
 						</AccordionTrigger>
 						<Button
-							variant="ghost"
-							size="sm"
-							onClick={handleGenerateDocumentation}
-							disabled={disabled || isGenerating}
 							className="h-8 px-2 mr-2"
+							disabled={disabled || isGenerating}
+							onClick={handleGenerateDocumentation}
+							size="sm"
 							title="Generate documentation with AI"
+							variant="ghost"
 						>
 							{isGenerating ? (
 								<Loader2 className="h-4 w-4 animate-spin" />
@@ -157,29 +157,29 @@ export function ModelPropertyEditor({
 						<div>
 							<Label>Model Name</Label>
 							<Input
-								value={model.data.label}
-								onChange={(e) => update({ label: e.target.value })}
 								className="mt-1"
 								disabled={disabled}
+								onChange={(e) => update({ label: e.target.value })}
+								value={model.data.label}
 							/>
 						</div>
 
 						<div>
 							<Label>Model Description</Label>
 							<Textarea
-								value={model.data.description}
 								className="font-mono h-32"
-								onChange={(e) => update({ description: e.target.value })}
 								disabled={disabled}
+								onChange={(e) => update({ description: e.target.value })}
+								value={model.data.description}
 							/>
 						</div>
 
 						<div>
 							<Label>Model Role</Label>
 							<Select
-								value={model.data.modelRole || ""}
-								onValueChange={(value) => update({ modelRole: value })}
 								disabled={disabled}
+								onValueChange={(value) => update({ modelRole: value })}
+								value={model.data.modelRole || ""}
 							>
 								<SelectTrigger className="mt-1">
 									<SelectValue placeholder="Select a role" />
@@ -199,16 +199,16 @@ export function ModelPropertyEditor({
 							<div className="flex flex-wrap gap-1.5 mt-1 mb-2">
 								{model.data.keyword?.map((kw) => (
 									<Badge
+										className="flex items-center gap-1 pr-1"
 										key={kw}
 										variant="secondary"
-										className="flex items-center gap-1 pr-1"
 									>
 										{kw}
 										{!disabled && (
 											<button
-												type="button"
-												onClick={() => removeKeyword(kw)}
 												className="hover:bg-muted rounded-full p-0.5"
+												onClick={() => removeKeyword(kw)}
+												type="button"
 											>
 												<X className="h-3 w-3" />
 											</button>
@@ -217,12 +217,12 @@ export function ModelPropertyEditor({
 								))}
 							</div>
 							<Input
-								value={keywordInput}
+								disabled={disabled}
+								onBlur={() => keywordInput && addKeyword(keywordInput)}
 								onChange={(e) => setKeywordInput(e.target.value)}
 								onKeyDown={handleKeywordKeyDown}
-								onBlur={() => keywordInput && addKeyword(keywordInput)}
 								placeholder="Add keyword (Enter to add)"
-								disabled={disabled}
+								value={keywordInput}
 							/>
 						</div>
 
@@ -230,11 +230,11 @@ export function ModelPropertyEditor({
 						<div>
 							<Label>Model Type</Label>
 							<Select
-								value={model.data.modelType}
+								disabled={disabled}
 								onValueChange={(value) =>
 									update({ modelType: value as "atomic" | "coupled" })
 								}
-								disabled={disabled}
+								value={model.data.modelType}
 							>
 								<SelectTrigger className="mt-1">
 									<SelectValue placeholder="Select model type" />
@@ -248,19 +248,19 @@ export function ModelPropertyEditor({
 
 						{/* Ports */}
 						<PortEditor
-							label="Input Ports"
-							ports={model.data.inputPorts ?? []}
-							onChange={(ports) => handlePortUpdate("input", ports)}
-							disabled={disabled}
 							defaultPrefix="in"
+							disabled={disabled}
+							label="Input Ports"
+							onChange={(ports) => handlePortUpdate("input", ports)}
+							ports={model.data.inputPorts ?? []}
 						/>
 
 						<PortEditor
-							label="Output Ports"
-							ports={model.data.outputPorts ?? []}
-							onChange={(ports) => handlePortUpdate("output", ports)}
-							disabled={disabled}
 							defaultPrefix="out"
+							disabled={disabled}
+							label="Output Ports"
+							onChange={(ports) => handlePortUpdate("output", ports)}
+							ports={model.data.outputPorts ?? []}
 						/>
 					</AccordionContent>
 				</AccordionItem>
@@ -270,9 +270,9 @@ export function ModelPropertyEditor({
 					</AccordionTrigger>
 					<AccordionContent className="flex flex-col gap-4 text-balance p-1">
 						<ModelParameterEditor
-							parameters={model.data.parameters ?? []}
-							onParametersChange={handleParametersChange}
 							disabled={disabled}
+							onParametersChange={handleParametersChange}
+							parameters={model.data.parameters ?? []}
 							valueOnly={disabled && allowParameterValueEdit}
 						/>
 					</AccordionContent>
@@ -285,36 +285,36 @@ export function ModelPropertyEditor({
 						<div className="space-y-1">
 							<Label className="text-xs">Header Background Color</Label>
 							<Input
-								type="color"
-								value={graphicalData.headerBackgroundColor || "#000000"}
+								disabled={disabled}
 								onChange={(e) =>
 									updateGraphical("headerBackgroundColor", e.target.value)
 								}
-								disabled={disabled}
+								type="color"
+								value={graphicalData.headerBackgroundColor || "#000000"}
 							/>
 						</div>
 
 						<div className="space-y-1">
 							<Label className="text-xs">Header Text Color</Label>
 							<Input
-								type="color"
-								value={graphicalData.headerTextColor || "#ffffff"}
+								disabled={disabled}
 								onChange={(e) =>
 									updateGraphical("headerTextColor", e.target.value)
 								}
-								disabled={disabled}
+								type="color"
+								value={graphicalData.headerTextColor || "#ffffff"}
 							/>
 						</div>
 
 						<div className="space-y-1">
 							<Label className="text-xs">Body Background Color</Label>
 							<Input
-								type="color"
-								value={graphicalData.bodyBackgroundColor || "#eeeeee"}
+								disabled={disabled}
 								onChange={(e) =>
 									updateGraphical("bodyBackgroundColor", e.target.value)
 								}
-								disabled={disabled}
+								type="color"
+								value={graphicalData.bodyBackgroundColor || "#eeeeee"}
 							/>
 						</div>
 					</AccordionContent>
@@ -326,17 +326,17 @@ export function ModelPropertyEditor({
 					<AccordionContent className="flex flex-col gap-4 text-balance p-1">
 						<div>
 							<Label>Instance ID</Label>
-							<Input value={model.id} disabled className="mt-1" />
+							<Input className="mt-1" disabled value={model.id} />
 						</div>
 						<div>
 							<Label>Model ID</Label>
-							<Input value={model.data.id} disabled className="mt-1" />
+							<Input className="mt-1" disabled value={model.data.id} />
 						</div>
 						<Label>Input Ports</Label>
 						{model.data.inputPorts?.map((ip) => {
 							return (
 								<div key={`inputport${ip.id}`}>
-									<Input value={ip.id} disabled className="mt-1" />
+									<Input className="mt-1" disabled value={ip.id} />
 								</div>
 							);
 						})}
@@ -344,7 +344,7 @@ export function ModelPropertyEditor({
 						{model.data.outputPorts?.map((op) => {
 							return (
 								<div key={`outputport${op.id}`}>
-									<Input value={op.id} disabled className="mt-1" />
+									<Input className="mt-1" disabled value={op.id} />
 								</div>
 							);
 						})}

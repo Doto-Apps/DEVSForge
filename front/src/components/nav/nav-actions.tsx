@@ -44,12 +44,12 @@ const data = [
 		id: "main",
 		menu: [
 			{
-				label: "Customize Page",
 				icon: Settings2,
+				label: "Customize Page",
 			},
 			{
-				label: "Turn into wiki",
 				icon: FileText,
+				label: "Turn into wiki",
 			},
 		],
 	},
@@ -57,20 +57,20 @@ const data = [
 		id: "first",
 		menu: [
 			{
-				label: "Copy Link",
 				icon: Link,
+				label: "Copy Link",
 			},
 			{
-				label: "Duplicate",
 				icon: Copy,
+				label: "Duplicate",
 			},
 			{
-				label: "Move to",
 				icon: CornerUpRight,
+				label: "Move to",
 			},
 			{
-				label: "Move to Trash",
 				icon: Trash2,
+				label: "Move to Trash",
 			},
 		],
 	},
@@ -78,24 +78,24 @@ const data = [
 		id: "second",
 		menu: [
 			{
-				label: "Undo",
 				icon: CornerUpLeft,
+				label: "Undo",
 			},
 			{
-				label: "View analytics",
 				icon: LineChart,
+				label: "View analytics",
 			},
 			{
-				label: "Version History",
 				icon: GalleryVerticalEnd,
+				label: "Version History",
 			},
 			{
-				label: "Show delete pages",
 				icon: Trash,
+				label: "Show delete pages",
 			},
 			{
-				label: "Notifications",
 				icon: Bell,
+				label: "Notifications",
 			},
 		],
 	},
@@ -103,12 +103,12 @@ const data = [
 		id: "third",
 		menu: [
 			{
-				label: "Import",
 				icon: ArrowUp,
+				label: "Import",
 			},
 			{
-				label: "Export",
 				icon: ArrowDown,
+				label: "Export",
 			},
 		],
 	},
@@ -132,22 +132,22 @@ export function NavActions({
 	return (
 		<div className="flex items-center gap-2 text-sm">
 			{validateFunction && (
-				<Button size="icon" className="h-7 w-7" onClick={validateFunction}>
+				<Button className="h-7 w-7" onClick={validateFunction} size="icon">
 					<ShieldCheck />
 				</Button>
 			)}
 			{deployFunction && (
-				<Button size="icon" className="h-7 w-7" onClick={deployFunction}>
+				<Button className="h-7 w-7" onClick={deployFunction} size="icon">
 					<MonitorPlay />
 				</Button>
 			)}
 			{simulateFunction && (
-				<Button size="icon" className="h-7 w-7" onClick={simulateFunction}>
+				<Button className="h-7 w-7" onClick={simulateFunction} size="icon">
 					<Play />
 				</Button>
 			)}
 			{saveFunction && (
-				<Button size="icon" className="h-7 w-7" onClick={saveFunction}>
+				<Button className="h-7 w-7" onClick={saveFunction} size="icon">
 					<Save />
 				</Button>
 			)}
@@ -155,29 +155,29 @@ export function NavActions({
 			<div className="hidden font-medium text-muted-foreground md:inline-block">
 				Edit Oct 08
 			</div>
-			<Button variant="ghost" size="icon" className="h-7 w-7">
+			<Button className="h-7 w-7" size="icon" variant="ghost">
 				<Star />
 			</Button>
-			<Popover open={isOpen} onOpenChange={setIsOpen}>
+			<Popover onOpenChange={setIsOpen} open={isOpen}>
 				<PopoverTrigger asChild>
 					<Button
-						variant="ghost"
-						size="icon"
 						className="h-7 w-7 data-[state=open]:bg-accent"
+						size="icon"
+						variant="ghost"
 					>
 						<MoreHorizontal />
 					</Button>
 				</PopoverTrigger>
 				<PopoverContent
-					className="w-56 overflow-hidden rounded-lg p-0"
 					align="end"
+					className="w-56 overflow-hidden rounded-lg p-0"
 				>
-					<Sidebar collapsible="none" className="bg-transparent">
+					<Sidebar className="bg-transparent" collapsible="none">
 						<SidebarContent>
 							{data.map((group) => (
 								<SidebarGroup
-									key={group.id}
 									className="border-b last:border-none"
+									key={group.id}
 								>
 									<SidebarGroupContent className="gap-0">
 										<SidebarMenu>

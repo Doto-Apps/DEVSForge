@@ -1,3 +1,17 @@
+import {
+	Binary,
+	Bot,
+	Braces,
+	CheckCheck,
+	Database,
+	FileCheck2,
+	Languages,
+	MessageSquareShare,
+	MonitorCog,
+	Network,
+	Router,
+	Workflow,
+} from "lucide-react";
 import NavHeader from "@/components/nav/nav-header";
 import {
 	Accordion,
@@ -14,39 +28,25 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-	Binary,
-	Bot,
-	Braces,
-	CheckCheck,
-	Database,
-	FileCheck2,
-	Languages,
-	MessageSquareShare,
-	MonitorCog,
-	Network,
-	Router,
-	Workflow,
-} from "lucide-react";
 
 const contracts = [
 	{
 		endpoint: "/ai/generate-ef-structure",
-		output: "response.ExperimentalFrameStructureResponse",
 		notes:
 			"Target model context is injected. Server validates MUT, root EF coupled, port/link consistency.",
+		output: "response.ExperimentalFrameStructureResponse",
 	},
 	{
 		endpoint: "/ai/generate-model",
-		output: "response.GeneratedModelResponse",
 		notes:
 			"Reuse-first shortlist can be returned before code generation. Final code response remains structured.",
+		output: "response.GeneratedModelResponse",
 	},
 	{
 		endpoint: "/ai/generate-documentation",
-		output: "response.GeneratedDocumentationResponse",
 		notes:
 			"Documentation blocks (description, keywords, role) are emitted as structured JSON.",
+		output: "response.GeneratedDocumentationResponse",
 	},
 ];
 
@@ -64,9 +64,9 @@ export function HowItWorks() {
 	return (
 		<div className="flex flex-col h-screen w-full">
 			<NavHeader
-				breadcrumbs={[{ label: "Home", href: "/" }, { label: "How It Works" }]}
-				showNavActions={false}
+				breadcrumbs={[{ href: "/", label: "Home" }, { label: "How It Works" }]}
 				showModeToggle
+				showNavActions={false}
 			/>
 
 			<div className="flex-1 overflow-y-auto">
@@ -163,8 +163,8 @@ export function HowItWorks() {
 							<div className="grid gap-3">
 								{contracts.map((c) => (
 									<div
-										key={c.endpoint}
 										className="rounded-lg border bg-muted/30 p-4 space-y-2"
+										key={c.endpoint}
 									>
 										<div className="flex flex-wrap items-center gap-2">
 											<Badge variant="secondary">{c.endpoint}</Badge>
@@ -225,7 +225,7 @@ export function HowItWorks() {
 								</div>
 								<div className="space-y-2 text-sm text-muted-foreground">
 									{loopSteps.map((step, index) => (
-										<div key={step} className="flex items-start gap-2">
+										<div className="flex items-start gap-2" key={step}>
 											<Badge variant="secondary">{index + 1}</Badge>
 											<p>{step}</p>
 										</div>
@@ -324,7 +324,7 @@ SendOutput
 							</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<Accordion type="single" collapsible className="w-full">
+							<Accordion className="w-full" collapsible type="single">
 								<AccordionItem value="persist">
 									<AccordionTrigger>
 										Event Consumer and Database Writes

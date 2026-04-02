@@ -1,4 +1,3 @@
-import type { paths } from "@/api/v1";
 import { isMatch } from "lodash-es";
 import createClient, { type Middleware } from "openapi-fetch";
 import {
@@ -7,6 +6,7 @@ import {
 	createMutateHook,
 	createQueryHook,
 } from "swr-openapi";
+import type { paths } from "@/api/v1";
 
 const API_BASE_URL = window.API_URL;
 const prefix = "my-api";
@@ -110,11 +110,11 @@ const refreshAccessToken = async (): Promise<string | null> => {
 
 		try {
 			const response = await fetch(buildApiUrl("/auth/refresh"), {
-				method: "POST",
+				body: JSON.stringify({ refreshToken }),
 				headers: {
 					"Content-Type": "application/json",
 				},
-				body: JSON.stringify({ refreshToken }),
+				method: "POST",
 			});
 
 			if (!response.ok) {
@@ -159,6 +159,10 @@ const getTokenForRequest = async (request: Request): Promise<string | null> => {
 };
 
 const myMiddleware: Middleware = {
+	async onError({ error }) {
+		console.error("Fetch Error:", error);
+		return new Error(String(error));
+	},
 	async onRequest({ request }) {
 		const token = await getTokenForRequest(request);
 		if (token) {
@@ -177,10 +181,6 @@ const myMiddleware: Middleware = {
 		}
 
 		return response;
-	},
-	async onError({ error }) {
-		console.error("Fetch Error:", error);
-		return new Error(String(error));
 	},
 };
 

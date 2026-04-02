@@ -1,20 +1,5 @@
 "use client";
 
-import { client } from "@/api/client";
-import {
-	CodeGenerationPanel,
-	DiagramPromptForm,
-	StructureEditor,
-} from "@/components/custom/generate";
-import NavHeader from "@/components/nav/nav-header";
-import { Button } from "@/components/ui/button";
-import { useGenerateDiagram } from "@/hooks/useGenerateDiagram";
-import { useToast } from "@/hooks/use-toast";
-import {
-	createAtomicModelRequests,
-	createCoupledModelRequests,
-} from "@/lib/llmToReactFlow";
-import type { GeneratedDiagram, GeneratorPhase } from "@/types";
 import {
 	ArrowLeft,
 	CheckCircle2,
@@ -26,12 +11,27 @@ import {
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { client } from "@/api/client";
+import {
+	CodeGenerationPanel,
+	DiagramPromptForm,
+	StructureEditor,
+} from "@/components/custom/generate";
+import NavHeader from "@/components/nav/nav-header";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { useGenerateDiagram } from "@/hooks/useGenerateDiagram";
+import {
+	createAtomicModelRequests,
+	createCoupledModelRequests,
+} from "@/lib/llmToReactFlow";
+import type { GeneratedDiagram, GeneratorPhase } from "@/types";
 
 const phaseSteps = [
-	{ id: "prompt", label: "Description", icon: FileText },
-	{ id: "structure", label: "Structure", icon: Sparkles },
-	{ id: "code", label: "Code", icon: Code2 },
-	{ id: "complete", label: "Complete", icon: CheckCircle2 },
+	{ icon: FileText, id: "prompt", label: "Description" },
+	{ icon: Sparkles, id: "structure", label: "Structure" },
+	{ icon: Code2, id: "code", label: "Code" },
+	{ icon: CheckCircle2, id: "complete", label: "Complete" },
 ] as const;
 
 export function GeneratorFlow() {
@@ -61,13 +61,13 @@ export function GeneratorFlow() {
 			setDiagram(result);
 			setPhase("structure");
 			toast({
-				title: "Structure generated",
 				description: `${result.models.length} model(s) created`,
+				title: "Structure generated",
 			});
 		} else {
 			toast({
-				title: "Generation error",
 				description: "Unable to generate the diagram. Please try again.",
+				title: "Generation error",
 				variant: "destructive",
 			});
 		}
@@ -90,8 +90,8 @@ export function GeneratorFlow() {
 		if (result) {
 			setDiagram(result);
 			toast({
-				title: "Structure regenerated",
 				description: `${result.models.length} model(s) created`,
+				title: "Structure regenerated",
 			});
 		}
 	};
@@ -159,8 +159,8 @@ export function GeneratorFlow() {
 
 			const libraryResponse = await client.POST("/library", {
 				body: {
-					title: libraryName,
 					description: `Auto-generated models for "${diagram.name}"`,
+					title: libraryName,
 				},
 			});
 
@@ -211,17 +211,17 @@ export function GeneratorFlow() {
 			const totalModels = atomicRequests.length + coupledRequests.length;
 
 			toast({
-				title: "Models saved",
 				description: `${totalModels} model(s) added to library "${libraryName}" (${atomicRequests.length} atomic, ${coupledRequests.length} coupled)`,
+				title: "Models saved",
 			});
 
 			// Redirect to the created library
 			navigate(`/library/${libraryId}`);
 		} catch (error) {
 			toast({
-				title: "Save error",
 				description:
 					error instanceof Error ? error.message : "An error occurred",
+				title: "Save error",
 				variant: "destructive",
 			});
 		} finally {
@@ -250,7 +250,7 @@ export function GeneratorFlow() {
 		<div className="flex flex-col h-screen w-full">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Libraries", href: "/library" },
+					{ href: "/library", label: "Libraries" },
 					{ label: "Model Generator" },
 				]}
 				showModeToggle
@@ -266,7 +266,7 @@ export function GeneratorFlow() {
 							const isCompleted = index < currentPhaseIndex;
 
 							return (
-								<div key={step.id} className="flex items-center">
+								<div className="flex items-center" key={step.id}>
 									<div
 										className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors ${
 											isActive
@@ -298,7 +298,7 @@ export function GeneratorFlow() {
 			{/* Bouton retour */}
 			{phase !== "prompt" && (
 				<div className="border-b px-4 py-2">
-					<Button variant="ghost" size="sm" onClick={handleGoBack}>
+					<Button onClick={handleGoBack} size="sm" variant="ghost">
 						<ArrowLeft className="w-4 h-4 mr-2" />
 						Back
 					</Button>
@@ -309,10 +309,10 @@ export function GeneratorFlow() {
 			<div className="flex-1 overflow-hidden">
 				{phase === "prompt" && (
 					<DiagramPromptForm
-						onGenerate={handleGenerateDiagram}
-						isLoading={isGeneratingDiagram}
 						initialName={diagramName}
 						initialPrompt={userPrompt}
+						isLoading={isGeneratingDiagram}
+						onGenerate={handleGenerateDiagram}
 					/>
 				)}
 
@@ -320,18 +320,18 @@ export function GeneratorFlow() {
 					<StructureEditor
 						diagram={diagram}
 						onDiagramChange={handleDiagramChange}
-						onValidate={handleValidateStructure}
 						onRegenerate={handleRegenerateStructure}
+						onValidate={handleValidateStructure}
 					/>
 				)}
 
 				{phase === "code" && diagram && (
 					<CodeGenerationPanel
-						diagram={diagram}
 						currentModelIndex={currentModelIndex}
+						diagram={diagram}
+						onCodeChange={handleCodeChange}
 						onCodeGenerated={handleCodeGenerated}
 						onModelValidated={handleModelValidated}
-						onCodeChange={handleCodeChange}
 					/>
 				)}
 
@@ -345,11 +345,11 @@ export function GeneratorFlow() {
 						</p>
 
 						<div className="flex gap-4">
-							<Button variant="outline" onClick={() => setPhase("code")}>
+							<Button onClick={() => setPhase("code")} variant="outline">
 								<Code2 className="w-4 h-4 mr-2" />
 								Review Code
 							</Button>
-							<Button onClick={handleSaveToLibrary} disabled={isSaving}>
+							<Button disabled={isSaving} onClick={handleSaveToLibrary}>
 								{isSaving ? (
 									<>
 										<Loader2 className="w-4 h-4 mr-2 animate-spin" />
