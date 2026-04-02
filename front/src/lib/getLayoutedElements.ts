@@ -1,15 +1,15 @@
+import ELK, { type ElkNode } from "elkjs/lib/elk.bundled";
 import { DEFAULT_NODE_SIZE } from "@/constants";
 import type { ReactFlowInput } from "@/types";
-import ELK, { type ElkNode } from "elkjs/lib/elk.bundled";
 
 const elk = new ELK();
 const elkOptions: NonNullable<ElkNode["layoutOptions"]> = {
 	"elk.algorithm": "layered",
-	"elk.layered.spacing.nodeNodeBetweenLayers": "100",
-	"elk.spacing.nodeNode": "100",
 	"elk.hierarchyHandling": "INCLUDE_CHILDREN",
-	"elk.radial.centerOnRoot": "true",
 	"elk.layered.nodePlacement.strategy": "SIMPLE",
+	"elk.layered.spacing.nodeNodeBetweenLayers": "100",
+	"elk.radial.centerOnRoot": "true",
+	"elk.spacing.nodeNode": "100",
 };
 
 // Fonction pour construire la hiérarchie des nœuds avec leurs enfants
@@ -20,6 +20,8 @@ const buildHierarchy = (nodes: ReactFlowInput["nodes"]) => {
 	// Créer un dictionnaire de nœuds par ID
 	nodes.forEach((node) => {
 		nodeMap[node.id] = {
+			children: [],
+			height: Number(node.style?.height) || DEFAULT_NODE_SIZE,
 			id: node.id,
 			layoutOptions: {
 				...elkOptions,
@@ -28,8 +30,6 @@ const buildHierarchy = (nodes: ReactFlowInput["nodes"]) => {
 			//targetPosition: isHorizontal ? 'left' : 'top',
 			//sourcePosition: isHorizontal ? 'right' : 'bottom',
 			width: Number(node.style?.width) || DEFAULT_NODE_SIZE,
-			height: Number(node.style?.height) || DEFAULT_NODE_SIZE,
-			children: [],
 		};
 	});
 
@@ -71,14 +71,14 @@ export const getLayoutedElements = async (
 ): Promise<ReactFlowInput> => {
 	// Construire la hiérarchie de graphes avec les nœuds et leurs enfants
 	const graph: ElkNode = {
-		id: "root",
-		layoutOptions: { ...elkOptions, "elk.direction": direction },
 		children: buildHierarchy(nodes),
 		edges: edges.map((edge) => ({
 			id: edge.id,
 			sources: [edge.source],
 			targets: [edge.target],
 		})),
+		id: "root",
+		layoutOptions: { ...elkOptions, "elk.direction": direction },
 	};
 
 	// Générer la mise en page avec ELK
@@ -89,25 +89,25 @@ export const getLayoutedElements = async (
 
 	// Remettre à jour les données des nœuds en incluant leurs positions
 	return {
+		edges,
 		nodes: layoutedFlatNodes
 			.map<(typeof layoutedFlatNodes)[number] | undefined>((node) => {
 				const nodeInNodes = nodes.find((n) => n.id === node.id);
 				if (nodeInNodes) {
 					return {
 						...nodeInNodes,
-						width: node.width,
 						height: node.height,
-						position: node.position,
 						measured: {
-							width: node.width,
 							height: node.height,
+							width: node.width,
 						},
+						position: node.position,
+						width: node.width,
 					};
 				}
 
 				return undefined;
 			})
 			.filter((node): node is (typeof layoutedFlatNodes)[number] => !!node),
-		edges,
 	};
 };

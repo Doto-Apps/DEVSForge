@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"scripts": {
-    "format": "pnpm run format:front && pnpm run format:back && pnpm run format:coordinator && pnpm run format:runner && pnpm run format:shared",
+		"format": "pnpm run format:front && pnpm run format:back && pnpm run format:coordinator && pnpm run format:runner && pnpm run format:shared",
 		"format:front": "biome format --write ./front",
 		"format:back": "cd back && go fmt",
 		"format:coordinator": "cd simulator/coordinator && go fmt",
@@ -18,12 +18,12 @@
 		"start:local:islands": "docker compose -f docker-compose.local.islands.yml up",
 		"clean:back": "docker compose -f docker-compose.back.yml down -v",
 		"typecheck": "cd front && pnpm tsc --noEmit",
-    "lint:back": "task lint",
-    "lint:back:fix": "task lint -- --fix",
-    "postinstall": "lefthook install"
+		"lint:back": "task lint",
+		"lint:back:fix": "task lint -- --fix",
+		"postinstall": "lefthook install"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
+		"@biomejs/biome": "2.4.10",
 		"@commitlint/config-conventional": "^19.8.0",
 		"lefthook": "^1.10.10"
 	},

@@ -1,7 +1,9 @@
+import type { Node } from "@xyflow/react";
 import { Loader } from "lucide-react";
 import { useCallback, useEffect } from "react";
+import { type Options, useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams } from "react-router-dom";
-
+import useUndo from "use-undo";
 import { client } from "@/api/client.ts";
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
 import { ModelPropertyEditor } from "@/components/custom/ModelPropertyEditor";
@@ -20,16 +22,13 @@ import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelByIdRecursive } from "@/queries/model/useGetModelByIdRecursive";
 import { useGetModels } from "@/queries/model/useGetModels";
 import type { ReactFlowInput, ReactFlowModelData } from "@/types";
-import type { Node } from "@xyflow/react";
-import { type Options, useHotkeys } from "react-hotkeys-hook";
-import useUndo from "use-undo";
 
 const hotkeyOptions: Options = {
 	document,
-	preventDefault: true,
-	keydown: true,
-	enableOnFormTags: true,
 	enableOnContentEditable: true,
+	enableOnFormTags: true,
+	keydown: true,
+	preventDefault: true,
 };
 
 export function EditModel() {
@@ -113,28 +112,28 @@ export function EditModel() {
 			console.log("Structure pret a save", modelToSave);
 			if (!modelToSave) {
 				toast({
-					title: "Erreur",
 					description: "Modèle non trouvé dans la structure",
+					title: "Erreur",
 					variant: "destructive",
 				});
 				return;
 			}
 
 			const response = await client.PATCH("/model/{id}", {
+				body: {
+					code: modelToSave.code,
+					components: modelToSave.components,
+					connections: modelToSave.connections,
+					description: modelToSave.description,
+					metadata: modelToSave.metadata,
+					name: modelToSave.name,
+					ports: modelToSave.ports,
+					type: modelToSave.type,
+				},
 				params: {
 					path: {
 						id: modelId,
 					},
-				},
-				body: {
-					code: modelToSave.code,
-					description: modelToSave.description,
-					name: modelToSave.name,
-					type: modelToSave.type,
-					components: modelToSave.components,
-					connections: modelToSave.connections,
-					ports: modelToSave.ports,
-					metadata: modelToSave.metadata,
 				},
 			});
 
@@ -149,8 +148,8 @@ export function EditModel() {
 			await Promise.all([mutate(), mutateModels()]);
 		} catch (error) {
 			toast({
-				title: "Erreur lors de la sauvegarde",
 				description: (error as Error).message,
+				title: "Erreur lors de la sauvegarde",
 				variant: "destructive",
 			});
 		}
@@ -227,19 +226,19 @@ export function EditModel() {
 		<div className="flex flex-col h-screen w-full">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Libraries", href: "/library" },
+					{ href: "/library", label: "Libraries" },
 					{
-						label: dataLib?.title ?? "Unknown library",
 						href: `/library/${dataLib?.id}`,
+						label: dataLib?.title ?? "Unknown library",
 					},
 					{ label: mainModel?.data.label ?? "Edit Model" },
 				]}
-				showNavActions
-				showModeToggle
+				deployFunction={deployWebApp}
 				saveFunction={saveModelChange}
+				showModeToggle
+				showNavActions
 				simulateFunction={simulateModel}
 				validateFunction={validateModel}
-				deployFunction={deployWebApp}
 			/>
 
 			{mainModel?.data.modelType === "atomic" ? (
@@ -247,8 +246,8 @@ export function EditModel() {
 					<ResizablePanel defaultSize={50} minSize={20}>
 						<ModelCodeEditor
 							code={mainModel.data.code}
-							onCodeChange={onChangeCode}
 							modelId={mainModel.id}
+							onCodeChange={onChangeCode}
 						/>
 					</ResizablePanel>
 
@@ -263,10 +262,10 @@ export function EditModel() {
 
 					<ResizablePanel defaultSize={20} minSize={20}>
 						<ModelPropertyEditor
+							allowParameterValueEdit={disableCustomization}
+							disabled={disableCustomization}
 							model={selectedModel ?? mainModel}
 							onChange={onChangeProperty}
-							disabled={disableCustomization}
-							allowParameterValueEdit={disableCustomization}
 						/>
 					</ResizablePanel>
 				</ResizablePanelGroup>
@@ -284,10 +283,10 @@ export function EditModel() {
 
 					<ResizablePanel defaultSize={30} minSize={20}>
 						<ModelPropertyEditor
+							allowParameterValueEdit={disableCustomization}
+							disabled={disableCustomization}
 							model={selectedModel ?? mainModel}
 							onChange={onChangeProperty}
-							disabled={disableCustomization}
-							allowParameterValueEdit={disableCustomization}
 						/>
 					</ResizablePanel>
 				</ResizablePanelGroup>

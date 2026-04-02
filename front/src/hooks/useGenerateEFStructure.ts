@@ -1,10 +1,10 @@
+import { useState } from "react";
 import { client } from "@/api/client";
 import { efStructureResponseToGeneratedDiagram } from "@/lib/llmToReactFlow";
 import type {
-	GenerateEFStructureRequest,
 	GeneratedDiagram,
+	GenerateEFStructureRequest,
 } from "@/types/generator";
-import { useState } from "react";
 
 type UseGenerateEFStructureResult = {
 	generateEFStructure: (
@@ -71,8 +71,8 @@ export const useGenerateEFStructure = (): UseGenerateEFStructureResult => {
 	};
 
 	return {
+		error,
 		generateEFStructure,
 		isLoading,
-		error,
 	};
 };

@@ -1,3 +1,4 @@
+import type { Edge } from "@xyflow/react";
 import type { components } from "@/api/v1";
 import {
 	DEFAULT_NODE_SIZE,
@@ -5,7 +6,6 @@ import {
 	INTERNAL_PREFIX,
 } from "@/constants";
 import type { EdgeData, ReactFlowInput } from "@/types";
-import type { Edge } from "@xyflow/react";
 
 const resolvePortName = (
 	model:
@@ -80,22 +80,22 @@ const createEdge = (
 
 	const id = `${source}:${normalizedSourcePort}->${target}:${normalizedTargetPort}`;
 	return {
-		id,
-		source,
-		target,
-		sourceHandle:
-			conn.from.instanceId === "root"
-				? `${INTERNAL_PREFIX}${source}:${normalizedSourcePort}`
-				: `${source}:${normalizedSourcePort}`,
-		targetHandle:
-			conn.to.instanceId === "root"
-				? `${INTERNAL_PREFIX}${target}:${normalizedTargetPort}`
-				: `${target}:${normalizedTargetPort}`,
 		data: {
 			holderId: `${
 				modelNamespace.length > 0 ? `${modelNamespace}/` : ""
 			}${component.instanceId}`,
 		},
+		id,
+		source,
+		sourceHandle:
+			conn.from.instanceId === "root"
+				? `${INTERNAL_PREFIX}${source}:${normalizedSourcePort}`
+				: `${source}:${normalizedSourcePort}`,
+		target,
+		targetHandle:
+			conn.to.instanceId === "root"
+				? `${INTERNAL_PREFIX}${target}:${normalizedTargetPort}`
+				: `${target}:${normalizedTargetPort}`,
 	};
 };
 
@@ -127,38 +127,38 @@ const createReactflowModel = (
 	const resolvedParameters = metadata.parameters ?? model.metadata.parameters;
 
 	return {
-		// on devrait recréer un autre uuid ici
-		id: `${modelNamespace.length > 0 ? `${modelNamespace}/` : ""}${
-			component.instanceId || component.modelId
-		}`,
-		type: "resizer",
-		measured: {
-			height: metadata.style.height ?? DEFAULT_NODE_SIZE,
-			width: metadata.style.width ?? DEFAULT_NODE_SIZE,
-		},
 		data: {
-			id: model.id ?? "Unnamed model",
-			modelType: model.type ?? "atomic",
-			modelRole: resolvedModelRole,
-			keyword: resolvedKeywords,
-			label: model.name ?? "Unnamed model",
 			description: model.description,
+			id: model.id ?? "Unnamed model",
 			inputPorts: model.ports
 				.filter((p) => p.type === "in")
 				.map((p) => ({ id: p.id, name: p.name || p.id })),
+			keyword: resolvedKeywords,
+			label: model.name ?? "Unnamed model",
+			modelRole: resolvedModelRole,
+			modelType: model.type ?? "atomic",
 			outputPorts: model.ports
 				.filter((p) => p.type === "out")
 				.map((p) => ({ id: p.id, name: p.name || p.id })),
 			...(resolvedModelColors
 				? { reactFlowModelGraphicalData: resolvedModelColors }
 				: {}),
-			parameters: resolvedParameters,
 			code: model.code,
+			parameters: resolvedParameters,
 		},
 		dragging: false,
-		selected: false,
-		position: metadata.position ?? DEFAULT_POSITION,
 		height: metadata.style.height ?? DEFAULT_NODE_SIZE,
+		// on devrait recréer un autre uuid ici
+		id: `${modelNamespace.length > 0 ? `${modelNamespace}/` : ""}${
+			component.instanceId || component.modelId
+		}`,
+		measured: {
+			height: metadata.style.height ?? DEFAULT_NODE_SIZE,
+			width: metadata.style.width ?? DEFAULT_NODE_SIZE,
+		},
+		position: metadata.position ?? DEFAULT_POSITION,
+		selected: false,
+		type: "resizer",
 		width: metadata.style.width ?? DEFAULT_NODE_SIZE,
 		...(parentComponent
 			? { extent: "parent", parentId: modelNamespace }
@@ -176,7 +176,7 @@ const recursiveModelParsing = (
 ): ReactFlowInput => {
 	const actualModel = models.find((m) => m.id === component.modelId);
 
-	if (!actualModel || !actualModel.id) return { nodes: [], edges: [] };
+	if (!actualModel?.id) return { edges: [], nodes: [] };
 	const actualEdge = actualModel.connections.map<Edge<EdgeData>>((conn) =>
 		createEdge(models, actualModel, conn, component, modelNamespace),
 	);
@@ -201,10 +201,10 @@ const recursiveModelParsing = (
 	);
 
 	const nodesAndEdges = {
+		edges: [childNodes.map(({ edges }) => edges), actualEdge].flat(2),
 		nodes: currentNode
 			? [childNodes.map(({ nodes }) => nodes), currentNode].flat(2)
 			: childNodes.flatMap(({ nodes }) => nodes),
-		edges: [childNodes.map(({ edges }) => edges), actualEdge].flat(2),
 	};
 
 	return nodesAndEdges;
@@ -236,7 +236,7 @@ export const modelToReactflow = (
 	const result = recursiveModelParsing(res, firstComponent, null, "");
 
 	return {
-		nodes: result.nodes.sort((a, b) => a.id.localeCompare(b.id)),
 		edges: result.edges.sort((a, b) => a.id.localeCompare(b.id)),
+		nodes: result.nodes.sort((a, b) => a.id.localeCompare(b.id)),
 	};
 };

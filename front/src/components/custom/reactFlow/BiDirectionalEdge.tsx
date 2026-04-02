@@ -1,8 +1,8 @@
 import {
 	BaseEdge,
 	type EdgeProps,
-	type ReactFlowState,
 	getBezierPath,
+	type ReactFlowState,
 	useStore,
 } from "@xyflow/react";
 
@@ -47,12 +47,12 @@ export default function CustomEdge({
 	});
 
 	const edgePathParams = {
+		sourcePosition,
 		sourceX,
 		sourceY,
-		sourcePosition,
+		targetPosition,
 		targetX,
 		targetY,
-		targetPosition,
 	};
 
 	let path = "";
@@ -63,5 +63,5 @@ export default function CustomEdge({
 		[path] = getBezierPath(edgePathParams);
 	}
 
-	return <BaseEdge path={path} markerEnd={markerEnd} />;
+	return <BaseEdge markerEnd={markerEnd} path={path} />;
 }

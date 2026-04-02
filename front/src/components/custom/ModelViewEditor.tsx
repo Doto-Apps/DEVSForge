@@ -1,4 +1,7 @@
 import {
+	addEdge,
+	applyEdgeChanges,
+	applyNodeChanges,
 	Background,
 	ConnectionMode,
 	type Edge,
@@ -6,17 +9,9 @@ import {
 	MiniMap,
 	type NodeChange,
 	ReactFlow,
-	addEdge,
-	applyEdgeChanges,
-	applyNodeChanges,
 	useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css";
-import BiDirectionalEdge from "@/components/custom/reactFlow/BiDirectionalEdge.tsx";
-import { ZoomSlider } from "@/components/zoom-slider";
-import { getLayoutedElements } from "@/lib/getLayoutedElements.ts";
-import { useDnD } from "@/providers/DnDContext.tsx";
-import type { EdgeData, ReactFlowInput } from "@/types";
 import {
 	type ComponentProps,
 	useCallback,
@@ -24,19 +19,23 @@ import {
 	useRef,
 	useState,
 } from "react";
-import ModelNode from "./reactFlow/ModelNode.tsx";
-
+import { useHotkeys } from "react-hotkeys-hook";
+import { useDebouncedCallback } from "use-debounce";
 import { client } from "@/api/client.ts";
 import type { components } from "@/api/v1.js";
+import BiDirectionalEdge from "@/components/custom/reactFlow/BiDirectionalEdge.tsx";
+import { ZoomSlider } from "@/components/zoom-slider";
 import { DEFAULT_NODE_SIZE } from "@/constants.ts";
 import { useToast } from "@/hooks/use-toast.ts";
 import { addModelsToModels } from "@/lib/addModelsToModels.ts";
 import { findHolderId } from "@/lib/findHolderId.ts";
 import { FindParentNodeId } from "@/lib/findParentNodeId.ts";
+import { getLayoutedElements } from "@/lib/getLayoutedElements.ts";
 import { modelToReactflow } from "@/lib/modelToReactflow.ts";
 import { reactflowToModel } from "@/lib/reactflowToModel.ts";
-import { useHotkeys } from "react-hotkeys-hook";
-import { useDebouncedCallback } from "use-debounce";
+import { useDnD } from "@/providers/DnDContext.tsx";
+import type { EdgeData, ReactFlowInput } from "@/types";
+import ModelNode from "./reactFlow/ModelNode.tsx";
 
 const nodeTypes: NonNullable<ComponentProps<typeof ReactFlow>["nodeTypes"]> = {
 	resizer: ModelNode,
@@ -47,9 +46,9 @@ const edgeTypes = {
 };
 
 const defaultEdgeOptions = {
-	type: "step",
 	animated: true,
 	style: { zIndex: 1000 },
+	type: "step",
 };
 
 type Props = {
@@ -98,8 +97,8 @@ export function ModelViewEditor({
 
 		if (error) {
 			toast({
-				title: "An error occured",
 				description: "Can't load model data",
+				title: "An error occured",
 				variant: "destructive",
 			});
 			return;
@@ -108,6 +107,8 @@ export function ModelViewEditor({
 		if (!models?.nodes || !data || !selectedModel?.id) return;
 
 		addModels(data, selectedModel?.id, {
+			keyword: [],
+			modelRole: "",
 			position: {
 				x: selectedModel.position.x + 20,
 				y: selectedModel.position.y + 20,
@@ -157,8 +158,8 @@ export function ModelViewEditor({
 				await getLayoutedElements(models.nodes, models.edges, opts);
 			onChange?.({
 				...models,
-				nodes: layoutedNodes,
 				edges: layoutedEdges,
+				nodes: layoutedNodes,
 			});
 			needAutoFitView.current = true;
 		}
@@ -231,8 +232,8 @@ export function ModelViewEditor({
 
 		if (error) {
 			toast({
-				title: "An error occured",
 				description: "Can't load model data",
+				title: "An error occured",
 				variant: "destructive",
 			});
 			return;
@@ -256,6 +257,8 @@ export function ModelViewEditor({
 		}
 
 		const newModels = addModelsToModels(actualModels, targetId, data, {
+			keyword: [],
+			modelRole: "",
 			position: {
 				x: position.x - parentNode.position.x,
 				y: position.y - parentNode.position.y,
@@ -278,21 +281,21 @@ export function ModelViewEditor({
 		const holderId = findHolderId(connection.source, connection.target);
 		if (holderId === null) {
 			toast({
-				title: "Invalid action",
 				description: "Only direct connection are allowed",
+				title: "Invalid action",
 				variant: "destructive",
 			});
 			return;
 		}
 		const newEdge: Edge<EdgeData> = {
+			data: {
+				holderId: holderId,
+			},
 			id: `${connection.source}->${connection.target}`,
 			source: connection.source,
 			sourceHandle: connection.sourceHandle,
 			target: connection.target,
 			targetHandle: connection.targetHandle,
-			data: {
-				holderId: holderId,
-			},
 		};
 
 		const updatedEdges = addEdge(newEdge, models.edges);
@@ -302,6 +305,7 @@ export function ModelViewEditor({
 		});
 	};
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Wanted
 	useEffect(() => {
 		if (autoLayoutSignal === undefined) return;
 		if (lastAutoLayoutSignal.current === autoLayoutSignal) return;
@@ -353,26 +357,26 @@ export function ModelViewEditor({
 	return (
 		<div className="h-full w-full flex flex-col">
 			<ReactFlow
-				nodes={nodes}
+				connectionMode={ConnectionMode.Loose}
+				defaultEdgeOptions={defaultEdgeOptions}
 				edges={edges}
-				nodeTypes={nodeTypes}
 				edgeTypes={edgeTypes}
 				fitView
 				minZoom={0.1}
-				onNodesChange={onNodesChange}
-				onEdgesChange={onEdgesChange}
-				defaultEdgeOptions={defaultEdgeOptions}
-				connectionMode={ConnectionMode.Loose}
+				nodes={nodes}
+				nodeTypes={nodeTypes}
 				onConnect={onConnect}
-				onDrop={onDrop}
 				onDragOver={onDragOver}
+				onDrop={onDrop}
+				onEdgesChange={onEdgesChange}
 				onInit={(instance) => {
 					setTimeout(() => {
 						instance.fitView();
 					});
 				}}
+				onNodesChange={onNodesChange}
 			>
-				<MiniMap zoomable pannable />
+				<MiniMap pannable zoomable />
 				<ZoomSlider onOrganizeClick={onOrganizeClick} />
 				<Background />
 			</ReactFlow>

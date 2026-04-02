@@ -1,13 +1,13 @@
 "use client";
 
+import { ReactFlowProvider } from "@xyflow/react";
+import { CheckCircle2, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
 import { ModelViewEditor } from "@/components/custom/ModelViewEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { generatedDiagramToReactFlow } from "@/lib/llmToReactFlow";
 import type { ReactFlowInput, StructureEditorProps } from "@/types";
-import { ReactFlowProvider } from "@xyflow/react";
-import { CheckCircle2, RefreshCw } from "lucide-react";
-import { useEffect, useState } from "react";
 
 export function StructureEditor({
 	diagram,
@@ -53,7 +53,7 @@ export function StructureEditor({
 					</p>
 				</div>
 				<div className="flex gap-2">
-					<Button variant="outline" onClick={onRegenerate}>
+					<Button onClick={onRegenerate} variant="outline">
 						<RefreshCw className="w-4 h-4 mr-2" />
 						Regenerate
 					</Button>
@@ -78,10 +78,10 @@ export function StructureEditor({
 						<div className="p-2 space-y-2">
 							{diagram.models.map((model, index) => (
 								<Card
-									key={model.id}
 									className={`cursor-pointer hover:bg-accent transition-colors ${
 										model.type === "coupled" ? "border-primary/50" : ""
 									}`}
+									key={model.id}
 								>
 									<CardHeader className="p-3 pb-2">
 										<CardTitle className="text-sm flex items-center gap-2">
@@ -139,9 +139,9 @@ export function StructureEditor({
 					{reactFlowData ? (
 						<ReactFlowProvider>
 							<ModelViewEditor
+								autoLayoutSignal={autoLayoutSignal}
 								models={reactFlowData}
 								onChange={handleReactFlowChange}
-								autoLayoutSignal={autoLayoutSignal}
 							/>
 						</ReactFlowProvider>
 					) : (
@@ -160,11 +160,11 @@ export function StructureEditor({
 				<div className="flex flex-wrap gap-2">
 					{diagram.connections.map((conn) => (
 						<div
-							key={`${conn.from.model}:${conn.from.port}-${conn.to.model}:${conn.to.port}`}
 							className="text-xs bg-background border rounded px-2 py-1"
+							key={`${conn.from?.model}:${conn.from?.port}-${conn.to?.model}:${conn.to?.port}`}
 						>
-							{conn.from.model}:{conn.from.port} → {conn.to.model}:
-							{conn.to.port}
+							{conn.from?.model}:{conn.from?.port} → {conn.to?.model}:
+							{conn.to?.port}
 						</div>
 					))}
 					{diagram.connections.length === 0 && (

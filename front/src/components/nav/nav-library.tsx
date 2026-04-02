@@ -1,12 +1,14 @@
 "use client";
 
 import { ChevronRight, PlusIcon } from "lucide-react";
-
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
 	Collapsible,
 	CollapsibleContent,
 	CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { DropdownMenu } from "@/components/ui/dropdown-menu";
 import {
 	SidebarGroup,
 	SidebarGroupLabel,
@@ -17,9 +19,6 @@ import {
 	SidebarMenuSubButton,
 	SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
-
-import { DropdownMenu } from "@/components/ui/dropdown-menu";
-
 import { librairiesToFront } from "@/lib/librairiesToFront";
 import { modelToReactflow } from "@/lib/modelToReactflow";
 import { LibraryDeleteDialog } from "@/modals/library/LibraryDeleteDialog";
@@ -28,8 +27,6 @@ import { useDnD } from "@/providers/DnDContext";
 import { useGetLibraries } from "@/queries/library/useGetLibraries";
 import { useGetModelByIdRecursive } from "@/queries/model/useGetModelByIdRecursive";
 import { useGetModels } from "@/queries/model/useGetModels";
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import { ModelView } from "../custom/ModelView";
 import { Button } from "../ui/button";
 import {
@@ -77,7 +74,7 @@ export function NavLibrary() {
 					<SidebarGroupLabel className="flex justify-between items-center w-full pl-2 pr-1">
 						<span>Library</span>
 
-						<Button asChild variant={"ghost"} size={"sm"} className="h-6 w-6">
+						<Button asChild className="h-6 w-6" size={"sm"} variant={"ghost"}>
 							<Link to={"/library/new"}>
 								<PlusIcon />
 							</Link>
@@ -94,10 +91,10 @@ export function NavLibrary() {
 			<SidebarMenu>
 				{navLibraries.map((item) => (
 					<Collapsible
-						key={item.title}
 						asChild
-						defaultOpen={item.isActive}
 						className="group/collapsible"
+						defaultOpen={item.isActive}
+						key={item.title}
 					>
 						<SidebarMenuItem>
 							<ContextMenu modal={false}>
@@ -117,17 +114,17 @@ export function NavLibrary() {
 									</ContextMenuItem>
 									{item.id ? (
 										<LibraryDeleteDialog
+											disclosure={
+												<ContextMenuItem onSelect={(e) => e.preventDefault()}>
+													Delete
+												</ContextMenuItem>
+											}
 											libraryId={item.id}
 											libraryName={item.title}
 											onSubmitSuccess={async () => {
 												await libraries.mutate();
 												navigate("/");
 											}}
-											disclosure={
-												<ContextMenuItem onSelect={(e) => e.preventDefault()}>
-													Delete
-												</ContextMenuItem>
-											}
 										/>
 									) : null}
 									<ContextMenuSeparator />
@@ -148,14 +145,14 @@ export function NavLibrary() {
 																<PopoverTrigger asChild>
 																	<Link
 																		className="flex h-6 text-xs items-center gap-2"
-																		onMouseEnter={() =>
-																			onHoverModel(subItem.id ?? null)
-																		}
-																		onMouseLeave={() => onHoverModel(null)}
 																		draggable
 																		onDragStart={(e) =>
 																			onDragStart(e, subItem.id ?? "")
 																		}
+																		onMouseEnter={() =>
+																			onHoverModel(subItem.id ?? null)
+																		}
+																		onMouseLeave={() => onHoverModel(null)}
 																		to={`/library/${item.id}/model/${subItem.id}`}
 																	>
 																		{subItem.icon && (
@@ -165,13 +162,13 @@ export function NavLibrary() {
 																	</Link>
 																</PopoverTrigger>
 																<PopoverContent
-																	side="right"
 																	align="start"
 																	className="w-80 h-80 pointer-events-none select-none"
 																	onMouseEnter={() =>
 																		setHoveredId(subItem.id ?? null)
 																	}
 																	onMouseLeave={() => setHoveredId(null)}
+																	side="right"
 																>
 																	{isLoading && <span>Chargement…</span>}
 																	{hoveredModel ? (
@@ -194,12 +191,6 @@ export function NavLibrary() {
 													</ContextMenuItem>
 													{subItem.id ? (
 														<ModelDeleteDialog
-															modelId={subItem.id}
-															modelName={subItem.title}
-															onSubmitSuccess={async () => {
-																await models.mutate();
-																navigate("/");
-															}}
 															disclosure={
 																<ContextMenuItem
 																	onSelect={(e) => e.preventDefault()}
@@ -207,6 +198,12 @@ export function NavLibrary() {
 																	Delete
 																</ContextMenuItem>
 															}
+															modelId={subItem.id}
+															modelName={subItem.title}
+															onSubmitSuccess={async () => {
+																await models.mutate();
+																navigate("/");
+															}}
 														/>
 													) : null}
 												</ContextMenuContent>

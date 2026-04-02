@@ -1,6 +1,6 @@
+import { useState } from "react";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
-import { useState } from "react";
 
 type WebAppSkeletonResponse =
 	components["schemas"]["response.WebAppSkeletonResponse"];
@@ -110,10 +110,10 @@ export const useWebAppGenerator = (): UseWebAppGeneratorResult => {
 	};
 
 	return {
-		isLoading,
+		createDeployment,
 		error,
 		generateSkeleton,
+		isLoading,
 		refineWithAI,
-		createDeployment,
 	};
 };

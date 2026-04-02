@@ -1,5 +1,9 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, Sparkles } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Form,
@@ -12,10 +16,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import type { DiagramPromptFormProps } from "@/types";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Sparkles } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 const formSchema = z.object({
 	diagramName: z.string().min(2, {
@@ -33,11 +33,11 @@ export function DiagramPromptForm({
 	initialPrompt = "",
 }: DiagramPromptFormProps) {
 	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
 		defaultValues: {
 			diagramName: initialName,
 			prompt: initialPrompt,
 		},
+		resolver: zodResolver(formSchema),
 	});
 
 	const onSubmit = (values: z.infer<typeof formSchema>) => {
@@ -73,8 +73,8 @@ export function DiagramPromptForm({
 
 			<Form {...form}>
 				<form
-					onSubmit={form.handleSubmit(onSubmit)}
 					className="w-full max-w-2xl space-y-6"
+					onSubmit={form.handleSubmit(onSubmit)}
 				>
 					<FormField
 						control={form.control}
@@ -98,8 +98,8 @@ export function DiagramPromptForm({
 								<FormLabel>System Description</FormLabel>
 								<FormControl>
 									<Textarea
-										placeholder="Describe the system to model. e.g., A traffic light system with two alternating lights. Each light has three states (green, yellow, red) with different durations. The lights must be synchronized so they are never green at the same time."
 										className="resize-none min-h-[150px]"
+										placeholder="Describe the system to model. e.g., A traffic light system with two alternating lights. Each light has three states (green, yellow, red) with different durations. The lights must be synchronized so they are never green at the same time."
 										{...field}
 									/>
 								</FormControl>
@@ -108,7 +108,7 @@ export function DiagramPromptForm({
 						)}
 					/>
 
-					<Button type="submit" className="w-full" size="lg">
+					<Button className="w-full" size="lg" type="submit">
 						<Sparkles className="w-4 h-4 mr-2" />
 						Generate Structure
 					</Button>

@@ -1,3 +1,7 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -16,10 +20,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/providers/AuthProvider";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { Link } from "react-router-dom";
-import { z } from "zod";
 
 const loginSchema = z.object({
 	email: z.string().email().nonempty(),
@@ -29,8 +29,8 @@ const loginSchema = z.object({
 export const LoginForm = () => {
 	const { login } = useAuth();
 	const form = useForm({
-		resolver: zodResolver(loginSchema),
 		defaultValues: { email: "admin@gmail.com", password: "Admin123" },
+		resolver: zodResolver(loginSchema),
 	});
 
 	const handleLogin = async (values: z.infer<typeof loginSchema>) => {
@@ -51,10 +51,10 @@ export const LoginForm = () => {
 			</CardHeader>
 			<CardContent>
 				<Form {...form}>
-					<form onSubmit={form.handleSubmit(handleLogin)} className="space-y-6">
+					<form className="space-y-6" onSubmit={form.handleSubmit(handleLogin)}>
 						<FormField
-							name="email"
 							control={form.control}
+							name="email"
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Email</FormLabel>
@@ -66,8 +66,8 @@ export const LoginForm = () => {
 							)}
 						/>
 						<FormField
-							name="password"
 							control={form.control}
+							name="password"
 							render={({ field }) => (
 								<FormItem>
 									<FormLabel>Password</FormLabel>
@@ -78,14 +78,14 @@ export const LoginForm = () => {
 								</FormItem>
 							)}
 						/>
-						<Button type="submit" className="w-full">
+						<Button className="w-full" type="submit">
 							Login
 						</Button>
 					</form>
 				</Form>
 				<div className="mt-4 text-center text-sm">
 					Don&apos;t have an account?{" "}
-					<Link to="/register" className="underline">
+					<Link className="underline" to="/register">
 						Sign up
 					</Link>
 				</div>

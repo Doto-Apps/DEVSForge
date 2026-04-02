@@ -1,4 +1,3 @@
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import type { ComponentProps, ReactNode } from "react";
 import {
 	type FieldPath,
@@ -6,6 +5,7 @@ import {
 	type UseControllerProps,
 	useController,
 } from "react-hook-form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
 	FormControl,
 	FormDescription,
@@ -46,12 +46,12 @@ export const RadioGroupField = <
 	...props
 }: RadioGroupFieldProps<TFieldValues, TName>) => {
 	const { field } = useController({
-		name: props.name,
 		control,
-		disabled: props.disabled,
 		defaultValue,
-		shouldUnregister,
+		disabled: props.disabled,
+		name: props.name,
 		rules,
+		shouldUnregister,
 	});
 
 	return (
@@ -60,13 +60,13 @@ export const RadioGroupField = <
 			<FormControl>
 				<RadioGroup
 					{...props}
-					value={field.value}
 					onValueChange={(value) => field.onChange(value)}
+					value={field.value}
 				>
 					{options.map((option) => (
 						<FormItem
-							key={option.value}
 							className="flex items-center space-x-3 space-y-0"
+							key={option.value}
 						>
 							<FormControl>
 								<RadioGroupItem value={option.value} />

@@ -2,11 +2,6 @@
 
 import { BookOpenText, House, Rocket, Sparkles, Workflow } from "lucide-react";
 import type * as React from "react";
-
-import { NavLibrary } from "./nav-library";
-import { NavMain } from "./nav-main";
-import { NavUser } from "./nav-user";
-
 import {
 	Sidebar,
 	SidebarContent,
@@ -15,50 +10,53 @@ import {
 	SidebarRail,
 } from "@/components/ui/sidebar";
 import { useAuth } from "@/providers/AuthProvider";
+import { NavLibrary } from "./nav-library";
+import { NavMain } from "./nav-main";
+import { NavUser } from "./nav-user";
 
 // This is sample data.
 const data = {
-	user: {
-		name: "Antoine",
-		email: "dominici.antoine.p@gmail.com",
-		avatar: "/avatars/shadcn.jpg",
-	},
 	mains: [
 		{
+			icon: House,
 			name: "Home",
 			url: "/",
-			icon: House,
 		},
 		{
+			icon: BookOpenText,
 			name: "Getting Started",
 			url: "/getting-started",
-			icon: BookOpenText,
 		},
 		{
+			icon: Workflow,
 			name: "How It Works",
 			url: "/how-it-works",
-			icon: Workflow,
 		},
 		{
+			icon: Sparkles,
 			name: "DEVS Generator",
 			url: "/devs-generator",
-			icon: Sparkles,
 		},
 		{
+			icon: Rocket,
 			name: "WebApps",
 			url: "/webapps",
-			icon: Rocket,
 		},
 	],
+	user: {
+		avatar: "/avatars/shadcn.jpg",
+		email: "dominici.antoine.p@gmail.com",
+		name: "Antoine",
+	},
 };
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	const { user } = useAuth();
 	const sidebarUser = {
+		avatar: data.user.avatar,
+		email: user?.email ?? data.user.email,
 		name:
 			user?.username?.trim() || user?.email?.split("@")[0] || data.user.name,
-		email: user?.email ?? data.user.email,
-		avatar: data.user.avatar,
 	};
 
 	return (

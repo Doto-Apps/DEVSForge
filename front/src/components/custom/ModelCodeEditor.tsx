@@ -1,7 +1,7 @@
-import { examplePythonCode } from "@/staticModel/examplePythonCode";
-import type { WorkerResponse } from "@/types";
 import { Editor, useMonaco } from "@monaco-editor/react";
 import { useEffect } from "react";
+import { examplePythonCode } from "@/staticModel/examplePythonCode";
+import type { WorkerResponse } from "@/types";
 
 type ModelCodeEditorProps = {
 	code: string;
@@ -43,19 +43,19 @@ export const ModelCodeEditor = ({
 			<Editor
 				height="100%"
 				language="python"
-				value={code}
 				onChange={(newCode) => {
 					if (newCode !== undefined) {
 						onCodeChange(newCode, modelId);
 					}
 				}}
-				theme="vs-dark"
 				options={{
-					minimap: { enabled: false },
-					fontSize: 14,
 					automaticLayout: true,
+					fontSize: 14,
+					minimap: { enabled: false },
 					scrollBeyondLastLine: false,
 				}}
+				theme="vs-dark"
+				value={code}
 			/>
 		</div>
 	);

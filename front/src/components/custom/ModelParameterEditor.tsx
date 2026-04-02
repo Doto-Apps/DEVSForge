@@ -1,10 +1,3 @@
-import type { components } from "@/api/v1";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { SelectItem } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { POSSIBLE_PARAMETER_TYPE } from "@/constants";
-import { getParameterDefaultValue } from "@/lib/getParameterDefaultValue";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -14,6 +7,13 @@ import { Code, Edit, Plus } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import type { components } from "@/api/v1";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { SelectItem } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { POSSIBLE_PARAMETER_TYPE } from "@/constants";
+import { getParameterDefaultValue } from "@/lib/getParameterDefaultValue";
 import { Form } from "../form/Form";
 import { InputField } from "../form/InputField";
 import { SelectField } from "../form/SelectField";
@@ -22,10 +22,10 @@ import { ParameterInput } from "./reactFlow/ParameterInput";
 
 const ParameterSchema = z.array(
 	z.object({
+		description: z.string().optional(),
 		name: z.string(),
 		type: z.enum(["int", "float", "bool", "string", "object"]),
 		value: z.unknown().refine((x) => x !== undefined, "Required"),
-		description: z.string().optional(),
 	}),
 );
 
@@ -89,11 +89,11 @@ export function ModelParameterEditor({
 				</Label>
 				{!valueOnly ? (
 					<Button
-						variant="secondary"
-						size="icon"
 						className="size-8"
-						onClick={() => setEditAsJSON((prev) => !prev)}
 						disabled={!canEditSchema}
+						onClick={() => setEditAsJSON((prev) => !prev)}
+						size="icon"
+						variant="secondary"
 					>
 						{editAsJSON ? <Code size={18} /> : <Edit size={18} />}
 					</Button>
@@ -102,29 +102,32 @@ export function ModelParameterEditor({
 
 			{editAsJSON ? (
 				<Textarea
-					value={jsonInput}
 					className="font-mono h-64"
-					onChange={(e) => setJsonInput(e.target.value)}
 					disabled={!canEditSchema}
 					onBlur={() => {
 						try {
 							const parsed = ParameterSchema.parse(JSON.parse(jsonInput));
 							onParametersChange(parsed);
-						} catch (e) {
+						} catch {
 							alert("Invalid JSON or schema mismatch");
 						}
 					}}
+					onChange={(e) => setJsonInput(e.target.value)}
+					value={jsonInput}
 				/>
 			) : (
 				parameters.map((param, index) => (
-					<div key={`${param.name}-${index}`} className="space-y-2">
+					<div
+						className="space-y-2"
+						key={`${param.name}-${param.type}-${param.value}`}
+					>
 						<ParameterInput
+							disabled={!canEditValues}
 							index={index}
 							name={param.name}
 							type={param.type}
 							updateParameter={updateParameter}
 							value={param.value}
-							disabled={!canEditValues}
 						/>
 
 						{param.description ? (
@@ -139,9 +142,9 @@ export function ModelParameterEditor({
 			<DropdownMenu>
 				<DropdownMenuTrigger asChild>
 					<Button
-						variant="default"
 						className="w-full"
 						disabled={!canEditSchema}
+						variant="default"
 					>
 						<Plus />
 						Add a parameter
@@ -149,24 +152,24 @@ export function ModelParameterEditor({
 				</DropdownMenuTrigger>
 				<DropdownMenuContent className="w-56 ">
 					<Form
+						className="space-y-2 border p-3 rounded-md bg-background "
 						methods={methods}
 						onSubmit={onSubmitAddParameter}
-						className="space-y-2 border p-3 rounded-md bg-background "
 					>
 						<Label className="font-semibold">Add Parameter</Label>
 
 						<InputField
-							placeholder="Name"
-							label="Name"
 							control={methods.control}
+							label="Name"
 							name="name"
+							placeholder="Name"
 							required
 						/>
 
 						<SelectField
+							control={methods.control}
 							label="Type"
 							name="type"
-							control={methods.control}
 							placeholder="Select type"
 						>
 							{POSSIBLE_PARAMETER_TYPE.map((type) => (
@@ -178,8 +181,8 @@ export function ModelParameterEditor({
 
 						<InputField
 							control={methods.control}
-							name="description"
 							label="Description"
+							name="description"
 							placeholder="Description (optional)"
 						/>
 

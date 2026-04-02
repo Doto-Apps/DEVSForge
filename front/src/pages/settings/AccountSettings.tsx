@@ -1,3 +1,5 @@
+import { Loader2 } from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
 import NavHeader from "@/components/nav/nav-header";
@@ -13,17 +15,15 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
 
 type UserAISettingsResponse =
 	components["schemas"]["response.UserAISettingsResponse"];
 
 const DEFAULT_SETTINGS: UserAISettingsResponse = {
-	apiUrl: "",
-	apiModel: "",
-	hasApiKey: false,
 	apiKeyMasked: "",
+	apiModel: "",
+	apiUrl: "",
+	hasApiKey: false,
 };
 
 export function AccountSettings() {
@@ -54,8 +54,8 @@ export function AccountSettings() {
 			applySettings(data);
 		} catch (error) {
 			toast({
-				title: "Failed to load settings",
 				description: (error as Error).message,
+				title: "Failed to load settings",
 				variant: "destructive",
 			});
 		} finally {
@@ -72,8 +72,8 @@ export function AccountSettings() {
 			setIsSaving(true);
 			const body: components["schemas"]["request.UpdateUserAISettingsRequest"] =
 				{
-					apiUrl: apiUrl.trim(),
 					apiModel: apiModel.trim(),
+					apiUrl: apiUrl.trim(),
 				};
 			if (apiKey.trim()) {
 				body.apiKey = apiKey.trim();
@@ -88,13 +88,13 @@ export function AccountSettings() {
 
 			applySettings(data);
 			toast({
-				title: "Settings saved",
 				description: "Your AI provider settings have been updated.",
+				title: "Settings saved",
 			});
 		} catch (error) {
 			toast({
-				title: "Failed to save settings",
 				description: (error as Error).message,
+				title: "Failed to save settings",
 				variant: "destructive",
 			});
 		} finally {
@@ -105,9 +105,9 @@ export function AccountSettings() {
 	return (
 		<div className="flex flex-col h-screen w-full">
 			<NavHeader
-				breadcrumbs={[{ label: "Home", href: "/" }, { label: "Settings" }]}
-				showNavActions={false}
+				breadcrumbs={[{ href: "/", label: "Home" }, { label: "Settings" }]}
 				showModeToggle
+				showNavActions={false}
 			/>
 			<div className="flex-1 overflow-y-auto">
 				<div className="mx-auto w-full max-w-3xl p-6">
@@ -123,42 +123,42 @@ export function AccountSettings() {
 							<div className="space-y-2">
 								<Label htmlFor="ai-api-url">API URL</Label>
 								<Input
+									disabled={isLoading || isSaving}
 									id="ai-api-url"
-									value={apiUrl}
 									onChange={(event) => setApiUrl(event.target.value)}
 									placeholder="https://api.openai.com/v1"
-									disabled={isLoading || isSaving}
+									value={apiUrl}
 								/>
 							</div>
 
 							<div className="space-y-2">
 								<Label htmlFor="ai-api-model">API Model</Label>
 								<Input
+									disabled={isLoading || isSaving}
 									id="ai-api-model"
-									value={apiModel}
 									onChange={(event) => setApiModel(event.target.value)}
 									placeholder="gpt-4.1-mini"
-									disabled={isLoading || isSaving}
+									value={apiModel}
 								/>
 							</div>
 
 							<div className="space-y-2">
 								<Label htmlFor="ai-api-key">API Key</Label>
 								<Input
+									disabled={isLoading || isSaving}
 									id="ai-api-key"
-									type="password"
-									value={apiKey}
 									onChange={(event) => setApiKey(event.target.value)}
 									placeholder={
 										settings.hasApiKey
 											? "Enter a new key to replace the current one"
 											: "sk-..."
 									}
-									disabled={isLoading || isSaving}
+									type="password"
+									value={apiKey}
 								/>
 								{settings.hasApiKey ? (
 									<div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-										<Badge variant="secondary" className="shrink-0">
+										<Badge className="shrink-0" variant="secondary">
 											Stored key
 										</Badge>
 										<span
@@ -176,7 +176,7 @@ export function AccountSettings() {
 							</div>
 
 							<div className="flex justify-end">
-								<Button onClick={onSave} disabled={isLoading || isSaving}>
+								<Button disabled={isLoading || isSaving} onClick={onSave}>
 									{isSaving ? (
 										<>
 											<Loader2 className="h-4 w-4 animate-spin" />

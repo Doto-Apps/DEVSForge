@@ -1,3 +1,20 @@
+import {
+	Activity,
+	AlertTriangle,
+	ArrowRight,
+	ArrowRightLeft,
+	Clock3,
+	Download,
+	Filter,
+	ListTree,
+	Loader2,
+	Play,
+	RefreshCw,
+	Search,
+	Send,
+	Square,
+} from "lucide-react";
+import { useMemo, useState } from "react";
 import type { components } from "@/api/v1";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,23 +43,6 @@ import {
 } from "@/hooks/useSimulation";
 import { cn } from "@/lib/utils";
 import type { SimulationStatus } from "@/types";
-import {
-	Activity,
-	AlertTriangle,
-	ArrowRight,
-	ArrowRightLeft,
-	Clock3,
-	Download,
-	Filter,
-	ListTree,
-	Loader2,
-	Play,
-	RefreshCw,
-	Search,
-	Send,
-	Square,
-} from "lucide-react";
-import { useMemo, useState } from "react";
 
 type SimulationEventResponse =
 	components["schemas"]["response.SimulationEventResponse"];
@@ -109,17 +109,17 @@ type SimulationPanelProps = {
 };
 
 const statusColors: Record<SimulationStatus, string> = {
-	pending: "bg-yellow-500",
-	running: "bg-blue-500",
 	completed: "bg-green-500",
 	failed: "bg-red-500",
+	pending: "bg-yellow-500",
+	running: "bg-blue-500",
 };
 
 const statusLabels: Record<SimulationStatus, string> = {
-	pending: "Pending",
-	running: "Running",
 	completed: "Completed",
 	failed: "Failed",
+	pending: "Pending",
+	running: "Running",
 };
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
@@ -380,13 +380,13 @@ export function SimulationPanel({
 		const timestamp = now.toISOString().replace(/[:.]/g, "-");
 
 		const payload = {
+			eventCount: events.length,
+			events,
 			exportedAt: now.toISOString(),
 			modelId,
 			modelName: modelName ?? null,
 			simulationId: simulation?.id ?? null,
 			simulationStatus: simulation?.status ?? null,
-			eventCount: events.length,
-			events,
 		};
 
 		const blob = new Blob([JSON.stringify(payload, null, 2)], {
@@ -449,11 +449,11 @@ export function SimulationPanel({
 				const outputs = extractPortValues(event, "modelOutput");
 				outputs.forEach((output, outputIndex) => {
 					addOutputCandidate({
-						id: `${eventID}-out-${outputIndex}`,
-						simulationTime,
 						createdAt: event.createdAt ?? null,
+						id: `${eventID}-out-${outputIndex}`,
 						model: event.sender ?? null,
 						port: output.portIdentifier,
+						simulationTime,
 						value: output.value,
 						valueKey: output.valueKey,
 					});
@@ -470,18 +470,18 @@ export function SimulationPanel({
 				const matchedCandidate = findCandidate(simulationTime, input.valueKey);
 
 				transits.push({
-					id: `${eventID}-in-${inputIndex}`,
-					simulationTime,
 					createdAt: event.createdAt ?? null,
 					fromModel: matchedCandidate?.model ?? event.sender ?? null,
 					fromPort: matchedCandidate?.port ?? null,
+					id: `${eventID}-in-${inputIndex}`,
+					matched: Boolean(matchedCandidate),
+					simulationTime,
+					sourceEventID: matchedCandidate?.id ?? null,
+					targetEventID: eventID,
 					toModel: event.target ?? null,
 					toPort: input.portIdentifier,
 					value: input.value,
 					valueKey: input.valueKey,
-					sourceEventID: matchedCandidate?.id ?? null,
-					targetEventID: eventID,
-					matched: Boolean(matchedCandidate),
 				});
 			});
 		});
@@ -561,8 +561,8 @@ export function SimulationPanel({
 
 		return {
 			messages: messages.length,
-			transitions: transitions.length,
 			others: others.length,
+			transitions: transitions.length,
 			transits: transitMessages.length,
 		};
 	}, [events, transitMessages.length]);
@@ -597,19 +597,19 @@ export function SimulationPanel({
 				<div className="rounded-lg border bg-muted/20 p-4 space-y-4">
 					<div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 						<div className="flex items-center gap-3">
-							<Label htmlFor="maxTime" className="whitespace-nowrap text-sm">
+							<Label className="whitespace-nowrap text-sm" htmlFor="maxTime">
 								Max simulation time
 							</Label>
 							<Input
-								id="maxTime"
-								type="text"
-								inputMode="numeric"
-								pattern="[0-9]*\\.?[0-9]*"
-								value={maxTime}
-								onChange={(e) => setMaxTime(e.target.value)}
-								disabled={isLoading || simulation?.status === "running"}
 								className="w-32"
+								disabled={isLoading || simulation?.status === "running"}
+								id="maxTime"
+								inputMode="numeric"
+								onChange={(e) => setMaxTime(e.target.value)}
+								pattern="[0-9]*\\.?[0-9]*"
 								placeholder="0 = infinite"
+								type="text"
+								value={maxTime}
 							/>
 							<span className="text-xs text-muted-foreground">
 								(0 = unlimited)
@@ -618,9 +618,9 @@ export function SimulationPanel({
 
 						<div className="flex flex-wrap items-center gap-2">
 							<Button
-								onClick={handleStart}
-								disabled={isLoading || simulation?.status === "running"}
 								className="min-w-32"
+								disabled={isLoading || simulation?.status === "running"}
+								onClick={handleStart}
 							>
 								{isLoading ? (
 									<>
@@ -635,24 +635,24 @@ export function SimulationPanel({
 								)}
 							</Button>
 							<Button
-								variant="outline"
-								onClick={handleStop}
 								disabled={!isPolling}
+								onClick={handleStop}
+								variant="outline"
 							>
 								<Square className="mr-2 h-4 w-4" />
 								Stop
 							</Button>
 							<Button
-								variant="ghost"
-								onClick={handleClear}
 								disabled={events.length === 0}
+								onClick={handleClear}
+								variant="ghost"
 							>
 								Clear
 							</Button>
 							<Button
-								variant="outline"
-								onClick={handleExportEventsJSON}
 								disabled={events.length === 0}
+								onClick={handleExportEventsJSON}
+								variant="outline"
 							>
 								<Download className="mr-2 h-4 w-4" />
 								Export JSON
@@ -677,11 +677,11 @@ export function SimulationPanel({
 										{runtimeOverrides.length > 1 ? "s" : ""}
 									</Badge>
 									<Button
+										disabled={runtimeOverrides.length === 0}
+										onClick={handleClearOverrides}
+										size="sm"
 										type="button"
 										variant="ghost"
-										size="sm"
-										onClick={handleClearOverrides}
-										disabled={runtimeOverrides.length === 0}
 									>
 										Reset
 									</Button>
@@ -695,8 +695,8 @@ export function SimulationPanel({
 
 									return (
 										<div
-											key={target.instanceModelId}
 											className="rounded-md border p-3 space-y-3"
+											key={target.instanceModelId}
 										>
 											<div className="space-y-1">
 												<div className="text-sm font-medium leading-none">
@@ -709,30 +709,29 @@ export function SimulationPanel({
 
 											<div className="grid gap-3 md:grid-cols-2">
 												{target.parameters.map((param) => {
-													const hasRuntimeOverride =
-														Object.prototype.hasOwnProperty.call(
-															instanceOverrides,
-															param.name,
-														);
+													const hasRuntimeOverride = Object.hasOwn(
+														instanceOverrides,
+														param.name,
+													);
 													const currentValue = hasRuntimeOverride
 														? instanceOverrides[param.name]
 														: param.value;
 													const objectInputKey = `${target.instanceModelId}::${param.name}`;
 
 													return (
-														<div key={param.name} className="space-y-1.5">
+														<div className="space-y-1.5" key={param.name}>
 															<div className="flex items-center justify-between gap-2">
 																<Label className="text-xs font-semibold">
 																	{param.name}
 																</Label>
 																<Badge
-																	variant="outline"
 																	className={cn(
 																		"text-[10px]",
 																		hasRuntimeOverride
 																			? "border-blue-300 text-blue-700"
 																			: "text-muted-foreground",
 																	)}
+																	variant="outline"
 																>
 																	{param.type}
 																</Badge>
@@ -756,12 +755,6 @@ export function SimulationPanel({
 
 															{param.type === "string" ? (
 																<Input
-																	type="text"
-																	value={
-																		typeof currentValue === "string"
-																			? currentValue
-																			: String(currentValue ?? "")
-																	}
 																	onChange={(event) =>
 																		setOverrideValue(
 																			target.instanceModelId,
@@ -770,20 +763,18 @@ export function SimulationPanel({
 																			event.target.value,
 																		)
 																	}
+																	type="text"
+																	value={
+																		typeof currentValue === "string"
+																			? currentValue
+																			: String(currentValue ?? "")
+																	}
 																/>
 															) : null}
 
 															{param.type === "int" ||
 															param.type === "float" ? (
 																<Input
-																	type="number"
-																	step={param.type === "int" ? 1 : 0.1}
-																	value={
-																		typeof currentValue === "number" &&
-																		Number.isFinite(currentValue)
-																			? currentValue
-																			: ""
-																	}
 																	onChange={(event) => {
 																		const raw = event.target.value;
 																		if (raw === "") {
@@ -807,16 +798,20 @@ export function SimulationPanel({
 																				: parsed,
 																		);
 																	}}
+																	step={param.type === "int" ? 1 : 0.1}
+																	type="number"
+																	value={
+																		typeof currentValue === "number" &&
+																		Number.isFinite(currentValue)
+																			? currentValue
+																			: ""
+																	}
 																/>
 															) : null}
 
 															{param.type === "object" ? (
 																<Textarea
 																	className="font-mono min-h-24"
-																	value={
-																		objectInputs[objectInputKey] ??
-																		JSON.stringify(currentValue ?? {}, null, 2)
-																	}
 																	onChange={(event) => {
 																		const raw = event.target.value;
 																		setObjectInputs((prev) => ({
@@ -835,6 +830,10 @@ export function SimulationPanel({
 																			// keep raw editing until valid JSON
 																		}
 																	}}
+																	value={
+																		objectInputs[objectInputKey] ??
+																		JSON.stringify(currentValue ?? {}, null, 2)
+																	}
 																/>
 															) : null}
 														</div>
@@ -893,20 +892,20 @@ export function SimulationPanel({
 					<div className="relative flex-1">
 						<Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
 						<Input
-							value={search}
+							className="pl-9"
 							onChange={(event) => setSearch(event.target.value)}
 							placeholder="Filter by model, port, type, payload..."
-							className="pl-9"
+							value={search}
 						/>
 					</div>
 
 					<div className="flex items-center gap-2">
 						<Filter className="h-4 w-4 text-muted-foreground" />
 						<Select
-							value={eventTypeFilter}
 							onValueChange={(value) =>
 								setEventTypeFilter(value as EventTypeFilter)
 							}
+							value={eventTypeFilter}
 						>
 							<SelectTrigger className="w-44">
 								<SelectValue placeholder="Event type" />
@@ -959,7 +958,7 @@ export function SimulationPanel({
 								) : (
 									<div className="divide-y">
 										{[...filteredTransitMessages].reverse().map((message) => (
-											<div key={message.id} className="px-3 py-2 space-y-2">
+											<div className="px-3 py-2 space-y-2" key={message.id}>
 												<div className="flex items-center justify-between gap-2">
 													<div className="flex items-center gap-2 text-xs text-muted-foreground">
 														<Clock3 className="h-3.5 w-3.5" />
@@ -968,12 +967,12 @@ export function SimulationPanel({
 															: `t=${message.simulationTime}`}
 													</div>
 													<Badge
-														variant="outline"
 														className={cn(
 															message.matched
 																? "border-green-200 text-green-700"
 																: "border-amber-200 text-amber-700",
 														)}
+														variant="outline"
 													>
 														{message.matched ? "match exact" : "inference"}
 													</Badge>
@@ -1046,16 +1045,16 @@ export function SimulationPanel({
 											const eventID = event.id || `event-${index}`;
 
 											return (
-												<div key={eventID} className="px-3 py-2 space-y-2">
+												<div className="px-3 py-2 space-y-2" key={eventID}>
 													<div className="flex items-center justify-between gap-2">
 														<div className="flex items-center gap-2 min-w-0">
 															<EventIcon className="h-4 w-4 text-muted-foreground shrink-0" />
 															<Badge
-																variant="outline"
 																className={cn(
 																	"text-[10px]",
 																	getEventBadgeClass(event.devsType),
 																)}
+																variant="outline"
 															>
 																{shortDevsType(event.devsType)}
 															</Badge>
@@ -1085,20 +1084,20 @@ export function SimulationPanel({
 													{(inputValues.length > 0 ||
 														outputValues.length > 0) && (
 														<div className="space-y-1">
-															{outputValues.map((item, itemIndex) => (
+															{outputValues.map((item) => (
 																<div
-																	key={`${eventID}-out-${itemIndex}`}
 																	className="text-xs font-mono text-muted-foreground"
+																	key={`${eventID}-out-${item.portIdentifier}`}
 																>
 																	<Send className="inline h-3.5 w-3.5 mr-1" />
 																	out.{item.portIdentifier} ={" "}
 																	{formatValueCompact(item.value)}
 																</div>
 															))}
-															{inputValues.map((item, itemIndex) => (
+															{inputValues.map((item) => (
 																<div
-																	key={`${eventID}-in-${itemIndex}`}
 																	className="text-xs font-mono text-muted-foreground"
+																	key={`${eventID}-in-${item.portIdentifier}`}
 																>
 																	<Activity className="inline h-3.5 w-3.5 mr-1" />
 																	in.{item.portIdentifier} ={" "}

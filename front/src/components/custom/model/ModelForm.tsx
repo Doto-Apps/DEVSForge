@@ -5,6 +5,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { client } from "@/api/client.ts";
+import type { components } from "@/api/v1";
 import { Form } from "@/components/form/Form";
 import { FormSubmitError } from "@/components/form/FormSubmitError";
 import { InputField } from "@/components/form/InputField";
@@ -19,12 +20,12 @@ import { useGetModels } from "@/queries/model/useGetModels";
 
 const formSchema = z
 	.object({
+		description: z.string().optional(),
+		language: z.string().optional(),
 		name: z.string().min(3, {
 			message: "The name must be at least 3 characters long.",
 		}),
-		description: z.string().optional(),
 		type: z.enum(["atomic", "coupled"]),
-		language: z.string().optional(),
 	})
 	.refine(
 		(data) => {
@@ -52,13 +53,13 @@ export default function ModelForm({
 	const { data: languagesData } = useGetLanguages();
 
 	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
 		defaultValues: {
-			name: "",
 			description: "",
-			type: "atomic",
 			language: "",
+			name: "",
+			type: "atomic",
 		},
+		resolver: zodResolver(formSchema),
 	});
 
 	const { mutate } = useGetModels();
@@ -73,31 +74,35 @@ export default function ModelForm({
 				code = await fetchLanguageTemplate(values.language, values.name);
 			}
 
-			const response = await client.POST("/model", {
-				body: {
-					name: values.name,
-					description: values.description ?? "",
-					code: code,
-					type: values.type,
-					language:
-						values.type === "coupled"
-							? "python"
-							: (values.language ?? "python"),
-					libId: libId,
-					metadata: {
-						style: {
-							height: defaultSize,
-							width: defaultSize,
-						},
-						position: {
-							x: 0,
-							y: 0,
-						},
+			const payload: components["schemas"]["request.ModelRequest"] = {
+				code: code,
+				components: [],
+				connections: [],
+				description: values.description ?? "",
+				language:
+					values.type === "coupled"
+						? "python"
+						: ((values.language as (typeof payload)["language"]) ?? "python"),
+				libId: libId,
+				metadata: {
+					keyword: [],
+					modelRole: "",
+					position: {
+						x: 0,
+						y: 0,
 					},
-					components: [],
-					connections: [],
-					ports: [],
+					style: {
+						height: defaultSize,
+						width: defaultSize,
+					},
 				},
+				name: values.name,
+				ports: [],
+				type: values.type,
+			};
+
+			const response = await client.POST("/model", {
+				body: payload,
 			});
 
 			if (!response.data) {
@@ -115,8 +120,8 @@ export default function ModelForm({
 			form.reset();
 		} catch (error) {
 			toast({
-				title: "Error creating diagram",
 				description: (error as Error).message,
+				title: "Error creating diagram",
 				variant: "destructive",
 			});
 		}
@@ -128,39 +133,39 @@ export default function ModelForm({
 				Create a new model
 			</div>
 
-			<Form methods={form} onSubmit={onSubmit} className="w-4/5 space-y-8">
+			<Form className="w-4/5 space-y-8" methods={form} onSubmit={onSubmit}>
 				<InputField
-					placeholder="My model name"
-					label="Name"
 					control={form.control}
+					label="Name"
 					name="name"
+					placeholder="My model name"
 				/>
 				<TextareaField
-					placeholder="An optional short description of this model."
-					label="Description"
 					control={form.control}
+					label="Description"
 					name="description"
+					placeholder="An optional short description of this model."
 				/>
 				<RadioGroupField
 					control={form.control}
-					name="type"
-					label="Model type"
 					description="Choose the type of model you want to create."
+					label="Model type"
+					name="type"
 					options={[
-						{ value: "atomic", label: "Atomic" },
-						{ value: "coupled", label: "Coupled" },
+						{ label: "Atomic", value: "atomic" },
+						{ label: "Coupled", value: "coupled" },
 					]}
 				/>
 				{selectedType === "atomic" && (
 					<SelectField
 						control={form.control}
-						name="language"
-						label="Language"
 						description="Choose the programming language for your model."
+						label="Language"
+						name="language"
 						placeholder="Select a language"
 					>
-						{languagesData?.languages.map((lang) => (
-							<SelectItem key={lang.id} value={lang.id}>
+						{languagesData?.languages?.map((lang) => (
+							<SelectItem key={lang.id} value={lang.id ?? ""}>
 								{lang.name} - {lang.description}
 							</SelectItem>
 						))}

@@ -1,5 +1,5 @@
-import type { components } from "@/api/v1";
 import { v4 as uuidv4 } from "uuid";
+import type { components } from "@/api/v1";
 import { findRootModelInModels } from "./findRootModelInModels";
 
 export const addModelsToModels = (
@@ -26,8 +26,9 @@ export const addModelsToModels = (
 
 	actualRootModel.components.push({
 		instanceId: newInstanceID,
-		modelId: modelsToAddRootModel.id,
 		instanceMetadata: {
+			keyword: [],
+			modelRole: "",
 			position: {
 				x: instanceMetadata ? instanceMetadata.position.x : 0,
 				y: instanceMetadata ? instanceMetadata.position.y : 0,
@@ -37,6 +38,7 @@ export const addModelsToModels = (
 				width: modelsToAddRootModel.metadata.style.width,
 			},
 		},
+		modelId: modelsToAddRootModel.id,
 	});
 
 	const newModels: typeof actualModels = [...actualModels, ...modelsToAdd];

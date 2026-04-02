@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import { useParams } from "react-router-dom";
 
 import {
-	type SimulationParameterTarget,
 	SimulationPanel,
+	type SimulationParameterTarget,
 } from "@/components/custom/SimulationPanel";
 import NavHeader from "@/components/nav/nav-header";
 import { modelToReactflow } from "@/lib/modelToReactflow";
@@ -73,10 +73,10 @@ export function SimulateModel() {
 					modelId: node.data.id,
 					modelName: node.data.label || node.data.id,
 					parameters: (node.data.parameters ?? []).map((param) => ({
+						description: param.description,
 						name: param.name,
 						type: param.type,
 						value: param.value,
-						description: param.description,
 					})),
 				}))
 				.sort((a, b) => a.instanceModelId.localeCompare(b.instanceModelId));
@@ -101,19 +101,19 @@ export function SimulateModel() {
 		<div className="flex flex-col h-screen w-full">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Libraries", href: "/library" },
+					{ href: "/library", label: "Libraries" },
 					{
-						label: library?.title ?? "Library",
 						href: `/library/${libraryId}`,
+						label: library?.title ?? "Library",
 					},
 					{
-						label: model.name ?? "Model",
 						href: `/library/${libraryId}/model/${modelId}`,
+						label: model.name ?? "Model",
 					},
 					{ label: "Simulation" },
 				]}
-				showNavActions={false}
 				showModeToggle
+				showNavActions={false}
 			/>
 
 			<div className="flex-1 p-6 overflow-auto">

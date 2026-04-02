@@ -1,0 +1,28 @@
+name: Publish Frontend
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*"
+    paths:
+      - 'front/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    name: Publish devsforge-frontend
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: ./.github/actions/docker-build
+        with:
+          image_name: devsforge-frontend
+          context: ./front
+          dockerfile: ./front/Dockerfile

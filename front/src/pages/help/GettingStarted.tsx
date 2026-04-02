@@ -1,3 +1,13 @@
+import {
+	Bot,
+	ChevronRight,
+	FlaskConical,
+	KeyRound,
+	PlayCircle,
+	SquarePen,
+	Zap,
+} from "lucide-react";
+import { Link } from "react-router-dom";
 import NavHeader from "@/components/nav/nav-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -9,16 +19,6 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import {
-	Bot,
-	ChevronRight,
-	FlaskConical,
-	KeyRound,
-	PlayCircle,
-	SquarePen,
-	Zap,
-} from "lucide-react";
-import { Link } from "react-router-dom";
 
 const manualPath = [
 	"Create a library, then add atomic/coupled models manually.",
@@ -41,11 +41,11 @@ export function GettingStarted() {
 		<div className="flex flex-col h-screen w-full">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Home", href: "/" },
+					{ href: "/", label: "Home" },
 					{ label: "Getting Started" },
 				]}
-				showNavActions={false}
 				showModeToggle
+				showNavActions={false}
 			/>
 
 			<div className="flex-1 overflow-y-auto">
@@ -88,7 +88,7 @@ export function GettingStarted() {
 							<CardContent className="space-y-4">
 								<div className="space-y-2 text-sm text-muted-foreground">
 									{manualPath.map((item, index) => (
-										<div key={item} className="flex items-start gap-2">
+										<div className="flex items-start gap-2" key={item}>
 											<Badge variant="secondary">{index + 1}</Badge>
 											<p>{item}</p>
 										</div>
@@ -96,7 +96,7 @@ export function GettingStarted() {
 								</div>
 								<Separator />
 								<div className="flex flex-wrap gap-2">
-									<Button asChild variant="outline" size="sm">
+									<Button asChild size="sm" variant="outline">
 										<Link to="/library/new">
 											<SquarePen />
 											Start Manual Modeling
@@ -120,7 +120,7 @@ export function GettingStarted() {
 							<CardContent className="space-y-4">
 								<div className="space-y-2 text-sm text-muted-foreground">
 									{fastPath.map((item, index) => (
-										<div key={item} className="flex items-start gap-2">
+										<div className="flex items-start gap-2" key={item}>
 											<Badge variant="secondary">{index + 1}</Badge>
 											<p>{item}</p>
 										</div>
@@ -134,7 +134,7 @@ export function GettingStarted() {
 											Set API Credentials
 										</Link>
 									</Button>
-									<Button asChild variant="outline" size="sm">
+									<Button asChild size="sm" variant="outline">
 										<Link to="/devs-generator">
 											<Bot />
 											Open DEVS Generator

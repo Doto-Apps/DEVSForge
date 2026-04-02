@@ -1,3 +1,8 @@
+import { zodResolver } from "@hookform/resolvers/zod";
+import { TriangleAlertIcon } from "lucide-react";
+import { type ReactNode, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { client } from "@/api/client";
 import { Form } from "@/components/form/Form";
 import { FormSubmitError } from "@/components/form/FormSubmitError";
@@ -14,11 +19,6 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { TriangleAlertIcon } from "lucide-react";
-import { type ReactNode, useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
 
 const libDeleteSchema = (libraryName: string) =>
 	z.object({
@@ -43,11 +43,11 @@ export function LibraryDeleteDialog({
 	const [open, setOpen] = useState(false);
 	const zodSchema = libDeleteSchema(libraryName);
 	const methods = useForm<z.infer<typeof zodSchema>>({
-		mode: "onChange",
-		resolver: zodResolver(zodSchema),
 		defaultValues: {
 			confirm: "",
 		},
+		mode: "onChange",
+		resolver: zodResolver(zodSchema),
 	});
 	const { toast } = useToast();
 
@@ -61,8 +61,8 @@ export function LibraryDeleteDialog({
 				},
 			});
 			toast({
-				variant: "default",
 				title: "Library successfully deleted",
+				variant: "default",
 			});
 			await onSubmitSuccess();
 			setOpen(false);
@@ -70,9 +70,9 @@ export function LibraryDeleteDialog({
 		} catch (error) {
 			if (error instanceof Error) {
 				toast({
-					variant: "destructive",
-					title: "Error deleting library",
 					description: error.message,
+					title: "Error deleting library",
+					variant: "destructive",
 				});
 
 				return error.message;
@@ -83,7 +83,7 @@ export function LibraryDeleteDialog({
 	};
 
 	return (
-		<Dialog open={open} onOpenChange={setOpen}>
+		<Dialog onOpenChange={setOpen} open={open}>
 			<DialogTrigger asChild>{disclosure}</DialogTrigger>
 			<DialogContent className="sm:max-w-[425px]">
 				<DialogHeader>
@@ -101,8 +101,8 @@ export function LibraryDeleteDialog({
 				</Alert>
 				<Form methods={methods} onSubmit={onSubmit}>
 					<InputField
-						label={`Confirm with ${libraryName}`}
 						control={methods.control}
+						label={`Confirm with ${libraryName}`}
 						name="confirm"
 					/>
 					<FormSubmitError />

@@ -1,14 +1,12 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-
+import { Link, useLocation } from "react-router-dom";
 import {
 	SidebarGroup,
 	SidebarMenu,
 	SidebarMenuButton,
 } from "@/components/ui/sidebar";
-
-import { Link, useLocation } from "react-router-dom";
 
 export function NavMain({
 	mains,

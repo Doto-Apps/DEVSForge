@@ -1,4 +1,3 @@
-import { Input } from "@/components/ui/input";
 import type { ComponentProps, ReactNode } from "react";
 import {
 	type FieldPath,
@@ -6,6 +5,7 @@ import {
 	type UseControllerProps,
 	useController,
 } from "react-hook-form";
+import { Input } from "@/components/ui/input";
 import {
 	FormControl,
 	FormDescription,
@@ -37,19 +37,19 @@ export const InputField = <
 	...props
 }: InputFieldProps<TFieldValues, TName>) => {
 	const { field } = useController({
-		name: props.name,
 		control,
-		disabled: props.disabled,
 		defaultValue,
-		shouldUnregister,
+		disabled: props.disabled,
+		name: props.name,
 		rules: {
-			required: props.required,
-			min: props.min,
 			max: props.max,
-			minLength: props.minLength,
 			maxLength: props.maxLength,
+			min: props.min,
+			minLength: props.minLength,
+			required: props.required,
 			...rules,
 		},
+		shouldUnregister,
 	});
 
 	return (
@@ -58,7 +58,18 @@ export const InputField = <
 			<FormControl>
 				<Input
 					{...props}
+					disabled={field.disabled || props.disabled}
 					name={field.name}
+					onBlur={(event) => {
+						if (asNumber) {
+							if (Number.isNaN(event.target.valueAsNumber)) {
+								field.onChange(null);
+								event.target.value = "";
+							}
+						}
+						field.onBlur();
+						props.onBlur?.(event);
+					}}
 					onChange={(event) => {
 						if (asNumber) {
 							if (event.target.value !== "") {
@@ -71,18 +82,7 @@ export const InputField = <
 						}
 						props.onChange?.(event);
 					}}
-					onBlur={(event) => {
-						if (asNumber) {
-							if (Number.isNaN(event.target.valueAsNumber)) {
-								field.onChange(null);
-								event.target.value = "";
-							}
-						}
-						field.onBlur();
-						props.onBlur?.(event);
-					}}
 					ref={field.ref}
-					disabled={field.disabled || props.disabled}
 					value={`${field.value ?? ""}`}
 				/>
 			</FormControl>

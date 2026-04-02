@@ -1,10 +1,10 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
+import { cn } from "@/lib/utils";
 
-const THEMES = { light: "", dark: ".dark" } as const;
+const THEMES = { dark: ".dark", light: "" } as const;
 
 export type ChartConfig = {
 	[key: string]: {
@@ -46,8 +46,6 @@ export const ChartContainer = React.forwardRef<
 	return (
 		<ChartContext.Provider value={{ config }}>
 			<div
-				ref={ref}
-				data-chart={chartId}
 				className={cn(
 					"flex aspect-video justify-center text-xs",
 					"[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground",
@@ -55,9 +53,11 @@ export const ChartContainer = React.forwardRef<
 					"[&_.recharts-radial-bar-background-sector]:fill-muted",
 					className,
 				)}
+				data-chart={chartId}
+				ref={ref}
 				{...props}
 			>
-				<ChartStyle id={chartId} config={config} />
+				<ChartStyle config={config} id={chartId} />
 				<RechartsPrimitive.ResponsiveContainer>
 					{children}
 				</RechartsPrimitive.ResponsiveContainer>
@@ -77,6 +77,7 @@ function ChartStyle({ id, config }: { id: string; config: ChartConfig }) {
 
 	return (
 		<style
+			// biome-ignore lint/security/noDangerouslySetInnerHtml: needed
 			dangerouslySetInnerHTML={{
 				__html: Object.entries(THEMES)
 					.map(([theme, prefix]) => {

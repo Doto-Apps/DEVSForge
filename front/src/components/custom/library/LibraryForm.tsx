@@ -14,10 +14,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useGetLibraries } from "@/queries/library/useGetLibraries.ts";
 
 const formSchema = z.object({
+	description: z.string(),
 	title: z.string().min(3, {
 		message: "The title must be at least 3 characters long.",
 	}),
-	description: z.string(),
 });
 
 export default function LibraryForm({
@@ -28,11 +28,11 @@ export default function LibraryForm({
 	const { toast } = useToast();
 
 	const form = useForm<z.infer<typeof formSchema>>({
-		resolver: zodResolver(formSchema),
 		defaultValues: {
-			title: "",
 			description: "",
+			title: "",
 		},
+		resolver: zodResolver(formSchema),
 	});
 
 	const { mutate } = useGetLibraries();
@@ -40,8 +40,8 @@ export default function LibraryForm({
 		try {
 			const response = await client.POST("/library", {
 				body: {
-					title: values.title,
 					description: values.description,
+					title: values.title,
 				},
 			});
 
@@ -60,8 +60,8 @@ export default function LibraryForm({
 			form.reset();
 		} catch (error) {
 			toast({
-				title: "Error creating library",
 				description: (error as Error).message,
+				title: "Error creating library",
 				variant: "destructive",
 			});
 		}
@@ -73,18 +73,18 @@ export default function LibraryForm({
 				Create a new Library
 			</div>
 
-			<Form methods={form} onSubmit={onSubmit} className="w-4/5 space-y-8">
+			<Form className="w-4/5 space-y-8" methods={form} onSubmit={onSubmit}>
 				<InputField
-					placeholder="My library name"
-					label="Title"
 					control={form.control}
+					label="Title"
 					name="title"
+					placeholder="My library name"
 				/>
 				<TextareaField
-					placeholder="A short description of this library."
-					label="Description"
 					control={form.control}
+					label="Description"
 					name="description"
+					placeholder="A short description of this library."
 				/>
 				<FormSubmitError />
 				<Submit>Create Library</Submit>

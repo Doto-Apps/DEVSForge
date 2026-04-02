@@ -1,5 +1,5 @@
-import type { components } from "@/api/v1";
 import { useCallback, useEffect, useRef, useState } from "react";
+import type { components } from "@/api/v1";
 
 type SimulationResponse = components["schemas"]["response.SimulationResponse"];
 type SimulationEventResponse =
@@ -164,8 +164,8 @@ export const useSimulationPolling = (
 						prev
 							? {
 									...prev,
-									status: "failed",
 									errorMessage: blockingError,
+									status: "failed",
 								}
 							: prev,
 					);
@@ -221,12 +221,12 @@ export const useSimulationPolling = (
 	}, [enabled, isPolling, startPolling]);
 
 	return {
-		events,
-		simulation,
-		isPolling,
+		clearEvents,
 		error,
+		events,
+		isPolling,
+		simulation,
 		startPolling,
 		stopPolling,
-		clearEvents,
 	};
 };

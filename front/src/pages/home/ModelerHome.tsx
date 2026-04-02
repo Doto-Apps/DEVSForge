@@ -1,17 +1,3 @@
-import NavHeader from "@/components/nav/nav-header";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useGetLibraries } from "@/queries/library/useGetLibraries";
-import { useGetModels } from "@/queries/model/useGetModels";
 import {
 	BookOpenText,
 	ChevronRight,
@@ -29,6 +15,20 @@ import {
 	RadialBar,
 	RadialBarChart,
 } from "recharts";
+import NavHeader from "@/components/nav/nav-header";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { type ChartConfig, ChartContainer } from "@/components/ui/chart";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useGetLibraries } from "@/queries/library/useGetLibraries";
+import { useGetModels } from "@/queries/model/useGetModels";
 
 type RadialMetricCardProps = {
 	title: string;
@@ -53,12 +53,12 @@ function RadialMetricCard({
 }: RadialMetricCardProps) {
 	const safePercent = Math.max(0, Math.min(100, Math.round(percent)));
 	const chartData = [
-		{ metric: "progress", value: safePercent, fill: "var(--color-progress)" },
+		{ fill: "var(--color-progress)", metric: "progress", value: safePercent },
 	];
 	const chartConfig = {
 		progress: {
-			label: title,
 			color,
+			label: title,
 		},
 	} satisfies ChartConfig;
 
@@ -77,54 +77,54 @@ function RadialMetricCard({
 				) : (
 					<div className="flex flex-col items-center gap-2">
 						<ChartContainer
-							config={chartConfig}
 							className="mx-auto aspect-square max-h-[170px] w-full"
+							config={chartConfig}
 						>
 							<RadialBarChart
+								barSize={14}
 								data={chartData}
-								startAngle={90}
 								endAngle={-270}
 								innerRadius={60}
 								outerRadius={74}
-								barSize={14}
+								startAngle={90}
 							>
 								<PolarAngleAxis
-									type="number"
-									domain={[0, 100]}
 									dataKey="value"
+									domain={[0, 100]}
 									tick={false}
+									type="number"
 								/>
 								<PolarGrid
 									gridType="circle"
+									polarRadius={[67]}
 									radialLines={false}
 									stroke="hsl(var(--muted-foreground))"
 									strokeOpacity={0.35}
 									strokeWidth={3}
-									polarRadius={[67]}
 								/>
-								<RadialBar dataKey="value" cornerRadius={10} />
-								<PolarRadiusAxis tick={false} tickLine={false} axisLine={false}>
+								<RadialBar cornerRadius={10} dataKey="value" />
+								<PolarRadiusAxis axisLine={false} tick={false} tickLine={false}>
 									<Label
 										content={({ viewBox }) => {
 											if (viewBox && "cx" in viewBox && "cy" in viewBox) {
 												return (
 													<text
+														dominantBaseline="middle"
+														textAnchor="middle"
 														x={viewBox.cx}
 														y={viewBox.cy}
-														textAnchor="middle"
-														dominantBaseline="middle"
 													>
 														<tspan
+															className="fill-foreground text-3xl font-semibold"
 															x={viewBox.cx}
 															y={viewBox.cy}
-															className="fill-foreground text-3xl font-semibold"
 														>
 															{value.toLocaleString()}
 														</tspan>
 														<tspan
+															className="fill-muted-foreground text-xs"
 															x={viewBox.cx}
 															y={(viewBox.cy || 0) + 20}
-															className="fill-muted-foreground text-xs"
 														>
 															{valueLabel}
 														</tspan>
@@ -153,9 +153,9 @@ function formatModelUpdate(value?: string) {
 	return date.toLocaleString();
 }
 
-function getModelUpdatedAt(model: { [key: string]: unknown }):
-	| string
-	| undefined {
+function getModelUpdatedAt(model: {
+	[key: string]: unknown;
+}): string | undefined {
 	if (!("updatedAt" in model)) return undefined;
 	const maybe = model.updatedAt;
 	return typeof maybe === "string" ? maybe : undefined;
@@ -208,8 +208,8 @@ export function ModelerHome() {
 		<div className="flex h-screen w-full flex-col">
 			<NavHeader
 				breadcrumbs={[{ label: "Home" }]}
-				showNavActions={false}
 				showModeToggle
+				showNavActions={false}
 			/>
 			<div className="flex-1 overflow-y-auto">
 				<div className="mx-auto w-full max-w-6xl space-y-4 p-4">
@@ -225,13 +225,13 @@ export function ModelerHome() {
 									</CardDescription>
 								</div>
 								<div className="flex flex-wrap gap-2">
-									<Button asChild variant="outline" size="sm">
+									<Button asChild size="sm" variant="outline">
 										<Link to="/getting-started">
 											<BookOpenText />
 											Getting Started
 										</Link>
 									</Button>
-									<Button asChild variant="outline" size="sm">
+									<Button asChild size="sm" variant="outline">
 										<Link to="/how-it-works">
 											<Workflow />
 											How It Works
@@ -245,26 +245,26 @@ export function ModelerHome() {
 					<div className="grid gap-4 lg:grid-cols-3">
 						<div>
 							<RadialMetricCard
-								title="Libraries"
+								color="hsl(var(--chart-2))"
 								description="Visual gauge capped at 100."
+								detail={`${totalLibraries}/${LIBRARY_GAUGE_MAX}`}
+								loading={librariesQuery.isLoading}
+								percent={libraryCoveragePercent}
+								title="Libraries"
 								value={totalLibraries}
 								valueLabel="Total libraries"
-								percent={libraryCoveragePercent}
-								detail={`${totalLibraries}/${LIBRARY_GAUGE_MAX}`}
-								color="hsl(var(--chart-2))"
-								loading={librariesQuery.isLoading}
 							/>
 						</div>
 						<div>
 							<RadialMetricCard
-								title="Models"
+								color="hsl(var(--chart-3))"
 								description="Visual gauge capped at 1000."
+								detail={`${totalModels}/${MODEL_GAUGE_MAX}`}
+								loading={modelsQuery.isLoading}
+								percent={atomicSharePercent}
+								title="Models"
 								value={totalModels}
 								valueLabel="Total models"
-								percent={atomicSharePercent}
-								detail={`${totalModels}/${MODEL_GAUGE_MAX}`}
-								color="hsl(var(--chart-3))"
-								loading={modelsQuery.isLoading}
 							/>
 						</div>
 						<Card className="flex flex-col">
@@ -322,8 +322,8 @@ export function ModelerHome() {
 												: 0;
 											return (
 												<div
-													key={library.id ?? library.title}
 													className="flex items-center justify-between px-4 py-2.5"
+													key={library.id ?? library.title}
 												>
 													<p className="truncate text-sm font-medium">
 														{library.title || "Untitled library"}
@@ -359,8 +359,8 @@ export function ModelerHome() {
 									<div className="divide-y rounded-md border">
 										{recentModels.map((model) => (
 											<div
-												key={model.id}
 												className="flex items-center justify-between gap-3 px-4 py-2.5"
+												key={model.id}
 											>
 												<div className="min-w-0">
 													<p className="truncate text-sm font-medium">
@@ -376,7 +376,7 @@ export function ModelerHome() {
 													</p>
 												</div>
 												{model.libId && model.id ? (
-													<Button asChild variant="ghost" size="sm">
+													<Button asChild size="sm" variant="ghost">
 														<Link
 															to={`/library/${model.libId}/model/${model.id}`}
 														>

@@ -6,11 +6,11 @@ export function CreateLibrary() {
 		<div className="flex flex-col h-screen w-full">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Libraries", href: "/library" },
+					{ href: "/library", label: "Libraries" },
 					{ label: "New Library" },
 				]}
-				showNavActions={false}
 				showModeToggle={true}
+				showNavActions={false}
 			/>
 			<LibraryForm />
 		</div>

@@ -1,52 +1,100 @@
-name: Go CI
+name: Go Simulator CI
 
 on:
   push:
     branches: ["main"]
+    paths:
+      - "simulator/**"
+      - "back/Dockerfile"
   pull_request:
     branches: ["main"]
+    paths:
+      - "simulator/**"
+      - "back/Dockerfile"
 
 env:
+  # Change in go-back.yml too
   GO_VERSION: "1.25.4"
   GOLANGCI_LINT_VERSION: v2.11.4
 
 jobs:
-  detect-modules:
+  changes:
     runs-on: ubuntu-latest
     outputs:
-      modules: ${{ steps.set-modules.outputs.modules }}
+      coordinator: ${{ steps.filter.outputs.coordinator }}
+      runner: ${{ steps.filter.outputs.runner }}
+      shared: ${{ steps.filter.outputs.shared }}
     steps:
       - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
         with:
-          go-version: ${{ env.GO_VERSION }}
-          cache: true
-      - id: set-modules
-        run: echo "modules=$(go list -m -json | jq -s '.' | jq -c '[.[].Dir]')" >> $GITHUB_OUTPUT
-      - run: go mod download
+          filters: |
+            coordinator:
+              - 'simulator/coordinator/**'
+            runner:
+              - 'simulator/runner/**'
+            shared:
+              - 'simulator/shared/**'
 
-  golangci-lint:
-    needs: detect-modules
+  lint-coordinator:
+    needs: changes
+    if: needs.changes.outputs.coordinator == 'true'
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        modules: ${{ fromJSON(needs.detect-modules.outputs.modules) }}
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-go@v6
         with:
           go-version: ${{ env.GO_VERSION }}
           cache: true
-      - name: golangci-lint ${{ matrix.modules }}
+      - name: golangci-lint
         uses: golangci/golangci-lint-action@v9
         with:
           version: ${{ env.GOLANGCI_LINT_VERSION }}
-          working-directory: ${{ matrix.modules }}
+          working-directory: ./simulator/coordinator
+
+  lint-runner:
+    needs: changes
+    if: needs.changes.outputs.runner == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          working-directory: ./simulator/runner
+
+  lint-shared:
+    needs: changes
+    if: needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v9
+        with:
+          version: ${{ env.GOLANGCI_LINT_VERSION }}
+          working-directory: ./simulator/shared
 
   build-sim:
     name: Build Simulator
-    needs: golangci-lint
+    needs: [lint-coordinator, lint-runner]
+    if: |
+      always() && (
+        needs.lint-coordinator.result == 'success' ||
+        needs.lint-runner.result == 'success' ||
+        needs.lint-coordinator.result == 'skipped' ||
+        needs.lint-runner.result == 'skipped'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -61,16 +109,24 @@ jobs:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('simulator/**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - run: go mod download
       - run: go build -v ./simulator/coordinator
       - run: go build -v ./simulator/runner
 
   build-back:
     name: Build Backend
-    needs: golangci-lint
+    needs: [lint-coordinator, lint-runner, lint-shared]
+    if: |
+      always() && (
+        needs.lint-coordinator.result == 'success' ||
+        needs.lint-runner.result == 'success' ||
+        needs.lint-shared.result == 'success' ||
+        needs.lint-coordinator.result == 'skipped' ||
+        needs.lint-runner.result == 'skipped' ||
+        needs.lint-shared.result == 'skipped'
+      )
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -85,10 +141,9 @@ jobs:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('back/**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
-      - run: go mod download
       - run: go build -v ./back
 
   test:
@@ -96,7 +151,6 @@ jobs:
     name: Test with Docker Runner
     runs-on: ubuntu-latest
     timeout-minutes: 30
-
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -107,7 +161,7 @@ jobs:
           path: |
             ~/go/pkg/mod
             ~/.cache/go-build
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          key: ${{ runner.os }}-go-${{ hashFiles('simulator/**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-go-
 

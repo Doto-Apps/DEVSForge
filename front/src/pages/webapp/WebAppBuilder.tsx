@@ -1,3 +1,13 @@
+import {
+	Bot,
+	CheckCircle2,
+	Loader2,
+	Rocket,
+	Settings2,
+	Sparkles,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import type { components } from "@/api/v1";
 import NavHeader from "@/components/nav/nav-header";
 import { Alert } from "@/components/ui/alert";
@@ -20,16 +30,6 @@ import { useWebAppGenerator } from "@/hooks/useWebAppGenerator";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelById } from "@/queries/model/useGetModelById";
 import { useGetWebAppDeployments } from "@/queries/webapp/useGetWebAppDeployments";
-import {
-	Bot,
-	CheckCircle2,
-	Loader2,
-	Rocket,
-	Settings2,
-	Sparkles,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 
 type WebAppContract = components["schemas"]["json.WebAppContract"];
 type WebAppUISchema = components["schemas"]["json.WebAppUISchema"];
@@ -92,9 +92,9 @@ export function WebAppBuilder() {
 
 	const summary = useMemo(() => {
 		return {
-			parameters: contract?.parameterBindings?.length ?? 0,
 			inputs: contract?.inputPortBindings?.length ?? 0,
 			outputs: contract?.outputPortBindings?.length ?? 0,
+			parameters: contract?.parameterBindings?.length ?? 0,
 			sections: uiSchema?.sections?.length ?? 0,
 		};
 	}, [contract, uiSchema]);
@@ -104,8 +104,8 @@ export function WebAppBuilder() {
 		const result = await generateSkeleton(modelId);
 		if (!result?.contract || !result?.uiSchema) {
 			toast({
-				title: "Skeleton generation failed",
 				description: error ?? "Unable to generate a deterministic skeleton.",
+				title: "Skeleton generation failed",
 				variant: "destructive",
 			});
 			return;
@@ -114,8 +114,8 @@ export function WebAppBuilder() {
 		setContract(result.contract);
 		setUISchema(result.uiSchema);
 		toast({
-			title: "Skeleton generated",
 			description: "Contract and base UI schema are ready.",
+			title: "Skeleton generated",
 		});
 	};
 
@@ -123,24 +123,24 @@ export function WebAppBuilder() {
 		if (!modelId) return;
 		if (!prompt.trim()) {
 			toast({
-				title: "Prompt required",
 				description: "Describe the visual/layout refinements you want.",
+				title: "Prompt required",
 				variant: "destructive",
 			});
 			return;
 		}
 
 		const result = await refineWithAI({
+			currentSchema: uiSchema ?? undefined,
 			modelId,
 			name: name.trim(),
 			userPrompt: prompt.trim(),
-			currentSchema: uiSchema ?? undefined,
 		});
 
 		if (!result?.contract || !result?.uiSchema) {
 			toast({
-				title: "AI refinement failed",
 				description: error ?? "The model did not return a valid schema.",
+				title: "AI refinement failed",
 				variant: "destructive",
 			});
 			return;
@@ -149,8 +149,8 @@ export function WebAppBuilder() {
 		setContract(result.contract);
 		setUISchema(result.uiSchema);
 		toast({
-			title: "Schema refined",
 			description: "AI updates were validated against the model contract.",
+			title: "Schema refined",
 		});
 	};
 
@@ -158,18 +158,18 @@ export function WebAppBuilder() {
 		if (!modelId || !uiSchema) return;
 
 		const deployment = await createDeployment({
+			description: description.trim(),
+			isPublic,
 			modelId,
 			name: name.trim(),
-			description: description.trim(),
 			prompt: prompt.trim(),
-			isPublic,
 			uiSchema,
 		});
 
 		if (!deployment?.id) {
 			toast({
-				title: "Save failed",
 				description: error ?? "Unable to persist this deployment.",
+				title: "Save failed",
 				variant: "destructive",
 			});
 			return;
@@ -177,8 +177,8 @@ export function WebAppBuilder() {
 
 		await mutateDeployments();
 		toast({
-			title: "Deployment created",
 			description: "Your WebApp is now ready to run.",
+			title: "Deployment created",
 		});
 		navigate(`/webapps/${deployment.id}`);
 	};
@@ -199,19 +199,19 @@ export function WebAppBuilder() {
 		<div className="flex h-screen w-full flex-col">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Libraries", href: "/library" },
+					{ href: "/library", label: "Libraries" },
 					{
-						label: library?.title ?? "Library",
 						href: `/library/${libraryId}`,
+						label: library?.title ?? "Library",
 					},
 					{
-						label: model.name ?? "Model",
 						href: `/library/${libraryId}/model/${modelId}`,
+						label: model.name ?? "Model",
 					},
 					{ label: "WebApp deployment" },
 				]}
-				showNavActions={false}
 				showModeToggle
+				showNavActions={false}
 			/>
 
 			<div className="flex-1 overflow-auto p-6">
@@ -234,8 +234,8 @@ export function WebAppBuilder() {
 										<Label htmlFor="webapp-name">Deployment name</Label>
 										<Input
 											id="webapp-name"
-											value={name}
 											onChange={(event) => setName(event.target.value)}
+											value={name}
 										/>
 									</div>
 									<div className="space-y-2">
@@ -255,44 +255,44 @@ export function WebAppBuilder() {
 								<div className="space-y-2">
 									<Label htmlFor="webapp-description">Description</Label>
 									<Textarea
-										id="webapp-description"
-										value={description}
-										onChange={(event) => setDescription(event.target.value)}
 										className="min-h-20"
+										id="webapp-description"
+										onChange={(event) => setDescription(event.target.value)}
+										value={description}
 									/>
 								</div>
 
 								<div className="space-y-2">
 									<Label htmlFor="webapp-prompt">AI refinement prompt</Label>
 									<Textarea
+										className="min-h-28"
 										id="webapp-prompt"
+										onChange={(event) => setPrompt(event.target.value)}
 										placeholder="Example: make a compact operator dashboard with direct language and strong emphasis on output signals."
 										value={prompt}
-										onChange={(event) => setPrompt(event.target.value)}
-										className="min-h-28"
 									/>
 								</div>
 							</CardContent>
 							<CardFooter className="flex flex-wrap items-center gap-2">
 								<Button
-									variant="outline"
-									onClick={handleGenerateSkeleton}
 									disabled={isLoading || !modelId}
+									onClick={handleGenerateSkeleton}
+									variant="outline"
 								>
 									<Sparkles className="mr-2 h-4 w-4" />
 									Generate skeleton
 								</Button>
 								<Button
-									variant="outline"
-									onClick={handleRefineWithAI}
 									disabled={isLoading || !modelId}
+									onClick={handleRefineWithAI}
+									variant="outline"
 								>
 									<Bot className="mr-2 h-4 w-4" />
 									Refine with AI
 								</Button>
 								<Button
-									onClick={handleSaveDeployment}
 									disabled={!isReadyForSave || isLoading}
+									onClick={handleSaveDeployment}
 								>
 									{isLoading ? (
 										<>
@@ -364,8 +364,8 @@ export function WebAppBuilder() {
 											{contract?.parameterBindings?.length ? (
 												contract.parameterBindings.map((binding) => (
 													<div
-														key={binding.bindingKey}
 														className="rounded border bg-muted/20 p-2 text-xs"
+														key={binding.bindingKey}
 													>
 														<div className="font-semibold">
 															{binding.modelName} / {binding.instanceModelId}
@@ -432,8 +432,8 @@ export function WebAppBuilder() {
 								{uiSchema?.sections?.length ? (
 									uiSchema.sections.map((section) => (
 										<div
-											key={section.id}
 											className="rounded border bg-muted/20 p-3 text-sm"
+											key={section.id}
 										>
 											<div className="mb-1 flex items-center justify-between gap-2">
 												<div className="font-medium">
@@ -480,8 +480,8 @@ export function WebAppBuilder() {
 								) : null}
 								{deployments?.map((deployment) => (
 									<div
-										key={deployment.id}
 										className="flex items-center justify-between gap-3 rounded border p-2"
+										key={deployment.id}
 									>
 										<div className="min-w-0">
 											<div className="truncate text-sm font-medium">
@@ -492,9 +492,9 @@ export function WebAppBuilder() {
 											</div>
 										</div>
 										<Button
+											onClick={() => navigate(`/webapps/${deployment.id}`)}
 											size="sm"
 											variant="outline"
-											onClick={() => navigate(`/webapps/${deployment.id}`)}
 										>
 											<CheckCircle2 className="mr-2 h-4 w-4" />
 											Open

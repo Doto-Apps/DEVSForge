@@ -1,7 +1,7 @@
+import { useState } from "react";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
 import type { GenerateModelCodeResult, ReuseCandidate } from "@/types";
-import { useState } from "react";
 
 type GenerateModelCodeRequest =
 	components["schemas"]["request.GenerateModelRequest"];
@@ -15,11 +15,11 @@ const normalizeReuseCandidate = (
 ): ReuseCandidate | null => {
 	if (!candidate?.modelId) return null;
 	return {
+		description: candidate.description,
+		keywords: candidate.keywords ?? [],
 		modelId: candidate.modelId,
 		name: candidate.name ?? candidate.modelId,
 		score: typeof candidate.score === "number" ? candidate.score : 0,
-		keywords: candidate.keywords ?? [],
-		description: candidate.description,
 	};
 };
 
@@ -61,8 +61,8 @@ export const useGenerateModelCode = (): UseGenerateModelCodeResult => {
 				code: data.code ?? "",
 				keywords: data.keywords,
 				reuseCandidates: normalizedCandidates,
-				reuseUsed: normalizedReuseUsed,
 				reuseMode: data.reuseMode,
+				reuseUsed: normalizedReuseUsed,
 			};
 		} catch (err) {
 			const errorMessage =
@@ -75,8 +75,8 @@ export const useGenerateModelCode = (): UseGenerateModelCodeResult => {
 	};
 
 	return {
+		error,
 		generateCode,
 		isLoading,
-		error,
 	};
 };
