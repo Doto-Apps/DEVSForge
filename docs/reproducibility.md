@@ -65,7 +65,7 @@ cp .env.dist .env
 ### 1.2 Modify `DEVSFORGE_IMAGE_TAG` in `.env` 
 
 ```text
-DEVSFORGE_IMAGE_TAG=v0.0.4
+DEVSFORGE_IMAGE_TAG=0.0.4
 ```
 
 ### 1.3 Start the platform
