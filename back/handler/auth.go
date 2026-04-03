@@ -32,17 +32,17 @@ func SetupAuthRoutes(app *fiber.App) {
 	group.Get("/me", middleware.Protected(), getCurrentUser)
 }
 
-//	@Summary		Register a new user
-//	@Description	Registers a new user with the provided username, email, and password.
-//	@Tags			Auth
-//	@Accept			json
-//	@Produce		json
-//	@Param			input	body		request.RegisterRequest	true	"Register Request"
-//	@Success		200		{object}	response.RegisterResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		409		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
-//	@Router			/auth/register [post]
+// @Summary		Register a new user
+// @Description	Registers a new user with the provided username, email, and password.
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Param			input	body		request.RegisterRequest	true	"Register Request"
+// @Success		200		{object}	response.RegisterResponse
+// @Failure		400		{object}	map[string]interface{}
+// @Failure		409		{object}	map[string]interface{}
+// @Failure		500		{object}	map[string]interface{}
+// @Router			/auth/register [post]
 func register(c *fiber.Ctx) error {
 	input := new(request.RegisterRequest)
 	if err := c.BodyParser(input); err != nil {
@@ -154,17 +154,17 @@ func generateToken(userID string, secret []byte, duration time.Duration) (string
 	return token.SignedString(secret)
 }
 
-//	@Summary		Log in a user
-//	@Description	Logs in a user with the provided identity (email or username) and password.
-//	@Tags			Auth
-//	@Accept			json
-//	@Produce		json
-//	@Param			input	body		request.LoginRequest	true	"Login Request"
-//	@Success		200		{object}	response.LoginResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		401		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
-//	@Router			/auth/login [post]
+// @Summary		Log in a user
+// @Description	Logs in a user with the provided identity (email or username) and password.
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Param			input	body		request.LoginRequest	true	"Login Request"
+// @Success		200		{object}	response.LoginResponse
+// @Failure		400		{object}	map[string]interface{}
+// @Failure		401		{object}	map[string]interface{}
+// @Failure		500		{object}	map[string]interface{}
+// @Router			/auth/login [post]
 func login(c *fiber.Ctx) error {
 	input := new(request.LoginRequest)
 	if err := c.BodyParser(input); err != nil {
@@ -214,17 +214,17 @@ func login(c *fiber.Ctx) error {
 	})
 }
 
-//	@Summary		Refresh access token
-//	@Description	Refreshes the access token using a valid refresh token.
-//	@Tags			Auth
-//	@Accept			json
-//	@Produce		json
-//	@Param			input	body		request.RefreshRequest	true	"Refresh Request"
-//	@Success		200		{object}	response.RefreshResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		401		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
-//	@Router			/auth/refresh [post]
+// @Summary		Refresh access token
+// @Description	Refreshes the access token using a valid refresh token.
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Param			input	body		request.RefreshRequest	true	"Refresh Request"
+// @Success		200		{object}	response.RefreshResponse
+// @Failure		400		{object}	map[string]interface{}
+// @Failure		401		{object}	map[string]interface{}
+// @Failure		500		{object}	map[string]interface{}
+// @Router			/auth/refresh [post]
 func refreshToken(c *fiber.Ctx) error {
 	var input request.RefreshRequest
 	if err := c.BodyParser(&input); err != nil {
@@ -259,16 +259,16 @@ func refreshToken(c *fiber.Ctx) error {
 	})
 }
 
-//	@Summary		Log out a user
-//	@Description	Logs out a user by invalidating the refresh token.
-//	@Tags			Auth
-//	@Accept			json
-//	@Produce		json
-//	@Param			input	body		request.LogoutRequest	true	"Logout Request"
-//	@Success		200		{object}	map[string]interface{}
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		401		{object}	map[string]interface{}
-//	@Router			/auth/logout [post]
+// @Summary		Log out a user
+// @Description	Logs out a user by invalidating the refresh token.
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Param			input	body		request.LogoutRequest	true	"Logout Request"
+// @Success		200		{object}	map[string]interface{}
+// @Failure		400		{object}	map[string]interface{}
+// @Failure		401		{object}	map[string]interface{}
+// @Router			/auth/logout [post]
 func logout(c *fiber.Ctx) error {
 	var input request.LogoutRequest
 	if err := c.BodyParser(&input); err != nil {
@@ -290,15 +290,15 @@ func logout(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"status": "success", "message": "User logged out"})
 }
 
-//	@Summary		Get current user
-//	@Description	Returns the authenticated user's information based on the access token.
-//	@Tags			Auth
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	response.UserResponse
-//	@Failure		401	{object}	map[string]interface{}
-//	@Failure		500	{object}	map[string]interface{}
-//	@Router			/auth/me [get]
+// @Summary		Get current user
+// @Description	Returns the authenticated user's information based on the access token.
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Success		200	{object}	response.UserResponse
+// @Failure		401	{object}	map[string]interface{}
+// @Failure		500	{object}	map[string]interface{}
+// @Router			/auth/me [get]
 func getCurrentUser(c *fiber.Ctx) error {
 	db := database.DB
 

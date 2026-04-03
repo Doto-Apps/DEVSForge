@@ -22,6 +22,7 @@ type LogStore interface {
 	GetLogger(simulationID string) (*slog.Logger, error)
 	GetAll(simulationID string) ([]LogMessage, error)
 	GetAllSince(simulationID string, since int64) ([]LogMessage, error)
+	GetPaginated(simulationID string, offset int, limit int) ([]LogMessage, int, error)
 	Delete(simulationID string) error
 	DeleteAll() error
 	SetStatus(simulationID string, status SimulationStatus) error

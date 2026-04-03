@@ -28,6 +28,7 @@ func SetupModelRoutes(app *fiber.App) {
 }
 
 // getAllModels retrieves a list of all models
+//
 //	@Summary		Get all models
 //	@Description	Retrieve a list of all models
 //	@Tags			models
@@ -49,6 +50,7 @@ func getAllModels(c *fiber.Ctx) error {
 }
 
 // getModel retrieves a single model by ID
+//
 //	@Summary		Get a model by ID
 //	@Description	Retrieve a single model by its ID
 //	@Tags			models
@@ -72,6 +74,7 @@ func getModel(c *fiber.Ctx) error {
 }
 
 // getModel retrieves a single model by ID
+//
 //	@Summary		Get a model by ID
 //	@Description	Retrieve a single model by its ID
 //	@Tags			models
@@ -93,6 +96,7 @@ func getModelRecursive(c *fiber.Ctx) error {
 }
 
 // createModel creates a new model
+//
 //	@Summary		Create a model
 //	@Description	Create a new model entry
 //	@Tags			models
@@ -120,6 +124,7 @@ func createModel(c *fiber.Ctx) error {
 }
 
 // deleteModel deletes a model by its ID
+//
 //	@Summary		Delete a model
 //	@Description	Delete a model by its ID
 //	@Tags			models
@@ -141,6 +146,7 @@ func deleteModel(c *fiber.Ctx) error {
 }
 
 // patchModel updates an existing model by its ID
+//
 //	@Summary		Update a model
 //	@Description	Update an existing model with partial data
 //	@Tags			models
@@ -184,6 +190,7 @@ func patchModel(c *fiber.Ctx) error {
 }
 
 // generateSimulationFile generate a zip that will contain all infromations for simulation
+//
 //	@Summary		Generate simulations files
 //	@Description	generateSimulationFile generate a zip that will contain all infromations for simulation
 //	@Tags			models

@@ -6,7 +6,7 @@ import (
 
 // LibraryResponse struct
 type LibraryResponse struct {
-	ID          string `json:"id" validate:"required"`
+	ID          string    `json:"id" validate:"required"`
 	Title       string    `json:"title" validate:"required"`
 	Description string    `json:"description" validate:"required"`
 	CreatedAt   time.Time `json:"createdAt" validate:"required"`

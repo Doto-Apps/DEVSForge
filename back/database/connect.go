@@ -22,6 +22,7 @@ func ConnectDB() {
 	user := config.Config("DB_USER")
 	password := config.Config("DB_PASSWORD")
 	dbname := config.Config("DB_NAME")
+	debugQueries := config.Config("DEBUG_QUERIES")
 
 	// Validate DB_PORT
 	if portStr == "" {
@@ -38,9 +39,14 @@ func ConnectDB() {
 		host, port, user, password, dbname,
 	)
 
+	dbLogger := logger.Warn
+	if debugQueries == "1" {
+		dbLogger = logger.Info
+	}
+
 	// Connect to the database
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
+		Logger: logger.Default.LogMode(dbLogger),
 	})
 	if err != nil {
 		panic("ERROR: Failed to connect to the database")
