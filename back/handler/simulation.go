@@ -7,13 +7,13 @@ import (
 	"devsforge/model"
 	"devsforge/request"
 	"devsforge/response"
-	"devsforge/services"
+	"devsforge/services/simulation"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
 
-var simulationService = services.NewSimulationService()
+var simulationService = simulation.NewSimulationService()
 
 // SetupSimulationRoutes configures simulation-related routes
 func SetupSimulationRoutes(app *fiber.App) {
@@ -29,6 +29,7 @@ func SetupSimulationRoutes(app *fiber.App) {
 }
 
 // createSimulation creates a new simulation entry without starting it
+//
 //	@Summary		Create a simulation
 //	@Description	Create a new simulation for the specified model (does not start it)
 //	@Tags			simulations
@@ -86,6 +87,7 @@ func createSimulation(c *fiber.Ctx) error {
 }
 
 // startSimulation starts an existing simulation
+//
 //	@Summary		Start a simulation
 //	@Description	Start an existing simulation (call after WebSocket is connected)
 //	@Tags			simulations
@@ -132,6 +134,7 @@ func startSimulation(c *fiber.Ctx) error {
 }
 
 // getSimulation retrieves a simulation by ID
+//
 //	@Summary		Get a simulation
 //	@Description	Retrieve a simulation by its ID
 //	@Tags			simulations
@@ -155,6 +158,7 @@ func getSimulation(c *fiber.Ctx) error {
 }
 
 // getSimulationsByModel retrieves all simulations for a model
+//
 //	@Summary		Get simulations by model
 //	@Description	Retrieve all simulations for a specific model
 //	@Tags			simulations
@@ -183,6 +187,7 @@ func getSimulationsByModel(c *fiber.Ctx) error {
 }
 
 // getUserSimulations retrieves all simulations for the current user
+//
 //	@Summary		Get user simulations
 //	@Description	Retrieve all simulations for the authenticated user
 //	@Tags			simulations
@@ -209,6 +214,7 @@ func getUserSimulations(c *fiber.Ctx) error {
 }
 
 // getSimulationEvents retrieves all DEVS events for a simulation
+//
 //	@Summary		Get simulation events
 //	@Description	Retrieve all DEVS messages that transited during a simulation (includes simulation status for polling)
 //	@Tags			simulations

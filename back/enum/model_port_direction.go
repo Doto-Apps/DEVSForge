@@ -1,9 +1,8 @@
-
 package enum
 
 type ModelPortDirection string
 
 const (
-    ModelPortDirectionIn ModelPortDirection = "in"
+	ModelPortDirectionIn  ModelPortDirection = "in"
 	ModelPortDirectionOut ModelPortDirection = "out"
 )
