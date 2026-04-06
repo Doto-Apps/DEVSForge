@@ -21,6 +21,7 @@ func SetupLibraryRoutes(app *fiber.App) {
 }
 
 // getAllLibraries retrieves all libraries
+//
 //	@Summary		Get all libraries
 //	@Description	Retrieve a list of all libraries
 //	@Tags			libraries
@@ -36,6 +37,7 @@ func getAllLibraries(c *fiber.Ctx) error {
 }
 
 // getLibrary retrieves a library by ID
+//
 //	@Summary		Get a library by ID
 //	@Description	Retrieve a single library by its ID
 //	@Tags			libraries
@@ -56,6 +58,7 @@ func getLibrary(c *fiber.Ctx) error {
 }
 
 // createLibrary creates a new library
+//
 //	@Summary		Create a library
 //	@Description	Create a new library entry
 //	@Tags			libraries
@@ -84,6 +87,7 @@ func createLibrary(c *fiber.Ctx) error {
 }
 
 // deleteLibrary deletes a library by ID
+//
 //	@Summary		Delete a library
 //	@Description	Delete a library by its ID
 //	@Tags			libraries
@@ -106,6 +110,7 @@ func deleteLibrary(c *fiber.Ctx) error {
 }
 
 // patchLibrary updates an existing library by ID
+//
 //	@Summary		Update a library
 //	@Description	Update an existing library with partial data
 //	@Tags			libraries

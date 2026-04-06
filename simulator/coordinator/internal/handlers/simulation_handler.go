@@ -22,13 +22,14 @@ func getLogStore() logstore.LogStore {
 }
 
 type SimulationLogsResponse struct {
-	SimulationID string                `json:"simulationId"`
-	Status       string                `json:"status"`
-	CreatedAt    int64                 `json:"createdAt"`
-	EndedAt      int64                 `json:"endedAt,omitempty"`
-	ErrorMessage string                `json:"errorMessage,omitempty"`
-	KafkaTopic   string                `json:"kafkaTopic"`
-	Logs         []logstore.LogMessage `json:"logs"`
+	SimulationID  string                `json:"simulationId"`
+	Status        string                `json:"status"`
+	CreatedAt     int64                 `json:"createdAt"`
+	EndedAt       int64                 `json:"endedAt,omitempty"`
+	ErrorMessage  string                `json:"errorMessage,omitempty"`
+	KafkaTopic    string                `json:"kafkaTopic"`
+	Logs          []logstore.LogMessage `json:"logs"`
+	TotalMessages *int                  `json:"totalMessages,omitempty"`
 }
 
 type CleanResponse struct {
@@ -47,49 +48,57 @@ func handleGetSimulationLogs(w http.ResponseWriter, r *http.Request) error {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusMethodNotAllowed)
-		return (json.NewEncoder(w).Encode(ErrorResponse{Error: "method not allowed, use GET"}))
+		return json.NewEncoder(w).Encode(ErrorResponse{Error: "method not allowed, use GET"})
 	}
 
-	sinceParam := r.URL.Query().Get("since")
-	var since int64 = 0
-	if sinceParam != "" {
-		var err error
-		since, err = strconv.ParseInt(sinceParam, 10, 64)
-		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
-			return (json.NewEncoder(w).Encode(ErrorResponse{Error: "invalid since parameter, must be Unix timestamp"}))
+	offsetParam := r.URL.Query().Get("offset")
+	limitParam := r.URL.Query().Get("limit")
+
+	offset := 0
+	if offsetParam != "" {
+		if parsed, err := strconv.Atoi(offsetParam); err == nil {
+			offset = parsed
+		}
+	}
+
+	var limit *int
+	if limitParam != "" {
+		if parsed, err := strconv.Atoi(limitParam); err == nil {
+			limit = &parsed
 		}
 	}
 
 	status, statusErr := logStore.GetStatus(simulationID)
 	var messages []logstore.LogMessage
+	var totalMessages *int
 	var loadErr error
 
 	if statusErr != nil {
 		loadErr = statusErr
 	} else {
-		if status.Status == "running" || len(status.Messages) == 0 {
-			if since > 0 {
-				messages, loadErr = logStore.GetAllSince(simulationID, since)
+		if limit != nil {
+			pagedMessages, total, err := logStore.GetPaginated(simulationID, offset, *limit)
+			if err != nil {
+				loadErr = err
 			} else {
-				messages, loadErr = logStore.GetAll(simulationID)
+				messages = pagedMessages
+				if status.Status != "running" {
+					totalMessages = &total
+				}
 			}
 		} else {
-			if since > 0 {
-				for _, msg := range status.Messages {
-					if msg.Timestamp >= since {
-						messages = append(messages, msg)
-					}
-				}
-			} else {
-				messages = status.Messages
+			messages, loadErr = logStore.GetAll(simulationID)
+			if loadErr == nil && status.Status != "running" {
+				t := len(messages)
+				totalMessages = &t
 			}
 		}
 	}
 
 	response := SimulationLogsResponse{
-		SimulationID: simulationID,
-		Logs:         []logstore.LogMessage{},
+		SimulationID:  simulationID,
+		Logs:          []logstore.LogMessage{},
+		TotalMessages: totalMessages,
 	}
 
 	if loadErr != nil {
@@ -164,4 +173,3 @@ func handleCleanAll(w http.ResponseWriter, r *http.Request) error {
 	w.WriteHeader(http.StatusOK)
 	return json.NewEncoder(w).Encode(CleanResponse{Success: true, Deleted: deleted})
 }
-

@@ -185,3 +185,20 @@ func (f *fileLogStore) DeleteAllLog(simulationID string) error {
 	logPath := filepath.Join(dir, "all.log")
 	return os.Remove(logPath)
 }
+
+func (f *fileLogStore) GetPaginated(simulationID string, offset int, limit int) ([]LogMessage, int, error) {
+	allMessages, err := f.GetAll(simulationID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	total := len(allMessages)
+
+	if offset >= total {
+		return []LogMessage{}, total, nil
+	}
+
+	end := min(offset+limit, total)
+
+	return allMessages[offset:end], total, nil
+}

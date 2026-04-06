@@ -28,6 +28,7 @@ var languageInfoMap = map[enum.ModelLanguage]response.LanguageInfo{
 }
 
 // GetLanguages returns the list of available languages
+//
 //	@Summary		Get available languages
 //	@Description	Returns the list of programming languages available for DEVS models
 //	@Tags			Languages
@@ -49,6 +50,7 @@ func GetLanguages(c *fiber.Ctx) error {
 }
 
 // GetLanguageTemplate returns the code template for a specific language
+//
 //	@Summary		Get language template
 //	@Description	Returns the atomic model code template for the specified language
 //	@Tags			Languages

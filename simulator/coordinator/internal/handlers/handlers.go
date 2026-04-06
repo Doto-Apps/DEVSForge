@@ -7,6 +7,7 @@ import (
 
 func SetupRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("/simulate", handleEncodeError(handleSimulate))
+	mux.HandleFunc("/simulate-async", handleEncodeError(handleSimulateAsync))
 	mux.HandleFunc("/simulation/{simulationID}/logs", handleEncodeError(handleGetSimulationLogs))
 	mux.HandleFunc("/simulation/{simulationID}/clean", handleEncodeError(handleCleanSimulation))
 	mux.HandleFunc("/clean-all", handleEncodeError(handleCleanAll))

@@ -52,6 +52,7 @@ func validUser(id string, p string) bool {
 }
 
 // getAllUsers retrieves a list of all user
+//
 //	@Summary		Get all user
 //	@Description	Retrieve a list of all user
 //	@Tags			user
@@ -78,6 +79,7 @@ func getAllUsers(c *fiber.Ctx) error {
 }
 
 // getUser retrieves a single user by ID
+//
 //	@Summary		Get a user by ID
 //	@Description	Retrieve a single user by their ID
 //	@Tags			user
@@ -98,6 +100,7 @@ func getUser(c *fiber.Ctx) error {
 }
 
 // patchUser updates an existing user by their ID
+//
 //	@Summary		Update a user
 //	@Description	Update an existing user with partial data
 //	@Tags			user
@@ -133,6 +136,7 @@ func patchUser(c *fiber.Ctx) error {
 }
 
 // deleteUser deletes a user by their ID
+//
 //	@Summary		Delete a user by ID
 //	@Description	Delete an existing user by their ID
 //	@Tags			user

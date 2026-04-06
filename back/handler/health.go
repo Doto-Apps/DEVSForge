@@ -11,6 +11,7 @@ func SetupHealthRoutes(router fiber.Router) {
 }
 
 // Health Check
+//
 //	@Summary		API health check
 //	@Description	Returns the status of the API to confirm it is running
 //	@Tags			Health
