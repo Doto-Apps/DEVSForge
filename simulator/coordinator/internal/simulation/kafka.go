@@ -200,28 +200,3 @@ func normalizeMessageData(msg *kafkaShared.BaseKafkaMessage) map[string]interfac
 
 	return data
 }
-
-func getDevsType(msg kafkaShared.KafkaMessageI) string {
-	switch m := msg.(type) {
-	case *kafkaShared.BaseKafkaMessage:
-		return m.DevsType.String()
-	case *kafkaShared.KafkaMessageInitSim:
-		return m.DevsType.String()
-	case *kafkaShared.KafkaMessageNextTime:
-		return m.DevsType.String()
-	case *kafkaShared.KafkaMessageExecuteTransition:
-		return m.DevsType.String()
-	case *kafkaShared.KafkaMessageTransitionDone:
-		return m.DevsType.String()
-	case *kafkaShared.KafkaMessageSendOutput:
-		return m.DevsType.String()
-	case *kafkaShared.KafkaMessageModelOutput:
-		return m.DevsType.String()
-	case *kafkaShared.KafkaMessageSimulationDone:
-		return m.DevsType.String()
-	case *kafkaShared.KafkaMessageErrorReport:
-		return m.MessageType.String()
-	default:
-		return "unknown"
-	}
-}
