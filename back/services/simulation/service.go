@@ -126,8 +126,8 @@ func (s *SimulationService) StartSimulation(simulationID string) error {
 
 	if simulatorAddr == "" || simulatorMode == "sync" {
 		if err := eventConsumers.StartConsumer(simulationID, kafkaTopic); err != nil {
+			_ = os.Remove(manifestFile)
 			s.markSimulationFailed(&simulation, fmt.Sprintf("failed to start event consumer: %v", err))
-			os.Remove(manifestFile)
 			return fmt.Errorf("failed to start event consumer: %w", err)
 		}
 	}

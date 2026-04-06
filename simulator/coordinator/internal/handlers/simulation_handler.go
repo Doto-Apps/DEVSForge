@@ -3,12 +3,10 @@ package handlers
 import (
 	"devsforge-coordinator/internal/logstore"
 	"encoding/json"
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"strconv"
-	"time"
 )
 
 func getLogDir() string {
@@ -32,20 +30,6 @@ type SimulationLogsResponse struct {
 	KafkaTopic    string                `json:"kafkaTopic"`
 	Logs          []logstore.LogMessage `json:"logs"`
 	TotalMessages *int                  `json:"totalMessages,omitempty"`
-}
-
-type StreamBatchResponse struct {
-	Offset   int                   `json:"offset"`
-	Limit    int                   `json:"limit"`
-	Total    *int                  `json:"total"`
-	Messages []logstore.LogMessage `json:"messages"`
-	HasMore  bool                  `json:"hasMore"`
-}
-
-type StreamDoneResponse struct {
-	Type          string `json:"type"`
-	Status        string `json:"status"`
-	TotalMessages int    `json:"totalMessages"`
 }
 
 type CleanResponse struct {
@@ -188,117 +172,4 @@ func handleCleanAll(w http.ResponseWriter, r *http.Request) error {
 	slog.Info("All simulation logs cleaned", "deleted", deleted)
 	w.WriteHeader(http.StatusOK)
 	return json.NewEncoder(w).Encode(CleanResponse{Success: true, Deleted: deleted})
-}
-
-func handleStreamSimulationLogs(w http.ResponseWriter, r *http.Request) error {
-	logStore := getLogStore()
-	simulationID := r.PathValue("simulationID")
-	if simulationID == "" {
-		http.NotFound(w, r)
-		return nil
-	}
-
-	if r.Method != http.MethodGet {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusMethodNotAllowed)
-		return json.NewEncoder(w).Encode(ErrorResponse{Error: "method not allowed"})
-	}
-
-	// SSE headers
-	w.Header().Set("Content-Type", "text/event-stream")
-	w.Header().Set("Cache-Control", "no-cache")
-	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("X-Accel-Buffering", "no")
-
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		return json.NewEncoder(w).Encode(ErrorResponse{Error: "streaming unsupported"})
-	}
-
-	// Get offset from query param
-	offsetParam := r.URL.Query().Get("offset")
-	offset := 0
-	if offsetParam != "" {
-		if parsed, err := strconv.Atoi(offsetParam); err == nil {
-			offset = parsed
-		}
-	}
-
-	limit := 100
-	batchInterval := 1 * time.Second
-
-	// Get initial status
-	status, statusErr := logStore.GetStatus(simulationID)
-	if statusErr != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return json.NewEncoder(w).Encode(ErrorResponse{Error: statusErr.Error()})
-	}
-
-	isRunning := status.Status == "running"
-	currentOffset := offset
-
-	// Handle client disconnect
-	ctx := r.Context()
-
-	for {
-		select {
-		case <-ctx.Done():
-			// Client disconnected
-			slog.Info("Client disconnected from stream", "simulationId", simulationID)
-			return nil
-		default:
-		}
-
-		// Fetch batch
-		messages, total, err := logStore.GetPaginated(simulationID, currentOffset, limit)
-		if err != nil {
-			fmt.Fprintf(w, "event: error\ndata: {\"error\":\"%s\"}\n\n", err.Error())
-			flusher.Flush()
-			break
-		}
-
-		// Total = null if running
-		var totalPtr *int
-		if !isRunning {
-			totalPtr = &total
-		}
-
-		// Send batch
-		hasMore := currentOffset+len(messages) < total
-		batch := StreamBatchResponse{
-			Offset:   currentOffset,
-			Limit:    limit,
-			Total:    totalPtr,
-			Messages: messages,
-			HasMore:  hasMore,
-		}
-
-		jsonData, _ := json.Marshal(batch)
-		fmt.Fprintf(w, "data: %s\n\n", jsonData)
-		flusher.Flush()
-
-		currentOffset += len(messages)
-
-		// If simulation is not running or no more messages, send done event
-		if !isRunning || !hasMore {
-			doneEvent := StreamDoneResponse{
-				Type:          "done",
-				Status:        status.Status,
-				TotalMessages: total,
-			}
-			doneData, _ := json.Marshal(doneEvent)
-			fmt.Fprintf(w, "data: %s\n\n", doneData)
-			flusher.Flush()
-			break
-		}
-
-		// Wait for next batch
-		time.Sleep(batchInterval)
-
-		// Re-check status
-		status, _ = logStore.GetStatus(simulationID)
-		isRunning = status.Status == "running"
-	}
-
-	return nil
 }

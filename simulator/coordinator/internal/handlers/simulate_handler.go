@@ -68,6 +68,8 @@ func handleSimulateAsync(w http.ResponseWriter, r *http.Request) error {
 	go func() {
 		if err := simulation.RunSimulation(params); err != nil {
 			slog.Error("Async simulation error", "simulationId", simulationID, "error", err)
+		} else {
+			slog.Info("Async simulation finished", "simulationId", simulationID)
 		}
 	}()
 

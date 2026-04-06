@@ -7,13 +7,14 @@ import (
 	"devsforge/model"
 	"encoding/json"
 	"fmt"
-	"gorm.io/datatypes"
 	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"strings"
 	"time"
+
+	"gorm.io/datatypes"
 )
 
 type SimulationLogsResponse struct {
@@ -159,17 +160,17 @@ func (s *SimulationService) pollSimulationStatus(simulatorAddr string, simulatio
 			if resp.StatusCode != http.StatusOK {
 				body, _ := io.ReadAll(resp.Body)
 				log.Warn("Poll returned non-OK status", "status", resp.StatusCode, "body", string(body))
-				resp.Body.Close()
+				_ = resp.Body.Close()
 				continue
 			}
 
 			var logsResp SimulationLogsResponse
 			if err := json.NewDecoder(resp.Body).Decode(&logsResp); err != nil {
 				log.Error("Failed to decode poll response", "error", err)
-				resp.Body.Close()
+				_ = resp.Body.Close()
 				continue
 			}
-			resp.Body.Close()
+			_ = resp.Body.Close()
 
 			// Save new messages
 			if len(logsResp.Logs) > 0 {
@@ -184,24 +185,25 @@ func (s *SimulationService) pollSimulationStatus(simulatorAddr string, simulatio
 				now := time.Now()
 
 				// Update simulation status in database
-				if logsResp.Status == "completed" {
+				switch logsResp.Status {
+				case "completed":
 					result := db.Model(&model.Simulation{}).
 						Where("id = ?", simulationID).
-						Updates(map[string]interface{}{
+						Updates(map[string]any{
 							"status":       model.SimulationStatusCompleted,
 							"completed_at": now,
 						})
 					if result.Error != nil {
 						log.Error("Failed to update simulation status", "error", result.Error)
 					}
-				} else if logsResp.Status == "failed" || logsResp.Status == "error" {
+				case "failed", "error":
 					errMsg := "Simulation failed"
 					if logsResp.ErrorMessage != "" {
 						errMsg = logsResp.ErrorMessage
 					}
 					result := db.Model(&model.Simulation{}).
 						Where("id = ?", simulationID).
-						Updates(map[string]interface{}{
+						Updates(map[string]any{
 							"status":        model.SimulationStatusFailed,
 							"error_message": errMsg,
 							"completed_at":  now,

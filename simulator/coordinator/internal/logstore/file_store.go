@@ -198,10 +198,7 @@ func (f *fileLogStore) GetPaginated(simulationID string, offset int, limit int) 
 		return []LogMessage{}, total, nil
 	}
 
-	end := offset + limit
-	if end > total {
-		end = total
-	}
+	end := min(offset+limit, total)
 
 	return allMessages[offset:end], total, nil
 }
