@@ -1,3 +1,4 @@
+// Package main provides the coordinator entry point and CLI management.
 package main
 
 import (

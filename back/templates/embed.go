@@ -1,3 +1,4 @@
+// Package templates provides embedded template files and template management.
 package templates
 
 import "embed"

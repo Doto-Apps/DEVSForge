@@ -1,3 +1,4 @@
+// Package shared provides shared data structures and types for simulator components.
 package shared
 
 import "devsforge-shared/enum"

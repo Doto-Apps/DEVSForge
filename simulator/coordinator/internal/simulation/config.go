@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var config *types.CoordConfig
+var coordConfig *types.CoordConfig
 
 func InitConfig(yamlConfig shared.YamlInputConfig) *types.CoordConfig {
 	// Charge la config YAML (Kafka, gRPC, etc.)
@@ -33,12 +33,12 @@ func InitConfig(yamlConfig shared.YamlInputConfig) *types.CoordConfig {
 		return nil
 	}
 
-	config = &types.CoordConfig{
+	coordConfig = &types.CoordConfig{
 		KafkaConfig: *kafkaConfig,
 		KafkaClient: client,
 	}
 
-	return config
+	return coordConfig
 }
 
 // LoadYamlConfig load YAML config file
@@ -57,5 +57,5 @@ func LoadYamlConfig(path string) (*shared.YamlInputConfig, error) {
 }
 
 func GetConfig() *types.CoordConfig {
-	return config
+	return coordConfig
 }

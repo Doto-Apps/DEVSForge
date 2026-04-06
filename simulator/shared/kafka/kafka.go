@@ -1,3 +1,4 @@
+// Package kafka provides Kafka messaging utilities and helpers.
 package kafka
 
 import (

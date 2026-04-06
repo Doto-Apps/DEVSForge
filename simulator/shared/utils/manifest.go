@@ -1,3 +1,4 @@
+// Package utils provides utility functions for manifest parsing and simulator root detection.
 package utils
 
 import (

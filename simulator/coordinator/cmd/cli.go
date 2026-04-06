@@ -1,3 +1,4 @@
+// Package cmd provides CLI commands and server management for the coordinator.
 package cmd
 
 import (

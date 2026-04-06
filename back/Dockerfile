@@ -46,11 +46,11 @@ CMD ["/app/devsforge-coordinator", "--daemon"]
 # Runner target
 FROM python:3.12-slim AS runner
 ENV LOG_DIR="/app/sim-logs"
-ENV DEVSFORGE_SIM_ROOT="/app"
+ENV PATHS_SIM_ROOT="/app"
 WORKDIR /app
 
 # Install Java 21 and Maven
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     openjdk-21-jdk \
     maven \
     && rm -rf /var/lib/apt/lists/*
@@ -87,9 +87,9 @@ CMD ["/app/devsforge-runner"]
 # Simulator target
 FROM runner AS simulator
 ENV LOG_DIR="/app/sim-logs"
-ENV DEVSFORGE_SIM_ROOT="/app"
-ENV SIM_CMD="/app/devsforge-coordinator"
-ENV RUNNER_CMD="/app/devsforge-runner"
+ENV PATHS_SIM_ROOT="/app"
+ENV SIMULATOR_CMD="/app/devsforge-coordinator"
+ENV PATHS_RUNNER_CMD="/app/devsforge-runner"
 COPY --from=builder /app/bin/devsforge-coordinator /app/devsforge-coordinator
 EXPOSE 8080
 VOLUME [ "/app/sim-logs" ]
@@ -97,6 +97,10 @@ CMD ["/app/devsforge-coordinator", "--daemon"]
 
 # All in one image target
 FROM simulator AS all-in-one
+ENV LOG_DIR="/app/sim-logs"
+ENV PATHS_SIM_ROOT="/app"
+ENV SIMULATOR_CMD="/app/devsforge-coordinator"
+ENV PATHS_RUNNER_CMD="/app/devsforge-runner"
 COPY --from=builder /app/bin/devsforge-backend /app/devsforge-backend
 COPY --from=builder /app/bin/devsforge-coordinator /app/devsforge-coordinator
 EXPOSE 3000

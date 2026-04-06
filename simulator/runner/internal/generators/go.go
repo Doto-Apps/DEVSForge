@@ -1,3 +1,4 @@
+// Package generators provides code generators for different programming languages.
 package generators
 
 import (

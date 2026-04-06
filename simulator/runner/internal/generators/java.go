@@ -3,6 +3,7 @@ package generators
 import (
 	"bytes"
 	"context"
+	"devsforge-runner/internal/config"
 	shared "devsforge-shared"
 	devspb "devsforge-wrapper/proto"
 	"encoding/json"
@@ -74,7 +75,8 @@ func PrepareJavaWrapper(wrapper *WrapperInfo, manifest shared.RunnableManifest) 
 	buildCmd.Dir = wrapper.ModelDir
 
 	// Force JAVA_HOME if not set
-	if os.Getenv("JAVA_HOME") == "" {
+	javaHome := config.Get().Env.Java.Home
+	if javaHome == "" {
 		// Try to find Java 21
 		if _, err := os.Stat("/usr/lib/jvm/java-21-openjdk"); err == nil {
 			buildCmd.Env = append(os.Environ(), "JAVA_HOME=/usr/lib/jvm/java-21-openjdk")

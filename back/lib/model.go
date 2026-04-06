@@ -1,3 +1,4 @@
+// Package lib provides library utilities and business logic helpers.
 package lib
 
 import (

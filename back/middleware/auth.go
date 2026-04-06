@@ -1,3 +1,4 @@
+// Package middleware provides HTTP middleware functions for authentication and authorization.
 package middleware
 
 import (
@@ -21,7 +22,7 @@ func onSuccessProtected(c *fiber.Ctx) error {
 // Protected protect routes
 func Protected() fiber.Handler {
 	return jwtware.New(jwtware.Config{
-		SigningKey:     jwtware.SigningKey{Key: []byte(config.Config("JWT_SECRET"))},
+		SigningKey:     jwtware.SigningKey{Key: []byte(config.Get().Auth.JWTSecret)},
 		ErrorHandler:   jwtError,
 		SuccessHandler: onSuccessProtected,
 	})

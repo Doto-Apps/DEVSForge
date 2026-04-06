@@ -15,11 +15,6 @@ services:
     build:
       context: .
       dockerfile: back/Dockerfile
-    environment:
-      KAFKA_ADDRESS: kafka:9092
-      SIM_CMD: /app/devsforge-coordinator
-      RUNNER_CMD: /app/devsforge-runner
-      DEVSFORGE_SIM_ROOT: /app
     volumes:
       - ./tmp/logs:/app/sim-logs
     ports:

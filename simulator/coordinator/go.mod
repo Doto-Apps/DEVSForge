@@ -9,6 +9,8 @@ replace devsforge-shared => ../shared
 
 require (
 	devsforge-shared v0.0.0
+	github.com/caarlos0/env/v11 v11.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/segmentio/kafka-go v0.4.49
 	github.com/testcontainers/testcontainers-go/modules/compose v0.40.0
 	github.com/twmb/franz-go v1.20.5

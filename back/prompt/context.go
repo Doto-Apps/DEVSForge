@@ -1,3 +1,4 @@
+// Package prompt provides AI prompt templates and context management.
 package prompt
 
 import (

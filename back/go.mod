@@ -4,6 +4,7 @@ go 1.25.4
 
 require (
 	devsforge-shared v0.0.0
+	github.com/caarlos0/env/v11 v11.4.0
 	github.com/go-playground/validator/v10 v10.22.0
 	github.com/gofiber/contrib/jwt v1.0.10
 	github.com/gofiber/fiber/v2 v2.52.6

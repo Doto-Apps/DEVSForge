@@ -1,3 +1,4 @@
+// Package main provides the runner entry point.
 package main
 
 import (

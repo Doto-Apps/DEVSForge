@@ -1,6 +1,7 @@
 package simulation
 
 import (
+	"devsforge-coordinator/internal/config"
 	"devsforge-coordinator/internal/logstore"
 	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
@@ -23,10 +24,7 @@ func RunSimulation(params types.SimulationParams) error {
 		return fmt.Errorf("no models provided in the manifest")
 	}
 
-	logDir := os.Getenv("LOG_DIR")
-	if logDir == "" {
-		logDir = "logs"
-	}
+	logDir := config.Get().Log.Dir
 
 	logStore := logstore.NewFileLogStore(logDir)
 	createdAt := time.Now().Unix()
@@ -70,7 +68,7 @@ func RunSimulation(params types.SimulationParams) error {
 		return fmt.Errorf("failed to initialize Kafka topic: %w", err)
 	}
 
-	simRoot := os.Getenv(utils.EnvSimulatorRoot)
+	simRoot := config.Get().Paths.SimulatorRoot
 	if simRoot == "" {
 		simRoot, err = utils.SimulatorRoot()
 		if err != nil {

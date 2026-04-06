@@ -1,3 +1,4 @@
+// Package internal provides internal runner utilities and wrapper preparation.
 package internal
 
 import (
@@ -5,7 +6,6 @@ import (
 	"devsforge-runner/internal/generators"
 	"devsforge-runner/util"
 	shared "devsforge-shared"
-	"devsforge-shared/utils"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -14,7 +14,7 @@ import (
 func PrepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath string) (*generators.WrapperInfo, error) {
 	cfg := config.InitConfig(manifest, yamlConfigFilePath)
 
-	simRoot := os.Getenv(utils.EnvSimulatorRoot)
+	simRoot := cfg.Env.Paths.SimulatorRoot
 	if simRoot == "" {
 		wd, err := os.Getwd()
 		if err != nil {

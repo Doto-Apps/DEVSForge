@@ -2,24 +2,19 @@ package cmd
 
 import (
 	"context"
+	"devsforge-coordinator/internal/config"
 	"devsforge-coordinator/internal/handlers"
 	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
-	"strconv"
 	"syscall"
 	"time"
 )
 
 func StartDaemonServer() error {
-	port := 8080
-	if portStr := os.Getenv("SIMULATOR_PORT"); portStr != "" {
-		if parsed, err := strconv.Atoi(portStr); err == nil {
-			port = parsed
-		}
-	}
+	port := config.Get().Simulator.Port
 
 	mux := http.NewServeMux()
 

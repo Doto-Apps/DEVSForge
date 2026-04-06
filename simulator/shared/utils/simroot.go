@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 )
 
-const EnvSimulatorRoot = "DEVSFORGE_SIM_ROOT"
+const EnvSimulatorRoot = "PATHS_SIM_ROOT"
 
 // SimulatorRoot walks up from the current working directory to locate the simulator root.
 // The simulator root is expected to contain: runner/, coordinator/, wrappers/, tests/.

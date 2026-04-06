@@ -1,3 +1,4 @@
+// Package simulation provides simulation management and execution services.
 package simulation
 
 import (
@@ -247,10 +248,7 @@ type EventConsumerManager struct {
 
 // StartConsumer starts a new event consumer for a simulation
 func (m *EventConsumerManager) StartConsumer(simulationID, topic string) error {
-	kafkaAddr := config.Config("KAFKA_ADDRESS")
-	if kafkaAddr == "" {
-		kafkaAddr = "localhost:9092"
-	}
+	kafkaAddr := config.Get().Kafka.Address
 
 	consumer := NewEventConsumer(simulationID, topic, kafkaAddr)
 	if err := consumer.Start(); err != nil {

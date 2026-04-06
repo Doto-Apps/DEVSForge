@@ -1,3 +1,4 @@
+// Package tests provides integration tests for the runner.
 package tests
 
 import (
