@@ -1,10 +1,11 @@
+// Package logstore handle log writes
 package logstore
 
 import "log/slog"
 
 type LogMessage struct {
 	Timestamp int64  `json:"timestamp"`
-	Sender    string `json:"sender"`
+	Sender    string `json:"sender,omitempty"`
 	DevsType  string `json:"devsType"`
 	Data      any    `json:"data"`
 }
@@ -28,6 +29,7 @@ type LogStore interface {
 	SetStatus(simulationID string, status SimulationStatus) error
 	GetStatus(simulationID string) (*SimulationStatus, error)
 	DeleteAllLog(simulationID string) error
+	GetLogDir(simulationID string) string
 }
 
 func NewFileLogStore(logDir string) LogStore {

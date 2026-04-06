@@ -8,7 +8,6 @@ type SimulationEventsResponse =
 	components["schemas"]["response.SimulationEventsResponse"];
 
 const API_BASE_URL = window.API_URL?.replace(/\/+$/, "");
-console.log(window.API_URL);
 
 const asRecord = (value: unknown): Record<string, unknown> | null => {
 	if (!value || typeof value !== "object" || Array.isArray(value)) return null;
@@ -84,7 +83,12 @@ type UseSimulationPollingResult = {
 export const useSimulationPolling = (
 	options: UseSimulationPollingOptions = {},
 ): UseSimulationPollingResult => {
-	const { interval = 500, enabled = false, onEvents, onStatusChange } = options;
+	const {
+		interval = 1000,
+		enabled = false,
+		onEvents,
+		onStatusChange,
+	} = options;
 
 	const [events, setEvents] = useState<SimulationEventResponse[]>([]);
 	const [simulation, setSimulation] = useState<SimulationResponse | null>(null);
@@ -151,7 +155,11 @@ export const useSimulationPolling = (
 			// Add new events
 			const newEvents = data.events;
 			if (newEvents && newEvents.length > 0) {
-				setEvents((prev) => [...prev, ...newEvents]);
+				setEvents((prev) =>
+					[...prev, ...newEvents].sort(({ createdAt: a }, { createdAt: b }) =>
+						b && a ? a.localeCompare(b) : 0,
+					),
+				);
 				lastEventCountRef.current += newEvents.length;
 				onEvents?.(newEvents);
 

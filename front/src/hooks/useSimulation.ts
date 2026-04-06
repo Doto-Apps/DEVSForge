@@ -49,7 +49,7 @@ export const useStartSimulation = (): StartSimulationResult => {
 	const [error, setError] = useState<string | null>(null);
 
 	const polling = useSimulationPolling({
-		interval: 500,
+		interval: 1000,
 		onStatusChange: (status) => {
 			setSimulation((prev) => (prev ? { ...prev, status } : null));
 		},

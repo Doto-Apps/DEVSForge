@@ -1,3 +1,4 @@
+// Package handlers Simulation http hanlders
 package handlers
 
 import (
@@ -6,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -43,6 +45,12 @@ func handleGetSimulationLogs(w http.ResponseWriter, r *http.Request) error {
 	if simulationID == "" {
 		http.NotFound(w, r)
 		return nil
+	}
+	dir := filepath.Join(logStore.GetLogDir(simulationID), simulationID)
+	if _, err := os.Stat(dir); err != nil {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusInternalServerError)
+		return json.NewEncoder(w).Encode(ErrorResponse{Error: "cannot retrieve logDir"})
 	}
 
 	if r.Method != http.MethodGet {

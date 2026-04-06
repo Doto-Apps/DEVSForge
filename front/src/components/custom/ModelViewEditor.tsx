@@ -197,8 +197,6 @@ export function ModelViewEditor({
 		) {
 			newModelIdToput = newModelIdToput.split("/").shift() ?? "";
 		}
-		console.log(modelIdToPut);
-
 		const newModels = addModelsToModels(
 			actualModels,
 			newModelIdToput,
@@ -252,7 +250,6 @@ export function ModelViewEditor({
 		const actualModels = reactflowToModel(models);
 
 		if (!targetId || !parentNode || !actualModels) {
-			console.log("pute");
 			return;
 		}
 
@@ -265,7 +262,6 @@ export function ModelViewEditor({
 			},
 			style: { height: DEFAULT_NODE_SIZE, width: DEFAULT_NODE_SIZE },
 		});
-		console.log(newModels);
 		const newReactFlowData = modelToReactflow(newModels);
 
 		newReactFlowData.nodes.sort((a, b) => a.id.length - b.id.length);

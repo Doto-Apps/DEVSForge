@@ -114,14 +114,6 @@ func (c *Coordinator) SendMessage(msg kafkaShared.KafkaMessageI) error {
 		return fmt.Errorf("cannot marshal kafka message : %w", err)
 	}
 
-	if c.Logger != nil {
-		c.Logger.Info("kafka_message",
-			"sender", "coordinator",
-			"devsType", getDevsType(msg),
-			"data", msg,
-		)
-	}
-
 	return c.Config.KafkaClient.ProduceSync(c.Context, &kgo.Record{Value: data}).FirstErr()
 }
 
@@ -148,7 +140,7 @@ func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessag
 				c.Logger.Info("kafka_message",
 					"sender", msg.Sender,
 					"devsType", msg.DevsType.String(),
-					"data", msg,
+					"data", normalizeMessageData(msg),
 				)
 			}
 
@@ -158,6 +150,55 @@ func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessag
 			}
 		}
 	}
+}
+
+func normalizeMessageData(msg *kafkaShared.BaseKafkaMessage) map[string]interface{} {
+	data := make(map[string]interface{})
+
+	if msg.DevsType != "" {
+		data["devsType"] = msg.DevsType.String()
+	}
+	if msg.MessageType != "" {
+		data["messageType"] = msg.MessageType.String()
+	}
+	if msg.SimulationRunID != "" {
+		data["simulationRunId"] = msg.SimulationRunID
+	}
+	if msg.MessageID != "" {
+		data["messageId"] = msg.MessageID
+	}
+	if msg.SenderID != "" {
+		data["senderId"] = msg.SenderID
+	}
+	if msg.ReceiverID != "" {
+		data["receiverId"] = msg.ReceiverID
+	}
+	if msg.Time != nil {
+		data["time"] = msg.Time
+	}
+	if msg.EventTime != nil {
+		data["eventTime"] = msg.EventTime
+	}
+	if msg.NextTime != nil {
+		data["nextTime"] = msg.NextTime
+	}
+	if msg.Sender != "" {
+		data["sender"] = msg.Sender
+	}
+	if msg.Target != "" {
+		data["target"] = msg.Target
+	}
+	if msg.ModelInputsOption != nil {
+		data["modelInputsOption"] = msg.ModelInputsOption
+	}
+	if msg.ModelOutput != nil {
+		data["modelOutput"] = msg.ModelOutput
+	}
+	if msg.Payload != nil {
+		data["payload"] = msg.Payload
+	}
+
+	return data
 }
 
 func getDevsType(msg kafkaShared.KafkaMessageI) string {

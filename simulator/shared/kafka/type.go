@@ -128,9 +128,9 @@ type KafkaMessageSendOutput struct {
 }
 
 type KafkaMessageSimulationDone struct {
-	DevsType DevsType `json:"devsType"` // type logique du message
-	Target   string   `json:"target"`   // ex: "clerk1"
-	Sender   string   `json:"sender"`   // ex: "clerk1"
+	DevsType DevsType `json:"devsType"`         // type logique du message
+	Target   string   `json:"target"`           // ex: "clerk1"
+	Sender   string   `json:"sender,omitempty"` // ex: "clerk1"
 }
 
 type KafkaMessageModelOutput struct {

@@ -66,6 +66,7 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessa
 	}
 
 	messages := []LogMessage{}
+	seen := make(map[string]bool)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		line := scanner.Bytes()
@@ -100,6 +101,26 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessa
 		sender, _ := msg["sender"].(string)
 		devsType, _ := msg["devsType"].(string)
 		data := msg["data"]
+
+		// Extract target from data
+		var target string
+		if dataMap, ok := data.(map[string]interface{}); ok {
+			if targetVal, exists := dataMap["target"]; exists {
+				if targetStr, ok := targetVal.(string); ok {
+					target = targetStr
+				}
+			}
+		}
+
+		// Create normalized deduplication key
+		// sender="" is treated as no sender, target="" is treated as no target
+		dataJSON, _ := json.Marshal(data)
+		dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, devsType, target, sender, string(dataJSON))
+
+		if seen[dedupKey] {
+			continue
+		}
+		seen[dedupKey] = true
 
 		messages = append(messages, LogMessage{
 			Timestamp: timestamp,
@@ -201,4 +222,8 @@ func (f *fileLogStore) GetPaginated(simulationID string, offset int, limit int) 
 	end := min(offset+limit, total)
 
 	return allMessages[offset:end], total, nil
+}
+
+func (f *fileLogStore) GetLogDir(simulationID string) string {
+	return f.logDir
 }

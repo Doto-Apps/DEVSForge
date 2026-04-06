@@ -42,7 +42,7 @@ type SimulationEvent struct {
 	CreatedAt      time.Time      `gorm:"type:timestamp;default:now()" json:"createdAt"`
 	SimulationTime *float64       `gorm:"type:double precision" json:"simulationTime"`
 	DevsType       string         `gorm:"type:varchar(100);not null" json:"devsType"`
-	Sender         *string        `gorm:"type:varchar(100)" json:"sender"`
+	Sender         *string        `gorm:"type:varchar(100)" json:"sender,omitempty"`
 	Target         *string        `gorm:"type:varchar(100)" json:"target"`
 	Payload        datatypes.JSON `gorm:"type:jsonb;not null" json:"payload"`
 }

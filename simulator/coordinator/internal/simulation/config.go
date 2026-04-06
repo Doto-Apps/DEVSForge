@@ -1,3 +1,4 @@
+// Package simulation Simulation functions
 package simulation
 
 import (

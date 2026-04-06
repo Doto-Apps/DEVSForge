@@ -105,11 +105,9 @@ export function EditModel() {
 		if (!structure || !modelId) return;
 
 		try {
-			console.log("Structure à sauvegarder en RF :", structure);
 			const modelToSave = reactflowToModel(structure).find(
 				(model) => model.id === modelId,
 			);
-			console.log("Structure pret a save", modelToSave);
 			if (!modelToSave) {
 				toast({
 					description: "Modèle non trouvé dans la structure",

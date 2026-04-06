@@ -1,3 +1,4 @@
+// Package types coordinator types
 package types
 
 import (
