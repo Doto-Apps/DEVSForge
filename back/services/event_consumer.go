@@ -1,3 +1,4 @@
+// Package services provides business logic services and event management.
 package services
 
 import (
@@ -291,10 +292,7 @@ var EventConsumers = &EventConsumerManager{
 
 // StartConsumer starts a new event consumer for a simulation
 func (m *EventConsumerManager) StartConsumer(simulationID, topic string) error {
-	kafkaAddr := config.Config("KAFKA_ADDRESS")
-	if kafkaAddr == "" {
-		kafkaAddr = "localhost:9092"
-	}
+	kafkaAddr := config.Get().Kafka.Address
 
 	consumer := NewEventConsumer(simulationID, topic, kafkaAddr)
 	if err := consumer.Start(); err != nil {

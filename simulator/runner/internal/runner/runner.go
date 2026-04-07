@@ -1,3 +1,4 @@
+// Package runner provides simulation runner logic and state management.
 package runner
 
 import (

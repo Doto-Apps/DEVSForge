@@ -1,7 +1,9 @@
+// Package simulation provides simulation execution and coordination logic.
 package simulation
 
 import (
 	"context"
+	"devsforge-coordinator/internal/config"
 	"devsforge-coordinator/internal/logstore"
 	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
@@ -14,13 +16,13 @@ import (
 	"path/filepath"
 )
 
-func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, cfg *types.CoordConfig, logStore logstore.LogStore, logger *slog.Logger) error {
+func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, coordCfg *types.CoordConfig, logStore logstore.LogStore, logger *slog.Logger) error {
 	slog.Info("Launching runners using shell", "count", len(manifest.Models), "loggerIsNil", logger == nil)
 	errCh := make(chan error, len(manifest.Models))
-	runnerCmd := os.Getenv("RUNNER_CMD")
+	runnerCmd := config.Get().Paths.RunnerCmd
 
 	// Set simulator folder
-	simulatorRootDir := os.Getenv(utils.EnvSimulatorRoot)
+	simulatorRootDir := config.Get().Paths.SimulatorRoot
 	if simulatorRootDir == "" {
 		var err error
 		simulatorRootDir, err = utils.SimulatorRoot()
@@ -86,7 +88,7 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 		}(model)
 	}
 
-	coordinator := CreateCoordinnator(cfg, context.Background(), runnerStates)
+	coordinator := CreateCoordinnator(coordCfg, context.Background(), runnerStates)
 	coordinator.Logger = logger
 	slog.Info("All models started, launching coordinator main loop")
 

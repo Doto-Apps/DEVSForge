@@ -1,3 +1,4 @@
+// Package response provides HTTP response DTOs and API output structures.
 package response
 
 type DiagramResponse struct {

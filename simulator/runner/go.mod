@@ -9,6 +9,8 @@ replace devsforge-wrapper => ../wrappers/go
 require (
 	devsforge-shared v0.0.0
 	devsforge-wrapper v0.0.0
+	github.com/caarlos0/env/v11 v11.4.0
+	github.com/joho/godotenv v1.5.1
 	github.com/testcontainers/testcontainers-go/modules/compose v0.40.0
 	github.com/twmb/franz-go v1.20.5
 	github.com/twmb/franz-go/pkg/kadm v1.17.1

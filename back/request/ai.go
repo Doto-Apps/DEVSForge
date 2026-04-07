@@ -1,3 +1,4 @@
+// Package request provides HTTP request DTOs and validation structures.
 package request
 
 type PastMessages struct {

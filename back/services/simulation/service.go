@@ -112,17 +112,15 @@ func (s *SimulationService) StartSimulation(simulationID string) error {
 	}
 
 	// Get Kafka address from config
-	kafkaAddr := config.Config("KAFKA_ADDRESS")
-	if kafkaAddr == "" {
-		kafkaAddr = "localhost:9092"
-	}
+	cfg := config.Get()
+	kafkaAddr := cfg.Kafka.Address
 
 	// Generate Kafka topic name for this simulation
 	kafkaTopic := generateTopicName(simulationID)
 
 	// Start Kafka event consumer before launching coordinator (only for local and remote sync)
-	simulatorMode := os.Getenv("SIMULATOR_MODE")
-	simulatorAddr := os.Getenv("SIMULATOR_ADDR")
+	simulatorMode := cfg.Simulator.Mode
+	simulatorAddr := cfg.Simulator.Addr
 
 	if simulatorAddr == "" || simulatorMode == "sync" {
 		if err := eventConsumers.StartConsumer(simulationID, kafkaTopic); err != nil {

@@ -188,8 +188,3 @@ jobs:
             -w /app \
             devsforge-test-runner:latest \
             go test -v ./simulator/runner/tests/...
-
-      - name: Cleanup Temporary Directory
-        if: always()
-        run: |
-          rm -rf ${{ github.workspace }}/simulator/tmp

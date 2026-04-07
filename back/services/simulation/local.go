@@ -24,18 +24,15 @@ func (s *SimulationService) runLocalCoordinator(simulationID string, manifestFil
 	}
 
 	// Run the coordinator with the topic
-	simulatorCmd := os.Getenv("SIM_CMD")
+	cfg := config.Get()
+	simulatorCmd := cfg.Simulator.Cmd
 	var err error
 	var cmd *exec.Cmd
 	if simulatorCmd != "" {
 		cmd = exec.Command(simulatorCmd, "--file", manifestFile, "--kafka", kafkaAddr, "--topic", kafkaTopic)
 	} else {
 		// Get coordinator path
-		coordinatorPath := config.Config("COORDINATOR_PATH")
-		if coordinatorPath == "" {
-			// Default to relative path from back
-			coordinatorPath = "../simulator/coordinator"
-		}
+		coordinatorPath := cfg.Simulator.CoordinatorPath
 		cmd = exec.Command("go", "run", ".", "--file", manifestFile, "--kafka", kafkaAddr, "--topic", kafkaTopic)
 		cmd.Dir = coordinatorPath
 	}

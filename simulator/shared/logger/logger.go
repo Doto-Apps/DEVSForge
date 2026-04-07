@@ -26,25 +26,16 @@ type Config struct {
 
 // DefaultConfig returns a Config with default values
 func DefaultConfig(simulationID string) Config {
-	logDir := os.Getenv("LOG_DIR")
-	if logDir == "" {
-		logDir = "logs"
-	}
-
-	logMode := os.Getenv("LOG_MODE")
-	if logMode == "" {
-		logMode = "all"
-	}
-
+	cfg := Get()
 	return Config{
-		LogDir:       logDir,
+		LogDir:       cfg.Log.Dir,
 		SimulationID: simulationID,
 		MaxSize:      10,
 		MaxBackups:   10,
 		Compress:     true,
 		Level:        "DEBUG",
 		DirMode:      0o777,
-		LogMode:      logMode,
+		LogMode:      cfg.Log.Mode,
 	}
 }
 

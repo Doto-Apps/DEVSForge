@@ -2,6 +2,7 @@
 package handlers
 
 import (
+	"devsforge-coordinator/internal/config"
 	"devsforge-coordinator/internal/logstore"
 	"encoding/json"
 	"log/slog"
@@ -12,11 +13,7 @@ import (
 )
 
 func getLogDir() string {
-	logDir := os.Getenv("LOG_DIR")
-	if logDir == "" {
-		logDir = "logs"
-	}
-	return logDir
+	return config.Get().Log.Dir
 }
 
 func getLogStore() logstore.LogStore {

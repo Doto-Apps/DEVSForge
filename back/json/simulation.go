@@ -1,3 +1,4 @@
+// Package json provides JSON data structures and serialization helpers.
 package json
 
 type Diagram struct {

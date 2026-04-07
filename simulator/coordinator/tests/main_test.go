@@ -1,3 +1,4 @@
+// Package tests provides integration tests for the coordinator.
 package tests
 
 import (

@@ -1,3 +1,4 @@
+// Package handler provides HTTP handlers and route handlers for the API.
 package handler
 
 import (
@@ -19,8 +20,8 @@ import (
 	"gorm.io/gorm"
 )
 
-var jwtSecret = []byte(config.Config("JWT_SECRET"))
-var refreshSecret = []byte(config.Config("REFRESH_TOKEN_SECRET"))
+var jwtSecret = []byte(config.Get().Auth.JWTSecret)
+var refreshSecret = []byte(config.Get().Auth.RefreshTokenSecret)
 
 // SetupAuthRoutes defines the authentication routes.
 func SetupAuthRoutes(app *fiber.App) {

@@ -1,3 +1,4 @@
+// Package model provides database models and entity definitions.
 package model
 
 import (

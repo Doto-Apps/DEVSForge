@@ -1,3 +1,4 @@
+// Package enum provides enumeration types for models, languages, and port directions.
 package enum
 
 import (

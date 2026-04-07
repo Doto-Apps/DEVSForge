@@ -1,16 +1,50 @@
+// Package config provides environment and YAML-based configuration management for the runner.
 package config
 
 import (
-	shared "devsforge-shared"
 	"devsforge-shared/kafka"
 	"fmt"
 	"log/slog"
 	"net"
 	"os"
+	"sync"
 
+	shared "devsforge-shared"
+
+	"github.com/caarlos0/env/v11"
+	"github.com/joho/godotenv"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"gopkg.in/yaml.v3"
 )
+
+var (
+	once     sync.Once
+	instance *RunnerConfig
+)
+
+type EnvConfig struct {
+	Log   LogConfig
+	Paths PathsConfig
+	Java  JavaConfig
+	Kafka KafkaConfig
+}
+
+type LogConfig struct {
+	Dir  string `env:"LOG_DIR" envDefault:"/tmp/devsforge-logs/"`
+	Mode string `env:"LOG_MODE" envDefault:"all"`
+}
+
+type PathsConfig struct {
+	SimulatorRoot string `env:"PATHS_SIM_ROOT" envDefault:"/app"`
+}
+
+type JavaConfig struct {
+	Home string `env:"JAVA_HOME"`
+}
+
+type KafkaConfig struct {
+	Address string `env:"KAFKA_ADDRESS" envDefault:"localhost:9092"`
+}
 
 type RunnerConfig struct {
 	SimulationID string
@@ -20,41 +54,45 @@ type RunnerConfig struct {
 	KafkaClient  *kgo.Client
 	GRPC         shared.YamlInputConfigGRPC
 	TmpDirectory string
+	Env          *EnvConfig
 }
 
-var config *RunnerConfig
+func Get() *RunnerConfig {
+	once.Do(func() {
+		_ = godotenv.Load(".env")
 
-// pickFreePort Choose a free port to run the model
-func pickFreePort() (int, error) {
-	l, err := net.Listen("tcp", "127.0.0.1:0")
-	if err != nil {
-		return 0, fmt.Errorf("failed to listen on random port: %w", err)
-	}
-	defer func() {
-		if err = l.Close(); err != nil {
-			slog.Debug("Cannot close listening connection", "error", err)
+		cfg := &RunnerConfig{}
+		err := env.Parse(cfg)
+		if err != nil {
+			panic("config error: " + err.Error())
 		}
-	}()
 
-	addr, ok := l.Addr().(*net.TCPAddr)
-	if !ok {
-		return 0, fmt.Errorf("listener addr is not *net.TCPAddr, got %T", l.Addr())
-	}
+		envCfg := &EnvConfig{}
+		if err := env.Parse(envCfg); err != nil {
+			panic("config error: " + err.Error())
+		}
+		cfg.Env = envCfg
 
-	return addr.Port, nil
+		instance = cfg
+	})
+	return instance
 }
 
 func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *RunnerConfig {
-	// Charge la config YAML (Kafka, gRPC, etc.) — on ne va garder que Kafka
-	runnerConfig, err := LoadYamlConfig(yamlConfigPath)
-	if err != nil {
-		panic(fmt.Errorf("failed to load YAML config at %s with error :  %w", yamlConfigPath, err))
+	_ = godotenv.Load(".env")
+
+	envCfg := &EnvConfig{}
+	if err := env.Parse(envCfg); err != nil {
+		panic("config error: " + err.Error())
 	}
 
-	// Pour l'instant tu imposes 1 seul modèle par runner
+	runnerConfig, err := LoadYamlConfig(yamlConfigPath)
+	if err != nil {
+		panic(fmt.Errorf("failed to load YAML config at %s with error : %w", yamlConfigPath, err))
+	}
+
 	model := *manifest.Models[0]
 
-	// 🔹 Choix dynamique du port gRPC pour CE runner
 	grpcPort, err := pickFreePort()
 	if err != nil {
 		panic(fmt.Errorf("failed to allocate gRPC port: %w", err))
@@ -68,8 +106,6 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 		Host: runnerConfig.GRPC.Host,
 		Port: grpcPort,
 	}
-
-	// On fixe l'host (tu peux garder celui du YAML si tu veux)
 
 	slog.Info("Connecting to kafka", "runner_id",
 		model.ID,
@@ -89,7 +125,7 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 		return nil
 	}
 
-	config = &RunnerConfig{
+	instance = &RunnerConfig{
 		SimulationID: manifest.SimulationID,
 		ID:           model.ID,
 		Model:        &model,
@@ -97,12 +133,31 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 		GRPC:         grpcConfig,
 		KafkaClient:  client,
 		TmpDirectory: runnerConfig.TmpDirectory,
+		Env:          envCfg,
 	}
 
-	return config
+	return instance
 }
 
-// LoadYamlConfig load YAML config file
+func pickFreePort() (int, error) {
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		return 0, fmt.Errorf("failed to listen on random port: %w", err)
+	}
+	defer func() {
+		if err = l.Close(); err != nil {
+			slog.Debug("Cannot close listening connection", "error", err)
+		}
+	}()
+
+	addr, ok := l.Addr().(*net.TCPAddr)
+	if !ok {
+		return 0, fmt.Errorf("listener addr is not *net.TCPAddr, got %T", l.Addr())
+	}
+
+	return addr.Port, nil
+}
+
 func LoadYamlConfig(path string) (*shared.YamlInputConfig, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -115,8 +170,4 @@ func LoadYamlConfig(path string) (*shared.YamlInputConfig, error) {
 	}
 
 	return &cfg, nil
-}
-
-func GetConfig() *RunnerConfig {
-	return config
 }

@@ -24,8 +24,6 @@ services:
       context: .
       dockerfile: back/Dockerfile
       target: backend
-    environment:
-      SIMULATOR_ADDR: simulator:8080
     env_file:
       - ./.env
     ports:

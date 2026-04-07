@@ -2,9 +2,9 @@ package simulation
 
 import (
 	"context"
+	"devsforge-coordinator/internal/config"
 	"fmt"
 	"log/slog"
-	"os"
 	"time"
 
 	kafkaShared "devsforge-shared/kafka"
@@ -93,7 +93,7 @@ func GetKafkaTopic(kafkaConnStr string, providedTopic string) (string, error) {
 	}
 
 	// Testing purpose only - env var overrides
-	envTopic := os.Getenv("KAFKA_TOPIC")
+	envTopic := config.Get().Kafka.Topic
 	if envTopic != "" {
 		kafkaTopic = envTopic
 	}

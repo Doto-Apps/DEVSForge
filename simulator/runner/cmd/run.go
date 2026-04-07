@@ -1,3 +1,4 @@
+// Package cmd provides command-line interface and runner execution logic.
 package cmd
 
 import (
@@ -54,10 +55,7 @@ func LaunchRunner(args []string) error {
 	}
 
 	// Initialize logger
-	logDir := os.Getenv("LOG_DIR")
-	if logDir == "" {
-		logDir = "logs"
-	}
+	logDir := config.Get().Env.Log.Dir
 
 	logCfg := logger.DefaultConfig(manifest.SimulationID)
 	logCfg.LogDir = logDir
