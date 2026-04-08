@@ -9,12 +9,6 @@ COPY simulator/runner/go.mod simulator/runner/go.sum* ./simulator/runner/
 COPY simulator/shared/go.mod simulator/shared/go.sum* ./simulator/shared/
 COPY simulator/wrappers/go/go.mod simulator/wrappers/go/go.sum* ./simulator/wrappers/go/
 
-RUN cd back && go mod download && \
-    cd /app/simulator/coordinator && go mod download && \
-    cd /app/simulator/runner && go mod download && \
-    cd /app/simulator/shared && go mod download && \
-    cd /app/simulator/wrappers/go && go mod download
-
 COPY back ./back
 COPY simulator ./simulator
 
@@ -51,7 +45,7 @@ WORKDIR /app
 
 # Install Java 21 and Maven
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-21-jdk \
+    openjdk-21-jdk-headless \
     maven \
     && rm -rf /var/lib/apt/lists/*
 
@@ -75,7 +69,7 @@ COPY --from=builder /app/simulator/wrappers /app/wrappers
 RUN python3 -m compileall ./app/wrappers/python
 # Cache deps and preexisiting files
 COPY --from=builder /app/simulator/wrappers/go /tmp/go-preheat-wrappers
-RUN cd /tmp/go-preheat-wrappers && go mod download && go build all || true && rm -rf /tmp/go-preheat-wrappers
+RUN cd /tmp/go-preheat-wrappers && go build all || true && rm -rf /tmp/go-preheat-wrappers
 
 # Cache Java wrapper dependencies
 COPY --from=builder /app/simulator/wrappers/java /tmp/java-preheat-wrappers
