@@ -1,0 +1,41 @@
+version: "3"
+
+tasks:
+  format:
+    desc: Format front-end code with Biome
+    cmds:
+      - biome format --write ./front
+
+  lint:
+    desc: Lint front-end code with Biome
+    cmds:
+      - biome lint --write ./front
+
+  check:
+    desc: Check and fix front-end code with Biome
+    cmds:
+      - biome check --write ./front
+
+  typecheck:
+    desc: Type check front-end with TypeScript
+    dir: front
+    cmds:
+      - pnpm tsc --noEmit
+
+  dev:
+    desc: Start front-end development server
+    dir: front
+    cmds:
+      - pnpm run dev
+
+  build:
+    desc: Build front-end for production
+    dir: front
+    cmds:
+      - pnpm run build
+
+  test:
+    desc: Run front-end tests with Vitest
+    dir: front
+    cmds:
+      - pnpm run test

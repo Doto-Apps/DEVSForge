@@ -1,8 +1,6 @@
 services:
   backend:
-    build:
-      context: ./
-      dockerfile: ./back/Dockerfile.dev
+    image: cosmtrek/air:latest
     env_file:
       - ./.env
     working_dir: /app/back
@@ -24,8 +22,50 @@ services:
           path: ./back
           target: /app/back
         - action: sync
-          path: ./simulator/
-          target: /app/simulator
+          path: ./simulator/shared
+          target: /app/simulator/shared
+
+  runner-builder:
+    build:
+      context: .
+      dockerfile: simulator/runner/Dockerfile.watch
+    volumes:
+      - ./go.work:/app/go.work
+      - ./go.work.sum:/app/go.work.sum
+      - ./simulator:/app/simulator
+      - runner-binary:/build
+    command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
+    develop:
+      watch:
+        - action: sync+restart
+          path: ./simulator/runner
+        - action: sync+restart
+          path: ./simulator/shared
+
+  simulator:
+    image: cosmtrek/air:latest
+    env_file:
+      - ./.env
+    working_dir: /app/simulator/coordinator
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./back/go.*:/app/back/go.*
+      - ./go.work:/app/go.work
+      - ./go.work.sum:/app/go.work.sum
+      - ./simulator:/app/simulator
+      - runner-binary:/app/devsforge-runner:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka:
+        condition: service_started
+    develop:
+      watch:
+        - action: sync
+          path: ./simulator/coordinator
+          target: /app/simulator/coordinator
+    command: air -c .air.toml
 
   db:
     image: postgres:17-alpine
@@ -67,3 +107,4 @@ services:
 
 volumes:
   postgres-db:
+  runner-binary:
