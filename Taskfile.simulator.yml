@@ -1,0 +1,126 @@
+version: "3"
+
+vars:
+  GOLANGCI_VERSION: v2.11.4
+
+tasks:
+  format:
+    desc: Format all simulator modules (coordinator, runner, shared)
+    cmds:
+      - task: format:coordinator
+      - task: format:runner
+      - task: format:shared
+
+  format:coordinator:
+    desc: Format simulator coordinator code
+    dir: simulator/coordinator
+    cmds:
+      - go fmt ./...
+
+  format:runner:
+    desc: Format simulator runner code
+    dir: simulator/runner
+    cmds:
+      - go fmt ./...
+
+  format:shared:
+    desc: Format simulator shared code
+    dir: simulator/shared
+    cmds:
+      - go fmt ./...
+
+  lint:
+    desc: Lint all simulator modules
+    cmds:
+      - task: lint:coordinator
+      - task: lint:runner
+      - task: lint:shared
+
+  lint:coordinator:
+    desc: Lint simulator coordinator with golangci-lint
+    cmds:
+      - |
+        docker run -t --rm -v $(pwd):/app -w /app/simulator/coordinator --name golangci-lint-devsforge \
+          -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
+          -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
+          -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+          golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}}
+
+  lint:runner:
+    desc: Lint simulator runner with golangci-lint
+    cmds:
+      - |
+        docker run -t --rm -v $(pwd):/app -w /app/simulator/runner --name golangci-lint-devsforge \
+          -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
+          -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
+          -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+          golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}}
+
+  lint:shared:
+    desc: Lint simulator shared with golangci-lint
+    cmds:
+      - |
+        docker run -t --rm -v $(pwd):/app -w /app/simulator/shared --name golangci-lint-devsforge \
+          -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
+          -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
+          -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+          golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}}
+
+  build:
+    desc: Build all simulator modules
+    cmds:
+      - task: build:coordinator
+      - task: build:runner
+      - task: build:shared
+
+  build:coordinator:
+    desc: Build simulator coordinator
+    dir: simulator/coordinator
+    cmds:
+      - go build -v ./...
+
+  build:runner:
+    desc: Build simulator runner
+    dir: simulator/runner
+    cmds:
+      - go build -v ./...
+
+  build:shared:
+    desc: Build simulator shared
+    dir: simulator/shared
+    cmds:
+      - go build -v ./...
+
+  test:
+    desc: Run tests inside Docker runner image
+    deps: [build:runner]
+    cmds:
+      - echo "Building Docker runner image..."
+      - docker build -f ./back/Dockerfile --target runner -t devsforge-test-runner:latest ./
+      - echo "Running tests in Docker..."
+      - docker run --rm --network host -e LOG_DIR="/tmp" -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/app -w /app devsforge-test-runner:latest go test -v ./simulator/runner/tests/...
+
+  tidy:
+    desc: Tidy all simulator modules
+    cmds:
+      - task: tidy:coordinator
+      - task: tidy:runner
+      - task: tidy:shared
+
+  tidy:coordinator:
+    desc: Tidy simulator coordinator module
+    dir: simulator/coordinator
+    cmds:
+      - go mod tidy
+
+  tidy:runner:
+    desc: Tidy simulator runner module
+    dir: simulator/runner
+    cmds:
+      - go mod tidy
+
+  tidy:shared:
+    desc: Tidy simulator shared module
+    dir: simulator/shared
+    cmds:
+      - go mod tidy

@@ -60,7 +60,10 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 		return err
 	}
 	// Attente d'un NextTime par runner
-	c.RunNextTime(nextTimeCh)
+	slog.Info("Waiting runners answers with initial NextTime")
+	if err = c.RunNextTime(nextTimeCh); err != nil {
+		return err
+	}
 	slog.Info("All runners responded with initial NextTime")
 
 	// --- Phase 2 : Boucle principale de simulation ---

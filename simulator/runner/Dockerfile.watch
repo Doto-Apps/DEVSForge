@@ -1,0 +1,9 @@
+FROM golang:1.25.4
+
+WORKDIR /app
+
+COPY go.work ./
+COPY back/go.mod back/go.sum* ./back/
+COPY simulator ./simulator
+
+CMD ["sh", "-c", "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"]

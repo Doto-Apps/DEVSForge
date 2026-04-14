@@ -1,56 +1,98 @@
 version: "3"
 
+includes:
+  front:
+    taskfile: Taskfile.front.yml
+  back:
+    taskfile: Taskfile.back.yml
+  simulator:
+    taskfile: Taskfile.simulator.yml
+
 vars:
   MODULES_DIRS:
     sh: awk '/use \(/,/\)/ { if ($1 ~ /^\./) print $1 }' go.work
-  # Same as in .github folder
-  GOLANGCI_VERSION: v2.11.4
 
 tasks:
-  tidy:
-    desc: Execute tidy on all modules
+  format:
+    desc: Format all code (front, back, simulator)
     cmds:
-      - for: { var: MODULES_DIRS }
-        cmd: cd {{.ITEM}} && go mod tidy
-    silent: true
-
-  ci:
-    desc: Launch all task for ci.
-    deps: [build, lint, test]
-
-  build:
-    desc: Build all modules.
-    deps: [tidy]
-    cmds:
-      - for: { var: MODULES_DIRS }
-        cmd: cd {{.ITEM}} && go build -v ./...
+      - task: front:format
+      - task: back:format
+      - task: simulator:format
 
   lint:
-    desc: Lint all go modules.
+    desc: Lint all code (front, back, simulator)
     cmds:
-      - for: { var: MODULES_DIRS }
-        cmd: |
-          echo -e "\033[1;34m==================================================\033[0m"
-          echo -e "\033[1;34m🔍 Linting moddule : {{.ITEM}}\033[0m"
-          echo -e "\033[1;34m==================================================\033[0m"
-          docker run -t --rm -v $(pwd):/app -w /app/{{.ITEM}} --name golangci-lint-devsforge \
-          --user $(id -u):$(id -g) \
-          -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
-          -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
-          -v ~/.cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
-          golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}} || true
+      - task: front:lint
+      - task: back:lint
+      - task: simulator:lint
+
+  build:
+    desc: Build all modules (back, simulator)
+    deps: [tidy]
+    cmds:
+      - task: back:build
+      - task: simulator:build
 
   test:
-    desc: Run tests inside Docker runner image
+    desc: Run all tests (simulator)
     deps: [build]
     cmds:
-      - echo "Building Docker runner image..."
-      - docker build -f ./back/Dockerfile --target runner -t devsforge-test-runner:latest ./
-      - echo "Running tests in Docker..."
-      - docker run --rm --network host -e LOG_DIR="/tmp" -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/app -w /app devsforge-test-runner:latest go test -v ./simulator/runner/tests/...
+      - task: simulator:test
+
+  tidy:
+    desc: Execute tidy on all Go modules
+    cmds:
+      - task: back:tidy
+      - task: simulator:tidy
+
+  ci:
+    desc: Launch all tasks for CI
+    deps: [build, lint, test]
+
+  dev:
+    desc: Start back and simulator services in dev mode
+    cmds:
+      - echo "Starting go services..."
+      - task: back:dev
+
+  dev:front:
+    desc: Start front-end only
+    cmds:
+      - task: front:dev
+
+  start:prod:aio:
+    desc: Start production environment with Docker Compose
+    cmds:
+      - docker compose -f docker-compose.yml up --pull always
+
+  start:prod:
+    desc: Start production islands environment
+    cmds:
+      - docker compose -f docker-compose.islands.yml up --pull always
+
+  start:local:aio:
+    desc: Start local islands environment
+    cmds:
+      - docker compose -f docker-compose.local.yml up --build
+
+  start:local:
+    desc: Start local islands environment
+    cmds:
+      - docker compose -f docker-compose.local.islands.yml up --build
+
+  clean:
+    desc: Clean back-end containers
+    cmds:
+      - task: back:clean
+
+  generate-sdk:
+    desc: Generate SDK and API types
+    cmds:
+      - task: back:generate-sdk
 
   prod-docker-build:
-    desc: Test docker image creations for backend, simulator, runner and all-in-one.
+    desc: Test docker image creations for backend, simulator, runner and all-in-one
     deps: [tidy]
     cmds:
       - defer: docker image rm devsforge-local-backend-test:latest > /dev/null || true

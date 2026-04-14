@@ -1,0 +1,62 @@
+version: "3"
+
+tasks:
+  format:
+    desc: Format back-end code with go fmt
+    dir: back
+    cmds:
+      - go fmt ./...
+
+  lint:
+    desc: Lint back-end code with golangci-lint
+    vars:
+      GOLANGCI_VERSION: v2.11.4
+    cmds:
+      - |
+        docker run -t --rm -v $(pwd):/app -w /app/back --name golangci-lint-devsforge \
+        -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
+        -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
+        -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+        golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}}
+
+  lint:fix:
+    desc: Lint and fix back-end code with golangci-lint
+    vars:
+      GOLANGCI_VERSION: v2.11.4
+    cmds:
+      - |
+        docker run -t --rm -v $(pwd):/app -w /app/back --name golangci-lint-devsforge \
+        -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
+        -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
+        -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+        golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run --fix {{.CLI_ARGS}}
+
+  generate-sdk:
+    desc: Generate SDK and API types (Swagger + OpenAPI + TypeScript types)
+    dir: ./back/
+    cmds:
+      - swag init
+      - swagger2openapi -o ./docs/openapi.json ./docs/swagger.json
+      - npx openapi-typescript ./docs/openapi.json -o ../front/src/api/v1.d.ts
+
+  dev:
+    desc: Start back-end development server with Docker Compose
+    cmds:
+      - docker compose -f docker-compose.dev-go.yml up --build
+
+  clean:
+    desc: Stop and remove back-end containers and volumes
+    cmds:
+      - docker compose -f docker-compose.back.yml down -v
+
+  build:
+    desc: Build back-end Go module
+    dir: back
+    cmds:
+      - go build -v ./...
+
+  tidy:
+    desc: Tidy back-end Go module
+    dir: back
+    cmds:
+      - go mod tidy
