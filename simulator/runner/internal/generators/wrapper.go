@@ -40,9 +40,8 @@ func (w *WrapperInfo) Cleanup() error {
 		}
 
 		// Wait for process to terminate
-		if err := w.Cmd.Wait(); err != nil {
-			slog.Error("Process wait error", "error", err)
-		}
+		_ = w.Cmd.Wait()
+
 		slog.Info("Process stopped", "pid", pid)
 		w.Cmd = nil
 

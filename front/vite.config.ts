@@ -9,11 +9,4 @@ export default defineConfig({
 			"@": path.resolve(__dirname, "./src"),
 		},
 	},
-	server: {
-		host: "0.0.0.0", // Permet à Docker de servir l'application sur l'adresse du conteneur
-		port: 5173,
-		watch: {
-			usePolling: true, // Nécessaire pour les environnements Docker
-		},
-	},
 });

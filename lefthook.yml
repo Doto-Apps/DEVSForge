@@ -27,7 +27,7 @@ pre-commit:
   jobs:
     - name: Format front
       run: pnpm run format:front
-      glob: "front/**/*.{js,ts,cjs,mjs,d.cts,d.mts,jsx,tsx,json,jsonc}"
+      glob: "front/**"
       stage_fixed: true
 
     - name: Format back

@@ -39,28 +39,31 @@ tasks:
   lint:coordinator:
     desc: Lint simulator coordinator with golangci-lint
     cmds:
-      - docker run -t --rm -v $(pwd):/app -w /app/simulator/coordinator --name golangci-lint-devsforge \
+      - |
+        docker run -t --rm -v $(pwd):/app -w /app/simulator/coordinator --name golangci-lint-devsforge \
           -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
           -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
-          -v ~/.cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+          -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
           golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}}
 
   lint:runner:
     desc: Lint simulator runner with golangci-lint
     cmds:
-      - docker run -t --rm -v $(pwd):/app -w /app/simulator/runner --name golangci-lint-devsforge \
+      - |
+        docker run -t --rm -v $(pwd):/app -w /app/simulator/runner --name golangci-lint-devsforge \
           -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
           -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
-          -v ~/.cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+          -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
           golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}}
 
   lint:shared:
     desc: Lint simulator shared with golangci-lint
     cmds:
-      - docker run -t --rm -v $(pwd):/app -w /app/simulator/shared --name golangci-lint-devsforge \
+      - |
+        docker run -t --rm -v $(pwd):/app -w /app/simulator/shared --name golangci-lint-devsforge \
           -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
           -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
-          -v ~/.cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
+          -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
           golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}}
 
   build:

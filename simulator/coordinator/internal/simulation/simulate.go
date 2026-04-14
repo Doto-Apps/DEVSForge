@@ -105,6 +105,7 @@ func RunSimulation(params types.SimulationParams) error {
 	cfg := InitConfig(yamlConfig)
 
 	if err := RunShellSimulation(manifest, configFile, cfg, logStore, simLogger); err != nil {
+		slog.Info("RunShellSimulation error", "error", err)
 		if setStatusErr := logStore.SetStatus(manifest.SimulationID, logstore.SimulationStatus{
 			Status:       "failed",
 			CreatedAt:    createdAt,
@@ -134,19 +135,17 @@ func RunSimulation(params types.SimulationParams) error {
 		slog.Warn("Failed to write final simulation status", "error", err)
 	}
 
-	go func() {
-		time.Sleep(3 * time.Second)
-		if err := logStore.DeleteAllLog(manifest.SimulationID); err != nil {
-			slog.Warn("Failed to delete all.log", "simulationId", manifest.SimulationID, "error", err)
-		}
-	}()
+	if err := logStore.DeleteAllLog(manifest.SimulationID); err != nil {
+		slog.Warn("Failed to delete all.log", "simulationId", manifest.SimulationID, "error", err)
+	}
 
 	if err := CleanupKafka(*params.KafkaAddress, kafkaTopic); err != nil {
 		return fmt.Errorf("error during cleanup: %w", err)
 	}
-	if err = os.RemoveAll(rootDir); err != nil {
-		slog.Error("Cannot remove simulation rootDir", "error", err)
-	}
+	// Disable actually we need a better way to delete the simulation files
+	// if err = os.RemoveAll(rootDir); err != nil {
+	// 	slog.Error("Cannot remove simulation rootDir", "error", err)
+	// }
 
 	slog.Info("Done")
 	return nil

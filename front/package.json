@@ -64,7 +64,7 @@
 		"preview": "vite preview",
 		"start-dev": "vite --mode development",
 		"start-prod": "vite --mode production",
-		"test": "vitest",
+		"test": "vitest run",
 		"test:dev": "vitest dev",
 		"typecheck": "tsc -b"
 	},

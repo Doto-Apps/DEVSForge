@@ -51,21 +51,15 @@ tasks:
     deps: [build, lint, test]
 
   dev:
-    desc: Start all services (front + back)
+    desc: Start back and simulator services in dev mode
     cmds:
-      - echo "Starting all services..."
+      - echo "Starting go services..."
       - task: back:dev
-      - task: front:dev
 
   dev:front:
     desc: Start front-end only
     cmds:
-      - task: front:start
-
-  dev:back:
-    desc: Start back-end only
-    cmds:
-      - task: back:start
+      - task: front:dev
 
   start:prod:aio:
     desc: Start production environment with Docker Compose

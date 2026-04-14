@@ -18,7 +18,7 @@ import (
 
 func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, coordCfg *types.CoordConfig, logStore logstore.LogStore, logger *slog.Logger) error {
 	slog.Info("Launching runners using shell", "count", len(manifest.Models), "loggerIsNil", logger == nil)
-	errCh := make(chan error, len(manifest.Models))
+	errCh := make(chan error, len(manifest.Models)+1) // +1 for coordinator
 	runnerCmd := config.Get().Paths.RunnerCmd
 
 	// Set simulator folder
@@ -80,7 +80,9 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 			cmd.Env = append(os.Environ(), utils.EnvSimulatorRoot+"="+simulatorRootDir)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
+			slog.Info("Launch runner", "model", m.ID)
 			if err := cmd.Run(); err != nil {
+				slog.Error("Runner error", "model", m.ID, "error", err)
 				errCh <- fmt.Errorf("error launching runner %s : %w", m.ID, err)
 				return
 			}
@@ -88,18 +90,25 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 		}(model)
 	}
 
-	coordinator := CreateCoordinnator(coordCfg, context.Background(), runnerStates)
-	coordinator.Logger = logger
-	slog.Info("All models started, launching coordinator main loop")
+	// Launch coordinator in a goroutine
+	go func() {
+		coordinator := CreateCoordinnator(coordCfg, context.Background(), runnerStates)
+		coordinator.Logger = logger
+		slog.Info("All models started, launching coordinator main loop")
 
-	if err := coordinator.RunCoordinator(&manifest); err != nil {
-		return fmt.Errorf("coordination error: %w", err)
-	}
+		if err := coordinator.RunCoordinator(&manifest); err != nil {
+			errCh <- fmt.Errorf("coordination error: %w", err)
+		} else {
+			errCh <- nil
+		}
+	}()
 
-	for range manifest.Models {
+	// Wait for all runners + coordinator to complete
+	totalTasks := len(manifest.Models) + 1 // runners + coordinator
+	for i := 0; i < totalTasks; i++ {
 		if err := <-errCh; err != nil {
-			slog.Error("Runner failed", "error", err)
-			return fmt.Errorf("runner failure: %w", err)
+			slog.Error("Simulation failed", "error", err)
+			return fmt.Errorf("simulation error: %w", err)
 		}
 	}
 

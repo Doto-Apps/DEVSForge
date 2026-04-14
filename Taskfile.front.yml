@@ -4,17 +4,17 @@ tasks:
   format:
     desc: Format front-end code with Biome
     cmds:
-      - biome format --write ./front
+      - pnpm biome format --write ./front
 
   lint:
     desc: Lint front-end code with Biome
     cmds:
-      - biome lint --write ./front
+      - pnpm biome lint --write ./front --diagnostic-level error
 
   check:
     desc: Check and fix front-end code with Biome
     cmds:
-      - biome check --write ./front
+      - pnpm biome check --write ./front
 
   typecheck:
     desc: Type check front-end with TypeScript

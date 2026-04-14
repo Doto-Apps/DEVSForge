@@ -37,7 +37,7 @@ ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
 ENV PATH="/usr/lib/jvm/java-21-openjdk-amd64/bin:${PATH}"
 
 COPY --from=builder /usr/local/go /usr/local/go
-ENV PATH="/usr/local/go/bin:${PATH}"
+ENV PATH="/usr/local/go/bin:/root/go/bin:${PATH}"
 # Go cache env
 ENV GOMODCACHE=/opt/go-cache/mod
 ENV GOCACHE=/opt/go-cache/build
@@ -60,6 +60,7 @@ RUN cd /tmp/java-preheat-wrappers && mvn dependency:resolve -q || true && rm -rf
 COPY --from=builder /app/bin/devsforge-runner /app/devsforge-runner
 
 COPY --from=builder /app/bin/devsforge-coordinator /app/devsforge-coordinator
+RUN go install github.com/air-verse/air@latest
 EXPOSE 8080
 VOLUME [ "/app/sim-logs" ]
-CMD ["/app/devsforge-coordinator", "--daemon"]
+CMD ["air", "-c", ".air.toml", "--", "--daemon"]

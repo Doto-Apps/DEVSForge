@@ -3,6 +3,9 @@ services:
     image: cosmtrek/air:latest
     env_file:
       - ./.env
+    environment:
+      - GOMODCACHE=/go/pkg/mod
+      - GOCACHE=/root/.cache/go-build
     working_dir: /app/back
     ports:
       - "3000:3000"
@@ -11,6 +14,8 @@ services:
       - ./go.work:/app/go.work
       - ./go.work.sum:/app/go.work.sum
       - ./simulator:/app/simulator
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
     depends_on:
       db:
         condition: service_healthy
@@ -26,35 +31,50 @@ services:
           target: /app/simulator/shared
 
   runner-builder:
-    build:
-      context: .
-      dockerfile: simulator/runner/Dockerfile.watch
+    image: golang:1.25.4
+    working_dir: /app
+    environment:
+      - GOMODCACHE=/go/pkg/mod
+      - GOCACHE=/root/.cache/go-build
     volumes:
       - ./go.work:/app/go.work
       - ./go.work.sum:/app/go.work.sum
       - ./simulator:/app/simulator
-      - runner-binary:/build
+      - ./back/go.mod:/app/back/go.mod
+      - ./tmp/build:/build
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
     command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
     develop:
       watch:
         - action: sync+restart
           path: ./simulator/runner
+          target: ./simulator/runner/
         - action: sync+restart
           path: ./simulator/shared
+          target: ./simulator/shared
 
   simulator:
-    image: cosmtrek/air:latest
+    build:
+      dockerfile: ./simulator/Dockerfile
+    environment:
+      - GOMODCACHE=/go/pkg/mod
+      - GOCACHE=/root/.cache/go-build
     env_file:
       - ./.env
     working_dir: /app/simulator/coordinator
     ports:
-      - "3000:3000"
+      - "8080:8080"
     volumes:
-      - ./back/go.*:/app/back/go.*
+      - ./back/go.mod:/app/back/go.mod
       - ./go.work:/app/go.work
       - ./go.work.sum:/app/go.work.sum
       - ./simulator:/app/simulator
-      - runner-binary:/app/devsforge-runner:ro
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+      - ./tmp/logs:/app/sim-logs
+      - ./tmp/build/devsforge-runner:/app/devsforge-runner
+      - ./simulator/wrappers:/app/wrappers
     depends_on:
       db:
         condition: service_healthy
@@ -65,7 +85,7 @@ services:
         - action: sync
           path: ./simulator/coordinator
           target: /app/simulator/coordinator
-    command: air -c .air.toml
+    # entrypoint: air -c .air.toml -- --daemon
 
   db:
     image: postgres:17-alpine
@@ -107,4 +127,5 @@ services:
 
 volumes:
   postgres-db:
-  runner-binary:
+  go-mod-cache:
+  go-build-cache:
