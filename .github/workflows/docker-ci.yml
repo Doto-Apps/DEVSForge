@@ -19,4 +19,4 @@ jobs:
       - name: Validate aio release compose
         run: docker compose -f docker-compose.yml config
       - name: Validate islands release compose
-        run: docker compose -f docker-compose.islands.yml config
+        run: docker compose -f docker-compose.dev-go.yml config

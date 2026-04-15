@@ -58,8 +58,8 @@ func validUser(id string, p string) bool {
 //	@Tags			user
 //	@Produce		json
 //	@Success		200	{array}		model.User
-//	@Failure		404	{object}	map[string]interface{}
-//	@Failure		500	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]any
+//	@Failure		500	{object}	map[string]any
 //	@Router			/user [get]
 func getAllUsers(c *fiber.Ctx) error {
 	db := database.DB
@@ -86,7 +86,7 @@ func getAllUsers(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			id	path		string	true	"User ID"
 //	@Success		200	{object}	model.User
-//	@Failure		404	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]any
 //	@Router			/user/{id} [get]
 func getUser(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -109,9 +109,9 @@ func getUser(c *fiber.Ctx) error {
 //	@Param			id		path		string						true	"User ID"
 //	@Param			user	body		request.UpdateUserRequest	true	"Partial user update"
 //	@Success		200		{object}	model.User
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		404		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]any
+//	@Failure		404		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/user/{id} [patch]
 func patchUser(c *fiber.Ctx) error {
 	var uui request.UpdateUserRequest
@@ -142,10 +142,10 @@ func patchUser(c *fiber.Ctx) error {
 //	@Tags			user
 //	@Param			id		path		string					true	"User ID"
 //	@Param			user	body		request.PasswordRequest	true	"User password confirmation"
-//	@Success		204		{object}	map[string]interface{}
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		404		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Success		204		{object}	map[string]any
+//	@Failure		400		{object}	map[string]any
+//	@Failure		404		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/user/{id} [delete]
 func deleteUser(c *fiber.Ctx) error {
 	var pi request.PasswordRequest

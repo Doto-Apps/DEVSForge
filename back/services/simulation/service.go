@@ -1,3 +1,4 @@
+// Package simulation handle simulation launch and database updates
 package simulation
 
 import (
@@ -9,6 +10,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -40,7 +42,7 @@ func (s *SimulationService) CreateSimulation(
 		UserID:   userID,
 		ModelID:  modelID,
 		Status:   model.SimulationStatusPending,
-		Manifest: "{}", // Temporary valid JSON, will be replaced with actual manifest
+		Manifest: "{}",
 	}
 
 	// Create simulation entry first to get the ID
@@ -111,47 +113,25 @@ func (s *SimulationService) StartSimulation(simulationID string) error {
 		return fmt.Errorf("failed to write manifest file: %w", err)
 	}
 
-	// Get Kafka address from config
-	cfg := config.Get()
-	kafkaAddr := cfg.Kafka.Address
-
-	// Generate Kafka topic name for this simulation
-	kafkaTopic := generateTopicName(simulationID)
-
-	// Start Kafka event consumer before launching coordinator (only for local and remote sync)
-	simulatorMode := cfg.Simulator.Mode
-	simulatorAddr := cfg.Simulator.Addr
-
-	if simulatorAddr == "" || simulatorMode == "sync" {
-		if err := eventConsumers.StartConsumer(simulationID, kafkaTopic); err != nil {
-			_ = os.Remove(manifestFile)
-			s.markSimulationFailed(&simulation, fmt.Sprintf("failed to start event consumer: %v", err))
-			return fmt.Errorf("failed to start event consumer: %w", err)
-		}
-	}
-
 	// Launch coordinator in background
-	go s.runCoordinator(simulationID, manifestFile, kafkaAddr, kafkaTopic, simulatorAddr, simulatorMode)
+	go s.runCoordinator(simulationID, manifestFile)
 
 	return nil
 }
 
-// runCoordinator Launch remote or local simulator
+// runCoordinator Launch simulator sync or async
 func (s *SimulationService) runCoordinator(
 	simulationID string,
 	manifestFile string,
-	kafkaAddr string,
-	kafkaTopic string,
-	simulatorAddr string,
-	simulatorMode string,
 ) {
+	simulatorMode := config.Get().Simulator.Mode
+	simulatorAddr := config.Get().Simulator.Addr
+
 	slog.Info("Simulation address and mode", "simulatorAddr", simulatorAddr, "simulatorMode", simulatorMode)
-	if simulatorAddr == "" {
-		s.runLocalCoordinator(simulationID, manifestFile, kafkaAddr, kafkaTopic)
-	} else if simulatorMode == "async" {
-		s.runRemoteCoordinatorAsync(simulatorAddr, simulationID, manifestFile, kafkaAddr, kafkaTopic)
+	if simulatorMode == "async" {
+		s.runRemoteCoordinatorAsync(simulationID, manifestFile)
 	} else {
-		s.runRemoteCoordinatorSync(simulatorAddr, simulationID, manifestFile, kafkaAddr, kafkaTopic)
+		s.runRemoteCoordinatorSync(simulationID, manifestFile)
 	}
 }
 
@@ -170,7 +150,7 @@ func (s *SimulationService) markSimulationFailedByID(simulationID string, errorM
 
 	result := db.Model(&model.Simulation{}).
 		Where("id = ?", simulationID).
-		Updates(map[string]interface{}{
+		Updates(map[string]any{
 			"status":        model.SimulationStatusFailed,
 			"error_message": errorMsg,
 			"completed_at":  now,
@@ -214,4 +194,49 @@ func (s *SimulationService) GetUserSimulations(userID string) ([]model.Simulatio
 	}
 
 	return simulations, nil
+}
+
+// generateTopicName generates a Kafka topic name for a simulation
+func generateTopicName(simulationID string) string {
+	// Use first 8 chars of simulation ID for shorter topic name
+	shortID := simulationID
+	if len(shortID) > 8 {
+		shortID = shortID[:8]
+	}
+	return "sim-" + strings.ReplaceAll(shortID, "-", "")
+}
+
+// getModelRecursice retrieves models recursively
+func getModelRecursice(id string, userID string) (models []model.Model, err error) {
+	db := database.DB
+
+	modelIds := make([]string, 0)
+	modelIds = append(modelIds, id)
+	models = make([]model.Model, 0)
+
+	for len(modelIds) > 0 {
+		var model model.Model
+
+		flag := false
+
+		for _, v := range models {
+			if v.ID == modelIds[0] {
+				flag = true
+			}
+		}
+		if !flag {
+			db.Find(&model, "user_id = ? AND id = ?", userID, modelIds[0])
+			if model.Name == "" {
+				return nil, fmt.Errorf("MODEL_NOT_FOUND")
+			} else {
+				models = append(models, model)
+				for _, v := range model.Components {
+					modelIds = append(modelIds, v.ModelID)
+				}
+			}
+		}
+		modelIds = modelIds[1:]
+	}
+
+	return models, nil
 }

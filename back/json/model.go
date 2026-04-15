@@ -49,7 +49,7 @@ const (
 type ModelParameter struct {
 	Name        string        `json:"name" validate:"required"`
 	Type        ParameterType `json:"type" validate:"required"`
-	Value       interface{}   `json:"value" validate:"required"`
+	Value       any           `json:"value" validate:"required"`
 	Description string        `json:"description,omitempty"`
 }
 

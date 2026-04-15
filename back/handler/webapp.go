@@ -13,7 +13,7 @@ import (
 	"devsforge/services"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"regexp"
 	"strings"
 	"time"
@@ -179,7 +179,7 @@ Return only JSON following the provided schema.
 		Model: openai.F(aiSettings.APIModel),
 	})
 	if err != nil {
-		log.Println("OpenAI Chat Completion error:", err)
+		slog.Error("OpenAI Chat Completion error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
 	}
 	if chat == nil || len(chat.Choices) == 0 {

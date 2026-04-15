@@ -27,7 +27,7 @@ func SetupLibraryRoutes(app *fiber.App) {
 //	@Tags			libraries
 //	@Produce		json
 //	@Success		200	{array}		model.Library
-//	@Failure		500	{object}	map[string]interface{}
+//	@Failure		500	{object}	map[string]any
 //	@Router			/library [get]
 func getAllLibraries(c *fiber.Ctx) error {
 	db := database.DB
@@ -44,7 +44,7 @@ func getAllLibraries(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			id	path		string	true	"Library ID"
 //	@Success		200	{object}	model.Library
-//	@Failure		404	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]any
 //	@Router			/library/{id} [get]
 func getLibrary(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -66,8 +66,8 @@ func getLibrary(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			library	body		request.LibraryRequest	true	"Library data"
 //	@Success		201		{object}	model.Library
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/library [post]
 func createLibrary(c *fiber.Ctx) error {
 	db := database.DB
@@ -92,9 +92,9 @@ func createLibrary(c *fiber.Ctx) error {
 //	@Description	Delete a library by its ID
 //	@Tags			libraries
 //	@Param			id	path		string	true	"Library ID"
-//	@Success		204	{object}	map[string]interface{}
-//	@Failure		404	{object}	map[string]interface{}
-//	@Failure		400	{object}	map[string]interface{}
+//	@Success		204	{object}	map[string]any
+//	@Failure		404	{object}	map[string]any
+//	@Failure		400	{object}	map[string]any
 //	@Router			/library/{id} [delete]
 func deleteLibrary(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -119,8 +119,8 @@ func deleteLibrary(c *fiber.Ctx) error {
 //	@Param			id			path		string					true	"Library ID"
 //	@Param			updateData	body		request.LibraryRequest	true	"Fields to update"
 //	@Success		200			{object}	model.Library
-//	@Failure		400			{object}	map[string]interface{}
-//	@Failure		404			{object}	map[string]interface{}
+//	@Failure		400			{object}	map[string]any
+//	@Failure		404			{object}	map[string]any
 //	@Router			/library/{id} [patch]
 func patchLibrary(c *fiber.Ctx) error {
 	db := database.DB

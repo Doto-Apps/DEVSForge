@@ -3,6 +3,7 @@ package simulation
 import (
 	"bytes"
 	"context"
+	"devsforge/config"
 	"devsforge/database"
 	"devsforge/model"
 	"encoding/json"
@@ -11,32 +12,12 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"gorm.io/datatypes"
 )
 
-type SimulationLogsResponse struct {
-	SimulationID  string       `json:"simulationId"`
-	Status        string       `json:"status"`
-	CreatedAt     int64        `json:"createdAt"`
-	EndedAt       int64        `json:"endedAt,omitempty"`
-	ErrorMessage  string       `json:"errorMessage,omitempty"`
-	KafkaTopic    string       `json:"kafkaTopic"`
-	Logs          []LogMessage `json:"logs"`
-	TotalMessages *int         `json:"totalMessages,omitempty"`
-}
-
-type LogMessage struct {
-	Timestamp int64       `json:"timestamp"`
-	Sender    string      `json:"sender"`
-	DevsType  string      `json:"devsType"`
-	Data      interface{} `json:"data"`
-}
-
-// runRemoteCoordinatorAsync executes the coordinator asynchronously with polling
-func (s *SimulationService) runRemoteCoordinatorAsync(simulatorAddr string, simulationID string, manifestFile string, kafkaAddr string, kafkaTopic string) {
+func (s *SimulationService) runRemoteCoordinatorAsync(simulationID string, manifestFile string) {
 	defer func() {
 		if err := os.Remove(manifestFile); err != nil {
 			slog.Warn("cannot delete temporary manifest file")
@@ -53,10 +34,14 @@ func (s *SimulationService) runRemoteCoordinatorAsync(simulatorAddr string, simu
 		return
 	}
 
-	body := map[string]interface{}{
-		"json":  string(manifestData),
-		"kafka": kafkaAddr,
-		"topic": kafkaTopic,
+	cfg := config.Get()
+	kafkaAddr := cfg.Kafka.Address
+	kafkaTopic := generateTopicName(simulationID)
+
+	body := SimulateRequestBody{
+		JSON:       string(manifestData),
+		KafkaAddr:  kafkaAddr,
+		KafkaTopic: kafkaTopic,
 	}
 	jsonData, err := json.Marshal(body)
 	if err != nil {
@@ -65,12 +50,7 @@ func (s *SimulationService) runRemoteCoordinatorAsync(simulatorAddr string, simu
 		return
 	}
 
-	if !strings.HasPrefix(simulatorAddr, "http://") && !strings.HasPrefix(simulatorAddr, "https://") {
-		simulatorAddr = "http://" + simulatorAddr
-	}
-
-	// POST /simulate-async
-	url := simulatorAddr + "/simulate-async"
+	url := config.Get().Simulator.Addr + "/simulate-async"
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
@@ -106,16 +86,11 @@ func (s *SimulationService) runRemoteCoordinatorAsync(simulatorAddr string, simu
 	respBody, _ := io.ReadAll(resp.Body)
 	log.Info("Remote coordinator launched successfully", "response", string(respBody))
 
-	// Start polling
-	s.pollSimulationStatus(simulatorAddr, simulationID, log)
+	s.pollSimulationStatus(simulationID, log)
 }
 
-func (s *SimulationService) pollSimulationStatus(simulatorAddr string, simulationID string, log *slog.Logger) {
-	if !strings.HasPrefix(simulatorAddr, "http://") && !strings.HasPrefix(simulatorAddr, "https://") {
-		simulatorAddr = "http://" + simulatorAddr
-	}
-
-	pollURL := simulatorAddr + "/simulation/" + simulationID + "/logs"
+func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.Logger) {
+	pollURL := fmt.Sprintf("%s/simulation/%s/logs", config.Get().Simulator.Addr, simulationID)
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
@@ -146,7 +121,6 @@ func (s *SimulationService) pollSimulationStatus(simulatorAddr string, simulatio
 			s.markSimulationFailedByID(simulationID, fmt.Sprintf("polling timeout after %v", timeout))
 			return
 		case <-ticker.C:
-			// Fetch with pagination (100 messages per poll)
 			req, err := http.NewRequest(http.MethodGet, pollURL, nil)
 			if err != nil {
 				log.Error("Failed to create poll request", "error", err)
@@ -203,10 +177,8 @@ func (s *SimulationService) pollSimulationStatus(simulatorAddr string, simulatio
 			}
 			_ = resp.Body.Close()
 
-			// Reset error counter on successful response
 			consecutiveErrors = 0
 
-			// Save new messages
 			if len(logsResp.Logs) > 0 {
 				s.saveSimulationEvents(simulationID, logsResp.Logs, log)
 				lastOffset += len(logsResp.Logs)
@@ -215,7 +187,6 @@ func (s *SimulationService) pollSimulationStatus(simulatorAddr string, simulatio
 				emptyPollsCount++
 			}
 
-			// Check if simulation has ended
 			if !simulationEnded && logsResp.Status != "running" {
 				simulationEnded = true
 				finalStatus = logsResp.Status
@@ -223,13 +194,11 @@ func (s *SimulationService) pollSimulationStatus(simulatorAddr string, simulatio
 				log.Info("Simulation ended, draining remaining messages", "status", finalStatus)
 			}
 
-			// Exit only when simulation has ended AND we have drained all messages
 			if simulationEnded && emptyPollsCount >= maxEmptyPolls {
 				log.Info("All messages collected", "totalMessages", lastOffset)
 
 				now := time.Now()
 
-				// Update simulation status in database
 				switch finalStatus {
 				case "completed":
 					result := db.Model(&model.Simulation{}).
@@ -258,8 +227,7 @@ func (s *SimulationService) pollSimulationStatus(simulatorAddr string, simulatio
 					}
 				}
 
-				// Call /clean endpoint on simulator to remove temporary logs
-				s.cleanSimulationLogs(simulatorAddr, simulationID, log)
+				s.cleanSimulationLogs(simulationID, log)
 
 				return
 			}
@@ -273,12 +241,10 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 	seen := make(map[string]bool)
 	events := make([]model.SimulationEvent, 0, len(logs))
 	for _, logMsg := range logs {
-		// Skip non-DEVS messages
 		if logMsg.DevsType == "" {
 			continue
 		}
 
-		// Deduplicate by (devsType, target, timestamp)
 		target := ""
 		if dataMap, ok := logMsg.Data.(map[string]any); ok {
 			if targetVal, exists := dataMap["target"]; exists {
@@ -294,14 +260,12 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 		}
 		seen[dedupKey] = true
 
-		// Extract sender
 		var sender *string
 		if logMsg.Sender != "" {
 			s := logMsg.Sender
 			sender = &s
 		}
 
-		// Extract target and simulation time from Data
 		var targetPtr *string
 		var simulationTime *float64
 
@@ -316,7 +280,6 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 					simulationTime = &timeFloat
 				}
 			}
-			// Also check for simulationTime
 			if simTimeVal, exists := dataMap["simulationTime"]; exists {
 				if simTimeFloat, ok := simTimeVal.(float64); ok {
 					simulationTime = &simTimeFloat
@@ -324,7 +287,6 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 			}
 		}
 
-		// Serialize payload
 		payloadJSON, err := json.Marshal(logMsg.Data)
 		if err != nil {
 			log.Warn("Failed to marshal log payload", "error", err)
@@ -351,12 +313,8 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 	}
 }
 
-func (s *SimulationService) cleanSimulationLogs(simulatorAddr string, simulationID string, log *slog.Logger) {
-	if !strings.HasPrefix(simulatorAddr, "http://") && !strings.HasPrefix(simulatorAddr, "https://") {
-		simulatorAddr = "http://" + simulatorAddr
-	}
-
-	cleanURL := simulatorAddr + "/simulation/" + simulationID + "/clean"
+func (s *SimulationService) cleanSimulationLogs(simulationID string, log *slog.Logger) {
+	cleanURL := fmt.Sprintf("%s/simulation/%s/clean", config.Get().Simulator.Addr, simulationID)
 
 	client := &http.Client{
 		Timeout: 10 * time.Second,

@@ -58,8 +58,8 @@ func GetLanguages(c *fiber.Ctx) error {
 //	@Param			lang	path		string	true	"Language ID (go, python)"
 //	@Param			name	query		string	false	"Model name to inject in template"	default(MyModel)
 //	@Success		200		{object}	response.LanguageTemplateResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/languages/{lang}/template [get]
 func GetLanguageTemplate(c *fiber.Ctx) error {
 	langParam := c.Params("lang")

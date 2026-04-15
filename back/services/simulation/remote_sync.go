@@ -2,6 +2,7 @@ package simulation
 
 import (
 	"bytes"
+	"devsforge/config"
 	"devsforge/database"
 	"devsforge/model"
 	"encoding/json"
@@ -10,13 +11,10 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 )
 
-// runRemoteCoordinatorSync executes the coordinator subprocess (synchronous with Kafka)
-func (s *SimulationService) runRemoteCoordinatorSync(simulatorAddr string, simulationID string, manifestFile string, kafkaAddr string, kafkaTopic string) {
-	defer eventConsumers.StopConsumer(simulationID)
+func (s *SimulationService) runRemoteCoordinatorSync(simulationID string, manifestFile string) {
 	defer func() {
 		if err := os.Remove(manifestFile); err != nil {
 			slog.Warn("cannot delete temporary manifest file")
@@ -33,10 +31,14 @@ func (s *SimulationService) runRemoteCoordinatorSync(simulatorAddr string, simul
 		return
 	}
 
-	body := map[string]interface{}{
-		"json":  string(manifestData),
-		"kafka": kafkaAddr,
-		"topic": kafkaTopic,
+	cfg := config.Get()
+	kafkaAddr := cfg.Kafka.Address
+	kafkaTopic := generateTopicName(simulationID)
+
+	body := SimulateRequestBody{
+		JSON:       string(manifestData),
+		KafkaTopic: kafkaTopic,
+		KafkaAddr:  kafkaAddr,
 	}
 	jsonData, err := json.Marshal(body)
 	if err != nil {
@@ -45,10 +47,7 @@ func (s *SimulationService) runRemoteCoordinatorSync(simulatorAddr string, simul
 		return
 	}
 
-	if !strings.HasPrefix(simulatorAddr, "http://") && !strings.HasPrefix(simulatorAddr, "https://") {
-		simulatorAddr = "http://" + simulatorAddr
-	}
-	url := simulatorAddr + "/simulate"
+	url := config.Get().Simulator.Addr + "/simulate"
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
@@ -89,7 +88,7 @@ func (s *SimulationService) runRemoteCoordinatorSync(simulatorAddr string, simul
 
 	result := db.Model(&model.Simulation{}).
 		Where("id = ? AND status <> ?", simulationID, model.SimulationStatusFailed).
-		Updates(map[string]interface{}{
+		Updates(map[string]any{
 			"status":       model.SimulationStatusCompleted,
 			"completed_at": now,
 		})

@@ -40,9 +40,9 @@ func SetupAuthRoutes(app *fiber.App) {
 // @Produce		json
 // @Param			input	body		request.RegisterRequest	true	"Register Request"
 // @Success		200		{object}	response.RegisterResponse
-// @Failure		400		{object}	map[string]interface{}
-// @Failure		409		{object}	map[string]interface{}
-// @Failure		500		{object}	map[string]interface{}
+// @Failure		400		{object}	map[string]any
+// @Failure		409		{object}	map[string]any
+// @Failure		500		{object}	map[string]any
 // @Router			/auth/register [post]
 func register(c *fiber.Ctx) error {
 	input := new(request.RegisterRequest)
@@ -162,9 +162,9 @@ func generateToken(userID string, secret []byte, duration time.Duration) (string
 // @Produce		json
 // @Param			input	body		request.LoginRequest	true	"Login Request"
 // @Success		200		{object}	response.LoginResponse
-// @Failure		400		{object}	map[string]interface{}
-// @Failure		401		{object}	map[string]interface{}
-// @Failure		500		{object}	map[string]interface{}
+// @Failure		400		{object}	map[string]any
+// @Failure		401		{object}	map[string]any
+// @Failure		500		{object}	map[string]any
 // @Router			/auth/login [post]
 func login(c *fiber.Ctx) error {
 	input := new(request.LoginRequest)
@@ -222,9 +222,9 @@ func login(c *fiber.Ctx) error {
 // @Produce		json
 // @Param			input	body		request.RefreshRequest	true	"Refresh Request"
 // @Success		200		{object}	response.RefreshResponse
-// @Failure		400		{object}	map[string]interface{}
-// @Failure		401		{object}	map[string]interface{}
-// @Failure		500		{object}	map[string]interface{}
+// @Failure		400		{object}	map[string]any
+// @Failure		401		{object}	map[string]any
+// @Failure		500		{object}	map[string]any
 // @Router			/auth/refresh [post]
 func refreshToken(c *fiber.Ctx) error {
 	var input request.RefreshRequest
@@ -241,7 +241,7 @@ func refreshToken(c *fiber.Ctx) error {
 	}
 
 	// Verify the validity of the token
-	token, err := jwt.Parse(input.RefreshToken, func(token *jwt.Token) (interface{}, error) {
+	token, err := jwt.Parse(input.RefreshToken, func(token *jwt.Token) (any, error) {
 		return refreshSecret, nil
 	})
 
@@ -266,9 +266,9 @@ func refreshToken(c *fiber.Ctx) error {
 // @Accept			json
 // @Produce		json
 // @Param			input	body		request.LogoutRequest	true	"Logout Request"
-// @Success		200		{object}	map[string]interface{}
-// @Failure		400		{object}	map[string]interface{}
-// @Failure		401		{object}	map[string]interface{}
+// @Success		200		{object}	map[string]any
+// @Failure		400		{object}	map[string]any
+// @Failure		401		{object}	map[string]any
 // @Router			/auth/logout [post]
 func logout(c *fiber.Ctx) error {
 	var input request.LogoutRequest
@@ -297,8 +297,8 @@ func logout(c *fiber.Ctx) error {
 // @Accept			json
 // @Produce		json
 // @Success		200	{object}	response.UserResponse
-// @Failure		401	{object}	map[string]interface{}
-// @Failure		500	{object}	map[string]interface{}
+// @Failure		401	{object}	map[string]any
+// @Failure		500	{object}	map[string]any
 // @Router			/auth/me [get]
 func getCurrentUser(c *fiber.Ctx) error {
 	db := database.DB

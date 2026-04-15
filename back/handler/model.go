@@ -34,7 +34,7 @@ func SetupModelRoutes(app *fiber.App) {
 //	@Tags			models
 //	@Produce		json
 //	@Success		200	{object}	[]response.ModelResponse
-//	@Failure		500	{object}	map[string]interface{}
+//	@Failure		500	{object}	map[string]any
 //	@Router			/model [get]
 func getAllModels(c *fiber.Ctx) error {
 	db := database.DB
@@ -57,7 +57,7 @@ func getAllModels(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			id	path		string	true	"Model ID"
 //	@Success		200	{object}	response.ModelResponse
-//	@Failure		404	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]any
 //	@Router			/model/{id} [get]
 func getModel(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -81,7 +81,7 @@ func getModel(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			id	path		string	true	"Model ID"
 //	@Success		200	{object}	[]response.ModelResponse
-//	@Failure		404	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]any
 //	@Router			/model/{id}/recursive [get]
 func getModelRecursive(c *fiber.Ctx) error {
 	res := make([]response.ModelResponse, 0)
@@ -104,8 +104,8 @@ func getModelRecursive(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			model	body		request.ModelRequest	true	"Model data"
 //	@Success		201		{object}	response.ModelResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/model [post]
 func createModel(c *fiber.Ctx) error {
 	db := database.DB
@@ -129,8 +129,8 @@ func createModel(c *fiber.Ctx) error {
 //	@Description	Delete a model by its ID
 //	@Tags			models
 //	@Param			id	path		string	true	"Model ID"
-//	@Success		204	{object}	map[string]interface{}
-//	@Failure		404	{object}	map[string]interface{}
+//	@Success		204	{object}	map[string]any
+//	@Failure		404	{object}	map[string]any
 //	@Router			/model/{id} [delete]
 func deleteModel(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -155,8 +155,8 @@ func deleteModel(c *fiber.Ctx) error {
 //	@Param			id			path		string					true	"Model ID"
 //	@Param			updateData	body		request.ModelRequest	true	"Fields to update"
 //	@Success		200			{object}	response.ModelResponse
-//	@Failure		400			{object}	map[string]interface{}
-//	@Failure		404			{object}	map[string]interface{}
+//	@Failure		400			{object}	map[string]any
+//	@Failure		404			{object}	map[string]any
 //	@Router			/model/{id} [patch]
 func patchModel(c *fiber.Ctx) error {
 	db := database.DB
@@ -196,9 +196,9 @@ func patchModel(c *fiber.Ctx) error {
 //	@Tags			models
 //	@Produce		json
 //	@Param			id	path		string	true	"Model ID"
-//	@Success		200	{object}	map[string]interface{}
-//	@Failure		400	{object}	map[string]interface{}
-//	@Failure		404	{object}	map[string]interface{}
+//	@Success		200	{object}	map[string]any
+//	@Failure		400	{object}	map[string]any
+//	@Failure		404	{object}	map[string]any
 //	@Router			/model/{id}/simulate [get]
 func generateSimulationFile(c *fiber.Ctx) error {
 	models, err := services.GetModelRecursice(c.Params("id"), c.Locals("user_id").(string))

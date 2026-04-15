@@ -38,8 +38,8 @@ func SetupSimulationRoutes(app *fiber.App) {
 //	@Param			modelId	path		string							true	"Model ID"
 //	@Param			body	body		request.SimulationStartRequest	false	"Simulation parameters"
 //	@Success		200		{object}	response.SimulationResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/simulation/{modelId} [post]
 func createSimulation(c *fiber.Ctx) error {
 	modelID := c.Params("modelId")
@@ -94,9 +94,9 @@ func createSimulation(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			simId	path		string	true	"Simulation ID"
 //	@Success		200		{object}	response.SimulationResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		404		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]any
+//	@Failure		404		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/simulation/{simId}/start [post]
 func startSimulation(c *fiber.Ctx) error {
 	simID := c.Params("simId")
@@ -141,7 +141,7 @@ func startSimulation(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			simId	path		string	true	"Simulation ID"
 //	@Success		200		{object}	response.SimulationResponse
-//	@Failure		404		{object}	map[string]interface{}
+//	@Failure		404		{object}	map[string]any
 //	@Router			/simulation/{simId} [get]
 func getSimulation(c *fiber.Ctx) error {
 	simID := c.Params("simId")
@@ -165,7 +165,7 @@ func getSimulation(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			modelId	path		string	true	"Model ID"
 //	@Success		200		{object}	[]response.SimulationResponse
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		500		{object}	map[string]any
 //	@Router			/simulation/model/{modelId} [get]
 func getSimulationsByModel(c *fiber.Ctx) error {
 	modelID := c.Params("modelId")
@@ -193,7 +193,7 @@ func getSimulationsByModel(c *fiber.Ctx) error {
 //	@Tags			simulations
 //	@Produce		json
 //	@Success		200	{object}	[]response.SimulationResponse
-//	@Failure		500	{object}	map[string]interface{}
+//	@Failure		500	{object}	map[string]any
 //	@Router			/simulation [get]
 func getUserSimulations(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
@@ -223,7 +223,7 @@ func getUserSimulations(c *fiber.Ctx) error {
 //	@Param			limit	query		int		false	"Maximum number of events (default: 1000)"
 //	@Param			offset	query		int		false	"Offset for pagination (default: 0)"
 //	@Success		200		{object}	response.SimulationEventsResponse
-//	@Failure		404		{object}	map[string]interface{}
+//	@Failure		404		{object}	map[string]any
 //	@Router			/simulation/{simId}/events [get]
 func getSimulationEvents(c *fiber.Ctx) error {
 	simID := c.Params("simId")

@@ -33,10 +33,23 @@ pre-commit:
     - name: Format back
       run: pnpm run format:back
       root: "/back"
-      glob: "**/*.go"
+      glob: "*.go"
       stage_fixed: true
 
-    # - name: govet
-    #   files: git ls-files -m
-    #   glob: "*.go"
-    #   run: go vet {files}
+    - name: Format coordinator
+      run: pnpm run format:coordinator
+      root: "/simulator/coordinator"
+      glob: "*.go"
+      stage_fixed: true
+
+    - name: Format runner
+      run: pnpm run format:runner
+      root: "/simulator/runner"
+      glob: "*.go"
+      stage_fixed: true
+
+    - name: Format shared
+      run: pnpm run format:shared
+      root: "/simulator/shared"
+      glob: "*.go"
+      stage_fixed: true

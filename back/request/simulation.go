@@ -1,8 +1,8 @@
 package request
 
 type SimulationParameterOverrideRequest struct {
-	Name  string      `json:"name"`
-	Value interface{} `json:"value"`
+	Name  string `json:"name"`
+	Value any    `json:"value"`
 }
 
 type SimulationModelOverrideRequest struct {
