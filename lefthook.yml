@@ -17,39 +17,46 @@
 #         - security
 #       run: bundle audit
 #
+
+glob_matcher: doublestar
+no_auto_install: false
+
 commit-msg:
   scripts:
-    "commitlint.sh":
+    "commit-msg.sh":
       runner: bash
+  # commands:
+  #   commitlint:
+  #     run: npx --yes @commitlint/cli --config .commitlintrc.json --edit {1}
 
 pre-commit:
   parallel: true
   jobs:
     - name: Format front
+      root: "/front"
       run: pnpm run format:front
-      glob: "front/**"
       stage_fixed: true
 
     - name: Format back
       run: pnpm run format:back
       root: "/back"
-      glob: "*.go"
+      glob: "**/*.go"
       stage_fixed: true
 
     - name: Format coordinator
       run: pnpm run format:coordinator
       root: "/simulator/coordinator"
-      glob: "*.go"
+      glob: "**/*.go"
       stage_fixed: true
 
     - name: Format runner
       run: pnpm run format:runner
       root: "/simulator/runner"
-      glob: "*.go"
+      glob: "**/*.go"
       stage_fixed: true
 
     - name: Format shared
       run: pnpm run format:shared
       root: "/simulator/shared"
-      glob: "*.go"
+      glob: "**/*.go"
       stage_fixed: true

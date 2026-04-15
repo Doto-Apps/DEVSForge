@@ -12,6 +12,12 @@ vars:
   GOLANGCI_VERSION: v2.11.4
 
 tasks:
+  setup:
+    desc: Install all tools required to dev
+    cmds:
+      - go run github.com/evilmartians/lefthook/v2@v2.1.5 install
+      - cd front && pnpm install
+      - echo "✅ Project setup."
   format:
     desc: Format all code (front, back, simulator)
     cmds:
@@ -48,16 +54,6 @@ tasks:
   ci:
     desc: Launch all tasks for CI
     deps: [build, lint, test]
-
-  dev:
-    desc: Start back and simulator services in dev mode
-    cmds:
-      - task: back:dev
-
-  dev:front:
-    desc: Start front-end only
-    cmds:
-      - task: front:dev
 
   start:prod:
     desc: Start production environment
