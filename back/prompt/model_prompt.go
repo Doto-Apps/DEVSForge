@@ -101,10 +101,10 @@ The model must use the 'modeling' package which provides:
 - Length() int
 - IsEmpty() bool
 - Clear()
-- AddValue(val interface{})
-- AddValues(val interface{}) - val must be a slice
-- GetSingleValue() interface{}
-- GetValues() interface{}
+- AddValue(val any)
+- AddValues(val any) - val must be a slice
+- GetSingleValue() any
+- GetValues() any
 
 ### Atomic interface (extends Component)
 Methods to implement:

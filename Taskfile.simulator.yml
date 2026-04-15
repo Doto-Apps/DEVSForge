@@ -96,7 +96,7 @@ tasks:
     deps: [build:runner]
     cmds:
       - echo "Building Docker runner image..."
-      - docker build -f ./back/Dockerfile --target runner -t devsforge-test-runner:latest ./
+      - docker build -f ./simulator/Dockerfile --target runner -t devsforge-test-runner:latest ./
       - echo "Running tests in Docker..."
       - docker run --rm --network host -e LOG_DIR="/tmp" -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/app -w /app devsforge-test-runner:latest go test -v ./simulator/runner/tests/...
 

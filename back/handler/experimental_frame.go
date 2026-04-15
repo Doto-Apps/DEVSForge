@@ -37,9 +37,9 @@ func SetupExperimentalFrameRoutes(app *fiber.App) {
 //	@Produce		json
 //	@Param			body	body		request.ExperimentalFrameRequest	true	"Experimental frame data"
 //	@Success		201		{object}	response.ExperimentalFrameResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		404		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]any
+//	@Failure		404		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/experimental-frame [post]
 func createExperimentalFrame(c *fiber.Ctx) error {
 	db := database.DB
@@ -548,8 +548,8 @@ func buildCoupledConnections(
 //	@Produce		json
 //	@Param			modelId	path		string	true	"Target model ID"
 //	@Success		200		{object}	[]response.ExperimentalFrameResponse
-//	@Failure		404		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		404		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/experimental-frame/model/{modelId} [get]
 func getExperimentalFramesByModel(c *fiber.Ctx) error {
 	db := database.DB
@@ -582,7 +582,7 @@ func getExperimentalFramesByModel(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			id	path		string	true	"Experimental frame ID"
 //	@Success		200	{object}	response.ExperimentalFrameResponse
-//	@Failure		404	{object}	map[string]interface{}
+//	@Failure		404	{object}	map[string]any
 //	@Router			/experimental-frame/{id} [get]
 func getExperimentalFrame(c *fiber.Ctx) error {
 	db := database.DB
@@ -603,8 +603,8 @@ func getExperimentalFrame(c *fiber.Ctx) error {
 //	@Description	Delete an experimental frame by its ID
 //	@Tags			experimental-frames
 //	@Param			id	path		string	true	"Experimental frame ID"
-//	@Success		204	{object}	map[string]interface{}
-//	@Failure		404	{object}	map[string]interface{}
+//	@Success		204	{object}	map[string]any
+//	@Failure		404	{object}	map[string]any
 //	@Router			/experimental-frame/{id} [delete]
 func deleteExperimentalFrame(c *fiber.Ctx) error {
 	db := database.DB

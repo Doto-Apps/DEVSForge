@@ -19,8 +19,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      kafka:
-        condition: service_started
     develop:
       watch:
         - action: sync
@@ -56,7 +54,7 @@ services:
 
   simulator:
     build:
-      dockerfile: ./simulator/Dockerfile
+      dockerfile: ./simulator/Dockerfile.dev
     environment:
       - GOMODCACHE=/go/pkg/mod
       - GOCACHE=/root/.cache/go-build
@@ -85,7 +83,6 @@ services:
         - action: sync
           path: ./simulator/coordinator
           target: /app/simulator/coordinator
-    # entrypoint: air -c .air.toml -- --daemon
 
   db:
     image: postgres:17-alpine

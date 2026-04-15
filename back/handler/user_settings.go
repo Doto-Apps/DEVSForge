@@ -21,7 +21,7 @@ import (
 //	@Tags			user
 //	@Produce		json
 //	@Success		200	{object}	response.UserAISettingsResponse
-//	@Failure		500	{object}	map[string]interface{}
+//	@Failure		500	{object}	map[string]any
 //	@Router			/user/settings/ai [get]
 func getCurrentUserAISettings(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
@@ -54,8 +54,8 @@ func getCurrentUserAISettings(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			body	body		request.UpdateUserAISettingsRequest	true	"AI settings to update"
 //	@Success		200		{object}	response.UserAISettingsResponse
-//	@Failure		400		{object}	map[string]interface{}
-//	@Failure		500		{object}	map[string]interface{}
+//	@Failure		400		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
 //	@Router			/user/settings/ai [patch]
 func patchCurrentUserAISettings(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)

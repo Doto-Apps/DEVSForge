@@ -11,21 +11,24 @@ services:
       backend:
         condition: service_started
 
+  simulator:
+    build:
+      context: .
+      dockerfile: simulator/Dockerfile
+    volumes:
+      - ./tmp/logs:/app/sim-logs
+
   backend:
     build:
       context: .
       dockerfile: back/Dockerfile
-    volumes:
-      - ./tmp/logs:/app/sim-logs
-    ports:
-      - 3000:3000
     env_file:
       - ./.env
+    ports:
+      - 3000:3000
     depends_on:
       db:
         condition: service_healthy
-      kafka:
-        condition: service_started
 
   db:
     image: postgres:17-alpine

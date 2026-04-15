@@ -17,7 +17,7 @@ type WebAppParameterBinding struct {
 	ModelName       string        `json:"modelName"`
 	Name            string        `json:"name"`
 	Type            ParameterType `json:"type"`
-	DefaultValue    interface{}   `json:"defaultValue"`
+	DefaultValue    any           `json:"defaultValue"`
 	Description     string        `json:"description,omitempty"`
 }
 

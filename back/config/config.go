@@ -3,6 +3,7 @@
 package config
 
 import (
+	"strings"
 	"sync"
 
 	"github.com/caarlos0/env/v11"
@@ -51,10 +52,8 @@ type KafkaConfig struct {
 }
 
 type SimulatorConfig struct {
-	CoordinatorPath string `env:"SIMULATOR_COORDINATOR_PATH" envDefault:"/app/simulator/coordinator"`
-	Cmd             string `env:"SIMULATOR_CMD"`
-	Addr            string `env:"SIMULATOR_ADDR" envDefault:"localhost:8080"`
-	Mode            string `env:"SIMULATOR_MODE" envDefault:"sync"`
+	Addr string `env:"SIMULATOR_ADDR" envDefault:"localhost:8080"`
+	Mode string `env:"SIMULATOR_MODE" envDefault:"sync"`
 }
 
 func Get() *Config {
@@ -66,6 +65,10 @@ func Get() *Config {
 		if err != nil {
 			panic("config error: " + err.Error())
 		}
+		if !strings.HasPrefix(cfg.Simulator.Addr, "http://") && !strings.HasPrefix(cfg.Simulator.Addr, "https://") {
+			cfg.Simulator.Addr = "http://" + cfg.Simulator.Addr
+		}
+
 		instance = cfg
 	})
 	return instance

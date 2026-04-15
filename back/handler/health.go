@@ -17,7 +17,7 @@ func SetupHealthRoutes(router fiber.Router) {
 //	@Tags			Health
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	map[string]interface{}	"API is running"
+//	@Success		200	{object}	map[string]any	"API is running"
 //	@Router			/health [get]
 func health(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"status": "success", "message": "ok", "data": nil})

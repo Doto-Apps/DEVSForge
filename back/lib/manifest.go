@@ -30,7 +30,7 @@ type flatNode struct {
 
 type RuntimeParameterOverride struct {
 	Name  string
-	Value interface{}
+	Value any
 }
 
 type RuntimeInstanceOverride struct {
@@ -566,7 +566,7 @@ func buildRunnableParameters(node *flatNode) ([]shared.RunnableModelParameter, e
 	return res, nil
 }
 
-func isParameterValueCompatible(parameterType json.ParameterType, value interface{}) bool {
+func isParameterValueCompatible(parameterType json.ParameterType, value any) bool {
 	switch parameterType {
 	case json.ParameterTypeInt:
 		switch v := value.(type) {
@@ -598,7 +598,7 @@ func isParameterValueCompatible(parameterType json.ParameterType, value interfac
 			return true
 		}
 		switch value.(type) {
-		case map[string]interface{}, []interface{}:
+		case map[string]any, []any:
 			return true
 		default:
 			return false

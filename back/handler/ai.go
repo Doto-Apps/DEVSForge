@@ -11,7 +11,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 
 	"github.com/gofiber/fiber/v2"
@@ -60,7 +60,7 @@ func getOpenAIClientForUser(userID string) (*openai.Client, model.UserAISettings
 	return client, settings, nil
 }
 
-func GenerateSchema[T any]() interface{} {
+func GenerateSchema[T any]() any {
 	reflector := jsonschema.Reflector{
 		AllowAdditionalProperties: false,
 		DoNotReference:            true,
@@ -103,7 +103,7 @@ func generateDiagram(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	client, aiSettings, err := getOpenAIClientForUser(userID)
 	if err != nil {
-		log.Println("OpenAI error:", err)
+		slog.Error("OpenAI error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -143,18 +143,18 @@ func generateDiagram(c *fiber.Ctx) error {
 	})
 
 	if err != nil {
-		log.Println("OpenAI Chat Completion error:", err)
+		slog.Error("OpenAI Chat Completion error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
 	}
 
 	if chat == nil || len(chat.Choices) == 0 {
-		log.Println("OpenAI returned empty response")
+		slog.Error("OpenAI returned empty response")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
 	}
 
 	response := response.DiagramResponse{}
 	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &response); err != nil {
-		log.Println("JSON Unmarshal error:", err)
+		slog.Error("JSON Unmarshal error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
 	}
 
@@ -221,7 +221,7 @@ Please respond ONLY in JSON following the provided schema.
 	userID := c.Locals("user_id").(string)
 	client, aiSettings, err := getOpenAIClientForUser(userID)
 	if err != nil {
-		log.Println("OpenAI error:", err)
+		slog.Error("OpenAI error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -260,37 +260,31 @@ Please respond ONLY in JSON following the provided schema.
 	})
 
 	if err != nil {
-		log.Println("OpenAI Chat Completion error:", err)
+		slog.Error("OpenAI Chat Completion error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
 	}
 
 	if chat == nil || len(chat.Choices) == 0 {
-		log.Println("OpenAI returned empty response")
+		slog.Error("OpenAI returned empty response")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
 	}
 
 	rawEFResponse := strings.TrimSpace(chat.Choices[0].Message.Content)
-	log.Printf("[EF AI RAW RESPONSE] %s", truncateForLog(rawEFResponse, 8000))
+	slog.Debug("EF AI RAW RESPONSE", "response", truncateForLog(rawEFResponse, 8000))
 
 	efResponse := response.ExperimentalFrameStructureResponse{}
 	if err := json.Unmarshal([]byte(rawEFResponse), &efResponse); err != nil {
-		log.Println("JSON Unmarshal error:", err)
+		slog.Error("JSON Unmarshal error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
 	}
-	log.Printf(
-		"[EF AI PARSED] root=%s mut=%s models=%d connections=%d",
-		efResponse.RootModelID,
-		efResponse.ModelUnderTestID,
-		len(efResponse.Models),
-		len(efResponse.Connections),
-	)
+	slog.Debug("EF AI PARSED", "root", efResponse.RootModelID, "mut", efResponse.ModelUnderTestID, "models", len(efResponse.Models), "connections", len(efResponse.Connections))
 
 	// Server-side normalization and validation guardrails.
 	efResponse.RoomName = roomName
 	efResponse.TargetModelID = target.ID
 
 	if err := validateEFStructureResponse(&efResponse, target); err != nil {
-		log.Println("EF structure validation error:", err)
+		slog.Error("EF structure validation error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned invalid EF structure: " + err.Error()})
 	}
 
@@ -328,14 +322,14 @@ func generateModel(c *fiber.Ctx) error {
 	userID := c.Locals("user_id").(string)
 	client, aiSettings, err := getOpenAIClientForUser(userID)
 	if err != nil {
-		log.Println("OpenAI error:", err)
+		slog.Error("OpenAI error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
 	// Reuse-first: extract keywords and rank existing models with simple Jaccard.
 	promptKeywords, kwErr := extractPromptKeywords(client, aiSettings.APIModel, req.UserPrompt)
 	if kwErr != nil {
-		log.Printf("keyword extraction warning: %v", kwErr)
+		slog.Warn("keyword extraction warning", "error", kwErr)
 	}
 	candidates, candidateErr := getReuseCandidates(
 		database.DB,
@@ -346,7 +340,7 @@ func generateModel(c *fiber.Ctx) error {
 		reuseLowThreshold,
 	)
 	if candidateErr != nil {
-		log.Printf("reuse candidate ranking warning: %v", candidateErr)
+		slog.Warn("reuse candidate ranking warning", "error", candidateErr)
 		candidates = nil
 	}
 	reuseModelID := ""
@@ -388,7 +382,7 @@ func generateModel(c *fiber.Ctx) error {
 	// Get the appropriate prompt with template
 	systemPrompt, err := prompt.BuildModelPromptWithContext(req.Language)
 	if err != nil {
-		log.Println("Failed to build model prompt:", err)
+		slog.Error("Failed to build model prompt", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to prepare prompt"})
 	}
 
@@ -434,18 +428,18 @@ Respond ONLY with the %s code in JSON as { "code": "your_code_here" }
 	})
 
 	if err != nil {
-		log.Println("OpenAI Chat Completion error:", err)
+		slog.Error("OpenAI Chat Completion error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
 	}
 
 	if chat == nil || len(chat.Choices) == 0 {
-		log.Println("OpenAI returned empty response")
+		slog.Error("OpenAI returned empty response")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
 	}
 
 	llmResponse := response.GeneratedModelLLMResponse{}
 	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &llmResponse); err != nil {
-		log.Println("JSON Unmarshal error:", err)
+		slog.Error("JSON Unmarshal error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
 	}
 
@@ -537,7 +531,7 @@ Respond ONLY in JSON following the provided schema.
 	userID := c.Locals("user_id").(string)
 	client, aiSettings, err := getOpenAIClientForUser(userID)
 	if err != nil {
-		log.Println("OpenAI error:", err)
+		slog.Error("OpenAI error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": err.Error()})
 	}
 
@@ -566,18 +560,18 @@ Respond ONLY in JSON following the provided schema.
 	})
 
 	if err != nil {
-		log.Println("OpenAI Chat Completion error:", err)
+		slog.Error("OpenAI Chat Completion error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI generation failed: " + err.Error()})
 	}
 
 	if chat == nil || len(chat.Choices) == 0 {
-		log.Println("OpenAI returned empty response")
+		slog.Error("OpenAI returned empty response")
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned empty response"})
 	}
 
 	docResponse := response.GeneratedDocumentationResponse{}
 	if err := json.Unmarshal([]byte(chat.Choices[0].Message.Content), &docResponse); err != nil {
-		log.Println("JSON Unmarshal error:", err)
+		slog.Error("JSON Unmarshal error", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
 	}
 

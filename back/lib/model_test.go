@@ -22,7 +22,7 @@ func TestGetDevsSympyJSON(t *testing.T) {
 		t.Fatalf("Erreur de sérialisation : %v", err)
 	}
 
-	// var expectedObj, actualObj interface{}
+	// var expectedObj, actualObj any
 	// _ = json.Unmarshal([]byte(expectedJSON), &expectedObj)
 	// _ = json.Unmarshal(actualJSONBytes, &actualObj)
 

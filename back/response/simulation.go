@@ -31,14 +31,14 @@ type SimulationResultResponse struct {
 
 // SimulationEventResponse represents a single DEVS event
 type SimulationEventResponse struct {
-	ID             string      `json:"id"`
-	SimulationID   string      `json:"simulationId"`
-	CreatedAt      time.Time   `json:"createdAt"`
-	SimulationTime *float64    `json:"simulationTime"`
-	DevsType       string      `json:"devsType"`
-	Sender         *string     `json:"sender"`
-	Target         *string     `json:"target"`
-	Payload        interface{} `json:"payload"`
+	ID             string    `json:"id"`
+	SimulationID   string    `json:"simulationId"`
+	CreatedAt      time.Time `json:"createdAt"`
+	SimulationTime *float64  `json:"simulationTime"`
+	DevsType       string    `json:"devsType"`
+	Sender         *string   `json:"sender"`
+	Target         *string   `json:"target"`
+	Payload        any       `json:"payload"`
 }
 
 // SimulationEventsResponse is the paginated response for events
@@ -65,7 +65,7 @@ func CreateSimulationResponse(s model.Simulation) SimulationResponse {
 
 // CreateSimulationEventResponse creates a response from a SimulationEvent model
 func CreateSimulationEventResponse(e model.SimulationEvent) SimulationEventResponse {
-	var payload interface{}
+	var payload any
 	if len(e.Payload) > 0 {
 		_ = json.Unmarshal(e.Payload, &payload)
 	}

@@ -64,8 +64,8 @@ func getSimulationBehaviour(model model.Model, modelComponent json.ModelComponen
 	var behaviour json.Behavior
 	behaviour.PythonPath = model.ID + ".py"
 	behaviour.ModelPath = ""
-	behaviour.Attrs = map[string]interface{}{
-		"text": map[string]interface{}{
+	behaviour.Attrs = map[string]any{
+		"text": map[string]any{
 			"text": model.Name,
 		},
 	}
@@ -78,7 +78,7 @@ func getSimulationBehaviour(model model.Model, modelComponent json.ModelComponen
 			params = model.Metadata.Parameters
 		}
 
-		dataMap := make(map[string]interface{})
+		dataMap := make(map[string]any)
 		for _, param := range params {
 			switch param.Type {
 			case json.ParameterTypeInt:
@@ -110,7 +110,7 @@ func getSimulationBehaviour(model model.Model, modelComponent json.ModelComponen
 			}
 		}
 
-		behaviour.Prop = map[string]interface{}{
+		behaviour.Prop = map[string]any{
 			"data": dataMap,
 		}
 	}

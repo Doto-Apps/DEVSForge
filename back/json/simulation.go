@@ -8,7 +8,7 @@ type Diagram struct {
 
 type Cell struct {
 	Type     string         `json:"type"`
-	ID       interface{}    `json:"id"` // int ou string selon les cas
+	ID       any            `json:"id"` // int ou string selon les cas
 	Label    *string        `json:"label,omitempty"`
 	InPorts  *[]string      `json:"inPorts,omitempty"`
 	OutPorts *[]string      `json:"outPorts,omitempty"`
@@ -22,8 +22,8 @@ type Cell struct {
 }
 
 type LinkEndpoint struct {
-	ID   string      `json:"id"`
-	Port interface{} `json:"port"` // port peut être string ou int
+	ID   string `json:"id"`
+	Port any    `json:"port"` // port peut être string ou int
 }
 
 type Behavior struct {

@@ -1,5 +1,8 @@
 version: "3"
 
+vars:
+  GOLANGCI_VERSION: v2.11.4
+
 tasks:
   format:
     desc: Format back-end code with go fmt
@@ -9,8 +12,6 @@ tasks:
 
   lint:
     desc: Lint back-end code with golangci-lint
-    vars:
-      GOLANGCI_VERSION: v2.11.4
     cmds:
       - |
         docker run -t --rm -v $(pwd):/app -w /app/back --name golangci-lint-devsforge \
@@ -21,8 +22,6 @@ tasks:
 
   lint:fix:
     desc: Lint and fix back-end code with golangci-lint
-    vars:
-      GOLANGCI_VERSION: v2.11.4
     cmds:
       - |
         docker run -t --rm -v $(pwd):/app -w /app/back --name golangci-lint-devsforge \
@@ -40,14 +39,19 @@ tasks:
       - npx openapi-typescript ./docs/openapi.json -o ../front/src/api/v1.d.ts
 
   dev:
-    desc: Start back-end development server with Docker Compose
+    desc: Start with Docker Compose back + simulator
     cmds:
-      - docker compose -f docker-compose.dev-go.yml up --build
+      - docker compose -f docker-compose.dev-go.yml up --build {{.CLI_ARGS}}
+
+  logs:
+    desc: Log with Docker Compose
+    cmds:
+      - docker compose -f docker-compose.dev-go.yml logs -f {{.CLI_ARGS}
 
   clean:
-    desc: Stop and remove back-end containers and volumes
+    desc: Stop and remove containers and volumes
     cmds:
-      - docker compose -f docker-compose.back.yml down -v
+      - docker compose -f docker-compose.dev-go.yml down -v
 
   build:
     desc: Build back-end Go module

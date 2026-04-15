@@ -9,8 +9,7 @@ includes:
     taskfile: Taskfile.simulator.yml
 
 vars:
-  MODULES_DIRS:
-    sh: awk '/use \(/,/\)/ { if ($1 ~ /^\./) print $1 }' go.work
+  GOLANGCI_VERSION: v2.11.4
 
 tasks:
   format:
@@ -53,7 +52,6 @@ tasks:
   dev:
     desc: Start back and simulator services in dev mode
     cmds:
-      - echo "Starting go services..."
       - task: back:dev
 
   dev:front:
@@ -61,25 +59,15 @@ tasks:
     cmds:
       - task: front:dev
 
-  start:prod:aio:
-    desc: Start production environment with Docker Compose
+  start:prod:
+    desc: Start production environment
     cmds:
       - docker compose -f docker-compose.yml up --pull always
 
-  start:prod:
-    desc: Start production islands environment
-    cmds:
-      - docker compose -f docker-compose.islands.yml up --pull always
-
-  start:local:aio:
-    desc: Start local islands environment
+  start:
+    desc: Start local environment
     cmds:
       - docker compose -f docker-compose.local.yml up --build
-
-  start:local:
-    desc: Start local islands environment
-    cmds:
-      - docker compose -f docker-compose.local.islands.yml up --build
 
   clean:
     desc: Clean back-end containers
@@ -92,14 +80,10 @@ tasks:
       - task: back:generate-sdk
 
   prod-docker-build:
-    desc: Test docker image creations for backend, simulator, runner and all-in-one
+    desc: Test docker image creations for backend and simulator
     deps: [tidy]
     cmds:
       - defer: docker image rm devsforge-local-backend-test:latest > /dev/null || true
       - defer: docker image rm devsforge-local-simulator-test:latest > /dev/null || true
-      - defer: docker image rm devsforge-local-runner-test:latest > /dev/null || true
-      - defer: docker image rm devsforge-local-aio-test:latest > /dev/null || true
-      - docker build -f ./back/Dockerfile --target backend -t devsforge-local-backend-test:latest ./
-      - docker build -f ./back/Dockerfile --target simulator -t devsforge-local-simulator-test:latest ./
-      - docker build -f ./back/Dockerfile --target runner -t devsforge-local-runner-test:latest ./
-      - docker build -f ./back/Dockerfile -t devsforge-local-aio-test:latest ./
+      - docker build -f ./back/Dockerfile -t devsforge-local-backend-test:latest ./
+      - docker build -f ./simulator/Dockerfile -t devsforge-local-simulator-test:latest ./

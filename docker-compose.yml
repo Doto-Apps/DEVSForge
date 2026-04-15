@@ -8,18 +8,22 @@ services:
       backend:
         condition: service_started
 
-  backend:
-    image: ghcr.io/doto-apps/devsforge-backend-aio:${DEVSFORGE_IMAGE_TAG:-latest}
+  simulator:
+    image: ghcr.io/doto-apps/devsforge-simulator:${DEVSFORGE_IMAGE_TAG:-latest}
     restart: unless-stopped
-    ports:
-      - "3000:3000"
+    volumes:
+      - ./tmp/logs:/app/sim-logs
+
+  backend:
+    image: ghcr.io/doto-apps/devsforge-backend:${DEVSFORGE_IMAGE_TAG:-latest}
+    restart: unless-stopped
     env_file:
       - ./.env
+    ports:
+      - 3000:3000
     depends_on:
       db:
         condition: service_healthy
-      kafka:
-        condition: service_started
 
   db:
     image: postgres:17-alpine
