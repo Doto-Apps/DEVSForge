@@ -26,27 +26,27 @@ DEVSForge is an AI-assisted modeling and simulation platform for DEVS systems.
 
 Use this mode to run DevForge quickly without local build.
 
-1. Clone repository (to get compose and env templates):
+Clone repository (to get compose and env templates):
 
 ```bash
 git clone https://github.com/Doto-Apps/DEVSForge
 cd DEVSForge
 ```
 
-1. Prepare release env:
+Prepare release env:
 
 ```bash
 cp .env.dist .env
 ```
 
-1. Pull and run:
+Pull and run:
 
 ```bash
 docker compose pull
 docker compose up -d
 ```
 
-1. Access:
+Access:
 
 - Frontend: `http://localhost`
 - Backend: `http://localhost:3000`
@@ -62,25 +62,29 @@ docker compose down
 
 Use this mode when actively developing frontend/backend.
 
-1. Create local env files:
+Install `task` command: <https://taskfile.dev/docs/installation#install-script>
+
+Run `task setup` to install git hooks
+
+Create local env files:
 
 ```bash
 cp .env.dist .env
 ```
 
-1. Start backend (terminal 1, hot reload):
+Start backend and simulator (terminal 1, hot reload):
 
 ```bash
-pnpm run start:back
+task back:dev
 ```
 
-1. Start frontend (terminal 2, hot reload):
+Start frontend (terminal 2, hot reload):
 
 ```bash
-pnpm run start:front
+task front:dev
 ```
 
-1. Access:
+Access:
 
 - Frontend: `http://localhost:5173`
 - Backend: `http://localhost:3000`
@@ -90,6 +94,7 @@ pnpm run start:front
 
 - Frontend: `ghcr.io/doto-apps/devsforge-frontend`
 - Backend: `ghcr.io/doto-apps/devsforge-backend`
+- Simulator: `ghcr.io/doto-apps/devsforge-simulator`
 
 ## Repository Navigation
 

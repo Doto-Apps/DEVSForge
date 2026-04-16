@@ -3,18 +3,21 @@ version: "3"
 tasks:
   format:
     desc: Format front-end code with Biome
+    dir: front
     cmds:
-      - pnpm biome format --write ./front
+      - pnpm biome format --write .
 
   lint:
     desc: Lint front-end code with Biome
+    dir: front
     cmds:
-      - pnpm biome lint --write ./front --diagnostic-level error
+      - pnpm biome lint --write . --diagnostic-level error
 
   check:
     desc: Check and fix front-end code with Biome
+    dir: front
     cmds:
-      - pnpm biome check --write ./front
+      - pnpm biome check --write .
 
   typecheck:
     desc: Type check front-end with TypeScript

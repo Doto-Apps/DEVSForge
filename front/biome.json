@@ -18,7 +18,7 @@
 	"files": {
 		"ignoreUnknown": false,
 		"includes": [
-			"**/front/**",
+			"**",
 			"!**/node_modules",
 			"!**/tsconfig.*",
 			"!**/dist",
