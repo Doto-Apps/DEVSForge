@@ -29,7 +29,7 @@ services:
           target: /app/simulator/shared
 
   runner-builder:
-    image: golang:1.25.4
+    image: golang:1.26.2
     working_dir: /app
     environment:
       - GOMODCACHE=/go/pkg/mod
@@ -94,7 +94,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres-db:/var/lib/postgresql/data
-      - ./db-init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 10s

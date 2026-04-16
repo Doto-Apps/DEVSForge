@@ -32,31 +32,10 @@ commit-msg:
 pre-commit:
   parallel: true
   jobs:
-    - name: Format front
-      root: "/front"
-      run: pnpm run format:front
+    - name: Format
+      run: task format
       stage_fixed: true
 
-    - name: Format back
-      run: pnpm run format:back
-      root: "/back"
-      glob: "**/*.go"
-      stage_fixed: true
-
-    - name: Format coordinator
-      run: pnpm run format:coordinator
-      root: "/simulator/coordinator"
-      glob: "**/*.go"
-      stage_fixed: true
-
-    - name: Format runner
-      run: pnpm run format:runner
-      root: "/simulator/runner"
-      glob: "**/*.go"
-      stage_fixed: true
-
-    - name: Format shared
-      run: pnpm run format:shared
-      root: "/simulator/shared"
-      glob: "**/*.go"
+    - name: Lint
+      run: task lint -- --fix
       stage_fixed: true

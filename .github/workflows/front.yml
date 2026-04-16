@@ -17,18 +17,14 @@ env:
 jobs:
   front-ci:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v6
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-
       - uses: pnpm/action-setup@v4
         with:
           version: ${{ env.PNPM_VERSION }}
-
       - uses: actions/cache@v4
         with:
           path: |
@@ -37,15 +33,12 @@ jobs:
           key: ${{ runner.os }}-pnpm-front-${{ hashFiles('front/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-pnpm-front-
-
       - name: Install dependencies
         run: pnpm install
         working-directory: ./front
-
       - name: Type check
         run: pnpm run typecheck
         working-directory: ./front
-
       - name: Biome check
         working-directory: ./front
         run: pnpm biome check --diagnostic-level=error

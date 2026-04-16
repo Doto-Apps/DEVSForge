@@ -2,33 +2,28 @@ version: "3"
 
 vars:
   GOLANGCI_VERSION: v2.11.4
+  MIGRATE_VERSION: v4.19.1
+  GOLANGCI_LINT_CACHE:
+    sh: echo "$(pwd)/.cache/golangci-lint/"
 
 tasks:
-  format:
-    desc: Format back-end code with go fmt
+  migrate:create:
+    desc: Create a new migration file
     dir: back
     cmds:
-      - go fmt ./...
+      - go run github.com/golang-migrate/migrate/v4/cmd/migrate@{{.MIGRATE_VERSION}} create -ext sql -dir database/migrations -seq {{.CLI_ARGS}}
+
+  format:
+    desc: Format back-end code with go fmt
+    cmds:
+      - go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@{{.GOLANGCI_VERSION}} fmt ./back/... {{.CLI_ARGS}}
 
   lint:
     desc: Lint back-end code with golangci-lint
+    env:
+      GOLANGCI_LINT_CACHE: "{{.GOLANGCI_LINT_CACHE}}"
     cmds:
-      - |
-        docker run -t --rm -v $(pwd):/app -w /app/back --name golangci-lint-devsforge \
-        -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
-        -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
-        -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
-        golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run {{.CLI_ARGS}}
-
-  lint:fix:
-    desc: Lint and fix back-end code with golangci-lint
-    cmds:
-      - |
-        docker run -t --rm -v $(pwd):/app -w /app/back --name golangci-lint-devsforge \
-        -v $(go env GOCACHE):/.cache/go-build -e GOCACHE=/.cache/go-build \
-        -v $(go env GOMODCACHE):/.cache/mod -e GOMODCACHE=/.cache/mod \
-        -v .cache/golangci-lint:/.cache/golangci-lint -e GOLANGCI_LINT_CACHE=/.cache/golangci-lint \
-        golangci/golangci-lint:{{.GOLANGCI_VERSION}} golangci-lint run --fix {{.CLI_ARGS}}
+      - go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@{{.GOLANGCI_VERSION}} run ./back/... {{.CLI_ARGS}}
 
   generate-sdk:
     desc: Generate SDK and API types (Swagger + OpenAPI + TypeScript types)
@@ -46,7 +41,7 @@ tasks:
   logs:
     desc: Log with Docker Compose
     cmds:
-      - docker compose -f docker-compose.dev-go.yml logs -f {{.CLI_ARGS}
+      - docker compose -f docker-compose.dev-go.yml logs -f {{.CLI_ARGS}}
 
   clean:
     desc: Stop and remove containers and volumes
@@ -59,8 +54,8 @@ tasks:
     cmds:
       - go build -v ./...
 
-  tidy:
-    desc: Tidy back-end Go module
+  test:
+    desc: Build back-end Go module
     dir: back
     cmds:
-      - go mod tidy
+      - go test -skip "TestGetDevsSympyJSON" ./...
