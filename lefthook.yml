@@ -35,3 +35,7 @@ pre-commit:
     - name: Format
       run: task format
       stage_fixed: true
+
+    - name: Lint
+      run: task lint -- --fix
+      stage_fixed: true

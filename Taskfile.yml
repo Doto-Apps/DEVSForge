@@ -9,16 +9,20 @@ includes:
     taskfile: Taskfile.simulator.yml
 
 vars:
+  LEFTHOOK_VERSION: v2.1.5
   GOLANGCI_VERSION: v2.11.4
   MIGRATE_VERSION: v4.19.1
+  GOLANGCI_LINT_CACHE:
+    sh: echo "$(pwd)/.cache/golangci-lint/"
 
 tasks:
   setup:
     desc: Install all tools required to dev
     cmds:
-      - go run github.com/evilmartians/lefthook/v2@v2.1.5 install
+      - go run github.com/evilmartians/lefthook/v2@{{.LEFTHOOK_VERSION}} install
       - cd front && pnpm install
       - echo "✅ Project setup."
+
   format:
     desc: Format all code (front, back, simulator)
     cmds:
@@ -29,29 +33,21 @@ tasks:
   lint:
     desc: Lint all code (front, back, simulator)
     cmds:
-      - task: front:lint
+      - task: front:check
       - task: back:lint
       - task: simulator:lint
 
   build:
     desc: Build all modules (back, simulator)
-    deps: [tidy]
     cmds:
       - task: back:build
       - task: simulator:build
 
   test:
-    desc: Run all tests (back migrations + simulator)
-    deps: [build]
+    desc: Run all tests (back + simulator)
     cmds:
-      - task: back:validate-migrations
+      - task: back:test
       - task: simulator:test
-
-  ci:
-    desc: Launch all tasks for CI
-    deps: [build, lint, test]
-    cmds:
-      - task: back:validate-migrations
 
   start:prod:
     desc: Start production environment
@@ -63,29 +59,8 @@ tasks:
     cmds:
       - docker compose -f docker-compose.local.yml up --build
 
-  clean:
-    desc: Clean back-end containers
-    cmds:
-      - task: back:clean
-
-  migrate:create:
-    desc: Create a new migration (backend)
-    cmds:
-      - task: back:migrate:create
-
-  validate-migrations:
-    desc: Validate migrations (backend)
-    cmds:
-      - task: back:validate-migrations
-
-  generate-sdk:
-    desc: Generate SDK and API types
-    cmds:
-      - task: back:generate-sdk
-
   prod-docker-build:
     desc: Test docker image creations for backend and simulator
-    deps: [tidy]
     cmds:
       - defer: docker image rm devsforge-local-backend-test:latest > /dev/null || true
       - defer: docker image rm devsforge-local-simulator-test:latest > /dev/null || true

@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS models (
     ports JSONB NOT NULL DEFAULT '[]',
     metadata JSONB NOT NULL DEFAULT '{}',
     connections JSONB NOT NULL DEFAULT '[]',
+    components JSONB NOT NULL DEFAULT '[]',
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW(),
     deleted_at TIMESTAMPTZ,
