@@ -2,9 +2,11 @@ package database
 
 import (
 	"devsforge/config"
-	"devsforge/model"
 	"fmt"
 
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -36,23 +38,23 @@ func ConnectDB() {
 		panic("ERROR: Failed to connect to the database")
 	}
 
-	currentLogger := DB.Logger
+	runMigrations(dsn)
+}
 
-	err = DB.Session(&gorm.Session{
-		Logger: logger.Default.LogMode(logger.Warn),
-	}).AutoMigrate(
-		&model.User{},
-		&model.UserAISettings{},
-		&model.Library{},
-		&model.Model{},
-		&model.ExperimentalFrame{},
-		&model.Simulation{},
-		&model.SimulationEvent{},
-		&model.WebAppDeployment{},
+// runMigrations run migration with golang-migrate if the project is going larger may be consider using `atlas`
+func runMigrations(dsn string) {
+	cfg := config.Get()
+
+	m, err := migrate.New(
+		"file://"+cfg.DB.MigrationsPath,
+		"postgres://"+dsn,
 	)
 	if err != nil {
-		panic("ERROR: cannot migrate database")
+		panic(fmt.Sprintf("ERROR: cannot create migrate instance: %v", err))
 	}
+	defer m.Close()
 
-	DB.Logger = currentLogger
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		panic(fmt.Sprintf("ERROR: cannot run migrations: %v", err))
+	}
 }

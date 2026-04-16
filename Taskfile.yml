@@ -10,6 +10,7 @@ includes:
 
 vars:
   GOLANGCI_VERSION: v2.11.4
+  MIGRATE_VERSION: v4.19.1
 
 tasks:
   setup:
@@ -40,20 +41,17 @@ tasks:
       - task: simulator:build
 
   test:
-    desc: Run all tests (simulator)
+    desc: Run all tests (back migrations + simulator)
     deps: [build]
     cmds:
+      - task: back:validate-migrations
       - task: simulator:test
-
-  tidy:
-    desc: Execute tidy on all Go modules
-    cmds:
-      - task: back:tidy
-      - task: simulator:tidy
 
   ci:
     desc: Launch all tasks for CI
     deps: [build, lint, test]
+    cmds:
+      - task: back:validate-migrations
 
   start:prod:
     desc: Start production environment
@@ -69,6 +67,16 @@ tasks:
     desc: Clean back-end containers
     cmds:
       - task: back:clean
+
+  migrate:create:
+    desc: Create a new migration (backend)
+    cmds:
+      - task: back:migrate:create
+
+  validate-migrations:
+    desc: Validate migrations (backend)
+    cmds:
+      - task: back:validate-migrations
 
   generate-sdk:
     desc: Generate SDK and API types

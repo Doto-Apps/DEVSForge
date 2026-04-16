@@ -5,10 +5,12 @@ on:
     branches: ["main"]
     paths:
       - "simulator/**"
+      - ".github/workflow/go-simulator.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "simulator/**"
+      - ".github/workflow/go-simulator.yml"
 
 env:
   # Change in go-back.yml too
@@ -30,12 +32,17 @@ jobs:
           filters: |
             coordinator:
               - 'simulator/coordinator/**'
+              - 'simulator/shared/**'
               - 'simulator/Dockerfile'
+              - '.github/workflow/go-simulator.yml'
             runner:
               - 'simulator/runner/**'
+              - 'simulator/shared/**'
               - 'simulator/Dockerfile'
+              - '.github/workflow/go-simulator.yml'
             shared:
               - 'simulator/shared/**'
+              - '.github/workflow/go-simulator.yml'
 
   lint-coordinator:
     needs: changes
@@ -148,6 +155,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Run Tests
+        # This docker in docker is needed because runner need different languages
         run: |
           docker run --rm \
             --network host \
