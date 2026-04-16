@@ -1,13 +1,13 @@
-FROM golang:1.25.4 AS builder
+FROM golang:1.26.2 AS builder
 
 WORKDIR /app
 
 COPY go.work ./
-COPY back/go.mod back/go.sum* ./back/
-COPY simulator/coordinator/go.mod simulator/coordinator/go.sum* ./simulator/coordinator/
-COPY simulator/runner/go.mod simulator/runner/go.sum* ./simulator/runner/
-COPY simulator/shared/go.mod simulator/shared/go.sum* ./simulator/shared/
-COPY simulator/wrappers/go/go.mod simulator/wrappers/go/go.sum* ./simulator/wrappers/go/
+COPY back/go.mod back/go.sum ./back/
+COPY simulator/coordinator/go.mod simulator/coordinator/go.sum ./simulator/coordinator/
+COPY simulator/runner/go.mod simulator/runner/go.sum ./simulator/runner/
+COPY simulator/shared/go.mod simulator/shared/go.sum ./simulator/shared/
+COPY simulator/wrappers/go/go.mod simulator/wrappers/go/go.sum ./simulator/wrappers/go/
 
 COPY back ./back
 COPY simulator ./simulator

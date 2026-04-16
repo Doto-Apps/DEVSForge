@@ -17,7 +17,7 @@ tasks:
     desc: Check and fix front-end code with Biome
     dir: front
     cmds:
-      - pnpm biome check --write .
+      - pnpm biome check --write . --diagnostic-level error
 
   typecheck:
     desc: Type check front-end with TypeScript
