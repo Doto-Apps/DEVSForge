@@ -25,12 +25,13 @@ type Config struct {
 }
 
 type DBConfig struct {
-	Host         string `env:"DB_HOST" envDefault:"localhost"`
-	Port         int    `env:"DB_PORT" envDefault:"5432"`
-	User         string `env:"DB_USER" envDefault:"devsforge"`
-	Password     string `env:"DB_PASSWORD" envDefault:"test123"`
-	Name         string `env:"DB_NAME" envDefault:"devsforge"`
-	DebugQueries bool   `env:"DB_DEBUG_QUERIES" envDefault:"false"`
+	Host           string `env:"DB_HOST" envDefault:"localhost"`
+	Port           int    `env:"DB_PORT" envDefault:"5432"`
+	User           string `env:"DB_USER" envDefault:"devsforge"`
+	Password       string `env:"DB_PASSWORD" envDefault:"test123"`
+	Name           string `env:"DB_NAME" envDefault:"devsforge"`
+	DebugQueries   bool   `env:"DB_DEBUG_QUERIES" envDefault:"false"`
+	MigrationsPath string `env:"DB_MIGRATIONS_PATH" envDefault:"database/migrations"`
 }
 
 type ServerConfig struct {

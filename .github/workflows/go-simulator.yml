@@ -5,14 +5,16 @@ on:
     branches: ["main"]
     paths:
       - "simulator/**"
+      - ".github/workflows/go-simulator.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "simulator/**"
+      - ".github/workflows/go-simulator.yml"
 
 env:
   # Change in go-back.yml too
-  GO_VERSION: "1.25.4"
+  GO_VERSION: 1.26.2
   GOLANGCI_LINT_VERSION: v2.11.4
 
 jobs:
@@ -30,12 +32,17 @@ jobs:
           filters: |
             coordinator:
               - 'simulator/coordinator/**'
+              - 'simulator/shared/**'
               - 'simulator/Dockerfile'
+              - '.github/workflow/go-simulator.yml'
             runner:
               - 'simulator/runner/**'
+              - 'simulator/shared/**'
               - 'simulator/Dockerfile'
+              - '.github/workflow/go-simulator.yml'
             shared:
               - 'simulator/shared/**'
+              - '.github/workflow/go-simulator.yml'
 
   lint-coordinator:
     needs: changes
@@ -86,7 +93,7 @@ jobs:
           working-directory: ./simulator/shared
 
   build-sim:
-    name: Build Simulator
+    name: build simulator
     needs: [lint-coordinator, lint-runner]
     if: |
       always() && (
@@ -98,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ env.GO_VERSION }}
@@ -117,12 +124,11 @@ jobs:
 
   test:
     needs: build-sim
-    name: Test with Docker Runner
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Cache Go modules
         uses: actions/cache@v4
@@ -148,6 +154,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Run Tests
+        # This docker in docker is needed because runner need different languages
         run: |
           docker run --rm \
             --network host \
