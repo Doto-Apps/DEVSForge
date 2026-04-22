@@ -57,7 +57,7 @@ jobs:
         with:
           images: ghcr.io/doto-apps/devsforge-frontend
           tags: |
-            type=raw,value=preview,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=preview,enable=${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
       - name: Build and push image
@@ -95,7 +95,7 @@ jobs:
         with:
           images: ghcr.io/doto-apps/devsforge-backend
           tags: |
-            type=raw,value=preview,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=preview,enable=${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
       - name: Cache Go modules
@@ -147,7 +147,7 @@ jobs:
         with:
           images: ghcr.io/doto-apps/devsforge-simulator
           tags: |
-            type=raw,value=preview,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=preview,enable=${{ github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch' }}
             type=raw,value=latest,enable=${{ startsWith(github.ref, 'refs/tags/v') }}
             type=semver,pattern={{version}},enable=${{ startsWith(github.ref, 'refs/tags/v') }}
       - name: Cache Go modules
