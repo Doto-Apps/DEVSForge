@@ -67,7 +67,6 @@ jobs:
           file: ./front/Dockerfile
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -123,7 +122,6 @@ jobs:
           cache-to: |
             type=gha,mode=max
             type=local,dest=/tmp/.buildx-cache-backend
-          ssh: default
 
   build-simulator:
     name: Build and Push Docker Simulator
@@ -176,7 +174,6 @@ jobs:
           cache-to: |
             type=gha,mode=max
             type=local,dest=/tmp/.buildx-cache-simulator
-          ssh: default
 
   deploy:
     name: Deploy on server
