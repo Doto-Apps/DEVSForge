@@ -6,10 +6,6 @@ on:
       - main
     tags:
       - "v*"
-    paths:
-      - "front/**"
-      - "back/**"
-      - "simulator/**"
   workflow_dispatch:
 
 permissions:
@@ -156,7 +152,7 @@ jobs:
 
   deploy:
     name: Deploy on server
-    needs: [build-frontend, build-backend, build-simulator, build-backend-aio]
+    needs: [build-frontend, build-backend, build-simulator]
     if: |
       always() && (
         needs.build-frontend.result == 'success' ||
