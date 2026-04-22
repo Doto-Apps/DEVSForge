@@ -10,14 +10,11 @@ COPY simulator/shared/go.mod simulator/shared/go.sum ./simulator/shared/
 COPY simulator/wrappers/go/go.mod simulator/wrappers/go/go.sum ./simulator/wrappers/go/
 
 COPY back ./back
-COPY simulator ./simulator
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     mkdir bin && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-backend -v ./back && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-coordinator -v ./simulator/coordinator && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-runner -v ./simulator/runner
+    CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-backend -v ./back 
 
 FROM alpine:3.23.3 AS backend
 WORKDIR /app
