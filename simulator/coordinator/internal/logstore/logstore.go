@@ -6,7 +6,7 @@ import "log/slog"
 type LogMessage struct {
 	Timestamp int64  `json:"timestamp"`
 	Sender    string `json:"sender,omitempty"`
-	DevsType  string `json:"devsType"`
+	MsgType   string `json:"msgType"`
 	Data      any    `json:"data"`
 }
 

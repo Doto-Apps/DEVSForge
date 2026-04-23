@@ -58,5 +58,5 @@ type RunnableManifest struct {
 	Models       []*RunnableModel
 	Count        int
 	SimulationID string
-	MaxTime      float64 `json:"maxTime,omitempty"` // Maximum simulation time (0 = no limit)
+	MaxTime      float64 `json:"maxTime,omitempty"`
 }

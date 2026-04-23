@@ -3239,7 +3239,7 @@ export interface components {
 		};
 		"response.SimulationEventResponse": {
 			createdAt?: string;
-			devsType?: string;
+			MsgType?: string;
 			id?: string;
 			payload?: unknown;
 			sender?: string;

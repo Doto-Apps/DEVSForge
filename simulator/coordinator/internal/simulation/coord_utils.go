@@ -12,8 +12,8 @@ import (
 func computeMinTime(runners map[string]*types.RunnerState) float64 {
 	tmin := math.MaxFloat64
 	for _, st := range runners {
-		if st.NextTime < tmin {
-			tmin = st.NextTime
+		if st.NextInternalTime < tmin {
+			tmin = st.NextInternalTime
 		}
 	}
 	return tmin

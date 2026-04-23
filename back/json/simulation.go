@@ -8,7 +8,7 @@ type Diagram struct {
 
 type Cell struct {
 	Type     string         `json:"type"`
-	ID       any            `json:"id"` // int ou string selon les cas
+	ID       any            `json:"id"`
 	Label    *string        `json:"label,omitempty"`
 	InPorts  *[]string      `json:"inPorts,omitempty"`
 	OutPorts *[]string      `json:"outPorts,omitempty"`
@@ -16,14 +16,14 @@ type Cell struct {
 	Embeds   *[]string      `json:"embeds,omitempty"`
 	Source   *LinkEndpoint  `json:"source,omitempty"`
 	Target   *LinkEndpoint  `json:"target,omitempty"`
-	Attrs    map[string]any `json:"attrs,omitempty"` // attrs peut varier énormément
+	Attrs    map[string]any `json:"attrs,omitempty"`
 	Prop     *CellProp      `json:"prop,omitempty"`
 	Z        int            `json:"z,omitempty"`
 }
 
 type LinkEndpoint struct {
 	ID   string `json:"id"`
-	Port any    `json:"port"` // port peut être string ou int
+	Port any    `json:"port"`
 }
 
 type Behavior struct {

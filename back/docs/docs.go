@@ -3695,7 +3695,7 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "devsType": {
+                "MsgType": {
                     "type": "string"
                 },
                 "id": {

@@ -63,7 +63,7 @@ export type OutputSentData = {
 };
 
 export type DevsMessageData = {
-	devsType: string;
+	MsgType: string;
 	simulationTime: number | null;
 	sender: string | null;
 	target: string | null;

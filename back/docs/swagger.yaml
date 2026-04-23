@@ -1072,7 +1072,7 @@ definitions:
     properties:
       createdAt:
         type: string
-      devsType:
+      MsgType:
         type: string
       id:
         type: string

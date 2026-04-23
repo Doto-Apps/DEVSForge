@@ -17,6 +17,7 @@ import (
 	shared "devsforge-shared"
 	kafkaShared "devsforge-shared/kafka"
 
+	"github.com/google/uuid"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -118,18 +119,24 @@ func emitRunnerErrorReport(cfg *config.RunnerConfig, errorCode string, sourceErr
 		errorCode = "RUNNER_ERROR"
 	}
 
-	report := kafkaShared.NewErrorReportMessage(
-		cfg.SimulationID,
-		cfg.ID,
-		"Coordinator",
-		"Runner",
-		cfg.Model.ID,
-		"fatal",
-		errorCode,
-		sourceErr.Error(),
-		nil,
-		nil,
-	)
+	report := kafkaShared.KafkaMessageErrorReport{
+		BaseKafkaMessage: kafkaShared.BaseKafkaMessage{
+			MsgType:          kafkaShared.MsgTypeErrorReport,
+			SimulationRunID:  cfg.SimulationID,
+			MessageID:        uuid.NewString(),
+			EventTime:        nil,
+			SenderID:         cfg.Model.ID,
+			NextInternalTime: nil,
+			ReceiverID:       "Coordinator",
+		},
+		Payload: kafkaShared.ErrorReportPayload{
+			OriginRole: "Runner",
+			OriginID:   cfg.Model.ID,
+			Severity:   "fatal",
+			ErrorCode:  errorCode,
+			Message:    sourceErr.Error(),
+		},
+	}
 
 	data, err := report.Marshal()
 	if err != nil {

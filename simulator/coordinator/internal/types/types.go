@@ -8,10 +8,10 @@ import (
 )
 
 type RunnerState struct {
-	ID       string
-	NextTime float64
-	HasInit  bool
-	Inbox    []kafka.PortValue // messages reçus avant un ExecuteTransition
+	ID               string
+	NextInternalTime float64
+	HasInit          bool
+	Inbox            []kafka.PortValue // messages reçus avant un ExecuteTransition
 }
 
 type SimulationParams struct {

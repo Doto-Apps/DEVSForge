@@ -47,10 +47,10 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	runnerStates := make(map[string]*types.RunnerState)
 	for _, m := range manifest.Models {
 		runnerStates[m.ID] = &types.RunnerState{
-			ID:       m.ID,
-			NextTime: math.Inf(1),
-			HasInit:  false,
-			Inbox:    nil,
+			ID:               m.ID,
+			NextInternalTime: math.Inf(1),
+			HasInit:          false,
+			Inbox:            nil,
 		}
 	}
 

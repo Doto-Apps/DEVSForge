@@ -2,8 +2,8 @@
 package response
 
 type DiagramResponse struct {
-	Models      []Model      `json:"models" jsonschema:"required"`      // required
-	Connections []Connection `json:"connections" jsonschema:"required"` // required
+	Models      []Model      `json:"models" jsonschema:"required"`
+	Connections []Connection `json:"connections" jsonschema:"required"`
 }
 
 type ModelType string
@@ -14,10 +14,10 @@ const (
 )
 
 type Model struct {
-	ID         string         `json:"id" jsonschema:"required"`         // required
-	Type       ModelType      `json:"type" jsonschema:"required"`       // required enum
-	Ports      []PortResponse `json:"ports" jsonschema:"required"`      // required (can be empty array)
-	Components []string       `json:"components" jsonschema:"required"` // required (can be empty array)
+	ID         string         `json:"id" jsonschema:"required"`
+	Type       ModelType      `json:"type" jsonschema:"required"`
+	Ports      []PortResponse `json:"ports" jsonschema:"required"`
+	Components []string       `json:"components" jsonschema:"required"`
 }
 
 type PortDirection string
@@ -28,19 +28,19 @@ const (
 )
 
 type PortResponse struct {
-	ID   string        `json:"id" jsonschema:"required"`                    // unique port identifier
-	Name string        `json:"name" jsonschema:"required"`                  // logical port name
-	Type PortDirection `json:"type" jsonschema:"required,enum=in,enum=out"` // "in" or "out"
+	ID   string        `json:"id" jsonschema:"required"`
+	Name string        `json:"name" jsonschema:"required"`
+	Type PortDirection `json:"type" jsonschema:"required,enum=in,enum=out"`
 }
 
 type Connection struct {
-	From Endpoint `json:"from" jsonschema:"required"` // required
-	To   Endpoint `json:"to" jsonschema:"required"`   // required
+	From Endpoint `json:"from" jsonschema:"required"`
+	To   Endpoint `json:"to" jsonschema:"required"`
 }
 
 type Endpoint struct {
-	Model string `json:"model" jsonschema:"required"` // required
-	Port  string `json:"port" jsonschema:"required"`  // required
+	Model string `json:"model" jsonschema:"required"`
+	Port  string `json:"port" jsonschema:"required"`
 }
 
 type ExperimentalFrameRole string

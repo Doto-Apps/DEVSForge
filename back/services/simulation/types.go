@@ -19,6 +19,6 @@ type SimulationLogsResponse struct {
 type LogMessage struct {
 	Timestamp int64  `json:"timestamp"`
 	Sender    string `json:"sender"`
-	DevsType  string `json:"devsType"`
+	MsgType   string `json:"msgType"`
 	Data      any    `json:"data"`
 }

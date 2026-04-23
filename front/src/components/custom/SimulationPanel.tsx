@@ -200,11 +200,11 @@ const getEventTime = (event: SimulationEventResponse): number | null => {
 	return typeof maybeTime === "number" ? maybeTime : null;
 };
 
-const shortDevsType = (devsType?: string): string =>
-	(devsType ?? "Unknown").replace("devs.msg.", "").replace("iso.msg.", "");
+const shortMsgType = (MsgType?: string): string =>
+	(MsgType ?? "Unknown").replace("devs.msg.", "").replace("iso.msg.", "");
 
 const getEventCategory = (event: SimulationEventResponse): EventTypeFilter => {
-	const shortType = shortDevsType(event.devsType);
+	const shortType = shortMsgType(event.MsgType);
 	if (shortType.includes("Message")) return "message";
 	if (shortType.includes("Transition")) return "transition";
 	if (
@@ -243,8 +243,8 @@ const extractPortValues = (
 		.filter((item): item is ParsedPortValue => item !== null);
 };
 
-const getEventIcon = (devsType?: string) => {
-	const shortType = shortDevsType(devsType);
+const getEventIcon = (MsgType?: string) => {
+	const shortType = shortMsgType(MsgType);
 	if (shortType.includes("ModelOutputMessage")) return Send;
 	if (shortType.includes("ErrorReport")) return AlertTriangle;
 	if (shortType.includes("ExecuteTransition")) return ArrowRightLeft;
@@ -255,8 +255,8 @@ const getEventIcon = (devsType?: string) => {
 	return ListTree;
 };
 
-const getEventBadgeClass = (devsType?: string) => {
-	const shortType = shortDevsType(devsType);
+const getEventBadgeClass = (MsgType?: string) => {
+	const shortType = shortMsgType(MsgType);
 	if (shortType.includes("Message"))
 		return "bg-blue-500/10 text-blue-700 border-blue-200";
 	if (shortType.includes("ErrorReport")) {
@@ -441,7 +441,7 @@ export function SimulationPanel({
 		};
 
 		events.forEach((event, index) => {
-			const shortType = shortDevsType(event.devsType);
+			const shortType = shortMsgType(event.MsgType);
 			const simulationTime = getEventTime(event);
 			const eventID = event.id ?? `event-${index}`;
 
@@ -537,7 +537,7 @@ export function SimulationPanel({
 			if (!normalizedSearch) return true;
 
 			const haystack = [
-				shortDevsType(event.devsType),
+				shortMsgType(event.MsgType),
 				event.sender ?? "",
 				event.target ?? "",
 				formatValueCompact(event.payload, 300),
@@ -550,13 +550,11 @@ export function SimulationPanel({
 	}, [eventTypeFilter, events, onlyEventsWithPayload, search]);
 
 	const eventSummary = useMemo(() => {
-		const messages = events.filter((e) => e.devsType?.includes("Message"));
-		const transitions = events.filter((e) =>
-			e.devsType?.includes("Transition"),
-		);
+		const messages = events.filter((e) => e.MsgType?.includes("Message"));
+		const transitions = events.filter((e) => e.MsgType?.includes("Transition"));
 		const others = events.filter(
 			(e) =>
-				!e.devsType?.includes("Message") && !e.devsType?.includes("Transition"),
+				!e.MsgType?.includes("Message") && !e.MsgType?.includes("Transition"),
 		);
 
 		return {
@@ -1033,7 +1031,7 @@ export function SimulationPanel({
 								) : (
 									<div className="divide-y">
 										{[...filteredEvents].reverse().map((event, index) => {
-											const EventIcon = getEventIcon(event.devsType);
+											const EventIcon = getEventIcon(event.MsgType);
 											const inputValues = extractPortValues(
 												event,
 												"modelInputsOption",
@@ -1052,11 +1050,11 @@ export function SimulationPanel({
 															<Badge
 																className={cn(
 																	"text-[10px]",
-																	getEventBadgeClass(event.devsType),
+																	getEventBadgeClass(event.MsgType),
 																)}
 																variant="outline"
 															>
-																{shortDevsType(event.devsType)}
+																{shortMsgType(event.MsgType)}
 															</Badge>
 															<span className="text-xs text-muted-foreground">
 																{getEventTime(event) === null

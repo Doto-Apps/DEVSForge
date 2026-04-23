@@ -114,13 +114,13 @@ func TestRunPythonModel(t *testing.T) {
 	log.Println("Sending init message")
 	err = SendMessage(
 		client, &kafka.KafkaMessageInitSim{
-			DevsType: kafka.DevsTypeInitSim,
-			Time: &kafka.SimTime{
+			MsgType: kafka.MsgTypeSimulationInit,
+			EventTime: &kafka.SimTime{
 				TimeType: kafka.DevsDoubleSimTime.String(),
 				T:        i,
 			},
-			Target: runnerPythonID,
-			Sender: Sender,
+			ReceiverID: runnerPythonID,
+			SenderID:   Sender,
 		},
 	)
 	if err != nil {
@@ -131,42 +131,42 @@ func TestRunPythonModel(t *testing.T) {
 		if i > 5 {
 			return nil
 		}
-		if msg.Sender == "" || msg.Sender == Sender {
+		if msg.SenderID == "" || msg.SenderID == Sender {
 			return nil
 		}
 
-		switch msg.DevsType {
+		switch msg.MsgType {
 
-		case kafka.DevsTypeNextTime:
-			currentTime = msg.NextTime.T
+		case kafka.MsgTypeNextInternalTimeReport:
+			currentTime = msg.NextInternalTime.T
 			err = SendMessage(client, &kafka.KafkaMessageExecuteTransition{
-				DevsType: kafka.DevsTypeExecuteTransition,
-				Time: kafka.SimTime{
+				MsgType: kafka.MsgTypeExecuteTransition,
+				EventTime: kafka.SimTime{
 					TimeType: kafka.DevsDoubleSimTime.String(),
 					T:        currentTime,
 				},
-				Target: runnerPythonID,
+				ReceiverID: runnerPythonID,
 			})
 			i = i + 1
-		case kafka.DevsTypeTransitionDone:
+		case kafka.MsgTypeTransitionComplete:
 			err = SendMessage(client, &kafka.KafkaMessageSendOutput{
-				DevsType: kafka.DevsTypeSendOutput,
-				Time: kafka.SimTime{
+				MsgType: kafka.MsgTypeRequestOutput,
+				EventTime: &kafka.SimTime{
 					TimeType: kafka.DevsDoubleSimTime.String(),
 					T:        currentTime,
 				},
-				Target: runnerPythonID,
-				Sender: Sender,
+				ReceiverID: runnerPythonID,
+				SenderID:   Sender,
 			})
-		case kafka.DevsTypeModelOutput:
+		case kafka.MsgTypeOutputReport:
 			err = SendMessage(client, &kafka.KafkaMessageSimulationDone{
-				DevsType: kafka.DevsTypeSimulationDone,
-				Target:   runnerPythonID,
-				Sender:   Sender,
+				MsgType:    kafka.MsgTypeSimulationTerminate,
+				ReceiverID: runnerPythonID,
+				SenderID:   Sender,
 			})
 			return ErrSimulationDone
 		default:
-			log.Printf("Unreconized message : %s\n", msg.DevsType.String())
+			log.Printf("Unreconized message : %s\n", msg.MsgType)
 		}
 		return nil
 	})

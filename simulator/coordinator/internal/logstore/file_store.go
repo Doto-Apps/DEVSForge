@@ -99,7 +99,7 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessa
 		}
 
 		sender, _ := msg["sender"].(string)
-		devsType, _ := msg["devsType"].(string)
+		MsgType, _ := msg["MsgType"].(string)
 		data := msg["data"]
 
 		// Extract target from data
@@ -115,7 +115,7 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessa
 		// Create normalized deduplication key
 		// sender="" is treated as no sender, target="" is treated as no target
 		dataJSON, _ := json.Marshal(data)
-		dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, devsType, target, sender, string(dataJSON))
+		dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, MsgType, target, sender, string(dataJSON))
 
 		if seen[dedupKey] {
 			continue
@@ -125,7 +125,7 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessa
 		messages = append(messages, LogMessage{
 			Timestamp: timestamp,
 			Sender:    sender,
-			DevsType:  devsType,
+			MsgType:   MsgType,
 			Data:      data,
 		})
 	}

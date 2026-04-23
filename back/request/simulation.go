@@ -11,6 +11,6 @@ type SimulationModelOverrideRequest struct {
 }
 
 type SimulationStartRequest struct {
-	MaxTime   float64                          `json:"maxTime"`             // Maximum simulation time (0 = no limit)
-	Overrides []SimulationModelOverrideRequest `json:"overrides,omitempty"` // Optional runtime parameter overrides
+	MaxTime   float64                          `json:"maxTime"`
+	Overrides []SimulationModelOverrideRequest `json:"overrides,omitempty"`
 }

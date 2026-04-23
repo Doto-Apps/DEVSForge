@@ -241,7 +241,7 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 	seen := make(map[string]bool)
 	events := make([]model.SimulationEvent, 0, len(logs))
 	for _, logMsg := range logs {
-		if logMsg.DevsType == "" {
+		if logMsg.MsgType == "" {
 			continue
 		}
 
@@ -253,9 +253,9 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 				}
 			}
 		}
-		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%s", logMsg.DevsType, target, logMsg.Sender, logMsg.Timestamp, logMsg.Data)
+		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%s", logMsg.MsgType, target, logMsg.Sender, logMsg.Timestamp, logMsg.Data)
 		if seen[dedupKey] {
-			log.Debug("Skipping duplicate message", "devsType", logMsg.DevsType, "target", target, "sender", logMsg.Sender, "timestamp", logMsg.Timestamp, "data", logMsg.Data)
+			log.Debug("Skipping duplicate message", "MsgType", logMsg.MsgType, "target", target, "sender", logMsg.Sender, "timestamp", logMsg.Timestamp, "data", logMsg.Data)
 			continue
 		}
 		seen[dedupKey] = true
@@ -296,7 +296,7 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 		event := model.SimulationEvent{
 			SimulationID:   simulationID,
 			SimulationTime: simulationTime,
-			DevsType:       logMsg.DevsType,
+			MsgType:        logMsg.MsgType,
 			Sender:         sender,
 			Target:         targetPtr,
 			Payload:        datatypes.JSON(payloadJSON),

@@ -28,7 +28,7 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 
 	slog.Info("Simulation loop starting")
 	if err := runnerInstance.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
-		if msg.Target != cfg.Model.ID || msg.Sender == cfg.Model.ID {
+		if msg.ReceiverID != cfg.Model.ID || msg.SenderID == cfg.Model.ID {
 			return nil
 		}
 
@@ -38,24 +38,24 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 		}
 
 		// ======================
-		// InitSim : Initialize + NextTime
+		// InitSim : Initialize + NextInternalTime
 		// ======================
-		if msg.DevsType == kafka.DevsTypeInitSim {
+		if msg.MsgType == kafka.MsgTypeSimulationInit {
 			return runnerInstance.RunInitSim(kafka.KafkaMessageInitSim{
-				DevsType: msg.DevsType,
-				Time:     msg.Time,
-				Target:   msg.Target,
+				MsgType:    msg.MsgType,
+				EventTime:  msg.EventTime,
+				ReceiverID: msg.ReceiverID,
 			})
 		}
 
 		// ======================
 		// ExecuteTransition : internal / external / confluent
 		// ======================
-		if msg.DevsType == kafka.DevsTypeExecuteTransition {
+		if msg.MsgType == kafka.MsgTypeExecuteTransition {
 			return runnerInstance.RunExecuteTransition(kafka.KafkaMessageExecuteTransition{
-				DevsType:          msg.DevsType,
-				Time:              *msg.Time,
-				Target:            msg.Target,
+				MsgType:           msg.MsgType,
+				EventTime:         *msg.EventTime,
+				ReceiverID:        msg.ReceiverID,
 				ModelInputsOption: *msg.ModelInputsOption,
 			})
 		}
@@ -63,17 +63,17 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 		// ======================
 		// SendOutput : lambda + ModelOutputMessage
 		// ======================
-		if msg.DevsType == kafka.DevsTypeSendOutput {
+		if msg.MsgType == kafka.MsgTypeRequestOutput {
 			return runnerInstance.RunSendOutput(kafka.KafkaMessageSendOutput{
-				DevsType: msg.DevsType,
-				Time:     *msg.Time,
+				MsgType:   msg.MsgType,
+				EventTime: msg.EventTime,
 			})
 		}
 
 		// ======================
 		// SimulationDone : Finalize
 		// ======================
-		if msg.DevsType == kafka.DevsTypeSimulationDone {
+		if msg.MsgType == kafka.MsgTypeSimulationTerminate {
 			if err := runnerInstance.RunSimulationDone(); err != nil {
 				return err
 			}
@@ -81,7 +81,7 @@ func LaunchSim(wrapper *generators.WrapperInfo) error {
 			return ErrSimulationDone
 		}
 
-		slog.Warn("Unhandled Kafka message type", "type", msg.DevsType)
+		slog.Warn("Unhandled Kafka message type", "type", msg.MsgType)
 		return nil
 	}); err != nil && !errors.Is(err, ErrSimulationDone) {
 		if reportErr := runnerInstance.SendErrorReport("RUNNER_LOOP_ERROR", "fatal", err); reportErr != nil {

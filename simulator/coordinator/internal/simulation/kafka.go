@@ -138,8 +138,8 @@ func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessag
 
 			if c.Logger != nil {
 				c.Logger.Info("kafka_message",
-					"sender", msg.Sender,
-					"devsType", msg.DevsType.String(),
+					"sender", msg.SenderID,
+					"msgType", msg.MsgType,
 					"data", normalizeMessageData(msg),
 				)
 			}
@@ -155,11 +155,8 @@ func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessag
 func normalizeMessageData(msg *kafkaShared.BaseKafkaMessage) map[string]interface{} {
 	data := make(map[string]interface{})
 
-	if msg.DevsType != "" {
-		data["devsType"] = msg.DevsType.String()
-	}
-	if msg.MessageType != "" {
-		data["messageType"] = msg.MessageType.String()
+	if msg.MsgType != "" {
+		data["msgType"] = msg.MsgType
 	}
 	if msg.SimulationRunID != "" {
 		data["simulationRunId"] = msg.SimulationRunID
@@ -173,20 +170,20 @@ func normalizeMessageData(msg *kafkaShared.BaseKafkaMessage) map[string]interfac
 	if msg.ReceiverID != "" {
 		data["receiverId"] = msg.ReceiverID
 	}
-	if msg.Time != nil {
-		data["time"] = msg.Time
+	if msg.EventTime != nil {
+		data["eventTime"] = msg.EventTime
 	}
 	if msg.EventTime != nil {
 		data["eventTime"] = msg.EventTime
 	}
-	if msg.NextTime != nil {
-		data["nextTime"] = msg.NextTime
+	if msg.NextInternalTime != nil {
+		data["nextInternalTime"] = msg.NextInternalTime
 	}
-	if msg.Sender != "" {
-		data["sender"] = msg.Sender
+	if msg.SenderID != "" {
+		data["sender"] = msg.SenderID
 	}
-	if msg.Target != "" {
-		data["target"] = msg.Target
+	if msg.ReceiverID != "" {
+		data["target"] = msg.ReceiverID
 	}
 	if msg.ModelInputsOption != nil {
 		data["modelInputsOption"] = msg.ModelInputsOption
