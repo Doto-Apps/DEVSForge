@@ -28,6 +28,7 @@ tasks:
     desc: Install all tools required to dev
     cmds:
       - go install github.com/evilmartians/lefthook/v2@{{.LEFTHOOK_VERSION}}
+      - cp .env.dist .env
       - lefthook install
       - cd front && pnpm install
       - echo "✅ Project setup."

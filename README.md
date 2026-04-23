@@ -66,12 +66,6 @@ Install `task` command: <https://taskfile.dev/docs/installation#install-script>
 
 Run `task setup` to install git hooks
 
-Create local env files:
-
-```bash
-cp .env.dist .env
-```
-
 Start backend and simulator (terminal 1, hot reload):
 
 ```bash
