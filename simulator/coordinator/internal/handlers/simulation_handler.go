@@ -4,6 +4,7 @@ package handlers
 import (
 	"devsforge-coordinator/internal/config"
 	"devsforge-coordinator/internal/logstore"
+	shared_sim "devsforge-shared/simulation"
 	"encoding/json"
 	"log/slog"
 	"net/http"
@@ -18,17 +19,6 @@ func getLogDir() string {
 
 func getLogStore() logstore.LogStore {
 	return logstore.NewFileLogStore(getLogDir())
-}
-
-type SimulationLogsResponse struct {
-	SimulationID  string                `json:"simulationId"`
-	Status        string                `json:"status"`
-	CreatedAt     int64                 `json:"createdAt"`
-	EndedAt       int64                 `json:"endedAt,omitempty"`
-	ErrorMessage  string                `json:"errorMessage,omitempty"`
-	KafkaTopic    string                `json:"kafkaTopic"`
-	Logs          []logstore.LogMessage `json:"logs"`
-	TotalMessages *int                  `json:"totalMessages,omitempty"`
 }
 
 type CleanResponse struct {
@@ -74,7 +64,7 @@ func handleGetSimulationLogs(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	status, statusErr := logStore.GetStatus(simulationID)
-	var messages []logstore.LogMessage
+	var messages []shared_sim.LogMessage
 	var totalMessages *int
 	var loadErr error
 
@@ -100,9 +90,9 @@ func handleGetSimulationLogs(w http.ResponseWriter, r *http.Request) error {
 		}
 	}
 
-	response := SimulationLogsResponse{
+	response := shared_sim.SimulationLogsResponse{
 		SimulationID:  simulationID,
-		Logs:          []logstore.LogMessage{},
+		Logs:          messages,
 		TotalMessages: totalMessages,
 	}
 

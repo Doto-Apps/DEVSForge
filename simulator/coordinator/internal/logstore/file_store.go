@@ -2,12 +2,17 @@ package logstore
 
 import (
 	"bufio"
+	"context"
+	"devsforge-shared/kafka"
+	shared_sim "devsforge-shared/simulation"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/gofrs/flock"
 )
 
 const (
@@ -38,19 +43,52 @@ func (f *fileLogStore) GetLogger(simulationID string) (*slog.Logger, error) {
 	return slog.New(handler), nil
 }
 
-func (f *fileLogStore) GetAll(simulationID string) ([]LogMessage, error) {
+func (f *fileLogStore) GetAll(simulationID string) ([]shared_sim.LogMessage, error) {
 	return f.GetAllSince(simulationID, 0)
 }
 
-func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessage, error) {
+func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]shared_sim.LogMessage, error) {
 	dir := filepath.Join(f.logDir, simulationID)
 	logPath := filepath.Join(dir, "all.log")
 
+	// Check if all.log exists
+	if _, err := os.Stat(logPath); os.IsNotExist(err) {
+		// Fallback: read from simulation.json
+		status, statusErr := f.GetStatus(simulationID)
+		if statusErr != nil {
+			return nil, fmt.Errorf("no log data found for simulation %s: %w", simulationID, statusErr)
+		}
+		if status.Messages == nil {
+			return nil, fmt.Errorf("no log data found for simulation %s", simulationID)
+		}
+		// Filter messages by timestamp if since > 0
+		if since == 0 {
+			return status.Messages, nil
+		}
+		filtered := make([]shared_sim.LogMessage, 0)
+		for _, msg := range status.Messages {
+			if msg.Timestamp >= since {
+				filtered = append(filtered, msg)
+			}
+		}
+		return filtered, nil
+	}
+
+	// all.log exists: acquire a shared lock for reading
+	lockPath := logPath + ".lock"
+	fileLock := flock.New(lockPath)
+	locked, err := fileLock.TryRLockContext(context.Background(), 5*time.Second)
+	if err != nil {
+		slog.Debug("Failed to acquire read lock", "error", err)
+	}
+	if locked {
+		defer func() {
+			_ = fileLock.Unlock()
+		}()
+	}
+
 	file, err := os.Open(logPath)
 	if err != nil {
-		if os.IsNotExist(err) {
-			return []LogMessage{}, nil
-		}
 		return nil, fmt.Errorf("failed to open log file: %w", err)
 	}
 	defer func() {
@@ -65,7 +103,7 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessa
 		createdAt = status.CreatedAt
 	}
 
-	messages := []LogMessage{}
+	messages := []shared_sim.LogMessage{}
 	seen := make(map[string]bool)
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -79,14 +117,16 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessa
 			continue
 		}
 
-		if msg["msg"] != "kafka_message" {
+		if msg["msg"] != "kafka_message" || msg["data"] == nil {
 			continue
 		}
 
 		var timestamp int64
+
 		if timeStr, ok := msg["time"].(string); ok {
 			if t, err := time.Parse(time.RFC3339, timeStr); err == nil {
-				timestamp = t.Unix() - createdAt
+				slog.Debug("Time", "str", timeStr)
+				timestamp = t.UnixMicro() - createdAt
 			} else {
 				continue
 			}
@@ -98,35 +138,24 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]LogMessa
 			continue
 		}
 
-		sender, _ := msg["sender"].(string)
-		MsgType, _ := msg["MsgType"].(string)
-		data := msg["data"]
-
-		// Extract target from data
-		var target string
-		if dataMap, ok := data.(map[string]interface{}); ok {
-			if targetVal, exists := dataMap["target"]; exists {
-				if targetStr, ok := targetVal.(string); ok {
-					target = targetStr
-				}
-			}
+		var kafkaMsg kafka.BaseKafkaMessage
+		if err := json.Unmarshal([]byte(msg["data"].(string)), &kafkaMsg); err != nil {
+			slog.Warn("cannot unparse data kafka_message", "error", err, "data", msg["data"])
+			continue
 		}
 
 		// Create normalized deduplication key
-		// sender="" is treated as no sender, target="" is treated as no target
-		dataJSON, _ := json.Marshal(data)
-		dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, MsgType, target, sender, string(dataJSON))
-
+		dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, kafkaMsg.MsgType, kafkaMsg.ReceiverID, kafkaMsg.SenderID, msg["data"].(string))
 		if seen[dedupKey] {
 			continue
 		}
 		seen[dedupKey] = true
 
-		messages = append(messages, LogMessage{
+		messages = append(messages, shared_sim.LogMessage{
 			Timestamp: timestamp,
-			Sender:    sender,
-			MsgType:   MsgType,
-			Data:      data,
+			SenderID:  kafkaMsg.SenderID,
+			MsgType:   string(kafkaMsg.MsgType),
+			Data:      kafkaMsg,
 		})
 	}
 
@@ -204,10 +233,32 @@ func (f *fileLogStore) GetStatus(simulationID string) (*SimulationStatus, error)
 func (f *fileLogStore) DeleteAllLog(simulationID string) error {
 	dir := filepath.Join(f.logDir, simulationID)
 	logPath := filepath.Join(dir, "all.log")
-	return os.Remove(logPath)
+
+	// Acquire an exclusive lock before deletion
+	lockPath := logPath + ".lock"
+	fileLock := flock.New(lockPath)
+	locked, err := fileLock.TryLockContext(context.Background(), 5*time.Second)
+	if err != nil {
+		slog.Debug("Failed to acquire write lock", "error", err)
+	}
+	if locked {
+		defer func() {
+			_ = fileLock.Unlock()
+		}()
+	}
+
+	if err := os.Remove(logPath); err != nil {
+		if !os.IsNotExist(err) {
+			return err
+		}
+	}
+
+	_ = os.Remove(lockPath)
+
+	return nil
 }
 
-func (f *fileLogStore) GetPaginated(simulationID string, offset int, limit int) ([]LogMessage, int, error) {
+func (f *fileLogStore) GetPaginated(simulationID string, offset int, limit int) ([]shared_sim.LogMessage, int, error) {
 	allMessages, err := f.GetAll(simulationID)
 	if err != nil {
 		return nil, 0, err
@@ -216,7 +267,7 @@ func (f *fileLogStore) GetPaginated(simulationID string, offset int, limit int) 
 	total := len(allMessages)
 
 	if offset >= total {
-		return []LogMessage{}, total, nil
+		return []shared_sim.LogMessage{}, total, nil
 	}
 
 	end := min(offset+limit, total)

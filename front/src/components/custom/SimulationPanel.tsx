@@ -200,17 +200,13 @@ const getEventTime = (event: SimulationEventResponse): number | null => {
 	return typeof maybeTime === "number" ? maybeTime : null;
 };
 
-const shortMsgType = (MsgType?: string): string =>
-	(MsgType ?? "Unknown").replace("devs.msg.", "").replace("iso.msg.", "");
-
 const getEventCategory = (event: SimulationEventResponse): EventTypeFilter => {
-	const shortType = shortMsgType(event.MsgType);
-	if (shortType.includes("Message")) return "message";
-	if (shortType.includes("Transition")) return "transition";
+	if (event.msgType?.includes("Message")) return "message";
+	if (event.msgType?.includes("Transition")) return "transition";
 	if (
-		shortType.includes("InitSim") ||
-		shortType.includes("NextTime") ||
-		shortType.includes("SimulationDone")
+		event.msgType?.includes("InitSim") ||
+		event.msgType?.includes("NextTime") ||
+		event.msgType?.includes("SimulationDone")
 	) {
 		return "lifecycle";
 	}
@@ -243,29 +239,27 @@ const extractPortValues = (
 		.filter((item): item is ParsedPortValue => item !== null);
 };
 
-const getEventIcon = (MsgType?: string) => {
-	const shortType = shortMsgType(MsgType);
-	if (shortType.includes("ModelOutputMessage")) return Send;
-	if (shortType.includes("ErrorReport")) return AlertTriangle;
-	if (shortType.includes("ExecuteTransition")) return ArrowRightLeft;
-	if (shortType.includes("TransitionDone")) return Activity;
-	if (shortType.includes("SimulationDone")) return Square;
-	if (shortType.includes("InitSim")) return Play;
-	if (shortType.includes("NextTime")) return Clock3;
+const getEventIcon = (msgType?: string) => {
+	if (msgType?.includes("ModelOutputMessage")) return Send;
+	if (msgType?.includes("ErrorReport")) return AlertTriangle;
+	if (msgType?.includes("ExecuteTransition")) return ArrowRightLeft;
+	if (msgType?.includes("TransitionDone")) return Activity;
+	if (msgType?.includes("SimulationDone")) return Square;
+	if (msgType?.includes("InitSim")) return Play;
+	if (msgType?.includes("NextTime")) return Clock3;
 	return ListTree;
 };
 
-const getEventBadgeClass = (MsgType?: string) => {
-	const shortType = shortMsgType(MsgType);
-	if (shortType.includes("Message"))
+const getEventBadgeClass = (msgType?: string) => {
+	if (msgType?.includes("Message"))
 		return "bg-blue-500/10 text-blue-700 border-blue-200";
-	if (shortType.includes("ErrorReport")) {
+	if (msgType?.includes("ErrorReport")) {
 		return "bg-red-500/10 text-red-700 border-red-200";
 	}
-	if (shortType.includes("Transition")) {
+	if (msgType?.includes("Transition")) {
 		return "bg-amber-500/10 text-amber-700 border-amber-200";
 	}
-	if (shortType.includes("SimulationDone")) {
+	if (msgType?.includes("SimulationTerminate")) {
 		return "bg-green-500/10 text-green-700 border-green-200";
 	}
 	return "bg-muted text-muted-foreground";
@@ -441,11 +435,10 @@ export function SimulationPanel({
 		};
 
 		events.forEach((event, index) => {
-			const shortType = shortMsgType(event.MsgType);
 			const simulationTime = getEventTime(event);
 			const eventID = event.id ?? `event-${index}`;
 
-			if (shortType === "ModelOutputMessage") {
+			if (event.msgType === "ModelOutputMessage") {
 				const outputs = extractPortValues(event, "modelOutput");
 				outputs.forEach((output, outputIndex) => {
 					addOutputCandidate({
@@ -461,7 +454,7 @@ export function SimulationPanel({
 				return;
 			}
 
-			if (shortType !== "ExecuteTransition") return;
+			if (event.msgType !== "ExecuteTransition") return;
 
 			const inputs = extractPortValues(event, "modelInputsOption");
 			if (inputs.length === 0) return;
@@ -537,7 +530,7 @@ export function SimulationPanel({
 			if (!normalizedSearch) return true;
 
 			const haystack = [
-				shortMsgType(event.MsgType),
+				event.msgType,
 				event.sender ?? "",
 				event.target ?? "",
 				formatValueCompact(event.payload, 300),
@@ -550,11 +543,11 @@ export function SimulationPanel({
 	}, [eventTypeFilter, events, onlyEventsWithPayload, search]);
 
 	const eventSummary = useMemo(() => {
-		const messages = events.filter((e) => e.MsgType?.includes("Message"));
-		const transitions = events.filter((e) => e.MsgType?.includes("Transition"));
+		const messages = events.filter((e) => e.msgType?.includes("Message"));
+		const transitions = events.filter((e) => e.msgType?.includes("Transition"));
 		const others = events.filter(
 			(e) =>
-				!e.MsgType?.includes("Message") && !e.MsgType?.includes("Transition"),
+				!e.msgType?.includes("Message") && !e.msgType?.includes("Transition"),
 		);
 
 		return {
@@ -1031,7 +1024,7 @@ export function SimulationPanel({
 								) : (
 									<div className="divide-y">
 										{[...filteredEvents].reverse().map((event, index) => {
-											const EventIcon = getEventIcon(event.MsgType);
+											const EventIcon = getEventIcon(event.msgType);
 											const inputValues = extractPortValues(
 												event,
 												"modelInputsOption",
@@ -1050,11 +1043,11 @@ export function SimulationPanel({
 															<Badge
 																className={cn(
 																	"text-[10px]",
-																	getEventBadgeClass(event.MsgType),
+																	getEventBadgeClass(event.msgType),
 																)}
 																variant="outline"
 															>
-																{shortMsgType(event.MsgType)}
+																{event.msgType}
 															</Badge>
 															<span className="text-xs text-muted-foreground">
 																{getEventTime(event) === null

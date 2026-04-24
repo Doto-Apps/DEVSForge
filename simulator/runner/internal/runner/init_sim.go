@@ -46,7 +46,7 @@ func (r *Runner) RunInitSim(msg kafka.KafkaMessageInitSim) error {
 			TimeType: kafka.DevsDoubleSimTime.String(),
 			T:        r.CurrentTime,
 		},
-		NextInternalTime: nextTimeField,
+		NextInternalTime: &nextTimeField,
 		SenderID:         r.Config.ID,
 	}
 

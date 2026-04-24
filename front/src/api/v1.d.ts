@@ -3082,9 +3082,7 @@ export interface components {
 			value?: unknown;
 		};
 		"request.SimulationStartRequest": {
-			/** @description Maximum simulation time (0 = no limit) */
 			maxTime?: number;
-			/** @description Optional runtime parameter overrides */
 			overrides?: components["schemas"]["request.SimulationModelOverrideRequest"][];
 		};
 		"request.UpdateUserAISettingsRequest": {
@@ -3106,23 +3104,17 @@ export interface components {
 			uiSchema?: components["schemas"]["json.WebAppUISchema"];
 		};
 		"response.Connection": {
-			/** @description required */
 			from?: components["schemas"]["response.Endpoint"];
-			/** @description required */
 			to?: components["schemas"]["response.Endpoint"];
 		};
 		"response.DiagramResponse": {
-			/** @description required */
 			connections?: components["schemas"]["response.Connection"][];
-			/** @description required */
 			models?: components["schemas"]["response.Model"][];
 		};
 		/** @enum {string} */
 		"response.DocumentationRole": "generator" | "transducer" | "observer";
 		"response.Endpoint": {
-			/** @description required */
 			model?: string;
-			/** @description required */
 			port?: string;
 		};
 		"response.ExperimentalFrameModel": {
@@ -3188,13 +3180,9 @@ export interface components {
 			username: string;
 		};
 		"response.Model": {
-			/** @description required (can be empty array) */
 			components?: string[];
-			/** @description required */
 			id?: string;
-			/** @description required (can be empty array) */
 			ports?: components["schemas"]["response.PortResponse"][];
-			/** @description required enum */
 			type?: components["schemas"]["response.ModelType"];
 		};
 		"response.ModelResponse": {
@@ -3215,11 +3203,8 @@ export interface components {
 		/** @enum {string} */
 		"response.PortDirection": "in" | "out";
 		"response.PortResponse": {
-			/** @description unique port identifier */
 			id?: string;
-			/** @description logical port name */
 			name?: string;
-			/** @description "in" or "out" */
 			type?: components["schemas"]["response.PortDirection"];
 		};
 		"response.RefreshResponse": {
@@ -3239,8 +3224,8 @@ export interface components {
 		};
 		"response.SimulationEventResponse": {
 			createdAt?: string;
-			MsgType?: string;
 			id?: string;
+			msgType?: string;
 			payload?: unknown;
 			sender?: string;
 			simulationId?: string;

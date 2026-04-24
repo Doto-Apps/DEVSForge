@@ -76,15 +76,15 @@ type BaseKafkaMessage struct {
 
 type KafkaMessageInitSim struct {
 	MsgType    MsgType  `json:"msgType"`
-	EventTime  *SimTime `json:"evenTime,omitempty"`
+	EventTime  *SimTime `json:"eventTime,omitempty"`
 	ReceiverID string   `json:"ReceiverId,omitempty"`
 	SenderID   string   `json:"senderId"`
 }
 
 type KafkaMessageNextInternalTime struct {
 	MsgType          MsgType  `json:"msgType"`
-	EventTime        *SimTime `json:"evenTime,omitempty"`
-	NextInternalTime SimTime  `json:"nextInternalTime,omitempty"`
+	EventTime        *SimTime `json:"eventTime,omitempty"`
+	NextInternalTime *SimTime `json:"nextInternalTime,omitempty"`
 	SenderID         string   `json:"senderId"`
 }
 
@@ -98,14 +98,14 @@ type KafkaMessageExecuteTransition struct {
 
 type KafkaMessageTransitionDone struct {
 	MsgType          MsgType `json:"msgType"`
-	EventTime        SimTime `json:"evenTime"`
+	EventTime        SimTime `json:"eventTime"`
 	NextInternalTime SimTime `json:"nextInternalTime"`
 	SenderID         string  `json:"senderId"`
 }
 
 type KafkaMessageSendOutput struct {
 	MsgType    MsgType  `json:"msgType"`
-	EventTime  *SimTime `json:"evenTime,omitempty"`
+	EventTime  *SimTime `json:"eventTime,omitempty"`
 	ReceiverID string   `json:"receiverId"`
 	SenderID   string   `json:"senderId"`
 }
@@ -118,7 +118,7 @@ type KafkaMessageSimulationDone struct {
 
 type KafkaMessageModelOutput struct {
 	MsgType     MsgType     `json:"msgType"`
-	EventTime   SimTime     `json:"evenTime"`
+	EventTime   SimTime     `json:"eventTime"`
 	SenderID    string      `json:"senderId"`
 	ModelOutput ModelOutput `json:"modelOutput"`
 }
@@ -160,12 +160,15 @@ func (m *KafkaMessageExecuteTransition) Marshal() ([]byte, error) {
 func (m *KafkaMessageTransitionDone) Marshal() ([]byte, error) {
 	return json.Marshal(m)
 }
+
 func (m *KafkaMessageSendOutput) Marshal() ([]byte, error) {
 	return json.Marshal(m)
 }
+
 func (m *KafkaMessageModelOutput) Marshal() ([]byte, error) {
 	return json.Marshal(m)
 }
+
 func (m *KafkaMessageSimulationDone) Marshal() ([]byte, error) {
 	return json.Marshal(m)
 }

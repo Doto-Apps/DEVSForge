@@ -3171,11 +3171,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "maxTime": {
-                    "description": "Maximum simulation time (0 = no limit)",
                     "type": "number"
                 },
                 "overrides": {
-                    "description": "Optional runtime parameter overrides",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/request.SimulationModelOverrideRequest"
@@ -3235,20 +3233,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "from": {
-                    "description": "required",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/response.Endpoint"
-                        }
-                    ]
+                    "$ref": "#/definitions/response.Endpoint"
                 },
                 "to": {
-                    "description": "required",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/response.Endpoint"
-                        }
-                    ]
+                    "$ref": "#/definitions/response.Endpoint"
                 }
             }
         },
@@ -3256,14 +3244,12 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "connections": {
-                    "description": "required",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.Connection"
                     }
                 },
                 "models": {
-                    "description": "required",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.Model"
@@ -3288,11 +3274,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "model": {
-                    "description": "required",
                     "type": "string"
                 },
                 "port": {
-                    "description": "required",
                     "type": "string"
                 }
             }
@@ -3507,30 +3491,22 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "components": {
-                    "description": "required (can be empty array)",
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
                 "id": {
-                    "description": "required",
                     "type": "string"
                 },
                 "ports": {
-                    "description": "required (can be empty array)",
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.PortResponse"
                     }
                 },
                 "type": {
-                    "description": "required enum",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/response.ModelType"
-                        }
-                    ]
+                    "$ref": "#/definitions/response.ModelType"
                 }
             }
         },
@@ -3619,20 +3595,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "id": {
-                    "description": "unique port identifier",
                     "type": "string"
                 },
                 "name": {
-                    "description": "logical port name",
                     "type": "string"
                 },
                 "type": {
-                    "description": "\"in\" or \"out\"",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/response.PortDirection"
-                        }
-                    ]
+                    "$ref": "#/definitions/response.PortDirection"
                 }
             }
         },
@@ -3695,10 +3664,10 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "MsgType": {
+                "id": {
                     "type": "string"
                 },
-                "id": {
+                "msgType": {
                     "type": "string"
                 },
                 "payload": {},
