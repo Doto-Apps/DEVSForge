@@ -17,7 +17,12 @@ import (
 
 var (
 	SimRoot   string
-	KafkaAddr = "localhost:9092"
+	KafkaAddr = func() string {
+		if addr := os.Getenv("KAFKA_ADDRESS"); addr != "" {
+			return addr
+		}
+		return "localhost:9092"
+	}()
 
 	ErrSimulationDone = errors.New("simulation completed normally")
 	Sender            = "fakecoordinator"
@@ -31,6 +36,10 @@ func TestMain(m *testing.M) {
 	defer cancel()
 
 	var err error
+	err = os.Setenv("LOG_MODE", "console")
+	if err != nil {
+		log.Fatalf("Cannot set LOG_MODE env var: %v", err)
+	}
 	SimRoot, err = utils.SimulatorRoot()
 	if err != nil {
 		log.Fatalf("Failed to locate simulator root: %v", err)
@@ -40,7 +49,6 @@ func TestMain(m *testing.M) {
 		log.Fatalf("Failed to chdir to simulator root %q: %v", SimRoot, err)
 	}
 
-	// Expose simulator root to subprocesses (runner via exec.Command).
 	if err := os.Setenv(utils.EnvSimulatorRoot, SimRoot); err != nil {
 		log.Fatalf("Failed to set %s: %v", utils.EnvSimulatorRoot, err)
 	}
@@ -86,9 +94,13 @@ func teardownGlobal(ctx context.Context) {
 	if err := stack.Down(ctx, tccompose.RemoveOrphans(true), tccompose.RemoveImagesLocal); err != nil {
 		log.Printf("Stack down error: %v", err)
 	}
+
+	if err := utils.RemoveRootTempDir(SimRoot); err != nil {
+		log.Printf("Failed to remove tmp directory: %v", err)
+	}
 }
 
-// setupTest creates a per-test temp directory under <SimRoot>/tmp and schedules cleanup.
+// setupTest prepares a per-test temp directory under <SimRoot>/tmp and schedules cleanup.
 func setupTest(t *testing.T) string {
 	t.Helper()
 

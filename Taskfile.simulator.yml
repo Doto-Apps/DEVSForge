@@ -45,6 +45,14 @@ tasks:
     cmds:
       - go build -v ./...
 
+  test:sim:
+    desc: Run tests inside Docker runner image
+    cmds:
+      - echo "Building Docker runner image..."
+      - docker build -f ./simulator/Dockerfile -t devsforge-test-runner:latest ./
+      - echo "Running tests in Docker..."
+      - docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/app -w /app devsforge-test-runner:latest go test -v ./simulator/coordinator/...
+
   test:
     desc: Run tests inside Docker runner image
     cmds:
@@ -52,3 +60,4 @@ tasks:
       - docker build -f ./simulator/Dockerfile -t devsforge-test-runner:latest ./
       - echo "Running tests in Docker..."
       - docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/app -w /app devsforge-test-runner:latest go test -v ./simulator/runner/tests/...
+
