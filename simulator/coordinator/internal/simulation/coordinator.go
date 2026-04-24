@@ -32,19 +32,19 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 
 	go func() {
 		err := c.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
-			if msg.Sender == "" {
+			if msg.SenderID == "" {
 				return nil
 			}
 
-			switch msg.DevsType {
-			case kafka.DevsTypeNextTime:
+			switch msg.MsgType {
+			case kafka.MsgTypeNextInternalTimeReport:
 				nextTimeCh <- msg
-			case kafka.DevsTypeTransitionDone:
+			case kafka.MsgTypeTransitionComplete:
 				transitionDoneCh <- msg
-			case kafka.DevsTypeModelOutput:
+			case kafka.MsgTypeOutputReport:
 				outputCh <- msg
 			default:
-				slog.Warn("Unrecognized message", "type", msg.DevsType.String())
+				slog.Warn("Unrecognized message", "type", msg.MsgType)
 			}
 			return nil
 		})
@@ -59,12 +59,12 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 	if err != nil {
 		return err
 	}
-	// Attente d'un NextTime par runner
-	slog.Info("Waiting runners answers with initial NextTime")
-	if err = c.RunNextTime(nextTimeCh); err != nil {
+	// Attente d'un NextInternalTime par runner
+	slog.Info("Waiting runners answers with initial NextInternalTime")
+	if err = c.RunNextInternalTime(nextTimeCh); err != nil {
 		return err
 	}
-	slog.Info("All runners responded with initial NextTime")
+	slog.Info("All runners responded with initial NextInternalTime")
 
 	// --- Phase 2 : Boucle principale de simulation ---
 	for {
@@ -83,7 +83,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 		// 1) trouver les imminents
 		imminents := []*types.RunnerState{}
 		for _, st := range c.RunnerStates {
-			if st.NextTime == tmin {
+			if st.NextInternalTime == tmin {
 				imminents = append(imminents, st)
 			}
 			// vider l'Inbox pour le nouveau pas de temps
@@ -102,7 +102,7 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 		outputsBySender := map[string]*kafka.ModelOutput{}
 		for range imminents {
 			msg := <-outputCh
-			outputsBySender[msg.Sender] = msg.ModelOutput
+			outputsBySender[msg.SenderID] = msg.ModelOutput
 		}
 
 		// 4) router les outputs vers les Inbox des destinataires
@@ -128,15 +128,15 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 		// 7) attendre les TransitionDone
 		for range transitionTargets {
 			msg := <-transitionDoneCh
-			st, ok := c.RunnerStates[msg.Sender]
+			st, ok := c.RunnerStates[msg.SenderID]
 			if !ok {
-				slog.Warn("TransitionDone from unknown runner", "sender", msg.Sender)
+				slog.Warn("TransitionDone from unknown runner", "sender", msg.SenderID)
 				continue
 			}
-			if msg.NextTime == nil {
-				st.NextTime = math.MaxFloat64
+			if msg.NextInternalTime == nil {
+				st.NextInternalTime = math.MaxFloat64
 			} else {
-				st.NextTime = msg.NextTime.T
+				st.NextInternalTime = msg.NextInternalTime.T
 			}
 		}
 	}

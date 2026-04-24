@@ -8,6 +8,7 @@ import (
 
 	kafkaShared "devsforge-shared/kafka"
 
+	"github.com/google/uuid"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
@@ -19,18 +20,23 @@ func sendCoordinatorErrorReport(cfg *types.CoordConfig, simulationRunID string, 
 		errorCode = "COORDINATOR_ERROR"
 	}
 
-	msg := kafkaShared.NewErrorReportMessage(
-		simulationRunID,
-		"Coordinator",
-		"Backend",
-		"Coordinator",
-		"Coordinator",
-		"fatal",
-		errorCode,
-		err.Error(),
-		nil,
-		nil,
-	)
+	msg := &kafkaShared.KafkaMessageErrorReport{
+		BaseKafkaMessage: kafkaShared.BaseKafkaMessage{
+			MsgType:         kafkaShared.MsgTypeErrorReport,
+			SimulationRunID: simulationRunID,
+			MessageID:       uuid.NewString(),
+			SenderID:        "Coordinator",
+			ReceiverID:      "Backend",
+			EventTime:       nil,
+		},
+		Payload: kafkaShared.ErrorReportPayload{
+			OriginRole: "Coordinator",
+			OriginID:   "Coordinator",
+			Severity:   "fatal",
+			ErrorCode:  errorCode,
+			Message:    err.Error(),
+		},
+	}
 
 	payload, marshalErr := msg.Marshal()
 	if marshalErr != nil {

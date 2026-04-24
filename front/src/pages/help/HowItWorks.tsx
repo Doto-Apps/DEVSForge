@@ -52,11 +52,11 @@ const contracts = [
 
 const loopSteps = [
 	"Compute global minimum simulation time across runners.",
-	"Select imminent runners at tmin and send devs.msg.SendOutput.",
-	"Collect devs.msg.ModelOutputMessage from runners.",
+	"Select imminent runners at tmin and send RequestOutput.",
+	"Collect OutputReport from runners.",
 	"Route output port values through manifest connections into target inboxes.",
-	"Send devs.msg.ExecuteTransition with modelInputsOption.portValueList.",
-	"Collect devs.msg.TransitionDone and update each runner nextTime.",
+	"Send ExecuteTransition with modelInputsOption.portValueList.",
+	"Collect TransitionComplete and update each runner nextTime.",
 	"Stop on max simulation time, SimulationDone, or fatal ErrorReport.",
 ];
 
@@ -242,10 +242,10 @@ export function HowItWorks() {
 								</div>
 								<p className="text-sm text-muted-foreground">
 									Runtime uses DEVS transport events such as
-									<code className="mx-1">devs.msg.ExecuteTransition</code>,
-									<code className="mx-1">devs.msg.SendOutput</code>,
-									<code className="mx-1">devs.msg.ModelOutputMessage</code>,
-									<code className="mx-1">devs.msg.TransitionDone</code> and
+									<code className="mx-1">ExecuteTransition</code>,
+									<code className="mx-1">RequestOutput</code>,
+									<code className="mx-1">OutputReport</code>,
+									<code className="mx-1">TransitionComplete</code> and
 									<code className="mx-1">devs.msg.SimulationDone</code>.
 									ISO-like
 									<code className="mx-1">ErrorReport</code> is also consumed and

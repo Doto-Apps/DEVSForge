@@ -3,6 +3,7 @@ package simulation
 import (
 	"bytes"
 	"context"
+	shared_sim "devsforge-shared/simulation"
 	"devsforge/config"
 	"devsforge/database"
 	"devsforge/model"
@@ -91,13 +92,19 @@ func (s *SimulationService) runRemoteCoordinatorAsync(simulationID string, manif
 
 func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.Logger) {
 	pollURL := fmt.Sprintf("%s/simulation/%s/logs", config.Get().Simulator.Addr, simulationID)
+	log.Info("launching poll", "url", pollURL)
 
 	client := &http.Client{
 		Timeout: 30 * time.Second,
 	}
 
+	// Configuration
+	// NOTE: May be put this as env vars ?
 	pollInterval := 1 * time.Second
 	timeout := 15 * time.Minute
+	maxEmptyPolls := 5
+	maxConsecutiveErrors := 5
+
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
@@ -106,12 +113,10 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 
 	lastOffset := 0
 	emptyPollsCount := 0
-	maxEmptyPolls := 3
 	simulationEnded := false
 	finalStatus := ""
 	var finalErrorMessage string
 	consecutiveErrors := 0
-	maxConsecutiveErrors := 5
 	db := database.DB
 
 	for {
@@ -164,7 +169,7 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 				continue
 			}
 
-			var logsResp SimulationLogsResponse
+			var logsResp shared_sim.SimulationLogsResponse
 			if err := json.NewDecoder(resp.Body).Decode(&logsResp); err != nil {
 				log.Error("Failed to decode poll response", "error", err)
 				_ = resp.Body.Close()
@@ -194,7 +199,7 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 				log.Info("Simulation ended, draining remaining messages", "status", finalStatus)
 			}
 
-			if simulationEnded && emptyPollsCount >= maxEmptyPolls {
+			if simulationEnded || emptyPollsCount >= maxEmptyPolls {
 				log.Info("All messages collected", "totalMessages", lastOffset)
 
 				now := time.Now()
@@ -235,57 +240,21 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 	}
 }
 
-func (s *SimulationService) saveSimulationEvents(simulationID string, logs []LogMessage, log *slog.Logger) {
+func (s *SimulationService) saveSimulationEvents(simulationID string, logs []shared_sim.LogMessage, log *slog.Logger) {
 	db := database.DB
 
 	seen := make(map[string]bool)
 	events := make([]model.SimulationEvent, 0, len(logs))
 	for _, logMsg := range logs {
-		if logMsg.DevsType == "" {
+		if logMsg.MsgType == "" {
 			continue
 		}
 
-		target := ""
-		if dataMap, ok := logMsg.Data.(map[string]any); ok {
-			if targetVal, exists := dataMap["target"]; exists {
-				if targetStr, ok := targetVal.(string); ok {
-					target = targetStr
-				}
-			}
-		}
-		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%s", logMsg.DevsType, target, logMsg.Sender, logMsg.Timestamp, logMsg.Data)
+		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", logMsg.MsgType, logMsg.Data.ReceiverID, logMsg.SenderID, logMsg.Timestamp, logMsg.Data)
 		if seen[dedupKey] {
-			log.Debug("Skipping duplicate message", "devsType", logMsg.DevsType, "target", target, "sender", logMsg.Sender, "timestamp", logMsg.Timestamp, "data", logMsg.Data)
 			continue
 		}
 		seen[dedupKey] = true
-
-		var sender *string
-		if logMsg.Sender != "" {
-			s := logMsg.Sender
-			sender = &s
-		}
-
-		var targetPtr *string
-		var simulationTime *float64
-
-		if dataMap, ok := logMsg.Data.(map[string]any); ok {
-			if targetVal, exists := dataMap["target"]; exists {
-				if targetStr, ok := targetVal.(string); ok && targetStr != "" {
-					targetPtr = &targetStr
-				}
-			}
-			if timeVal, exists := dataMap["time"]; exists {
-				if timeFloat, ok := timeVal.(float64); ok {
-					simulationTime = &timeFloat
-				}
-			}
-			if simTimeVal, exists := dataMap["simulationTime"]; exists {
-				if simTimeFloat, ok := simTimeVal.(float64); ok {
-					simulationTime = &simTimeFloat
-				}
-			}
-		}
 
 		payloadJSON, err := json.Marshal(logMsg.Data)
 		if err != nil {
@@ -293,13 +262,19 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []Log
 			payloadJSON = []byte("{}")
 		}
 
+		var simulationTime *float64
+		if logMsg.Data.EventTime != nil {
+			simulationTime = &logMsg.Data.EventTime.T
+		}
+
 		event := model.SimulationEvent{
-			SimulationID:   simulationID,
-			SimulationTime: simulationTime,
-			DevsType:       logMsg.DevsType,
-			Sender:         sender,
-			Target:         targetPtr,
-			Payload:        datatypes.JSON(payloadJSON),
+			SimulationID:           simulationID,
+			SimulationTime:         simulationTime,
+			MsgType:                logMsg.MsgType,
+			Sender:                 &logMsg.SenderID,
+			Target:                 &logMsg.Data.ReceiverID,
+			Payload:                datatypes.JSON(payloadJSON),
+			RelativeEventTimestamp: logMsg.Timestamp,
 		}
 		events = append(events, event)
 	}

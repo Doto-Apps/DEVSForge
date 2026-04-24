@@ -721,10 +721,8 @@ definitions:
   request.SimulationStartRequest:
     properties:
       maxTime:
-        description: Maximum simulation time (0 = no limit)
         type: number
       overrides:
-        description: Optional runtime parameter overrides
         items:
           $ref: '#/definitions/request.SimulationModelOverrideRequest'
         type: array
@@ -764,23 +762,17 @@ definitions:
   response.Connection:
     properties:
       from:
-        allOf:
-        - $ref: '#/definitions/response.Endpoint'
-        description: required
+        $ref: '#/definitions/response.Endpoint'
       to:
-        allOf:
-        - $ref: '#/definitions/response.Endpoint'
-        description: required
+        $ref: '#/definitions/response.Endpoint'
     type: object
   response.DiagramResponse:
     properties:
       connections:
-        description: required
         items:
           $ref: '#/definitions/response.Connection'
         type: array
       models:
-        description: required
         items:
           $ref: '#/definitions/response.Model'
         type: array
@@ -798,10 +790,8 @@ definitions:
   response.Endpoint:
     properties:
       model:
-        description: required
         type: string
       port:
-        description: required
         type: string
     type: object
   response.ExperimentalFrameModel:
@@ -945,22 +935,17 @@ definitions:
   response.Model:
     properties:
       components:
-        description: required (can be empty array)
         items:
           type: string
         type: array
       id:
-        description: required
         type: string
       ports:
-        description: required (can be empty array)
         items:
           $ref: '#/definitions/response.PortResponse'
         type: array
       type:
-        allOf:
-        - $ref: '#/definitions/response.ModelType'
-        description: required enum
+        $ref: '#/definitions/response.ModelType'
     type: object
   response.ModelResponse:
     properties:
@@ -1023,15 +1008,11 @@ definitions:
   response.PortResponse:
     properties:
       id:
-        description: unique port identifier
         type: string
       name:
-        description: logical port name
         type: string
       type:
-        allOf:
-        - $ref: '#/definitions/response.PortDirection'
-        description: '"in" or "out"'
+        $ref: '#/definitions/response.PortDirection'
     type: object
   response.RefreshResponse:
     properties:
@@ -1072,9 +1053,9 @@ definitions:
     properties:
       createdAt:
         type: string
-      devsType:
-        type: string
       id:
+        type: string
+      msgType:
         type: string
       payload: {}
       sender:

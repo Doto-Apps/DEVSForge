@@ -27,7 +27,7 @@ func RunSimulation(params types.SimulationParams) error {
 	logDir := config.Get().Log.Dir
 
 	logStore := logstore.NewFileLogStore(logDir)
-	createdAt := time.Now().Unix()
+	createdAt := time.Now().UnixMicro()
 
 	simLogger, err := logStore.GetLogger(manifest.SimulationID)
 	if err != nil {
@@ -126,7 +126,7 @@ func RunSimulation(params types.SimulationParams) error {
 	err = logStore.SetStatus(manifest.SimulationID, logstore.SimulationStatus{
 		Status:       "completed",
 		CreatedAt:    createdAt,
-		EndedAt:      time.Now().Unix(),
+		EndedAt:      time.Now().UnixMicro(),
 		ErrorMessage: "",
 		KafkaTopic:   kafkaTopic,
 		Messages:     messages,

@@ -39,7 +39,7 @@ services:
       - ./go.work.sum:/app/go.work.sum
       - ./simulator:/app/simulator
       - ./back/go.mod:/app/back/go.mod
-      - ./tmp/build:/build
+      - runner-build:/build
       - go-mod-cache:/go/pkg/mod
       - go-build-cache:/root/.cache/go-build
     command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
@@ -58,6 +58,7 @@ services:
     environment:
       - GOMODCACHE=/go/pkg/mod
       - GOCACHE=/root/.cache/go-build
+      - PATHS_RUNNER_CMD=/runner-build/devsforge-runner
     env_file:
       - ./.env
     working_dir: /app/simulator/coordinator
@@ -70,8 +71,8 @@ services:
       - ./simulator:/app/simulator
       - go-mod-cache:/go/pkg/mod
       - go-build-cache:/root/.cache/go-build
+      - runner-build:/runner-build
       - ./tmp/logs:/app/sim-logs
-      - ./tmp/build/devsforge-runner:/app/devsforge-runner
       - ./simulator/wrappers:/app/wrappers
     depends_on:
       db:
@@ -125,3 +126,4 @@ volumes:
   postgres-db:
   go-mod-cache:
   go-build-cache:
+  runner-build:

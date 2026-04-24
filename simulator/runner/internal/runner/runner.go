@@ -10,24 +10,25 @@ import (
 	"log/slog"
 	"math"
 
+	"github.com/google/uuid"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
 type Runner struct {
-	CurrentTime float64
-	NextTime    float64
-	Config      *config.RunnerConfig
-	Context     context.Context
-	ModelClient devspb.AtomicModelServiceClient
+	CurrentTime      float64
+	NextInternalTime float64
+	Config           *config.RunnerConfig
+	Context          context.Context
+	ModelClient      devspb.AtomicModelServiceClient
 }
 
 func CreateRunner(cfg *config.RunnerConfig, ctx context.Context, modelClient devspb.AtomicModelServiceClient) Runner {
 	return Runner{
-		CurrentTime: 0.0,
-		NextTime:    math.MaxFloat64,
-		Config:      cfg,
-		Context:     ctx,
-		ModelClient: modelClient,
+		CurrentTime:      0.0,
+		NextInternalTime: math.MaxFloat64,
+		Config:           cfg,
+		Context:          ctx,
+		ModelClient:      modelClient,
 	}
 }
 
@@ -56,18 +57,22 @@ func (r *Runner) SendErrorReport(errorCode string, severity string, sourceErr er
 		errorCode = "RUNNER_ERROR"
 	}
 
-	report := kafka.NewErrorReportMessage(
-		r.Config.SimulationID,
-		r.Config.ID,
-		"Coordinator",
-		"Runner",
-		r.Config.Model.ID,
-		severity,
-		errorCode,
-		sourceErr.Error(),
-		nil,
-		nil,
-	)
+	report := &kafka.KafkaMessageErrorReport{
+		BaseKafkaMessage: kafka.BaseKafkaMessage{
+			MsgType:         kafka.MsgTypeErrorReport,
+			SimulationRunID: r.Config.SimulationID,
+			MessageID:       uuid.NewString(),
+			SenderID:        r.Config.ID,
+			ReceiverID:      "Coordinator",
+		},
+		Payload: kafka.ErrorReportPayload{
+			OriginRole: "Runner",
+			OriginID:   r.Config.ID,
+			Severity:   severity,
+			ErrorCode:  errorCode,
+			Message:    sourceErr.Error(),
+		},
+	}
 
 	return r.SendMessage(report)
 }

@@ -16,13 +16,13 @@ func (c *Coordinator) RunExecuteTransition(transitionTargets types.RunnerStates,
 		}
 
 		msg := &kafka.KafkaMessageExecuteTransition{
-			DevsType: kafka.DevsTypeExecuteTransition,
-			Time: kafka.SimTime{
+			MsgType: kafka.MsgTypeExecuteTransition,
+			EventTime: kafka.SimTime{
 				TimeType: kafka.DevsDoubleSimTime.String(),
 				T:        tmin,
 			},
 			ModelInputsOption: inputs,
-			Target:            st.ID,
+			ReceiverID:        st.ID,
 		}
 		if err := c.SendMessage(msg); err != nil {
 			return fmt.Errorf("error sending ExecuteTransition to %s: %w", st.ID, err)

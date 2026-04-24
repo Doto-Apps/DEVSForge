@@ -9,7 +9,7 @@ import (
 )
 
 func (r *Runner) RunSendOutput(msg kafka.KafkaMessageSendOutput) error {
-	r.CurrentTime = msg.Time.T
+	r.CurrentTime = msg.EventTime.T
 
 	outResp, err := r.ModelClient.Output(r.Context, &emptypb.Empty{})
 	if err != nil {
@@ -32,12 +32,12 @@ func (r *Runner) RunSendOutput(msg kafka.KafkaMessageSendOutput) error {
 	}
 
 	outMsg := &kafka.KafkaMessageModelOutput{
-		DevsType: kafka.DevsTypeModelOutput,
-		Time: kafka.SimTime{
+		MsgType: kafka.MsgTypeOutputReport,
+		EventTime: kafka.SimTime{
 			TimeType: kafka.DevsDoubleSimTime.String(),
 			T:        r.CurrentTime,
 		},
-		Sender: r.Config.ID,
+		SenderID: r.Config.ID,
 		ModelOutput: kafka.ModelOutput{
 			PortValueList: pvs,
 		},

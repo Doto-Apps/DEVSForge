@@ -12,8 +12,8 @@ func (r *Runner) RunInitSim(msg kafka.KafkaMessageInitSim) error {
 	t := 0.0
 	ctx := r.Context
 	modelClient := r.ModelClient
-	if msg.Time != nil {
-		t = msg.Time.T
+	if msg.EventTime != nil {
+		t = msg.EventTime.T
 	}
 	r.CurrentTime = t
 
@@ -28,26 +28,26 @@ func (r *Runner) RunInitSim(msg kafka.KafkaMessageInitSim) error {
 		return fmt.Errorf("TimeAdvance error: %w", err)
 	}
 	sigma := taResp.GetSigma()
-	r.NextTime = r.CurrentTime + sigma
+	r.NextInternalTime = r.CurrentTime + sigma
 
-	if math.IsInf(r.NextTime, 1) {
+	if math.IsInf(r.NextInternalTime, 1) {
 		// On garde nextTime en mémoire, mais on NE l’envoie PAS dans le message JSON
-		r.NextTime = math.MaxFloat64
+		r.NextInternalTime = math.MaxFloat64
 	}
 
 	nextTimeField := kafka.SimTime{
-		TimeType: kafka.DevsTypeNextTime.String(),
-		T:        r.NextTime,
+		TimeType: string(kafka.MsgTypeNextInternalTimeReport),
+		T:        r.NextInternalTime,
 	}
 
-	resp := &kafka.KafkaMessageNextTime{
-		DevsType: kafka.DevsTypeNextTime,
-		Time: &kafka.SimTime{
+	resp := &kafka.KafkaMessageNextInternalTime{
+		MsgType: kafka.MsgTypeNextInternalTimeReport,
+		EventTime: &kafka.SimTime{
 			TimeType: kafka.DevsDoubleSimTime.String(),
 			T:        r.CurrentTime,
 		},
-		NextTime: nextTimeField,
-		Sender:   r.Config.ID,
+		NextInternalTime: &nextTimeField,
+		SenderID:         r.Config.ID,
 	}
 
 	return r.SendMessage(resp)

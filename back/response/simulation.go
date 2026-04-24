@@ -35,7 +35,7 @@ type SimulationEventResponse struct {
 	SimulationID   string    `json:"simulationId"`
 	CreatedAt      time.Time `json:"createdAt"`
 	SimulationTime *float64  `json:"simulationTime"`
-	DevsType       string    `json:"devsType"`
+	MsgType        string    `json:"msgType"`
 	Sender         *string   `json:"sender"`
 	Target         *string   `json:"target"`
 	Payload        any       `json:"payload"`
@@ -75,7 +75,7 @@ func CreateSimulationEventResponse(e model.SimulationEvent) SimulationEventRespo
 		SimulationID:   e.SimulationID,
 		CreatedAt:      e.CreatedAt,
 		SimulationTime: e.SimulationTime,
-		DevsType:       e.DevsType,
+		MsgType:        e.MsgType,
 		Sender:         e.Sender,
 		Target:         e.Target,
 		Payload:        payload,

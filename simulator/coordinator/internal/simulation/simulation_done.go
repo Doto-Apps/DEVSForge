@@ -8,8 +8,8 @@ import (
 func (c *Coordinator) RunSimulationDone() error {
 	for _, st := range c.RunnerStates {
 		msg := &kafka.KafkaMessageSimulationDone{
-			DevsType: kafka.DevsTypeSimulationDone,
-			Target:   st.ID,
+			MsgType:    kafka.MsgTypeSimulationTerminate,
+			ReceiverID: st.ID,
 		}
 
 		if err := c.SendMessage(msg); err != nil {

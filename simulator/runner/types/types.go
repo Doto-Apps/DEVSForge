@@ -46,6 +46,6 @@ func (m AbstractRunnableModelInterface) GetState() {
 	panic("GetState must be implemented")
 }
 
-func (m AbstractRunnableModelInterface) GetNextTime() int {
-	panic("GetNextTime must be implemented")
+func (m AbstractRunnableModelInterface) GetNextInternalTime() int {
+	panic("GetNextInternalTime must be implemented")
 }

@@ -63,7 +63,7 @@ func runMigrations(migrateDSN string) {
 		}
 	}()
 
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+	if err := m.Migrate(2); err != nil && err != migrate.ErrNoChange {
 		panic(fmt.Sprintf("ERROR: cannot run migrations: %v", err))
 	} else {
 		slog.Info("Database is up to date")

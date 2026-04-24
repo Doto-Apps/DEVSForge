@@ -26,13 +26,13 @@ The `simulator/` module executes DEVS models in distributed mode using a coordin
 - Spawn one runner per atomic model.
 - Run DEVS loop over simulation time:
   1. Send `devs.msg.InitSim`.
-  2. Collect `devs.msg.NextTime`.
+  2. Collect `NextInternalTimeReport`.
   3. Compute global `tmin`.
-  4. Send `devs.msg.SendOutput` to imminents.
-  5. Collect `devs.msg.ModelOutputMessage`.
+  4. Send `RequestOutput` to imminents.
+  5. Collect `OutputReport`.
   6. Route outputs through manifest connections.
-  7. Send `devs.msg.ExecuteTransition`.
-  8. Collect `devs.msg.TransitionDone`.
+  7. Send `ExecuteTransition`.
+  8. Collect `TransitionComplete`.
   9. Repeat until max time, all +Inf next times, or failure.
 - End with `devs.msg.SimulationDone`.
 
@@ -52,11 +52,11 @@ The `simulator/` module executes DEVS models in distributed mode using a coordin
 Defined in `shared/kafka/type.go`:
 
 - `devs.msg.InitSim`
-- `devs.msg.NextTime`
-- `devs.msg.SendOutput`
-- `devs.msg.ModelOutputMessage`
-- `devs.msg.ExecuteTransition`
-- `devs.msg.TransitionDone`
+- `NextInternalTimeReport`
+- `RequestOutput`
+- `OutputReport`
+- `ExecuteTransition`
+- `TransitionComplete`
 - `devs.msg.SimulationDone`
 - ISO-like `ErrorReport` envelope (`messageType: ErrorReport`)
 

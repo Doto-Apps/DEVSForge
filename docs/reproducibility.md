@@ -447,6 +447,6 @@ If you want to analyze outputs outside DEVSForge:
 1. Run the simulation, then click **Export JSON** in the Simulation panel.
 2. In Grafana, use the **Infinity** plugin.
 3. Create an Infinity datasource/query with **JSON Inline** and paste the exported JSON content.
-4. Build simple charts/tables using fields like `simulationTime`, `devsType`, `sender`, `target`, and payload values.
+4. Build simple charts/tables using fields like `simulationTime`, `MsgType`, `sender`, `target`, and payload values.
 
 Use this mainly to compare runs at the **behavior/invariant** level (message consistency, policy compliance), not strict text/code equality.
