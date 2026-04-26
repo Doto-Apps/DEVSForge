@@ -2,6 +2,7 @@ package com.devsforge.runner;
 
 import com.devsforge.runner.modeling.*;
 import com.devsforge.runner.rpc.JsonUtil;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class JavaCollector extends Atomic {
@@ -36,9 +37,9 @@ public class JavaCollector extends Atomic {
     public void deltExt(double e) {
         try {
             Port inPort = getPortByName("in");
-            String[] values = inPort.getValues();
-            if (values != null && values.length > 0) {
-                String json = values[0];
+            List<Object> values = (List<Object>) inPort.getValues();
+            if (values != null && !values.isEmpty()) {
+                String json = JsonUtil.toJson(values.get(0));
                 Object obj = JsonUtil.fromJson(json, Object.class);
                 if (obj instanceof java.util.Map) {
                     java.util.Map<?, ?> map = (java.util.Map<?, ?>) obj;

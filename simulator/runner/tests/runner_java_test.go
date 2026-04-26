@@ -4,8 +4,6 @@ import (
 	"devsforge-runner/cmd"
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
-	"devsforge-shared/utils"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -19,12 +17,13 @@ import (
 var runnerJavaID = "m1-java"
 
 func TestRunJavaModel(t *testing.T) {
-	t.Helper()
-	setupTest(t)
+	kafkaTopic := "runner-test-java"
+	tmpDir, err := os.MkdirTemp("/tmp", "devsforge_test_runner_*")
+	if err != nil {
+		t.Fatalf("cannot create tmp dir: %v", err)
+	}
 
-	var manifest shared.RunnableManifest
-
-	codeContent, err := os.ReadFile("tests/m1java/GeneratorIncremental.java")
+	codeContent, err := os.ReadFile(filepath.Join("testdata", "GeneratorIncremental.java"))
 	if err != nil {
 		t.Fatalf("Error while reading test code\n %v", err)
 	}
@@ -43,26 +42,10 @@ func TestRunJavaModel(t *testing.T) {
 		"simulationID": "test-java-sim"
 	}`, runnerJavaID, string(codeContent))
 
-	err = utils.ParseManifest(jsonContent, &manifest)
-	if err != nil {
-		t.Fatalf("Error while parsing test manifest\n %v", err)
-	}
-
-	data, err := json.Marshal(manifest)
-	if err != nil {
-		t.Fatalf("failed to marshal manifest: %v", err)
-	}
-
-	tmpDir, err := utils.CreateTempDir(SimRoot)
-	if err != nil {
-		t.Fatalf("failed to create temp dir in simulator/tmp: %v", err)
-	}
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
-	if err := os.WriteFile(jsonPath, data, 0644); err != nil {
+	if err := os.WriteFile(jsonPath, []byte(jsonContent), 0644); err != nil {
 		t.Fatalf("failed to write temp manifest: %v", err)
 	}
-
-	kafkaTopic := "runner-test-java"
 
 	yamlCfg := shared.YamlInputConfig{
 		Kafka: shared.YamlInputConfigKafka{
@@ -83,11 +66,6 @@ func TestRunJavaModel(t *testing.T) {
 		t.Fatalf("failed to write yaml config: %v", err)
 	}
 
-	args := []string{
-		"--file", jsonPath,
-		"--config", cfgPath,
-	}
-
 	client := InitKafkaClient(kafkaTopic, KafkaAddr)
 	err = CreateTopic(kafkaTopic, client)
 	if err != nil {
@@ -95,7 +73,7 @@ func TestRunJavaModel(t *testing.T) {
 	}
 
 	go func() {
-		if err := cmd.LaunchRunner(args); err != nil {
+		if err := cmd.LaunchRunner(nil, &cfgPath, &jsonPath); err != nil {
 			log.Fatalf("expected runner to exit cleanly, got error:\n%v", err)
 		}
 	}()

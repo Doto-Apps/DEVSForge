@@ -18,13 +18,12 @@ RUN --mount=type=cache,target=/go/pkg/mod \
     CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-runner -v ./simulator/runner
 
 FROM python:3.12-slim AS simulator
-ENV LOG_DIR="/app/sim-logs"
-ENV PATHS_SIM_ROOT="/app"
-ENV SIMULATOR_CMD="/app/devsforge-coordinator"
-ENV PATHS_RUNNER_CMD="/app/devsforge-runner"
 
 WORKDIR /app
-
+RUN mkdir /opt/devsforge/
+ENV LOG_DIR="/tmp/sim-logs"
+ENV PATHS_SIM_ROOT="/tmp/simulations"
+ENV PATHS_RUNNER_CMD="/opt/devsforge/devsforge-runner"
 
 # Install Java 21 and Maven
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -49,7 +48,7 @@ RUN pip install --no-cache-dir -r /tmp/requirements.txt
 ENV PYTHONPYCACHEPREFIX=/opt/python-cache
 RUN mkdir -p /opt/python-cache && chmod -R 777 /opt/python-cache
 # Cache preexisting files
-COPY --from=builder /app/simulator/wrappers /app/wrappers
+COPY --from=builder /app/simulator/wrappers /opt/devsforge/wrappers
 RUN python3 -m compileall ./app/wrappers/python
 
 # Cache deps and preexisiting files
@@ -63,9 +62,9 @@ WORKDIR /tmp/java-preheat-wrappers
 RUN mvn dependency:resolve -q || true && rm -rf /tmp/java-preheat-wrappers
 
 WORKDIR /app
-COPY --from=builder /app/bin/devsforge-runner /app/devsforge-runner
-COPY --from=builder /app/bin/devsforge-coordinator /app/devsforge-coordinator
+COPY --from=builder /app/bin/devsforge-runner /opt/devsforge/devsforge-runner
+COPY --from=builder /app/bin/devsforge-coordinator /opt/devsforge/devsforge-coordinator
 RUN go install github.com/air-verse/air@latest
 EXPOSE 8080
-VOLUME [ "/app/sim-logs" ]
+VOLUME [ "/tmp/sim-logs", "/tmp/simulations" ]
 CMD ["air", "-c", ".air.toml", "--", "--daemon"]

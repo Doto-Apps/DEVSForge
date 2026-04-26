@@ -16,7 +16,7 @@ services:
       context: .
       dockerfile: simulator/Dockerfile
     volumes:
-      - ./tmp/logs:/app/sim-logs
+      - ./tmp/logs:/tmp/sim-logs
 
   backend:
     build:
@@ -70,3 +70,4 @@ services:
 
 volumes:
   postgres-db:
+

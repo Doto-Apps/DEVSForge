@@ -1,0 +1,79 @@
+{
+    "models": [
+        {
+            "id": "go-sender",
+            "name": "GoSender",
+            "language": "go",
+            "code": "",
+            "ports": [
+                {
+                    "id": "out",
+                    "name": "out",
+                    "type": "OUT"
+                }
+            ],
+            "parameters": [],
+            "connections": [
+                {
+                    "from": {
+                        "id": "go-sender",
+                        "port": "out"
+                    },
+                    "to": {
+                        "id": "python-adder",
+                        "port": "in"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "python-adder",
+            "name": "PythonAdder",
+            "language": "python",
+            "code": "",
+            "ports": [
+                {
+                    "id": "in",
+                    "name": "in",
+                    "type": "IN"
+                },
+                {
+                    "id": "out",
+                    "name": "out",
+                    "type": "OUT"
+                }
+            ],
+            "parameters": [],
+            "connections": [
+                {
+                    "from": {
+                        "id": "python-adder",
+                        "port": "out"
+                    },
+                    "to": {
+                        "id": "java-collector",
+                        "port": "in"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "java-collector",
+            "name": "JavaCollector",
+            "language": "java",
+            "code": "",
+            "ports": [
+                {
+                    "id": "in",
+                    "name": "in",
+                    "type": "IN"
+                }
+            ],
+            "parameters": [],
+            "connections": []
+        }
+    ],
+    "count": 3,
+    "simulationId": "multi-language-arithmetic",
+    "maxTime": 100.0
+}

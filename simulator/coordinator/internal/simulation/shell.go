@@ -7,13 +7,11 @@ import (
 	"devsforge-coordinator/internal/logstore"
 	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
-	"devsforge-shared/utils"
 	"fmt"
 	"log/slog"
 	"math"
 	"os"
 	"os/exec"
-	"path/filepath"
 )
 
 func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, coordCfg *types.CoordConfig, logStore logstore.LogStore, logger *slog.Logger) error {
@@ -21,26 +19,12 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 	errCh := make(chan error, len(manifest.Models)+1) // +1 for coordinator
 	runnerCmd := config.Get().Paths.RunnerCmd
 
-	// Set simulator folder
-	simulatorRootDir := config.Get().Paths.SimulatorRoot
-	if simulatorRootDir == "" {
-		var err error
-		simulatorRootDir, err = utils.SimulatorRoot()
-		if err != nil {
-			return fmt.Errorf("failed to resolve simulator root: %w", err)
-		}
-		slog.Info("Using simulator folder", "path", simulatorRootDir)
-	}
-
 	// Check runner command
-	runnerDir := filepath.Join(simulatorRootDir, "runner")
-	if runnerCmd != "" {
-		slog.Info("Launching runners using command", "command", runnerCmd)
-	} else {
-		slog.Info("Launching runners using go run", "directory", runnerDir)
-		if _, err := os.Stat(filepath.Join(runnerDir, "main.go")); err != nil {
-			return fmt.Errorf("main.go not found in %s", runnerDir)
-		}
+	if runnerCmd == "" {
+		return fmt.Errorf("runner command not provided")
+	}
+	if _, err := os.Stat(runnerCmd); err != nil {
+		return fmt.Errorf("cannot stat on runnerCmd: %s: %w", runnerCmd, err)
 	}
 
 	// Building initial runner states
@@ -62,22 +46,10 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 				return
 			}
 
-			var cmd *exec.Cmd
-			if runnerCmd != "" {
-				cmd = exec.Command(runnerCmd,
-					"--file", tmpFile.Name(),
-					"--config", configFile.Name(),
-				)
-			} else {
-				// Run from runner directory so Go can find the module
-				runnerDir := filepath.Join(simulatorRootDir, "runner")
-				cmd = exec.Command("go", "run", ".",
-					"--file", tmpFile.Name(),
-					"--config", configFile.Name(),
-				)
-				cmd.Dir = runnerDir
-			}
-			cmd.Env = append(os.Environ(), utils.EnvSimulatorRoot+"="+simulatorRootDir)
+			cmd := exec.Command(runnerCmd,
+				"--file", tmpFile.Name(),
+				"--config", configFile.Name(),
+			)
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 			slog.Info("Launch runner", "model", m.ID)

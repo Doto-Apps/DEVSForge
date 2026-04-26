@@ -30,8 +30,8 @@ type SimulatorConfig struct {
 }
 
 type PathsConfig struct {
-	RunnerCmd     string `env:"PATHS_RUNNER_CMD" envDefault:"/app/devsforge-runner"`
-	SimulatorRoot string `env:"PATHS_SIM_ROOT" envDefault:"/app"`
+	RunnerCmd         string `env:"PATHS_RUNNER_CMD" envDefault:"/opt/devsforge/devsforge-runner"`
+	SimulationDirRoot string `env:"PATHS_SIM_ROOT" envDefault:"/tmp/simulations"`
 }
 
 type KafkaConfig struct {

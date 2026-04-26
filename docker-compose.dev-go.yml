@@ -4,8 +4,8 @@ services:
     env_file:
       - ./.env
     environment:
-      - GOMODCACHE=/go/pkg/mod
-      - GOCACHE=/root/.cache/go-build
+      GOMODCACHE: /go/pkg/mod
+      GOCACHE: /root/.cache/go-build
     working_dir: /app/back
     ports:
       - "3000:3000"
@@ -32,8 +32,8 @@ services:
     image: golang:1.26.2
     working_dir: /app
     environment:
-      - GOMODCACHE=/go/pkg/mod
-      - GOCACHE=/root/.cache/go-build
+      GOMODCACHE: /go/pkg/mod
+      GOCACHE: /root/.cache/go-build
     volumes:
       - ./go.work:/app/go.work
       - ./go.work.sum:/app/go.work.sum
@@ -56,9 +56,9 @@ services:
     build:
       dockerfile: ./simulator/Dockerfile.dev
     environment:
-      - GOMODCACHE=/go/pkg/mod
-      - GOCACHE=/root/.cache/go-build
-      - PATHS_RUNNER_CMD=/runner-build/devsforge-runner
+      GOMODCACHE: /go/pkg/mod
+      GOCACHE: /root/.cache/go-build
+      PATHS_RUNNER_CMD: /runner-build/devsforge-runner
     env_file:
       - ./.env
     working_dir: /app/simulator/coordinator
@@ -71,9 +71,10 @@ services:
       - ./simulator:/app/simulator
       - go-mod-cache:/go/pkg/mod
       - go-build-cache:/root/.cache/go-build
-      - runner-build:/runner-build
-      - ./tmp/logs:/app/sim-logs
-      - ./simulator/wrappers:/app/wrappers
+      - ./tmp/logs:/tmp/sim-logs
+      - ./tmp/simulations:/tmp/simulations
+      - runner-build:/runnner-build
+      - ./simulator/wrappers:/opt/devsforge/wrappers
     depends_on:
       db:
         condition: service_healthy

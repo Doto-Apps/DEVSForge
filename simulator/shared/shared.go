@@ -55,8 +55,8 @@ type RunnableModel struct {
 }
 
 type RunnableManifest struct {
-	Models       []*RunnableModel
-	Count        int
-	SimulationID string
-	MaxTime      float64 `json:"maxTime,omitempty"`
+	Models       []*RunnableModel `json:"models"`
+	Count        int              `json:"count"`
+	SimulationID string           `json:"simulationId"`
+	MaxTime      float64          `json:"maxTime,omitempty"` // 0 = no limit
 }

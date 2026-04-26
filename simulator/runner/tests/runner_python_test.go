@@ -5,8 +5,6 @@ import (
 	"devsforge-runner/cmd"
 	shared "devsforge-shared"
 	"devsforge-shared/kafka"
-	"devsforge-shared/utils"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -22,12 +20,13 @@ var runnerPythonID = "m1-python"
 // TestLaunchRunnerWithKafka démarre Kafka via docker-compose, puis lance UN runner
 // avec un manifest JSON (contenant ton DumbModel) + un YAML de config généré.
 func TestRunPythonModel(t *testing.T) {
-	t.Helper()
-	setupTest(t)
+	kafkaTopic := "runner-test-python"
+	tmpDir, err := os.MkdirTemp("/tmp", "devsforge_test_runner_*")
+	if err != nil {
+		t.Fatalf("cannot create tmp dir: %v", err)
+	}
 
-	var manifest shared.RunnableManifest
-
-	codeContent, err := os.ReadFile("tests/m1py/m1.py")
+	codeContent, err := os.ReadFile(filepath.Join("testdata", "m1.py"))
 	if err != nil {
 		t.Fatalf("Error while reading test code\n %v", err)
 	}
@@ -46,27 +45,14 @@ func TestRunPythonModel(t *testing.T) {
 		"simulationID": "test-python-sim"
 	}`, runnerPythonID, string(codeContent))
 
-	err = utils.ParseManifest(jsonContent, &manifest)
-	if err != nil {
-		t.Fatalf("Error while parsing test manifest\n %v", err)
-	}
-
-	data, err := json.Marshal(manifest)
 	if err != nil {
 		t.Fatalf("failed to marshal manifest: %v", err)
 	}
 
-	tmpDir, err := utils.CreateTempDir(SimRoot)
-	if err != nil {
-		t.Fatalf("failed to create temp dir in simulator/tmp: %v", err)
-	}
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
-	if err := os.WriteFile(jsonPath, data, 0644); err != nil {
+	if err := os.WriteFile(jsonPath, []byte(jsonContent), 0644); err != nil {
 		t.Fatalf("failed to write temp manifest: %v", err)
 	}
-
-	// 3️⃣ Générer un fichier YAML de config pour le runner
-	kafkaTopic := "runner-test-python"
 
 	yamlCfg := shared.YamlInputConfig{
 		Kafka: shared.YamlInputConfigKafka{
@@ -87,14 +73,6 @@ func TestRunPythonModel(t *testing.T) {
 		t.Fatalf("failed to write yaml config: %v", err)
 	}
 
-	// 4️⃣ Lancer le runner directement via LaunchRunner
-	//    On simule la ligne de commande :
-	//    go run runners/go/main.go --file <manifest> --config <config>
-	args := []string{
-		"--file", jsonPath,
-		"--config", cfgPath,
-	}
-
 	client := InitKafkaClient(kafkaTopic, KafkaAddr)
 	err = CreateTopic(kafkaTopic, client)
 	if err != nil {
@@ -102,7 +80,7 @@ func TestRunPythonModel(t *testing.T) {
 	}
 
 	go func() {
-		if err := cmd.LaunchRunner(args); err != nil {
+		if err := cmd.LaunchRunner(nil, &cfgPath, &jsonPath); err != nil {
 			log.Fatalf("expected runner to exit cleanly, got error:\n%v", err)
 		}
 	}()

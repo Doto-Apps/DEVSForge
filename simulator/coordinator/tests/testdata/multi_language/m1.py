@@ -59,7 +59,7 @@ class PythonAdder(Atomic):
 def NewModel(config: dict) -> Atomic:
     raw_ports = config.get("ports") or []
     ports_cfg = [
-        RunnableModelPortCfg(id=p["id"], type=p["type"])
+        RunnableModelPortCfg(id=p["id"], name=p["name"], type=p["type"])
         for p in raw_ports
     ]
 
