@@ -7,6 +7,7 @@ import (
 	"devsforge-runner/util"
 	shared "devsforge-shared"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 )
@@ -14,7 +15,7 @@ import (
 func PrepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath string) (*generators.WrapperInfo, error) {
 	cfg := config.InitConfig(manifest, yamlConfigFilePath)
 
-	simRoot := cfg.Env.Paths.SimulatorRoot
+	simRoot := cfg.Env.Paths.SimulationDirRoot
 	if simRoot == "" {
 		wd, err := os.Getwd()
 		if err != nil {
@@ -26,13 +27,15 @@ func PrepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 	if !filepath.IsAbs(cfg.TmpDirectory) {
 		cfg.TmpDirectory = filepath.Join(simRoot, cfg.TmpDirectory)
 	}
+	slog.Debug("Create tmp directory", "path", cfg.TmpDirectory)
 	if err := os.MkdirAll(cfg.TmpDirectory, 0o755); err != nil {
 		return nil, fmt.Errorf("failed to create tmp directory %q: %w", cfg.TmpDirectory, err)
 	}
 
 	modelRoot := filepath.Join(cfg.TmpDirectory, "model_"+cfg.Model.ID)
-	modelingFolder := filepath.Join(simRoot, "wrappers", string(cfg.Model.Language))
+	modelingFolder := filepath.Join(cfg.Env.Paths.WrappersDir, string(cfg.Model.Language))
 
+	slog.Debug("Checking wrappers folder is present", "path", modelingFolder)
 	if _, err := os.Stat(modelingFolder); err != nil {
 		return nil, fmt.Errorf("wrapper directory not found: %q: %w", modelingFolder, err)
 	}

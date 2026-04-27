@@ -1,10 +1,5 @@
 version: "3"
 
-vars:
-  GOLANGCI_VERSION: v2.11.4
-  GOLANGCI_LINT_CACHE:
-    sh: echo "$(pwd)/.cache/golangci-lint/"
-
 tasks:
   format:
     desc: Format all simulator modules (coordinator, runner, shared)
@@ -45,10 +40,38 @@ tasks:
     cmds:
       - go build -v ./...
 
+  test:sim:
+    desc: Run tests inside Docker runner image
+    cmds:
+      - echo "Building Docker coordinator image..."
+      - docker build -f ./simulator/Dockerfile -t devsforge-test-simulator:latest ./
+      - echo "Building Docker runner binary..."
+      - CGO_ENABLED=0 go build -ldflags="-s -w" -o ./build/devsforge-runner -v ./simulator/runner/main.go
+      - chmod 777 ./build/devsforge-runner
+      - echo "Running tests in Docker..."
+      - |
+        docker run --rm --network host \
+        -e PATHS_RUNNER_CMD=/tmp/devsforge-runner \
+        -e LOG_DIR=/tmp/logs \
+        -e PATHS_SIM_ROOT=/tmp/simulations \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v ./build/devsforge-runner:/tmp/devsforge-runner \
+        -v ./simulator/wrappers:/opt/devsforge-wrappers \
+        -v ./tmp/unit-tests/simulation:/tmp/simulations \
+        -v $(pwd):/app \
+        -w /app \
+        devsforge-test-simulator:latest go test -v ./simulator/coordinator/...
+
   test:
     desc: Run tests inside Docker runner image
     cmds:
       - echo "Building Docker runner image..."
-      - docker build -f ./simulator/Dockerfile -t devsforge-test-runner:latest ./
+      - docker build -f ./simulator/runner/Dockerfile -t devsforge-test-runner:latest ./
       - echo "Running tests in Docker..."
-      - docker run --rm --network host -v /var/run/docker.sock:/var/run/docker.sock -v $(pwd):/app -w /app devsforge-test-runner:latest go test -v ./simulator/runner/tests/...
+      - |
+        docker run --rm --network host \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -e LOG_DIR=/tmp/sim-logs \
+        -v $(pwd):/app \
+        -w /app \
+        devsforge-test-runner:latest go test -v ./simulator/runner/tests/...

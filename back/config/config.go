@@ -54,7 +54,7 @@ type KafkaConfig struct {
 
 type SimulatorConfig struct {
 	Addr string `env:"SIMULATOR_ADDR" envDefault:"localhost:8080"`
-	Mode string `env:"SIMULATOR_MODE" envDefault:"sync"`
+	Mode string `env:"SIMULATOR_MODE" envDefault:"async"`
 }
 
 func Get() *Config {

@@ -35,7 +35,8 @@ type LogConfig struct {
 }
 
 type PathsConfig struct {
-	SimulatorRoot string `env:"PATHS_SIM_ROOT" envDefault:"/app"`
+	SimulationDirRoot string `env:"PATHS_SIM_ROOT" envDefault:"/tmp/simulations"`
+	WrappersDir       string `env:"PATHS_WRAPPERS_DIR" envDefault:"/app"`
 }
 
 type JavaConfig struct {
@@ -72,6 +73,10 @@ func Get() *RunnerConfig {
 			panic("config error: " + err.Error())
 		}
 		cfg.Env = envCfg
+		if envCfg.Paths.WrappersDir == "" {
+			slog.Warn("No wrappers dir provided, fallback to sim root")
+			cfg.Env.Paths.WrappersDir = envCfg.Paths.SimulationDirRoot
+		}
 
 		instance = cfg
 	})

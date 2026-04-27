@@ -9,23 +9,21 @@ COPY simulator/runner/go.mod simulator/runner/go.sum ./simulator/runner/
 COPY simulator/shared/go.mod simulator/shared/go.sum ./simulator/shared/
 COPY simulator/wrappers/go/go.mod simulator/wrappers/go/go.sum ./simulator/wrappers/go/
 
-COPY simulator ./simulator
+COPY ./simulator/runner ./simulator/runner
+COPY ./simulator/shared ./simulator/shared
+COPY ./simulator/wrappers ./simulator/wrappers
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     mkdir bin && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-coordinator -v ./simulator/coordinator && \
     CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-runner -v ./simulator/runner
 
 FROM python:3.12-slim AS simulator
 
 WORKDIR /app
 RUN mkdir /opt/devsforge/
-
 ENV LOG_DIR="/tmp/sim-logs"
 ENV PATHS_SIM_ROOT="/tmp/simulations"
-ENV SIMULATOR_CMD="/opt/devsforge/devsforge-coordinator"
-ENV PATHS_RUNNER_CMD="/opt/devsforge/devsforge-runner"
 ENV PATHS_WRAPPERS_DIR="/opt/devsforge/wrappers"
 
 # Install Java 21 and Maven
@@ -64,13 +62,9 @@ COPY --from=builder /app/simulator/wrappers/java /tmp/java-preheat-wrappers
 WORKDIR /tmp/java-preheat-wrappers
 RUN mvn dependency:resolve -q || true && rm -rf /tmp/java-preheat-wrappers
 
-COPY --from=builder /app/bin/devsforge-runner /opt/devsforge/devsforge-runner
-COPY --from=builder /app/bin/devsforge-coordinator /opt/devsforge/devsforge-coordinator
-
-RUN mkdir /opt/devsforge-wrappers/
-COPY ./simulator/wrappers /opt/devsforge/wrappers
-
 WORKDIR /app
+COPY --from=builder /app/bin/devsforge-runner /opt/devsforge/devsforge-runner
 EXPOSE 8080
-VOLUME [ "/tmp/sim-logs", "/opt/devsforge/wrappers", "/tmp/simulations" ]
-CMD ["/opt/devsforge/devsforge-coordinator", "--daemon"]
+VOLUME [ "/tmp/sim-logs" ]
+CMD ["/opt/devsforge/devsforge-runner"]
+

@@ -6,7 +6,6 @@ import (
 	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
 	"devsforge-shared/logger"
-	"devsforge-shared/utils"
 	"fmt"
 	"log/slog"
 	"os"
@@ -68,20 +67,8 @@ func RunSimulation(params types.SimulationParams) error {
 		return fmt.Errorf("failed to initialize Kafka topic: %w", err)
 	}
 
-	simRoot := config.Get().Paths.SimulatorRoot
-	if simRoot == "" {
-		simRoot, err = utils.SimulatorRoot()
-		if err != nil {
-			return fmt.Errorf("failed to resolve simulator root: %w", err)
-		}
-	}
-
-	tmpBase := filepath.Join(simRoot, "tmp")
-	if err := os.MkdirAll(tmpBase, 0o755); err != nil {
-		return fmt.Errorf("failed to create tmp base directory %q: %w", tmpBase, err)
-	}
-
-	prefix := "devsforge_" + manifest.SimulationID + "_"
+	tmpBase := filepath.Join(config.Get().Paths.SimulationDirRoot)
+	prefix := "devsforge_" + manifest.SimulationID + "_*"
 	rootDir, err := os.MkdirTemp(tmpBase, prefix)
 	if err != nil {
 		return fmt.Errorf("failed to create simulation temp dir with prefix %q under %q: %w", prefix, tmpBase, err)

@@ -8,7 +8,6 @@ import (
 	"devsforge-runner/internal/generators"
 	"devsforge-shared/logger"
 	"devsforge-shared/utils"
-	"flag"
 	"fmt"
 	"log/slog"
 	"os"
@@ -21,25 +20,17 @@ import (
 	"github.com/twmb/franz-go/pkg/kgo"
 )
 
-func LaunchRunner(args []string) error {
-	fs := flag.NewFlagSet("runner", flag.ContinueOnError)
-	jsonStr := fs.String("json", "", "JSON string to parse")
-	filePath := fs.String("file", "", "Path to JSON file")
-	configFile := fs.String("config", "", "Path to YAML config file")
-
-	if err := fs.Parse(args); err != nil {
-		return fmt.Errorf("error parsing flags: %w", err)
-	}
-	if *configFile == "" {
+func LaunchRunner(jsonStr *string, configFile *string, filePath *string) error {
+	if configFile == nil || *configFile == "" {
 		return fmt.Errorf("no config file provided")
 	}
 
 	var manifest shared.RunnableManifest
-	if *jsonStr != "" {
+	if jsonStr != nil && *jsonStr != "" {
 		if err := utils.ParseManifest(*jsonStr, &manifest); err != nil {
 			return fmt.Errorf("error parsing JSON: %w", err)
 		}
-	} else if *filePath != "" {
+	} else if filePath != nil && *filePath != "" {
 		data, err := os.ReadFile(*filePath)
 		if err != nil {
 			return fmt.Errorf("error reading file: %w", err)
