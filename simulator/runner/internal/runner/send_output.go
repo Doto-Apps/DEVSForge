@@ -8,39 +8,35 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
-func (r *Runner) RunSendOutput(msg kafka.KafkaMessageSendOutput) error {
-	r.CurrentTime = msg.EventTime.T
-
+func (r *Runner) RunSendOutput() error {
 	outResp, err := r.ModelClient.Output(r.Context, &emptypb.Empty{})
 	if err != nil {
 		return fmt.Errorf("output error: %w", err)
 	}
 
-	var pvs []kafka.PortValue
-	for _, po := range outResp.Outputs {
-		for _, v := range po.ValuesJson {
+	var portsPayload []*kafka.KafkaMessagePortPayload
+
+	for _, portOutput := range outResp.Outputs {
+		for _, v := range portOutput.ValuesJson {
 			var decodedValue interface{}
 			if err := json.Unmarshal([]byte(v), &decodedValue); err != nil {
-				return fmt.Errorf("invalid JSON output value on port %s: %w", po.PortName, err)
+				return fmt.Errorf("invalid JSON output value on port %s: %w", portOutput.PortName, err)
 			}
-			pvs = append(pvs, kafka.PortValue{
-				PortIdentifier: po.PortName,
-				PortType:       "TODO", // TODO: Implement me
-				Value:          decodedValue,
+			portsPayload = append(portsPayload, &kafka.KafkaMessagePortPayload{
+				PortName: portOutput.PortName,
+				Value:    portOutput.ValuesJson,
 			})
 		}
 	}
 
-	outMsg := &kafka.KafkaMessageModelOutput{
-		MsgType: kafka.MsgTypeOutputReport,
-		EventTime: kafka.SimTime{
-			TimeType: kafka.DevsDoubleSimTime.String(),
-			T:        r.CurrentTime,
+	msg := r.GetBaseKafkaMessage(kafka.CoordinatorId).NewKafkaMessageOutputReport(kafka.KafkaMessageOutputReportParams{
+		EventTime:        r.CurrentTime,
+		NextInternalTime: r.NextInternalTime,
+		Payload: kafka.KafkaMessageOutputReportPayload{
+			Outputs:          portsPayload,
+			AdditionalFields: &map[string]any{},
 		},
-		SenderID: r.Config.ID,
-		ModelOutput: kafka.ModelOutput{
-			PortValueList: pvs,
-		},
-	}
-	return r.SendMessage(outMsg)
+	})
+
+	return r.SendMessage(msg)
 }

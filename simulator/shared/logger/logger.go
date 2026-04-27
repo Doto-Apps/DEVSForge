@@ -78,7 +78,7 @@ func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error)
 		// Determine log filename
 		var logFilename string
 		if processType == "runner" && processID != "" {
-			logFilename = fmt.Sprintf("runner-%s.log", processID)
+			logFilename = fmt.Sprintf("runner-%s.log", sanitizePathToken(processID))
 		} else {
 			logFilename = fmt.Sprintf("%s.log", processType)
 		}
@@ -182,12 +182,41 @@ func GetLogFilePath(cfg Config, processType, processID string) string {
 
 	var logFilename string
 	if processType == "runner" && processID != "" {
-		logFilename = fmt.Sprintf("runner-%s.log", processID)
+		logFilename = fmt.Sprintf("runner-%s.log", sanitizePathToken(processID))
 	} else {
 		logFilename = fmt.Sprintf("%s.log", processType)
 	}
 
 	return filepath.Join(logDir, logFilename)
+}
+
+func sanitizePathToken(raw string) string {
+	if raw == "" {
+		return "runner"
+	}
+
+	var b strings.Builder
+	lastUnderscore := false
+	for _, r := range raw {
+		isAlphaNum := r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9'
+		if isAlphaNum || r == '-' || r == '_' {
+			b.WriteRune(r)
+			lastUnderscore = false
+			continue
+		}
+
+		if !lastUnderscore {
+			b.WriteRune('_')
+			lastUnderscore = true
+		}
+	}
+
+	sanitized := strings.Trim(b.String(), "_")
+	if sanitized == "" {
+		return "runner"
+	}
+
+	return sanitized
 }
 
 // SourceLocation captures the caller's source location

@@ -93,6 +93,7 @@ export function ParameterInput({
 			) : type === "object" ? (
 				<Textarea
 					className="font-mono"
+					defaultValue={JSON.stringify(value, null, 2)}
 					disabled={disabled}
 					onChange={(e) => {
 						try {
@@ -100,7 +101,6 @@ export function ParameterInput({
 							updateParameter(index, val);
 						} catch {}
 					}}
-					value={JSON.stringify(value, null, 2)}
 				/>
 			) : null}
 		</div>

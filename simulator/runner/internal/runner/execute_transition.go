@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Runner) RunExecuteTransition(msg kafka.KafkaMessageExecuteTransition) error {
-	t := msg.EventTime.T
+	t := msg.EventTime
 	ctx := r.Context
 	modelClient := r.ModelClient
 
@@ -23,21 +23,21 @@ func (r *Runner) RunExecuteTransition(msg kafka.KafkaMessageExecuteTransition) e
 	}
 	r.CurrentTime = t
 
-	hasInputs := len(msg.ModelInputsOption.PortValueList) > 0
+	hasInputs := len(msg.Payload.Inputs) > 0
 
 	// 1) Injection des inputs dans les ports du modèle (AddInput gRPC)
 	if hasInputs {
-		for _, pv := range msg.ModelInputsOption.PortValueList {
-			valueJSONBytes, err := json.Marshal(pv.Value)
+		for _, payloadInput := range msg.Payload.Inputs {
+			valueJSONBytes, err := json.Marshal(payloadInput.Value)
 			if err != nil {
-				return fmt.Errorf("failed to marshal PortValue for port %s: %w", pv.PortIdentifier, err)
+				return fmt.Errorf("failed to marshal PortValue for port %s: %w", payloadInput.PortName, err)
 			}
 			_, err = modelClient.AddInput(ctx, &devspb.InputMessage{
-				PortName:  pv.PortIdentifier,
+				PortName:  payloadInput.PortName,
 				ValueJson: string(valueJSONBytes),
 			})
 			if err != nil {
-				return fmt.Errorf("AddInput error on port %s: %w", pv.PortIdentifier, err)
+				return fmt.Errorf("AddInput error on port %s: %w", payloadInput.PortName, err)
 			}
 		}
 	}
@@ -79,19 +79,14 @@ func (r *Runner) RunExecuteTransition(msg kafka.KafkaMessageExecuteTransition) e
 		r.NextInternalTime = math.MaxFloat64
 	}
 
-	nextTimeField := kafka.SimTime{
-		TimeType: kafka.DevsDoubleSimTime.String(),
-		T:        r.NextInternalTime,
-	}
+	nextTimeField := r.NextInternalTime
 
-	done := &kafka.KafkaMessageTransitionDone{
-		MsgType: kafka.MsgTypeTransitionComplete,
-		EventTime: kafka.SimTime{
-			TimeType: kafka.DevsDoubleSimTime.String(),
-			T:        r.CurrentTime,
+	done := r.GetBaseKafkaMessage(kafka.CoordinatorId).NewKafkaMessageTransitionComplete(
+		kafka.KafkaMessageTransitionCompleteParams{
+			NextInternalTime: nextTimeField,
+			EventTime:        r.CurrentTime,
 		},
-		NextInternalTime: nextTimeField,
-		SenderID:         r.Config.ID,
-	}
+	)
+
 	return r.SendMessage(done)
 }

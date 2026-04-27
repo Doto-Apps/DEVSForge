@@ -82,7 +82,7 @@ export function ModelParameterEditor({
 			<div className="flex items-center justify-between gap-2">
 				<Label>
 					{valueOnly
-						? "Override parameter values for this instance"
+						? "Override of Parameter (Sub model)"
 						: editAsJSON
 							? "Edit Parameters as JSON"
 							: "Edit Parameters with UI"}
@@ -117,10 +117,7 @@ export function ModelParameterEditor({
 				/>
 			) : (
 				parameters.map((param, index) => (
-					<div
-						className="space-y-2"
-						key={`${param.name}-${param.type}-${param.value}`}
-					>
+					<div className="space-y-2" key={`${param.name}`}>
 						<ParameterInput
 							disabled={!canEditValues}
 							index={index}

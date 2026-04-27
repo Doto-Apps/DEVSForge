@@ -1,8 +1,8 @@
 "use client";
 
-import { ChevronRight, PlusIcon } from "lucide-react";
+import { BookOpenText, ChevronRight, PlusIcon } from "lucide-react";
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
 	Collapsible,
 	CollapsibleContent,
@@ -18,6 +18,7 @@ import {
 	SidebarMenuSub,
 	SidebarMenuSubButton,
 	SidebarMenuSubItem,
+	useSidebar,
 } from "@/components/ui/sidebar";
 import { librairiesToFront } from "@/lib/librairiesToFront";
 import { modelToReactflow } from "@/lib/modelToReactflow";
@@ -44,6 +45,8 @@ export function NavLibrary() {
 	const models = useGetModels();
 	const [, setDragId] = useDnD();
 	const navigate = useNavigate();
+	const location = useLocation();
+	const { state } = useSidebar();
 
 	const [hoveredId, setHoveredId] = useState<string | null>(null);
 
@@ -53,10 +56,9 @@ export function NavLibrary() {
 
 	const hoveredModel = hoveredId && data ? modelToReactflow(data) : undefined;
 
-	const navLibraries = librairiesToFront(
-		libraries.data ?? [],
-		models.data ?? [],
-	);
+	const isLibraryActive =
+		location.pathname === "/library" ||
+		location.pathname.startsWith("/library/");
 
 	const onHoverModel = (modelId: string | null) => {
 		setHoveredId(modelId);
@@ -67,12 +69,38 @@ export function NavLibrary() {
 		event.dataTransfer.effectAllowed = "move";
 	};
 
+	if (state === "collapsed") {
+		return (
+			<SidebarGroup>
+				<SidebarMenu>
+					<SidebarMenuItem>
+						<SidebarMenuButton
+							asChild
+							isActive={isLibraryActive}
+							tooltip="Libraries"
+						>
+							<Link to="/library">
+								<BookOpenText />
+								<span>Libraries</span>
+							</Link>
+						</SidebarMenuButton>
+					</SidebarMenuItem>
+				</SidebarMenu>
+			</SidebarGroup>
+		);
+	}
+
+	const navLibraries = librairiesToFront(
+		libraries.data ?? [],
+		models.data ?? [],
+	);
+
 	return (
 		<SidebarGroup>
 			<ContextMenu>
 				<ContextMenuTrigger>
 					<SidebarGroupLabel className="flex justify-between items-center w-full pl-2 pr-1">
-						<span>Library</span>
+						<span>Libraries</span>
 
 						<Button asChild className="h-6 w-6" size={"sm"} variant={"ghost"}>
 							<Link to={"/library/new"}>

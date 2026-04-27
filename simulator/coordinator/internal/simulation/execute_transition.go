@@ -6,26 +6,17 @@ import (
 	"fmt"
 )
 
-func (c *Coordinator) RunExecuteTransition(transitionTargets types.RunnerStates, tmin float64) error {
-	for _, st := range transitionTargets {
-		var inputs kafka.ModelInputsOption
-		if len(st.Inbox) > 0 {
-			inputs = kafka.ModelInputsOption{
-				PortValueList: st.Inbox,
-			}
-		}
-
-		msg := &kafka.KafkaMessageExecuteTransition{
-			MsgType: kafka.MsgTypeExecuteTransition,
-			EventTime: kafka.SimTime{
-				TimeType: kafka.DevsDoubleSimTime.String(),
-				T:        tmin,
+func (c *Coordinator) RunExecuteTransition(transitionTargets types.RunnerStates, eventTime float64) error {
+	for _, transitionTarget := range transitionTargets {
+		msg := c.GetBaseKafkaMessage(transitionTarget.ID).NewKafkaMessageExecuteTransition(kafka.KafkaMessageExecuteTransitionParams{
+			EventTime: eventTime,
+			Payload: kafka.KafkaMessageExecuteTransitionPayload{
+				Inputs: transitionTarget.InPorts,
 			},
-			ModelInputsOption: inputs,
-			ReceiverID:        st.ID,
-		}
+		})
+
 		if err := c.SendMessage(msg); err != nil {
-			return fmt.Errorf("error sending ExecuteTransition to %s: %w", st.ID, err)
+			return fmt.Errorf("error sending KafkaMessageExecuteTransition to %s: %w", transitionTarget.ID, err)
 		}
 	}
 	return nil

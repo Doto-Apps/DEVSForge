@@ -9,6 +9,7 @@ import (
 
 	kafkaShared "devsforge-shared/kafka"
 
+	"github.com/google/uuid"
 	kafka "github.com/segmentio/kafka-go"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -83,13 +84,8 @@ func DeleteTopic(broker, topic string) error {
 func GetKafkaTopic(kafkaConnStr string, providedTopic string) (string, error) {
 	kafkaTopic := providedTopic
 
-	// If no topic provided, generate one
 	if kafkaTopic == "" {
-		var err error
-		kafkaTopic, err = RandomStringWithPrefix("sim", 8)
-		if err != nil {
-			return "", err
-		}
+		kafkaTopic = uuid.NewString()
 	}
 
 	// Testing purpose only - env var overrides
@@ -108,8 +104,8 @@ func GetKafkaTopic(kafkaConnStr string, providedTopic string) (string, error) {
 	return kafkaTopic, nil
 }
 
-func (c *Coordinator) SendMessage(msg kafkaShared.KafkaMessageI) error {
-	data, err := msg.Marshal()
+func (c *Coordinator) SendMessage(msg kafkaShared.KafkaMessageInterface) error {
+	data, err := kafkaShared.MarshalKafkaMessage(msg)
 	if err != nil {
 		return fmt.Errorf("cannot marshal kafka message : %w", err)
 	}
@@ -117,7 +113,7 @@ func (c *Coordinator) SendMessage(msg kafkaShared.KafkaMessageI) error {
 	return c.Config.KafkaClient.ProduceSync(c.Context, &kgo.Record{Value: data}).FirstErr()
 }
 
-func (c *Coordinator) StartReceiveLoop(handler func(*kafkaShared.BaseKafkaMessage) error) error {
+func (c *Coordinator) StartReceiveLoop(handler func(any) error) error {
 	client := c.Config.KafkaClient
 	if c.Logger == nil {
 		slog.Debug("Logger is nil in StartReceiveLoop")

@@ -44,14 +44,19 @@ services:
       - go-build-cache:/root/.cache/go-build
     command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
     develop:
-      watch:
-        - action: sync+restart
-          path: ./simulator/runner
-          target: ./simulator/runner/
-        - action: sync+restart
-          path: ./simulator/shared
-          target: ./simulator/shared
-
+        watch:
+          - action: sync+exec
+            path: ./simulator/runner
+            target: /app/simulator/runner
+            exec:
+              working_dir: /app
+              command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
+          - action: sync+exec
+            path: ./simulator/shared
+            target: /app/simulator/shared
+            exec:
+              working_dir: /app
+              command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
   simulator:
     build:
       dockerfile: ./simulator/Dockerfile.dev

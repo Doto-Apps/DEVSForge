@@ -50,7 +50,6 @@ type KafkaConfig struct {
 type RunnerConfig struct {
 	SimulationID string
 	Model        *shared.RunnableModel
-	ID           string
 	KafkaConfig  kafka.KafkaConfig
 	KafkaClient  *kgo.Client
 	GRPC         shared.YamlInputConfigGRPC
@@ -132,7 +131,6 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 
 	instance = &RunnerConfig{
 		SimulationID: manifest.SimulationID,
-		ID:           model.ID,
 		Model:        &model,
 		KafkaConfig:  *kafkaConfig,
 		GRPC:         grpcConfig,

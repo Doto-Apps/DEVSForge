@@ -14,8 +14,8 @@ type SimulationLogsResponse struct {
 }
 
 type LogMessage struct {
-	Timestamp int64                  `json:"timestamp"`
-	SenderID  string                 `json:"senderId,omitempty"`
-	MsgType   string                 `json:"msgType"`
-	Data      kafka.BaseKafkaMessage `json:"data"`
+	Timestamp   int64                       `json:"timestamp"`
+	SenderID    string                      `json:"senderId,omitempty"`
+	MessageType string                      `json:"messageType"`
+	Data        kafka.KafkaMessageInterface `json:"data"`
 }

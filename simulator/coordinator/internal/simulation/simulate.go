@@ -13,6 +13,19 @@ import (
 	"time"
 )
 
+// Error code custom 5000 - 9999
+const ERROR_CODE_COORDINATOR_SIMULATION_ERROR = 5000
+
+func handleError(logStore logstore.LogStore, simulationID string, kafkaTopic string, err error, createdAt int64) error {
+	return logStore.SetStatus(simulationID, logstore.SimulationStatus{
+		Status:       "failed",
+		CreatedAt:    createdAt,
+		EndedAt:      time.Now().Unix(),
+		ErrorMessage: err.Error(),
+		KafkaTopic:   kafkaTopic,
+	})
+}
+
 func RunSimulation(params types.SimulationParams) error {
 	manifest, err := CreateManifest(params.Json, params.File)
 	if err != nil {
@@ -31,15 +44,6 @@ func RunSimulation(params types.SimulationParams) error {
 	simLogger, err := logStore.GetLogger(manifest.SimulationID)
 	if err != nil {
 		return fmt.Errorf("failed to create simulation logger: %w", err)
-	}
-
-	err = logStore.SetStatus(manifest.SimulationID, logstore.SimulationStatus{
-		Status:     "running",
-		CreatedAt:  createdAt,
-		KafkaTopic: getKafkaTopic(params.KafkaTopic),
-	})
-	if err != nil {
-		slog.Warn("Failed to write simulation status", "error", err)
 	}
 
 	logCfg := logger.DefaultConfig(manifest.SimulationID)
@@ -89,27 +93,36 @@ func RunSimulation(params types.SimulationParams) error {
 		return fmt.Errorf("failed to generate runner YAML config: %w", err)
 	}
 
-	cfg := InitConfig(yamlConfig)
+	cfg := InitConfig(yamlConfig, manifest.SimulationID)
+
+	err = logStore.SetStatus(manifest.SimulationID, logstore.SimulationStatus{
+		Status:     "running",
+		CreatedAt:  createdAt,
+		KafkaTopic: getKafkaTopic(params.KafkaTopic),
+	})
+	if err != nil {
+		slog.Error("Failed to write simulation status", "error", err)
+		return err
+	}
 
 	if err := RunShellSimulation(manifest, configFile, cfg, logStore, simLogger); err != nil {
-		slog.Info("RunShellSimulation error", "error", err)
-		if setStatusErr := logStore.SetStatus(manifest.SimulationID, logstore.SimulationStatus{
-			Status:       "failed",
-			CreatedAt:    createdAt,
-			EndedAt:      time.Now().Unix(),
-			ErrorMessage: err.Error(),
-			KafkaTopic:   kafkaTopic,
-		}); setStatusErr != nil {
-			slog.Warn("Failed to write simulation status", "error", setStatusErr)
+		slog.Warn("RunShellSimulation error", "error", err)
+		if setStatusErr := handleError(logStore, manifest.SimulationID, kafkaTopic, err, createdAt); setStatusErr != nil {
+			slog.Error("Failed to write simulation status", "error", setStatusErr)
 		}
-		sendCoordinatorErrorReport(cfg, manifest.SimulationID, "COORDINATOR_SIMULATION_ERROR", err)
 		return err
 	}
 
 	slog.Info("Simulation ended")
 	slog.Info("Cleaning environment")
 
-	messages, _ := logStore.GetAll(manifest.SimulationID)
+	messages, err := logStore.GetAll(manifest.SimulationID)
+	if err != nil {
+		slog.Error("failed to retrieve all messages", "error", err)
+		if setStatusErr := handleError(logStore, manifest.SimulationID, kafkaTopic, err, createdAt); setStatusErr != nil {
+			slog.Error("Failed to write simulation status", "error", setStatusErr)
+		}
+	}
 	err = logStore.SetStatus(manifest.SimulationID, logstore.SimulationStatus{
 		Status:       "completed",
 		CreatedAt:    createdAt,
@@ -119,7 +132,7 @@ func RunSimulation(params types.SimulationParams) error {
 		Messages:     messages,
 	})
 	if err != nil {
-		slog.Warn("Failed to write final simulation status", "error", err)
+		slog.Error("Failed to write final simulation status", "error", err)
 	}
 
 	if err := logStore.DeleteAllLog(manifest.SimulationID); err != nil {
@@ -129,10 +142,6 @@ func RunSimulation(params types.SimulationParams) error {
 	if err := CleanupKafka(*params.KafkaAddress, kafkaTopic); err != nil {
 		return fmt.Errorf("error during cleanup: %w", err)
 	}
-	// Disable actually we need a better way to delete the simulation files
-	// if err = os.RemoveAll(rootDir); err != nil {
-	// 	slog.Error("Cannot remove simulation rootDir", "error", err)
-	// }
 
 	slog.Info("Done")
 	return nil

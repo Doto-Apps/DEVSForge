@@ -4,6 +4,7 @@ import (
 	"devsforge/enum"
 	"devsforge/json"
 	"devsforge/model"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -204,6 +205,9 @@ func TestModelToManifest_AppliesRuntimeOverride(t *testing.T) {
 	if len(manifest.Models) != 1 {
 		t.Fatalf("expected 1 runnable model, got %d", len(manifest.Models))
 	}
+	if manifest.Models[0].ID != "root-1/child-instance-1" {
+		t.Fatalf("expected runnable ID root-1/child-instance-1, got %q", manifest.Models[0].ID)
+	}
 	if v, ok := manifest.Models[0].Parameters[0].Value.(float64); !ok || v != 11 {
 		t.Fatalf("expected runtime overridden threshold value 11, got %#v", manifest.Models[0].Parameters[0].Value)
 	}
@@ -241,6 +245,115 @@ func TestModelToManifest_FailsOnUnknownRuntimeInstance(t *testing.T) {
 	}
 	if !strings.Contains(err.Error(), "unknown runtime override instanceModelId") {
 		t.Fatalf("expected unknown runtime instance error, got: %v", err)
+	}
+}
+
+func TestModelToManifest_UsesCanonicalRootAtomicInstanceID(t *testing.T) {
+	atomic := buildAtomicModel(
+		"atomic-root",
+		[]json.ModelParameter{
+			{
+				Name:  "threshold",
+				Type:  json.ParameterTypeInt,
+				Value: float64(3),
+			},
+		},
+	)
+
+	manifest, err := ModelToManifest(
+		[]model.Model{atomic},
+		atomic.ID,
+		"sim-1",
+		100,
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(manifest.Models) != 1 {
+		t.Fatalf("expected 1 runnable model, got %d", len(manifest.Models))
+	}
+
+	if manifest.Models[0].ID != atomic.ID {
+		t.Fatalf("expected runnable model ID %q, got %q", atomic.ID, manifest.Models[0].ID)
+	}
+}
+
+func TestModelToManifest_UsesInstanceIDsAndRoutesDistinctInstances(t *testing.T) {
+	reusedAtomic := buildAtomicModel("atomic-reused", nil)
+	sinkAtomic := buildAtomicModel("atomic-sink", nil)
+
+	root := buildCoupledRootWithConnections(
+		"root-1",
+		[]json.ModelComponent{
+			{InstanceID: "gen-a", ModelID: reusedAtomic.ID},
+			{InstanceID: "gen-b", ModelID: reusedAtomic.ID},
+			{InstanceID: "sink", ModelID: sinkAtomic.ID},
+		},
+		[]json.ModelConnection{
+			{
+				From: json.ModelLink{InstanceID: "gen-a", Port: "out1"},
+				To:   json.ModelLink{InstanceID: "sink", Port: "in1"},
+			},
+			{
+				From: json.ModelLink{InstanceID: "gen-b", Port: "out1"},
+				To:   json.ModelLink{InstanceID: "sink", Port: "in1"},
+			},
+		},
+	)
+
+	manifest, err := ModelToManifest(
+		[]model.Model{root, reusedAtomic, sinkAtomic},
+		root.ID,
+		"sim-1",
+		100,
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(manifest.Models) != 3 {
+		t.Fatalf("expected 3 runnable models, got %d", len(manifest.Models))
+	}
+
+	ids := make([]string, 0, len(manifest.Models))
+	runnableIndexByID := make(map[string]int)
+	for idx, runnable := range manifest.Models {
+		ids = append(ids, runnable.ID)
+		runnableIndexByID[runnable.ID] = idx
+	}
+	slices.Sort(ids)
+	expectedIDs := []string{
+		"root-1/gen-a",
+		"root-1/gen-b",
+		"root-1/sink",
+	}
+	for _, expectedID := range expectedIDs {
+		if _, ok := runnableIndexByID[expectedID]; !ok {
+			t.Fatalf("missing runnable model %q, got IDs: %v", expectedID, ids)
+		}
+	}
+
+	genAConnections := manifest.Models[runnableIndexByID["root-1/gen-a"]].Connections
+	if len(genAConnections) != 1 {
+		t.Fatalf("expected gen-a to have 1 connection, got %d", len(genAConnections))
+	}
+	if genAConnections[0].From.ID != "root-1/gen-a" || genAConnections[0].To.ID != "root-1/sink" {
+		t.Fatalf("unexpected gen-a connection: %#v", genAConnections[0])
+	}
+
+	genBConnections := manifest.Models[runnableIndexByID["root-1/gen-b"]].Connections
+	if len(genBConnections) != 1 {
+		t.Fatalf("expected gen-b to have 1 connection, got %d", len(genBConnections))
+	}
+	if genBConnections[0].From.ID != "root-1/gen-b" || genBConnections[0].To.ID != "root-1/sink" {
+		t.Fatalf("unexpected gen-b connection: %#v", genBConnections[0])
+	}
+
+	if len(manifest.Models[runnableIndexByID["root-1/sink"]].Connections) != 0 {
+		t.Fatalf("expected sink to have no outgoing connections")
 	}
 }
 
@@ -285,6 +398,28 @@ func buildCoupledRoot(rootID string, childModelID string, overrideParams []json.
 				},
 			},
 		},
+		Metadata: json.ModelMetadata{
+			Position:  json.ModelPosition{X: 0, Y: 0},
+			Style:     json.ModelStyle{Width: 100, Height: 100},
+			Keyword:   []string{},
+			ModelRole: strPtr("coupled"),
+		},
+	}
+}
+
+func buildCoupledRootWithConnections(
+	rootID string,
+	components []json.ModelComponent,
+	connections []json.ModelConnection,
+) model.Model {
+	return model.Model{
+		ID:          rootID,
+		Name:        rootID,
+		Type:        enum.Coupled,
+		Language:    enum.ModelLanguagePython,
+		Code:        "print('coupled')",
+		Components:  components,
+		Connections: connections,
 		Metadata: json.ModelMetadata{
 			Position:  json.ModelPosition{X: 0, Y: 0},
 			Style:     json.ModelStyle{Width: 100, Height: 100},

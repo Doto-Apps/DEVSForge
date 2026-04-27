@@ -11,7 +11,8 @@ type RunnerState struct {
 	ID               string
 	NextInternalTime float64
 	HasInit          bool
-	Inbox            []kafka.PortValue // messages reçus avant un ExecuteTransition
+	InPorts          []*kafka.KafkaMessagePortPayload
+	OutPorts         []*kafka.KafkaMessagePortPayload
 }
 
 type SimulationParams struct {
@@ -23,7 +24,8 @@ type SimulationParams struct {
 
 type RunnerStates = map[string]*RunnerState
 
-type CoordConfig struct {
-	KafkaConfig kafka.KafkaConfig
-	KafkaClient *kgo.Client
+type CoordinatorConfig struct {
+	KafkaConfig  kafka.KafkaConfig
+	KafkaClient  *kgo.Client
+	SimulationID string
 }

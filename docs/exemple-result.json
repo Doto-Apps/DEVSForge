@@ -11,11 +11,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "devs.msg.InitSim",
+      "MessageType": "devs.msg.InitSim",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "devs.msg.InitSim",
+        "MessageType": "devs.msg.InitSim",
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
         "time": {
@@ -29,11 +29,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "devs.msg.InitSim",
+      "MessageType": "devs.msg.InitSim",
       "sender": "",
       "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "payload": {
-        "MsgType": "devs.msg.InitSim",
+        "MessageType": "devs.msg.InitSim",
         "sender": "",
         "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
         "time": {
@@ -47,11 +47,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "devs.msg.InitSim",
+      "MessageType": "devs.msg.InitSim",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "devs.msg.InitSim",
+        "MessageType": "devs.msg.InitSim",
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
         "time": {
@@ -65,11 +65,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "devs.msg.InitSim",
+      "MessageType": "devs.msg.InitSim",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "devs.msg.InitSim",
+        "MessageType": "devs.msg.InitSim",
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
         "time": {
@@ -83,11 +83,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "devs.msg.InitSim",
+      "MessageType": "devs.msg.InitSim",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "devs.msg.InitSim",
+        "MessageType": "devs.msg.InitSim",
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
         "time": {
@@ -101,11 +101,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "devs.msg.InitSim",
+      "MessageType": "devs.msg.InitSim",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "devs.msg.InitSim",
+        "MessageType": "devs.msg.InitSim",
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -119,11 +119,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "NextInternalTimeReport",
+      "MessageType": "NextInternalTimeReport",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "NextInternalTimeReport",
+        "MessageType": "NextInternalTimeReport",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "NextInternalTimeReport"
@@ -140,11 +140,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "NextInternalTimeReport",
+      "MessageType": "NextInternalTimeReport",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "NextInternalTimeReport",
+        "MessageType": "NextInternalTimeReport",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "NextInternalTimeReport"
@@ -161,11 +161,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.168327Z",
       "simulationTime": 0,
-      "MsgType": "NextInternalTimeReport",
+      "MessageType": "NextInternalTimeReport",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "NextInternalTimeReport",
+        "MessageType": "NextInternalTimeReport",
         "nextTime": {
           "t": 0,
           "timeType": "NextInternalTimeReport"
@@ -182,11 +182,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "NextInternalTimeReport",
+      "MessageType": "NextInternalTimeReport",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "NextInternalTimeReport",
+        "MessageType": "NextInternalTimeReport",
         "nextTime": {
           "t": 0,
           "timeType": "NextInternalTimeReport"
@@ -203,11 +203,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "NextInternalTimeReport",
+      "MessageType": "NextInternalTimeReport",
       "sender": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "target": null,
       "payload": {
-        "MsgType": "NextInternalTimeReport",
+        "MessageType": "NextInternalTimeReport",
         "nextTime": {
           "t": 0,
           "timeType": "NextInternalTimeReport"
@@ -224,11 +224,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "NextInternalTimeReport",
+      "MessageType": "NextInternalTimeReport",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "NextInternalTimeReport",
+        "MessageType": "NextInternalTimeReport",
         "nextTime": {
           "t": 0,
           "timeType": "NextInternalTimeReport"
@@ -245,11 +245,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
         "time": {
@@ -263,11 +263,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
         "time": {
@@ -281,11 +281,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -310,11 +310,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -328,11 +328,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -357,11 +357,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
         "time": {
@@ -375,11 +375,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -404,11 +404,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -433,11 +433,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
@@ -452,11 +452,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
@@ -471,11 +471,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -492,11 +492,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
@@ -511,11 +511,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -532,11 +532,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
@@ -551,11 +551,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 20,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -572,11 +572,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -610,11 +610,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 30,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -631,11 +631,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 0,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -652,11 +652,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
         "time": {
@@ -670,11 +670,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -718,11 +718,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -751,11 +751,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -781,11 +781,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 0,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -802,11 +802,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -832,11 +832,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -853,11 +853,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
@@ -872,11 +872,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -893,11 +893,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -914,11 +914,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
         "time": {
@@ -932,11 +932,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -962,11 +962,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
@@ -981,11 +981,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 0,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1002,11 +1002,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.455552Z",
       "simulationTime": 20,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -1020,11 +1020,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {},
         "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -1038,11 +1038,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
@@ -1057,11 +1057,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 20,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1078,11 +1078,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -1096,11 +1096,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -1125,11 +1125,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -1155,11 +1155,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
@@ -1174,11 +1174,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 20,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1195,11 +1195,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 50,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1216,11 +1216,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
         "time": {
@@ -1234,11 +1234,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -1274,11 +1274,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
@@ -1293,11 +1293,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -1326,11 +1326,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1347,11 +1347,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -1377,11 +1377,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 20,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1398,11 +1398,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 21,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1419,11 +1419,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
         "time": {
@@ -1437,11 +1437,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -1467,11 +1467,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
@@ -1486,11 +1486,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 20,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1507,11 +1507,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 21,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
         "time": {
@@ -1525,11 +1525,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 21,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {},
         "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
         "time": {
@@ -1543,11 +1543,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 21,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
@@ -1562,11 +1562,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 21,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 21,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1583,11 +1583,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 21,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
         "time": {
@@ -1601,11 +1601,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 21,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -1630,11 +1630,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 21,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
@@ -1649,11 +1649,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 21,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1670,11 +1670,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
         "time": {
@@ -1688,11 +1688,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -1717,11 +1717,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
@@ -1736,11 +1736,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -1766,11 +1766,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 45,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1787,11 +1787,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 30,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1808,11 +1808,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
         "time": {
@@ -1826,11 +1826,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -1866,11 +1866,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -1899,11 +1899,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
@@ -1918,11 +1918,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 30,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1939,11 +1939,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -1969,11 +1969,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -1990,11 +1990,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 31,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2011,11 +2011,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
         "time": {
@@ -2029,11 +2029,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -2059,11 +2059,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
@@ -2078,11 +2078,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:08.958365Z",
       "simulationTime": 30,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2099,11 +2099,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 31,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
         "time": {
@@ -2117,11 +2117,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 31,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {},
         "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
         "time": {
@@ -2135,11 +2135,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 31,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
@@ -2154,11 +2154,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 31,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 31,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2175,11 +2175,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 31,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
         "time": {
@@ -2193,11 +2193,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 31,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -2222,11 +2222,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 31,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
@@ -2241,11 +2241,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 31,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2262,11 +2262,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
         "time": {
@@ -2280,11 +2280,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -2309,11 +2309,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "c05ffde7-be80-4776-a019-b7a92ce89df8",
@@ -2328,11 +2328,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -2358,11 +2358,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "c05ffde7-be80-4776-a019-b7a92ce89df8",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2379,11 +2379,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 45,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2400,11 +2400,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
         "time": {
@@ -2418,11 +2418,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -2458,11 +2458,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
@@ -2477,11 +2477,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -2507,11 +2507,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2528,11 +2528,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -2561,11 +2561,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 46,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2582,11 +2582,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 45,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2603,11 +2603,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
         "time": {
@@ -2621,11 +2621,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -2651,11 +2651,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
@@ -2670,11 +2670,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 45,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2691,11 +2691,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 46,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
         "time": {
@@ -2709,11 +2709,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 46,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {},
         "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
         "time": {
@@ -2727,11 +2727,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 46,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
@@ -2746,11 +2746,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 46,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 46,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2767,11 +2767,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 46,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
         "time": {
@@ -2785,11 +2785,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 46,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -2814,11 +2814,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 46,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "46090054-def7-4be1-98e9-6b57e8ac52bb",
@@ -2833,11 +2833,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 46,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "46090054-def7-4be1-98e9-6b57e8ac52bb",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2854,11 +2854,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -2872,11 +2872,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {},
         "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -2890,11 +2890,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
@@ -2909,11 +2909,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 50,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -2930,11 +2930,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -2948,11 +2948,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -2977,11 +2977,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -3007,11 +3007,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
@@ -3026,11 +3026,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 50,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3047,11 +3047,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.447237Z",
       "simulationTime": 50,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 80,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3068,11 +3068,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
         "time": {
@@ -3086,11 +3086,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -3118,11 +3118,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
@@ -3137,11 +3137,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -3170,11 +3170,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3191,11 +3191,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 50,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3212,11 +3212,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
         "time": {
@@ -3230,11 +3230,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -3260,11 +3260,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
@@ -3279,11 +3279,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 50,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3300,11 +3300,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -3318,11 +3318,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {},
         "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -3336,11 +3336,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
@@ -3355,11 +3355,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 80,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3376,11 +3376,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
         "time": {
@@ -3394,11 +3394,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -3423,11 +3423,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
@@ -3442,11 +3442,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -3472,11 +3472,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "8175ee85-07ef-4adc-b58d-f4b5fc91fda0",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3493,11 +3493,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 80,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3514,11 +3514,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
         "time": {
@@ -3532,11 +3532,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -3572,11 +3572,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "9797b60f-1a26-4342-9e20-ade942badcf2",
@@ -3591,11 +3591,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -3624,11 +3624,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "9797b60f-1a26-4342-9e20-ade942badcf2",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3645,11 +3645,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {
           "portValueList": [
             {
@@ -3675,11 +3675,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 80,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3696,11 +3696,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 81,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3717,11 +3717,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
         "time": {
@@ -3735,11 +3735,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -3765,11 +3765,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "5165aaed-7747-4737-92e5-8d5afeef9081",
@@ -3784,11 +3784,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 80,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "5165aaed-7747-4737-92e5-8d5afeef9081",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3805,11 +3805,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 81,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
         "time": {
@@ -3823,11 +3823,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 81,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {},
         "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
         "time": {
@@ -3841,11 +3841,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 81,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
@@ -3860,11 +3860,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 81,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 81,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3881,11 +3881,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 81,
-      "MsgType": "RequestOutput",
+      "MessageType": "RequestOutput",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "RequestOutput",
+        "MessageType": "RequestOutput",
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
         "time": {
@@ -3899,11 +3899,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 81,
-      "MsgType": "OutputReport",
+      "MessageType": "OutputReport",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "OutputReport",
+        "MessageType": "OutputReport",
         "modelOutput": {
           "portValueList": [
             {
@@ -3928,11 +3928,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 81,
-      "MsgType": "ExecuteTransition",
+      "MessageType": "ExecuteTransition",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "ExecuteTransition",
+        "MessageType": "ExecuteTransition",
         "modelInputsOption": {},
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
@@ -3947,11 +3947,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": 81,
-      "MsgType": "TransitionComplete",
+      "MessageType": "TransitionComplete",
       "sender": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "target": null,
       "payload": {
-        "MsgType": "TransitionComplete",
+        "MessageType": "TransitionComplete",
         "nextTime": {
           "t": 1.7976931348623157e+308,
           "timeType": "devs.msg.time.DoubleSimTime"
@@ -3968,11 +3968,11 @@
       "simulationId": "63581c21-18ad-4f86-a9d2-5d37fcbae9ee",
       "createdAt": "2026-04-02T15:51:09.892376Z",
       "simulationTime": null,
-      "MsgType": "devs.msg.SimulationDone",
+      "MessageType": "devs.msg.SimulationDone",
       "sender": "",
       "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa",
       "payload": {
-        "MsgType": "devs.msg.SimulationDone",
+        "MessageType": "devs.msg.SimulationDone",
         "sender": "",
         "target": "24e63462-1056-4f8f-8b9d-14cc46cea9aa"
       }

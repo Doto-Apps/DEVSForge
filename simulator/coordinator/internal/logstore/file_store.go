@@ -2,7 +2,6 @@ package logstore
 
 import (
 	"bufio"
-	"context"
 	"devsforge-shared/kafka"
 	shared_sim "devsforge-shared/simulation"
 	"encoding/json"
@@ -11,8 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/gofrs/flock"
 )
 
 const (
@@ -74,19 +71,6 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]shared_s
 		return filtered, nil
 	}
 
-	// all.log exists: acquire a shared lock for reading
-	lockPath := logPath + ".lock"
-	fileLock := flock.New(lockPath)
-	locked, err := fileLock.TryRLockContext(context.Background(), 5*time.Second)
-	if err != nil {
-		slog.Debug("Failed to acquire read lock", "error", err)
-	}
-	if locked {
-		defer func() {
-			_ = fileLock.Unlock()
-		}()
-	}
-
 	file, err := os.Open(logPath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to open log file: %w", err)
@@ -138,25 +122,30 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]shared_s
 			continue
 		}
 
-		var kafkaMsg kafka.BaseKafkaMessage
-		if err := json.Unmarshal([]byte(msg["data"].(string)), &kafkaMsg); err != nil {
+		var kafkaMsg any
+		kafkaMsg, err := kafka.UnmarshalKafkaMessage([]byte(msg["data"].(string)))
+
+		if err != nil {
 			slog.Warn("cannot unparse data kafka_message", "error", err, "data", msg["data"])
 			continue
 		}
 
-		// Create normalized deduplication key
-		dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, kafkaMsg.MsgType, kafkaMsg.ReceiverID, kafkaMsg.SenderID, msg["data"].(string))
-		if seen[dedupKey] {
-			continue
-		}
-		seen[dedupKey] = true
+		if typedKafkaMsg, ok := kafkaMsg.(kafka.CommonKafkaMessage); ok {
+			// Create normalized deduplication key
+			dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, typedKafkaMsg.MessageType, typedKafkaMsg.ReceiverID, typedKafkaMsg.SenderID, msg["data"].(string))
+			if seen[dedupKey] {
+				continue
+			}
+			seen[dedupKey] = true
 
-		messages = append(messages, shared_sim.LogMessage{
-			Timestamp: timestamp,
-			SenderID:  kafkaMsg.SenderID,
-			MsgType:   string(kafkaMsg.MsgType),
-			Data:      kafkaMsg,
-		})
+			messages = append(messages, shared_sim.LogMessage{
+				Timestamp:   timestamp,
+				SenderID:    typedKafkaMsg.SenderID,
+				MessageType: string(typedKafkaMsg.MessageType),
+				Data:        typedKafkaMsg,
+			})
+		}
+
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -196,6 +185,7 @@ func (f *fileLogStore) DeleteAll() error {
 
 func (f *fileLogStore) SetStatus(simulationID string, status SimulationStatus) error {
 	dir := filepath.Join(f.logDir, simulationID)
+	slog.Info("Prepare wrote in simulation.json", "status", status)
 	if err := os.MkdirAll(dir, filePermissions); err != nil {
 		return fmt.Errorf("failed to create log directory: %w", err)
 	}
@@ -209,6 +199,8 @@ func (f *fileLogStore) SetStatus(simulationID string, status SimulationStatus) e
 	if err := os.WriteFile(statusPath, data, filePermissions); err != nil {
 		return fmt.Errorf("failed to write status file: %w", err)
 	}
+
+	slog.Info("Wrote in simulation.json", "status", status)
 
 	return nil
 }
@@ -231,31 +223,19 @@ func (f *fileLogStore) GetStatus(simulationID string) (*SimulationStatus, error)
 }
 
 func (f *fileLogStore) DeleteAllLog(simulationID string) error {
-	dir := filepath.Join(f.logDir, simulationID)
-	logPath := filepath.Join(dir, "all.log")
-
-	// Acquire an exclusive lock before deletion
-	lockPath := logPath + ".lock"
-	fileLock := flock.New(lockPath)
-	locked, err := fileLock.TryLockContext(context.Background(), 5*time.Second)
-	if err != nil {
-		slog.Debug("Failed to acquire write lock", "error", err)
-	}
-	if locked {
-		defer func() {
-			_ = fileLock.Unlock()
-		}()
-	}
-
-	if err := os.Remove(logPath); err != nil {
-		if !os.IsNotExist(err) {
-			return err
-		}
-	}
-
-	_ = os.Remove(lockPath)
-
 	return nil
+	//
+	// WARN: Actually this can cause inifnite running state
+	// dir := filepath.Join(f.logDir, simulationID)
+	// logPath := filepath.Join(dir, "all.log")
+
+	// if err := os.Remove(logPath); err != nil {
+	// 	if !os.IsNotExist(err) {
+	// 		return err
+	// 	}
+	// }
+
+	// return nil
 }
 
 func (f *fileLogStore) GetPaginated(simulationID string, offset int, limit int) ([]shared_sim.LogMessage, int, error) {
