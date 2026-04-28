@@ -39,19 +39,16 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 
 	go func() {
 		err := c.StartReceiveLoop(func(msg any) error {
-			if m, ok := msg.(kafka.CommonKafkaMessage); ok && m.SenderID == "" {
+			if m, ok := msg.(kafka.KafkaMessageInterface); ok && m.GetSenderID() == "" {
 				return nil
 			}
 			switch m := msg.(type) {
-			case kafka.KafkaMessageNextInternalTimeReport:
-				nextTimeCh <- &m
-			case kafka.KafkaMessageTransitionComplete:
-				transitionDoneCh <- &m
-			case kafka.KafkaMessageOutputReport:
-				outputCh <- &m
-			case kafka.CommonKafkaMessage:
-				slog.Warn("Unrecognized message type", "type", m.MessageType)
-				return nil
+			case *kafka.KafkaMessageNextInternalTimeReport:
+				nextTimeCh <- m
+			case *kafka.KafkaMessageTransitionComplete:
+				transitionDoneCh <- m
+			case *kafka.KafkaMessageOutputReport:
+				outputCh <- m
 			default:
 				slog.Warn("Unrecognized message", "message", m)
 				return nil

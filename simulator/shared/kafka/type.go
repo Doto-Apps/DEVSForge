@@ -10,6 +10,8 @@ import (
 
 const CoordinatorId = "Coordinator"
 
+var GenerateMessageId = uuid.NewString
+
 // Based on https://fr.overleaf.com/project/6957bee69b41867ab28cc3a1
 // See assets/ISO-21175-2.md
 type MessageType string
@@ -74,7 +76,7 @@ type BaseKafkaMessage struct {
 
 func (b *BaseKafkaMessage) newCommonKafkaMessage(messageType MessageType) CommonKafkaMessage {
 	return CommonKafkaMessage{
-		MessageID:       uuid.NewString(),
+		MessageID:       GenerateMessageId(),
 		MessageType:     messageType,
 		SimulationRunID: b.SimulationRunID,
 		SenderID:        b.SenderID,
@@ -335,6 +337,8 @@ func (b *BaseKafkaMessage) NewKafkaMessageErrorReport(params KafkaMessageErrorRe
 
 type KafkaMessageInterface interface {
 	GetMessageType() MessageType
+	GetSenderID() string
+	GetReceiverID() string
 }
 
 func MarshalKafkaMessage(msg KafkaMessageInterface) ([]byte, error) {

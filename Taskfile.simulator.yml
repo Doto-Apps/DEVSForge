@@ -40,7 +40,7 @@ tasks:
     cmds:
       - go build -v ./...
 
-  test:sim:
+  coordinator:test:
     desc: Run tests inside Docker runner image
     cmds:
       - echo "Building Docker coordinator image..."
@@ -50,7 +50,7 @@ tasks:
       - chmod 777 ./build/devsforge-runner
       - echo "Running tests in Docker..."
       - |
-        docker run --rm -it --network host \
+        docker run --rm -t --init --network host \
         -e PATHS_RUNNER_CMD=/tmp/devsforge-runner \
         -e LOG_DIR=/tmp/logs \
         -e PATHS_SIM_ROOT=/tmp/simulations \
@@ -58,20 +58,35 @@ tasks:
         -v ./build/devsforge-runner:/tmp/devsforge-runner \
         -v ./simulator/wrappers:/opt/devsforge-wrappers \
         -v ./tmp/unit-tests/simulation:/tmp/simulations \
+        -v ./tmp/unit-tests/logs:/tmp/logs \
         -v $(pwd):/app \
         -w /app \
-        devsforge-test-simulator:latest go test -v ./simulator/coordinator/...
+        devsforge-test-simulator:latest go test ./simulator/coordinator/... {{.CLI_ARGS}}
 
-  test:
+  runner:test:
     desc: Run tests inside Docker runner image
     cmds:
       - echo "Building Docker runner image..."
       - docker build -f ./simulator/runner/Dockerfile -t devsforge-test-runner:latest ./
       - echo "Running tests in Docker..."
       - |
-        docker run --rm -it --network host \
+        docker run --rm -t --init --network host \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -e LOG_DIR=/tmp/sim-logs \
         -v $(pwd):/app \
         -w /app \
-        devsforge-test-runner:latest go test -v ./simulator/runner/tests/...
+        devsforge-test-runner:latest go test ./simulator/runner/... {{.CLI_ARGS}}
+
+  sh:runner:
+    desc: Run tests inside Docker runner image
+    cmds:
+      - echo "Building Docker runner image..."
+      - docker build -f ./simulator/runner/Dockerfile -t devsforge-test-runner:latest ./
+      - echo "Running tests in Docker..."
+      - |
+        docker run --rm -t --init --network host \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -e LOG_DIR=/tmp/sim-logs \
+        -v $(pwd):/app \
+        -w /app \
+        devsforge-test-runner:latest {{.CLI_ARGS}}

@@ -253,7 +253,7 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []sha
 			continue
 		}
 
-		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", m.MessageType, m.ReceiverID, m.SenderID, logMsg.Timestamp, logMsg.Data)
+		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", m.MessageType, m.ReceiverID, m.SenderID, logMsg.Sequence, logMsg.Data)
 		if seen[dedupKey] {
 			continue
 		}
@@ -284,7 +284,7 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []sha
 			Sender:                 &logMsg.SenderID,
 			Target:                 &m.ReceiverID,
 			Payload:                datatypes.JSON(payload),
-			RelativeEventTimestamp: logMsg.Timestamp,
+			RelativeEventTimestamp: logMsg.Sequence,
 		}
 		events = append(events, event)
 	}

@@ -30,8 +30,9 @@ type EnvConfig struct {
 }
 
 type LogConfig struct {
-	Dir  string `env:"LOG_DIR" envDefault:"/tmp/devsforge-logs/"`
-	Mode string `env:"LOG_MODE" envDefault:"all"`
+	Dir   string `env:"LOG_DIR" envDefault:"/tmp/devsforge-logs/"`
+	Mode  string `env:"LOG_MODE" envDefault:"all"`
+	Level string `env:"LOG_LEVEL" envDefault:"DEBUG"`
 }
 
 type PathsConfig struct {

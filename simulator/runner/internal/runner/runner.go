@@ -5,6 +5,7 @@ import (
 	"context"
 	"devsforge-runner/internal/config"
 	"devsforge-shared/kafka"
+	"devsforge-shared/simulation"
 	devspb "devsforge-wrapper/proto"
 	"encoding/json"
 	"errors"
@@ -13,12 +14,10 @@ import (
 	"math"
 
 	"github.com/twmb/franz-go/pkg/kgo"
+	"google.golang.org/grpc"
 )
 
-// ErrSimulationDone signale la fin normale de la simulation
-var ErrSimulationDone = errors.New("simulation completed normally")
-
-var ERROR_RUNNER_LOOP_ERROR int64 = 5000
+var ErrorRunnerLoopError int64 = 5000
 
 type Runner struct {
 	CurrentTime      float64
@@ -28,21 +27,21 @@ type Runner struct {
 	ModelClient      devspb.AtomicModelServiceClient
 }
 
-func CreateRunner(cfg *config.RunnerConfig, ctx context.Context, modelClient devspb.AtomicModelServiceClient) Runner {
+func CreateRunner(cfg *config.RunnerConfig, ctx context.Context) Runner {
 	return Runner{
 		CurrentTime:      0.0,
 		NextInternalTime: math.MaxFloat64,
 		Config:           cfg,
 		Context:          ctx,
-		ModelClient:      modelClient,
+		ModelClient:      devspb.NewAtomicModelServiceClient(&grpc.ClientConn{}),
 	}
 }
 
-func (r *Runner) GetBaseKafkaMessage(receiverId string) *kafka.BaseKafkaMessage {
+func (r *Runner) GetBaseKafkaMessage(receiverID string) *kafka.BaseKafkaMessage {
 	return &kafka.BaseKafkaMessage{
 		SimulationRunID: r.Config.SimulationID,
 		SenderID:        r.Config.Model.ID,
-		ReceiverID:      receiverId,
+		ReceiverID:      receiverID,
 	}
 }
 
@@ -84,12 +83,12 @@ func (r *Runner) StartReceiveLoop(handler func(any) error) error {
 func (r *Runner) Run() error {
 	slog.Info("Simulation loop starting")
 	if err := r.StartReceiveLoop(func(msg any) error {
-		if m, ok := msg.(*kafka.CommonKafkaMessage); ok {
-			if m.ReceiverID != r.Config.Model.ID || m.SenderID == r.Config.Model.ID {
+		if m, ok := msg.(kafka.KafkaMessageInterface); ok {
+			if m.GetReceiverID() != r.Config.Model.ID || m.GetSenderID() == r.Config.Model.ID {
 				return nil
 			}
 		} else {
-			slog.Warn("cannot parse message to common kafka message", "message", msg)
+			slog.Warn("cannot parse to kafka message interface")
 		}
 		switch m := msg.(type) {
 		case *kafka.KafkaMessageSimulationInit:
@@ -103,11 +102,11 @@ func (r *Runner) Run() error {
 		case *kafka.KafkaMessageRequestOutput:
 			return r.RunSendOutput()
 		case *kafka.KafkaMessageSimulationTerminate:
+			slog.Debug("receive terminate send msg")
 			if err := r.RunSimulationDone(); err != nil {
 				return err
 			}
-			// Retourner l'erreur sentinelle pour sortir de la boucle
-			return ErrSimulationDone
+			return simulation.ErrSimulationDone
 		case *kafka.CommonKafkaMessage:
 			slog.Warn("Unrecognized message type", "type", m.MessageType)
 			return nil
@@ -115,11 +114,10 @@ func (r *Runner) Run() error {
 			slog.Warn("Unrecognized message", "message", m)
 			return nil
 		}
-	}); err != nil && !errors.Is(err, ErrSimulationDone) {
-		if reportErr := r.SendErrorReport(ERROR_RUNNER_LOOP_ERROR, err); reportErr != nil {
+	}); err != nil && !errors.Is(err, simulation.ErrSimulationDone) {
+		if reportErr := r.SendErrorReport(ErrorRunnerLoopError, err); reportErr != nil {
 			slog.Error("Failed to emit ErrorReport", "error", reportErr)
 		}
-		// Vraie erreur, pas une fin normale
 		return err
 	}
 

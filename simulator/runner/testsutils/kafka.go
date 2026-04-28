@@ -1,16 +1,43 @@
-package tests
+// Package testsutils helpers for testing
+package testsutils
 
 import (
 	"context"
-	"devsforge-shared/kafka"
 	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
+	sharedKafka "devsforge-shared/kafka"
+
+	"github.com/testcontainers/testcontainers-go/modules/kafka"
 	"github.com/twmb/franz-go/pkg/kadm"
 	"github.com/twmb/franz-go/pkg/kgo"
 )
+
+func GetKafkaAddress(ctx context.Context, kafkaContainer *kafka.KafkaContainer) (string, error) {
+	kafkaAddrs, err := kafkaContainer.Brokers(ctx)
+	if err != nil {
+		return "", err
+	}
+	if len(kafkaAddrs) == 0 {
+		return "", fmt.Errorf("no kafka address")
+	}
+
+	fmt.Printf("Endpoint : %s", kafkaAddrs[0])
+
+	return kafkaAddrs[0], nil
+}
+
+func StartKafka(ctx context.Context) (*kafka.KafkaContainer, error) {
+	kafkaContainer, err := kafka.Run(ctx, "confluentinc/confluent-local:7.5.0",
+		kafka.WithClusterID("1"),
+	)
+	if err != nil {
+		return nil, err
+	}
+	return kafkaContainer, nil
+}
 
 func InitKafkaClient(topic string, address string) *kgo.Client {
 	log.Printf("Connecting to kafka: %s | topic=%s",
@@ -18,8 +45,7 @@ func InitKafkaClient(topic string, address string) *kgo.Client {
 		topic,
 	)
 
-	// Logger + Producer Kafka
-	kafkaConfig := kafka.NewKafkaConfig(address, topic, "Fake Coordinator")
+	kafkaConfig := sharedKafka.NewKafkaConfig(address, topic, sharedKafka.CoordinatorId)
 
 	client, err := kgo.NewClient(kafkaConfig.Config...)
 	if err != nil {
@@ -30,14 +56,13 @@ func InitKafkaClient(topic string, address string) *kgo.Client {
 	return client
 }
 
-func SendMessage(client *kgo.Client, msg kafka.KafkaMessageInterface) error {
+func SendMessage(client *kgo.Client, msg sharedKafka.KafkaMessageInterface) error {
 	ctx := context.Background()
 	data, err := json.Marshal(&msg)
 	if err != nil {
 		return fmt.Errorf("cannot marshal kafka message : %w", err)
 	}
 
-	log.Println("[ TEST COORDINATOR ]: Sending : " + string(data))
 	return client.ProduceSync(ctx, &kgo.Record{Value: data}).FirstErr()
 }
 
@@ -46,23 +71,22 @@ func StartReceiveLoop(client *kgo.Client, handler func(any) error) error {
 	for {
 		fetches := client.PollFetches(ctx)
 		if errs := fetches.Errors(); len(errs) > 0 {
-			// All errors are retried internally when fetching, but non-retriable errors are
-			// returned from polls so that users can notice and take action.
 			panic(fmt.Sprint(errs))
 		}
 
-		// We can iterate through a record iterator...
 		iter := fetches.RecordIter()
 		for !iter.Done() {
 			record := iter.Next()
-			msg, err := kafka.UnmarshalKafkaMessage(record.Value)
-			if err != nil {
+			if msg, err := sharedKafka.UnmarshalKafkaMessage(record.Value); err != nil {
 				return fmt.Errorf("cannot unmarshall kafka message : %w", err)
-			}
-
-			err = handler(msg)
-			if err != nil {
-				return err
+			} else {
+				if m, ok := msg.(sharedKafka.KafkaMessageInterface); ok {
+					if m.GetSenderID() != "" && m.GetSenderID() != sharedKafka.CoordinatorId {
+						if err := handler(msg); err != nil {
+							return err
+						}
+					}
+				}
 			}
 		}
 	}
@@ -81,15 +105,15 @@ func CreateTopic(topic string, client *kgo.Client) error {
 	}
 
 	if topicDetails.Has(topicName) {
-		fmt.Printf("topic %v already exists\n", topicName)
+		log.Printf("topic %v already exists\n", topicName)
 		return nil
 	}
-	fmt.Printf("Creating topic %v\n", topicName)
+	log.Printf("creating topic %v\n", topicName)
 
 	createTopicResponse, err := adminClient.CreateTopic(ctx, -1, -1, nil, topicName)
 	if err != nil {
 		return fmt.Errorf("failed to create topic: %v", err)
 	}
-	fmt.Printf("Successfully created topic %v\n", createTopicResponse.Topic)
+	log.Printf("successfully created topic %v\n", createTopicResponse.Topic)
 	return nil
 }

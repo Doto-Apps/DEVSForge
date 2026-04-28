@@ -69,6 +69,11 @@ tasks:
     cmds:
       - docker compose -f docker-compose.local.yml up --build
 
+  clean:
+    desc: Clean tmp files
+    cmds:
+      - rm -rf ./tmp
+
   prod-docker-build:
     desc: Test docker image creations for backend and simulator
     cmds:

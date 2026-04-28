@@ -48,9 +48,7 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]shared_s
 	dir := filepath.Join(f.logDir, simulationID)
 	logPath := filepath.Join(dir, "all.log")
 
-	// Check if all.log exists
 	if _, err := os.Stat(logPath); os.IsNotExist(err) {
-		// Fallback: read from simulation.json
 		status, statusErr := f.GetStatus(simulationID)
 		if statusErr != nil {
 			return nil, fmt.Errorf("no log data found for simulation %s: %w", simulationID, statusErr)
@@ -58,13 +56,12 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]shared_s
 		if status.Messages == nil {
 			return nil, fmt.Errorf("no log data found for simulation %s", simulationID)
 		}
-		// Filter messages by timestamp if since > 0
 		if since == 0 {
 			return status.Messages, nil
 		}
 		filtered := make([]shared_sim.LogMessage, 0)
 		for _, msg := range status.Messages {
-			if msg.Timestamp >= since {
+			if msg.Sequence >= since {
 				filtered = append(filtered, msg)
 			}
 		}
@@ -109,7 +106,6 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]shared_s
 
 		if timeStr, ok := msg["time"].(string); ok {
 			if t, err := time.Parse(time.RFC3339, timeStr); err == nil {
-				slog.Debug("Time", "str", timeStr)
 				timestamp = t.UnixMicro() - createdAt
 			} else {
 				continue
@@ -124,24 +120,23 @@ func (f *fileLogStore) GetAllSince(simulationID string, since int64) ([]shared_s
 
 		var kafkaMsg any
 		kafkaMsg, err := kafka.UnmarshalKafkaMessage([]byte(msg["data"].(string)))
-
 		if err != nil {
 			slog.Warn("cannot unparse data kafka_message", "error", err, "data", msg["data"])
 			continue
 		}
 
-		if typedKafkaMsg, ok := kafkaMsg.(kafka.CommonKafkaMessage); ok {
-			// Create normalized deduplication key
-			dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, typedKafkaMsg.MessageType, typedKafkaMsg.ReceiverID, typedKafkaMsg.SenderID, msg["data"].(string))
+		if typedKafkaMsg, ok := kafkaMsg.(kafka.KafkaMessageInterface); ok {
+			dedupKey := fmt.Sprintf("%d:%s:%s:%s:%s", timestamp, typedKafkaMsg.GetMessageType(), typedKafkaMsg.GetReceiverID(), typedKafkaMsg.GetSenderID(), msg["data"].(string))
 			if seen[dedupKey] {
 				continue
 			}
 			seen[dedupKey] = true
 
+			nextSeq := int64(len(messages))
 			messages = append(messages, shared_sim.LogMessage{
-				Timestamp:   timestamp,
-				SenderID:    typedKafkaMsg.SenderID,
-				MessageType: string(typedKafkaMsg.MessageType),
+				Sequence:    nextSeq,
+				SenderID:    typedKafkaMsg.GetSenderID(),
+				MessageType: string(typedKafkaMsg.GetMessageType()),
 				Data:        typedKafkaMsg,
 			})
 		}
@@ -200,7 +195,7 @@ func (f *fileLogStore) SetStatus(simulationID string, status SimulationStatus) e
 		return fmt.Errorf("failed to write status file: %w", err)
 	}
 
-	slog.Info("Wrote in simulation.json", "status", status)
+	slog.Info(fmt.Sprintf("Wrote in %s", statusPath), "status", status)
 
 	return nil
 }

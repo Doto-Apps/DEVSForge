@@ -136,6 +136,8 @@ func (c *Coordinator) StartReceiveLoop(handler func(any) error) error {
 				c.Logger.Info("kafka_message",
 					"data", string(record.Value),
 				)
+			} else {
+				c.Logger.Debug("cant write kafka_message")
 			}
 
 			err = handler(msg)

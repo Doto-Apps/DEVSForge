@@ -10,15 +10,15 @@ import (
 
 // LoadManifestWithCode loads a manifest JSON file and injects the code
 // from the corresponding source files (m1.go, m1.py, GeneratorIncremental.java)
-func LoadManifestWithCode(manifestPath string) (*shared.RunnableManifest, error) {
+func LoadManifestWithCode(manifestPath string) (*shared.RunnableManifest, string, error) {
 	data, err := os.ReadFile(manifestPath)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	var manifest shared.RunnableManifest
 	if err := json.Unmarshal(data, &manifest); err != nil {
-		return nil, err
+		return nil, "", err
 	}
 
 	baseDir := filepath.Dir(manifestPath)
@@ -38,10 +38,17 @@ func LoadManifestWithCode(manifestPath string) (*shared.RunnableManifest, error)
 
 		code, err := os.ReadFile(codeFile)
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		model.Code = string(code)
 	}
 
-	return &manifest, nil
+	return &manifest, getKafkaAddress(), nil
+}
+
+func getKafkaAddress() string {
+	if addr := os.Getenv("KAFKA_ADDRESS"); addr != "" {
+		return addr
+	}
+	return "localhost:9092"
 }
