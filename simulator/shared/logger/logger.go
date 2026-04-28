@@ -131,7 +131,7 @@ func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error)
 		// Console only (Text format)
 		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			Level:     level,
-			AddSource: false,
+			AddSource: true,
 		})
 	case "all":
 		fallthrough

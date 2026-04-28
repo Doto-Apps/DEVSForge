@@ -20,9 +20,6 @@ func LaunchSim(lang shared.CodeLanguage, wrapper *generators.WrapperInfo, manife
 	if cfg == nil {
 		return fmt.Errorf("LaunchSim: missing config")
 	}
-	if wrapper.GRPCConn == nil {
-		return fmt.Errorf("LaunchSim: missing gRPC connection (wrapper not prepared?)")
-	}
 
 	modelClient := devspb.NewAtomicModelServiceClient(wrapper.GRPCConn)
 	runnerInstance := runner.CreateRunner(cfg, context.Background(), modelClient)
@@ -58,6 +55,13 @@ func LaunchSim(lang shared.CodeLanguage, wrapper *generators.WrapperInfo, manife
 			slog.Warn("cannot send error report", "error", sendErr)
 		}
 		return err
+	}
+
+	if wrapper.GRPCConn == nil {
+		return fmt.Errorf("launchSim: missing gRPC connection (wrapper not prepared?)")
+	}
+	if wrapper.Cmd == nil {
+		return fmt.Errorf("launchSim: missing cmd (wrapper not prepared?)")
 	}
 
 	return runnerInstance.Run()

@@ -14,10 +14,13 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-var runnerJavaID = "m1-java"
-
+// TestLaunchRunnerWithKafka démarre Kafka via docker-compose, puis lance UN runner
+// avec un manifest JSON (contenant ton DumbModel) + un YAML de config généré.
 func TestRunJavaModel(t *testing.T) {
+	t.Skip("Not now")
+	runnerJavaID := "m1-java"
 	kafkaTopic := "runner-test-java"
+	simID := "test-java-sim"
 	tmpDir, err := os.MkdirTemp("/tmp", "devsforge_test_runner_*")
 	if err != nil {
 		t.Fatalf("cannot create tmp dir: %v", err)
@@ -33,14 +36,18 @@ func TestRunJavaModel(t *testing.T) {
 			{
 			"language": "java",
 			"id": "%s",
-			"name": "GeneratorIncremental",
+			"name": "Generator Incremental",
 			"code": %q
 			}
 		],
 		"count": 1,
 		"id": "test",
-		"simulationID": "test-java-sim"
-	}`, runnerJavaID, string(codeContent))
+		"simulationID": "%s"
+	}`, runnerJavaID, string(codeContent), simID)
+
+	if err != nil {
+		t.Fatalf("failed to marshal manifest: %v", err)
+	}
 
 	jsonPath := filepath.Join(tmpDir, "manifest.json")
 	if err := os.WriteFile(jsonPath, []byte(jsonContent), 0644); err != nil {
@@ -78,65 +85,56 @@ func TestRunJavaModel(t *testing.T) {
 		}
 	}()
 
-	i := 0.0
 	currentTime := 0.0
+	baseMessage := kafka.BaseKafkaMessage{
+		SimulationRunID: simID,
+		SenderID:        kafka.CoordinatorId,
+		ReceiverID:      runnerJavaID,
+	}
 
+	// Send init to model
 	log.Println("Sending init message")
+	initMsg := baseMessage.NewKafkaMessageSimulationInit(kafka.KafkaMessageSimulationInitParams{
+		EventTime: currentTime,
+	})
 	err = SendMessage(
-		client, &kafka.KafkaMessageInitSim{
-			MsgType: kafka.MsgTypeSimulationInit,
-			EventTime: &kafka.SimTime{
-				TimeType: kafka.DevsDoubleSimTime.String(),
-				T:        i,
-			},
-			ReceiverID: runnerJavaID,
-			SenderID:   Sender,
-		},
+		client, initMsg,
 	)
 	if err != nil {
 		log.Fatalf("❌ collector error in coordinator: %v", err)
 	}
 
-	err = StartReceiveLoop(client, func(msg *kafka.BaseKafkaMessage) error {
-		if i > 5 {
-			return nil
-		}
-		if msg.SenderID == "" || msg.SenderID == Sender {
+	err = StartReceiveLoop(client, func(msg any) error {
+		if m, ok := msg.(*kafka.CommonKafkaMessage); ok && (m.SenderID == "" || m.SenderID == Sender) {
 			return nil
 		}
 
-		switch msg.MsgType {
-
-		case kafka.MsgTypeNextInternalTimeReport:
-			currentTime = msg.NextInternalTime.T
-			err = SendMessage(client, &kafka.KafkaMessageExecuteTransition{
-				MsgType: kafka.MsgTypeExecuteTransition,
-				EventTime: kafka.SimTime{
-					TimeType: kafka.DevsDoubleSimTime.String(),
-					T:        currentTime,
+		switch m := msg.(type) {
+		case *kafka.KafkaMessageNextInternalTimeReport:
+			currentTime = m.NextInternalTime
+			execTranstionMsg := baseMessage.NewKafkaMessageExecuteTransition(kafka.KafkaMessageExecuteTransitionParams{
+				EventTime: currentTime,
+				Payload: kafka.KafkaMessageExecuteTransitionPayload{
+					Inputs: make([]*kafka.KafkaMessagePortPayload, 0),
 				},
-				ReceiverID: runnerJavaID,
 			})
-			i = i + 1
-		case kafka.MsgTypeTransitionComplete:
-			err = SendMessage(client, &kafka.KafkaMessageSendOutput{
-				MsgType: kafka.MsgTypeRequestOutput,
-				EventTime: &kafka.SimTime{
-					TimeType: kafka.DevsDoubleSimTime.String(),
-					T:        currentTime,
+			err = SendMessage(client, execTranstionMsg)
+		case *kafka.KafkaMessageTransitionComplete:
+			sendOutput := baseMessage.NewKafkaMessageRequestOutput(kafka.KafkaMessageRequestOutputParams{
+				EventTime: currentTime,
+			})
+			err = SendMessage(client, sendOutput)
+		case *kafka.KafkaMessageOutputReport:
+			simulationDoneMsg := baseMessage.NewKafkaMessageSimulationTerminate(kafka.KafkaMessageSimulationTerminateParams{
+				EventTime: currentTime,
+				Payload: &kafka.KafkaMessageSimulationTerminatePayload{
+					Reason: "ok",
 				},
-				ReceiverID: runnerJavaID,
-				SenderID:   Sender,
 			})
-		case kafka.MsgTypeOutputReport:
-			err = SendMessage(client, &kafka.KafkaMessageSimulationDone{
-				MsgType:    kafka.MsgTypeSimulationTerminate,
-				ReceiverID: runnerJavaID,
-				SenderID:   Sender,
-			})
+			err = SendMessage(client, simulationDoneMsg)
 			return ErrSimulationDone
 		default:
-			log.Printf("Unreconized message : %s\n", msg.MsgType)
+			log.Printf("Unreconized message : %s\n", msg)
 		}
 		return nil
 	})

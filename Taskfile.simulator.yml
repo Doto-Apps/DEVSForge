@@ -50,7 +50,7 @@ tasks:
       - chmod 777 ./build/devsforge-runner
       - echo "Running tests in Docker..."
       - |
-        docker run --rm --network host \
+        docker run --rm -it --network host \
         -e PATHS_RUNNER_CMD=/tmp/devsforge-runner \
         -e LOG_DIR=/tmp/logs \
         -e PATHS_SIM_ROOT=/tmp/simulations \
@@ -69,7 +69,7 @@ tasks:
       - docker build -f ./simulator/runner/Dockerfile -t devsforge-test-runner:latest ./
       - echo "Running tests in Docker..."
       - |
-        docker run --rm --network host \
+        docker run --rm -it --network host \
         -v /var/run/docker.sock:/var/run/docker.sock \
         -e LOG_DIR=/tmp/sim-logs \
         -v $(pwd):/app \

@@ -84,27 +84,31 @@ func (r *Runner) StartReceiveLoop(handler func(any) error) error {
 func (r *Runner) Run() error {
 	slog.Info("Simulation loop starting")
 	if err := r.StartReceiveLoop(func(msg any) error {
-		if m, ok := msg.(kafka.CommonKafkaMessage); ok && (m.ReceiverID != r.Config.Model.ID || m.SenderID == r.Config.Model.ID) {
-			return nil
+		if m, ok := msg.(*kafka.CommonKafkaMessage); ok {
+			if m.ReceiverID != r.Config.Model.ID || m.SenderID == r.Config.Model.ID {
+				return nil
+			}
+		} else {
+			slog.Warn("cannot parse message to common kafka message", "message", msg)
 		}
 		switch m := msg.(type) {
-		case kafka.KafkaMessageSimulationInit:
+		case *kafka.KafkaMessageSimulationInit:
 			r.CurrentTime = m.EventTime
 			return r.RunInitSim()
-		case kafka.KafkaMessageExecuteTransition:
+		case *kafka.KafkaMessageExecuteTransition:
 			return r.RunExecuteTransition(kafka.KafkaMessageExecuteTransition{
 				EventTime: m.EventTime,
 				Payload:   m.Payload,
 			})
-		case kafka.KafkaMessageRequestOutput:
+		case *kafka.KafkaMessageRequestOutput:
 			return r.RunSendOutput()
-		case kafka.KafkaMessageSimulationTerminate:
+		case *kafka.KafkaMessageSimulationTerminate:
 			if err := r.RunSimulationDone(); err != nil {
 				return err
 			}
 			// Retourner l'erreur sentinelle pour sortir de la boucle
 			return ErrSimulationDone
-		case kafka.CommonKafkaMessage:
+		case *kafka.CommonKafkaMessage:
 			slog.Warn("Unrecognized message type", "type", m.MessageType)
 			return nil
 		default:
