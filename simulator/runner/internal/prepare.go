@@ -10,7 +10,6 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 func PrepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath string) (*generators.WrapperInfo, error) {
@@ -57,32 +56,4 @@ func PrepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 		RootDir:  cfg.TmpDirectory,
 		ModelDir: modelRoot,
 	}, nil
-}
-
-func sanitizePathToken(raw string) string {
-	if raw == "" {
-		return "model"
-	}
-
-	var b strings.Builder
-	lastUnderscore := false
-	for _, r := range raw {
-		isAlphaNum := r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9'
-		if isAlphaNum || r == '-' || r == '_' {
-			b.WriteRune(r)
-			lastUnderscore = false
-			continue
-		}
-
-		if !lastUnderscore {
-			b.WriteRune('_')
-			lastUnderscore = true
-		}
-	}
-
-	sanitized := strings.Trim(b.String(), "_")
-	if sanitized == "" {
-		return "model"
-	}
-	return sanitized
 }
