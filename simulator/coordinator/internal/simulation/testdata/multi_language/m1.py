@@ -31,13 +31,13 @@ class PythonAdder(Atomic):
             in_port = self.get_port_by_name("in")
             values = in_port.get_values()
             if values:
-                data = json.loads(values[0])
+                data = values[0]
                 input_value = data.get("value", 0)
                 self.result = input_value + self.add_value
                 self.has_result = True
         except (KeyError, json.JSONDecodeError, IndexError):
             pass
-        self.passivate()
+        self.hold_in("active", 0)
 
     def delt_con(self, e: float) -> None:
         self.delt_ext(e)

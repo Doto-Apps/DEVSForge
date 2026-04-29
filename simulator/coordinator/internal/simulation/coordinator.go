@@ -24,11 +24,11 @@ func CreateCoordinnator(cfg *types.CoordinatorConfig, ctx context.Context, runne
 	}
 }
 
-func (c *Coordinator) GetBaseKafkaMessage(receiverId string) *kafka.BaseKafkaMessage {
+func (c *Coordinator) GetBaseKafkaMessage(receiverID string) *kafka.BaseKafkaMessage {
 	return &kafka.BaseKafkaMessage{
 		SimulationRunID: c.Config.SimulationID,
 		SenderID:        kafka.CoordinatorId,
-		ReceiverID:      receiverId,
+		ReceiverID:      receiverID,
 	}
 }
 
@@ -39,8 +39,10 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 
 	go func() {
 		err := c.StartReceiveLoop(func(msg any) error {
-			if m, ok := msg.(kafka.KafkaMessageInterface); ok && m.GetSenderID() == "" {
-				return nil
+			if m, ok := msg.(kafka.KafkaMessageInterface); ok {
+				if m.GetSenderID() == "" || m.GetSenderID() == kafka.CoordinatorId {
+					return nil
+				}
 			}
 			switch m := msg.(type) {
 			case *kafka.KafkaMessageNextInternalTimeReport:

@@ -60,4 +60,3 @@ func (m *GoSender) Lambda() {
 	m.Sent = true
 	m.HoldIn("active", 1.0)
 }
-

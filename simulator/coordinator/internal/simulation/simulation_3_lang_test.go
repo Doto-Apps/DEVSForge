@@ -1,9 +1,8 @@
-package tests
+package simulation
 
 import (
-	"devsforge-coordinator/internal/simulation"
 	"devsforge-coordinator/internal/types"
-	"devsforge-shared/kafka"
+	"devsforge-coordinator/testsutils"
 	"encoding/json"
 	"path/filepath"
 	"testing"
@@ -11,17 +10,10 @@ import (
 	"gotest.tools/v3/golden"
 )
 
-func TestRunWithFileKafka(t *testing.T) {
+func Test3Lang(t *testing.T) {
 	manifestPath := filepath.Join("testdata", "multi_language", "runnable_manifest.json")
 
-	oldGenerateUUID := kafka.GenerateMessageId
-	defer func() { kafka.GenerateMessageId = oldGenerateUUID }()
-
-	kafka.GenerateMessageId = func() string {
-		return "test-uuid"
-	}
-
-	manifest, kafkaAddr, err := LoadManifestWithCode(manifestPath)
+	manifest, err := testsutils.LoadManifestWithCode(manifestPath)
 	if err != nil {
 		t.Fatalf("Failed to load manifest: %v", err)
 	}
@@ -34,10 +26,10 @@ func TestRunWithFileKafka(t *testing.T) {
 
 	kafkaTopic := "test-multi-lang"
 
-	if status, err := simulation.RunSimulation(types.SimulationParams{
+	if status, err := RunSimulation(types.SimulationParams{
 		Json:         &jsonStr,
 		KafkaTopic:   &kafkaTopic,
-		KafkaAddress: &kafkaAddr,
+		KafkaAddress: &KafkaAddr,
 	}); err != nil {
 		t.Fatalf("Simulation failed: %v", err)
 	} else {
@@ -48,8 +40,12 @@ func TestRunWithFileKafka(t *testing.T) {
 		if err != nil {
 			t.Fatalf("cannot marshal simulation status")
 		}
+
+		// Normaliser les messageId pour des tests déterministes
+		normalized := testsutils.NormalizeMessageIds(data)
+
 		goldenPath := filepath.Join("multi_language", "simulation.golden.json")
-		golden.Assert(t, string(data), goldenPath)
+		golden.Assert(t, string(normalized), goldenPath)
 
 	}
 }

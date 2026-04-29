@@ -39,7 +39,7 @@ func routeOutputs(
 				}
 
 				destState.InPorts = append(destState.InPorts, &kafka.KafkaMessagePortPayload{
-					PortName: portPayload.PortName,
+					PortName: c.To.Port,
 					Value:    portPayload.Value,
 				})
 			}

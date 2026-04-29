@@ -18,13 +18,13 @@ func (r *Runner) RunSendOutput() error {
 
 	for _, portOutput := range outResp.Outputs {
 		for _, v := range portOutput.ValuesJson {
-			var decodedValue interface{}
+			var decodedValue any
 			if err := json.Unmarshal([]byte(v), &decodedValue); err != nil {
 				return fmt.Errorf("invalid JSON output value on port %s: %w", portOutput.PortName, err)
 			}
 			portsPayload = append(portsPayload, &kafka.KafkaMessagePortPayload{
 				PortName: portOutput.PortName,
-				Value:    portOutput.ValuesJson,
+				Value:    decodedValue,
 			})
 		}
 	}

@@ -41,6 +41,7 @@ tasks:
       - go build -v ./...
 
   coordinator:test:
+    interactive: true
     desc: Run tests inside Docker runner image
     cmds:
       - echo "Building Docker coordinator image..."
@@ -64,6 +65,7 @@ tasks:
         devsforge-test-simulator:latest go test ./simulator/coordinator/... {{.CLI_ARGS}}
 
   runner:test:
+    interactive: true
     desc: Run tests inside Docker runner image
     cmds:
       - echo "Building Docker runner image..."

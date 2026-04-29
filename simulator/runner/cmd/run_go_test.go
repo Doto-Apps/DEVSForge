@@ -2,8 +2,11 @@ package cmd
 
 import (
 	"devsforge-runner/testsutils"
+	shared "devsforge-shared"
+	"devsforge-shared/enum"
 	"devsforge-shared/kafka"
 	"devsforge-shared/simulation"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -20,19 +23,33 @@ func TestGoRunner(t *testing.T) {
 		t.Fatalf("Error while reading test code\n %v", err)
 	}
 
-	jsonContent := fmt.Sprintf(`{
-		"models": [
+	runnableManifest := shared.RunnableManifest{
+		Models: []*shared.RunnableModel{
 			{
-			"language": "go",
-			"id": "%s",
-			"name": "Generator Incremental",
-			"code": %q
-			}
-		],
-		"count": 1,
-		"id": "test",
-		"simulationID": "%s"
-	}`, runnerGoID, string(codeContent), simID)
+				ID:       runnerGoID,
+				Name:     "go-sender",
+				Code:     string(codeContent),
+				Language: shared.CodeLanguage(shared.Go),
+				Ports: []shared.RunnableModelPort{
+					{
+						ID:   "out",
+						Name: "out",
+						Type: enum.ModelPortDirectionOut,
+					},
+				},
+				Parameters:  make([]shared.RunnableModelParameter, 0),
+				Connections: make([]shared.RunnableModelConnection, 0),
+			},
+		},
+		Count:        1,
+		SimulationID: simID,
+		MaxTime:      100,
+	}
+
+	jsonContent, err := json.Marshal(&runnableManifest)
+	if err != nil {
+		t.Fatalf("cannot parse manifest: %v", err)
+	}
 
 	client := testsutils.InitKafkaClient(kafkaTopic, KafkaAddr)
 	currentTime := 0.0
@@ -46,6 +63,9 @@ func TestGoRunner(t *testing.T) {
 		switch m := msg.(type) {
 		case *kafka.KafkaMessageNextInternalTimeReport:
 			t.Log("send execute transition")
+			if m.GetSenderID() != runnerGoID || m.GetReceiverID() != kafka.CoordinatorId || m.NextInternalTime != 0 {
+				t.Fatalf("invalid message received: %v", m)
+			}
 			currentTime = m.NextInternalTime
 			execTranstionMsg := baseMessage.NewKafkaMessageExecuteTransition(kafka.KafkaMessageExecuteTransitionParams{
 				EventTime: currentTime,
@@ -55,12 +75,26 @@ func TestGoRunner(t *testing.T) {
 			})
 			return testsutils.SendMessage(client, execTranstionMsg)
 		case *kafka.KafkaMessageTransitionComplete:
+			if m.GetReceiverID() != kafka.CoordinatorId {
+				t.Fatalf("bad receiver id for transition complete: wanted %s - got %s", kafka.CoordinatorId, m.GetReceiverID())
+			}
 			t.Log("send request output")
-			sendOutput := baseMessage.NewKafkaMessageRequestOutput(kafka.KafkaMessageRequestOutputParams{
+			requestOutputMsg := baseMessage.NewKafkaMessageRequestOutput(kafka.KafkaMessageRequestOutputParams{
 				EventTime: currentTime,
 			})
-			return testsutils.SendMessage(client, sendOutput)
+			return testsutils.SendMessage(client, requestOutputMsg)
 		case *kafka.KafkaMessageOutputReport:
+			if len(m.Payload.Outputs) == 0 {
+				t.Fatalf("Bad output array should have length greater than 0")
+			}
+			if m.Payload.Outputs[0].PortName != "out" {
+				t.Fatalf("Bad port name wanted out go %s", m.Payload.Outputs[0].PortName)
+			}
+			if value, ok := m.Payload.Outputs[0].Value.(float64); !ok {
+				t.Fatalf("Bad value wanted a float64, got %s", m.Payload.Outputs[0].Value)
+			} else {
+				t.Logf("Value is %f", value)
+			}
 			t.Log("send simulation terminate")
 			simulationDoneMsg := baseMessage.NewKafkaMessageSimulationTerminate(kafka.KafkaMessageSimulationTerminateParams{
 				EventTime: currentTime,
@@ -79,5 +113,5 @@ func TestGoRunner(t *testing.T) {
 		}
 	}
 
-	testGenerator(jsonContent, kafkaTopic, baseMessage, currentTime, t, client, handler)
+	testGenerator(string(jsonContent), kafkaTopic, baseMessage, currentTime, t, client, handler)
 }

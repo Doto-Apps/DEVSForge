@@ -3,6 +3,7 @@ package com.devsforge.runner;
 import com.devsforge.runner.modeling.*;
 import com.devsforge.runner.rpc.JsonUtil;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 public class JavaCollector extends Atomic {
@@ -48,14 +49,15 @@ public class JavaCollector extends Atomic {
                         double inputValue = ((Number) valueObj).doubleValue();
                         this.result = inputValue * this.multiplyFactor;
                         this.hasResult = true;
-                        LOGGER.info("JavaCollector: received " + inputValue + ", multiplied by " + this.multiplyFactor + " = " + this.result);
+                        LOGGER.info("JavaCollector: received " + inputValue + ", multiplied by " + this.multiplyFactor
+                                + " = " + this.result);
                     }
                 }
             }
         } catch (Exception ex) {
             LOGGER.warning("JavaCollector error: " + ex.getMessage());
         }
-        passivate();
+        this.holdIn(Constants.ACTIVE, 0);
     }
 
     @Override
@@ -65,5 +67,16 @@ public class JavaCollector extends Atomic {
 
     @Override
     public void lambda() {
+        if (!this.hasResult) {
+            return;
+        }
+        try {
+            Port outPort = this.getPortByName("out");
+            Map<String, Object> payload = new java.util.HashMap<>();
+            payload.put("value", this.result);
+            outPort.addValue(payload);
+        } catch (Exception ex) {
+            LOGGER.warning("JavaCollector lambda() error: " + ex.getMessage());
+        }
     }
 }
