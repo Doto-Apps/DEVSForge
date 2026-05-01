@@ -1156,6 +1156,64 @@ const docTemplate = `{
                 }
             }
         },
+        "/model/{id}/manifest": {
+            "get": {
+                "description": "Generate and retrieve the DEVS manifest for a model (without creating a simulation)",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "models"
+                ],
+                "summary": "Generate model manifest",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Model ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional: maxTime and runtime overrides",
+                        "name": "body",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/request.SimulationStartRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ManifestResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
         "/model/{id}/recursive": {
             "get": {
                 "description": "Retrieve a single model by its ID",
@@ -1438,6 +1496,49 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/simulation/{simId}/manifest": {
+            "get": {
+                "description": "Retrieve the DEVS manifest for an existing simulation",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "simulations"
+                ],
+                "summary": "Get simulation manifest",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Simulation ID",
+                        "name": "simId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ManifestResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -2118,18 +2219,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "enum.ModelLanguage": {
-            "type": "string",
-            "enum": [
-                "go",
-                "python"
-            ],
-            "x-enum-varnames": [
-                "ModelLanguageGo",
-                "ModelLanguagePython"
-            ]
-        },
-        "enum.ModelPortDirection": {
+        "devsforge-shared_enum.ModelPortDirection": {
             "type": "string",
             "enum": [
                 "in",
@@ -2140,7 +2230,18 @@ const docTemplate = `{
                 "ModelPortDirectionOut"
             ]
         },
-        "enum.ModelType": {
+        "devsforge_enum.ModelPortDirection": {
+            "type": "string",
+            "enum": [
+                "in",
+                "out"
+            ],
+            "x-enum-varnames": [
+                "ModelPortDirectionIn",
+                "ModelPortDirectionOut"
+            ]
+        },
+        "devsforge_enum.ModelType": {
             "type": "string",
             "enum": [
                 "atomic",
@@ -2149,6 +2250,17 @@ const docTemplate = `{
             "x-enum-varnames": [
                 "Atomic",
                 "Coupled"
+            ]
+        },
+        "enum.ModelLanguage": {
+            "type": "string",
+            "enum": [
+                "go",
+                "python"
+            ],
+            "x-enum-varnames": [
+                "ModelLanguageGo",
+                "ModelLanguagePython"
             ]
         },
         "json.ModelColors": {
@@ -2298,7 +2410,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "type": {
-                    "$ref": "#/definitions/enum.ModelPortDirection"
+                    "$ref": "#/definitions/devsforge_enum.ModelPortDirection"
                 }
             }
         },
@@ -2433,7 +2545,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "direction": {
-                    "$ref": "#/definitions/enum.ModelPortDirection"
+                    "$ref": "#/definitions/devsforge_enum.ModelPortDirection"
                 },
                 "name": {
                     "type": "string"
@@ -2590,7 +2702,7 @@ const docTemplate = `{
                     }
                 },
                 "type": {
-                    "$ref": "#/definitions/enum.ModelType"
+                    "$ref": "#/definitions/devsforge_enum.ModelType"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -2737,7 +2849,7 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/enum.ModelType"
+                            "$ref": "#/definitions/devsforge_enum.ModelType"
                         }
                     ]
                 }
@@ -2760,7 +2872,7 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/enum.ModelPortDirection"
+                            "$ref": "#/definitions/devsforge_enum.ModelPortDirection"
                         }
                     ]
                 }
@@ -3054,7 +3166,7 @@ const docTemplate = `{
                     }
                 },
                 "type": {
-                    "$ref": "#/definitions/enum.ModelType"
+                    "$ref": "#/definitions/devsforge_enum.ModelType"
                 }
             }
         },
@@ -3487,6 +3599,14 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ManifestResponse": {
+            "type": "object",
+            "properties": {
+                "manifest": {
+                    "$ref": "#/definitions/shared.RunnableManifest"
+                }
+            }
+        },
         "response.Model": {
             "type": "object",
             "properties": {
@@ -3562,7 +3682,7 @@ const docTemplate = `{
                     }
                 },
                 "type": {
-                    "$ref": "#/definitions/enum.ModelType"
+                    "$ref": "#/definitions/devsforge_enum.ModelType"
                 },
                 "userId": {
                     "type": "string"
@@ -3667,7 +3787,7 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "msgType": {
+                "messageType": {
                     "type": "string"
                 },
                 "payload": {},
@@ -3818,6 +3938,162 @@ const docTemplate = `{
                 },
                 "uiSchema": {
                     "$ref": "#/definitions/json.WebAppUISchema"
+                }
+            }
+        },
+        "shared.ModelLink": {
+            "type": "object",
+            "required": [
+                "id",
+                "port"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "port": {
+                    "type": "string"
+                }
+            }
+        },
+        "shared.ParameterType": {
+            "type": "string",
+            "enum": [
+                "go",
+                "java",
+                "python",
+                "int",
+                "float",
+                "bool",
+                "string",
+                "object"
+            ],
+            "x-enum-varnames": [
+                "Go",
+                "Java",
+                "Python",
+                "ParameterTypeInt",
+                "ParameterTypeFloat",
+                "ParameterTypeBool",
+                "ParameterTypeString",
+                "ParameterTypeObject"
+            ]
+        },
+        "shared.RunnableManifest": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "maxTime": {
+                    "description": "0 = no limit",
+                    "type": "number"
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/shared.RunnableModel"
+                    }
+                },
+                "simulationId": {
+                    "type": "string"
+                }
+            }
+        },
+        "shared.RunnableModel": {
+            "type": "object",
+            "required": [
+                "code",
+                "connections",
+                "id",
+                "language",
+                "name",
+                "ports"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "connections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/shared.RunnableModelConnection"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/shared.RunnableModelParameter"
+                    }
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/shared.RunnableModelPort"
+                    }
+                }
+            }
+        },
+        "shared.RunnableModelConnection": {
+            "type": "object",
+            "required": [
+                "from",
+                "to"
+            ],
+            "properties": {
+                "from": {
+                    "$ref": "#/definitions/shared.ModelLink"
+                },
+                "to": {
+                    "$ref": "#/definitions/shared.ModelLink"
+                }
+            }
+        },
+        "shared.RunnableModelParameter": {
+            "type": "object",
+            "required": [
+                "name",
+                "type",
+                "value"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/shared.ParameterType"
+                },
+                "value": {}
+            }
+        },
+        "shared.RunnableModelPort": {
+            "type": "object",
+            "required": [
+                "id",
+                "name",
+                "type"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/devsforge-shared_enum.ModelPortDirection"
                 }
             }
         }

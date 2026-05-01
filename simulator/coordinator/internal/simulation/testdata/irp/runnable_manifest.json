@@ -1,0 +1,602 @@
+{
+    "models": [
+        {
+            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "name": "Retailer",
+            "code": "#RETAILER_CODE#",
+            "language": "python",
+            "ports": [
+                {
+                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+                    "name": "receiveDelivery",
+                    "type": "in"
+                },
+                {
+                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+                    "name": "dailyInventoryCost",
+                    "type": "out"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "retailer_id",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "starting_inventory",
+                    "type": "float",
+                    "value": 130
+                },
+                {
+                    "name": "min_inventory",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "max_inventory",
+                    "type": "float",
+                    "value": 195
+                },
+                {
+                    "name": "daily_consumption",
+                    "type": "float",
+                    "value": 65
+                },
+                {
+                    "name": "inventory_cost",
+                    "type": "float",
+                    "value": 0.02
+                },
+                {
+                    "name": "closing_hour",
+                    "type": "int",
+                    "value": 16
+                }
+            ],
+            "connections": []
+        },
+        {
+            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+            "name": "Vehicle",
+            "code": "#VEHICLE_CODE#",
+            "language": "python",
+            "ports": [
+                {
+                    "id": "8adf1813-a157-4d84-a4ab-ee26f1a5f955",
+                    "name": "acceptDeliveryRoute",
+                    "type": "in"
+                },
+                {
+                    "id": "6d20f2cd-0c2a-49c5-96b9-328d76c931c1",
+                    "name": "dropDelivery",
+                    "type": "out"
+                },
+                {
+                    "id": "e9e0d037-9512-4f66-ae1c-80275ae01673",
+                    "name": "dailyDeliveryCost",
+                    "type": "out"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "vehicle_id",
+                    "type": "int",
+                    "value": 1
+                },
+                {
+                    "name": "capacity",
+                    "type": "float",
+                    "value": 144
+                },
+                {
+                    "name": "cost_per_km",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "speed_km_hr",
+                    "type": "float",
+                    "value": 150
+                },
+                {
+                    "name": "manufacturer_x",
+                    "type": "float",
+                    "value": 154
+                },
+                {
+                    "name": "manufacturer_y",
+                    "type": "float",
+                    "value": 417
+                },
+                {
+                    "name": "minutes_per_delivery",
+                    "type": "int",
+                    "value": 15
+                },
+                {
+                    "name": "closing_hour",
+                    "type": "int",
+                    "value": 16
+                }
+            ],
+            "connections": [
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                        "port": "receiveDelivery"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                        "port": "receiveDelivery"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                        "port": "receiveDelivery"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                        "port": "receiveDelivery"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                        "port": "receiveDelivery"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "name": "Retailer",
+            "code": "#RETAILER_CODE#",
+            "language": "python",
+            "ports": [
+                {
+                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+                    "name": "receiveDelivery",
+                    "type": "in"
+                },
+                {
+                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+                    "name": "dailyInventoryCost",
+                    "type": "out"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "retailer_id",
+                    "type": "int",
+                    "value": 1
+                },
+                {
+                    "name": "starting_inventory",
+                    "type": "float",
+                    "value": 70
+                },
+                {
+                    "name": "min_inventory",
+                    "type": "float",
+                    "value": 105
+                },
+                {
+                    "name": "max_inventory",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "daily_consumption",
+                    "type": "float",
+                    "value": 35
+                },
+                {
+                    "name": "inventory_cost",
+                    "type": "float",
+                    "value": 0.03
+                },
+                {
+                    "name": "closing_hour",
+                    "type": "int",
+                    "value": 16
+                }
+            ],
+            "connections": []
+        },
+        {
+            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+            "name": "Vehicle",
+            "code": "#VEHICLE_CODE#",
+            "language": "python",
+            "ports": [
+                {
+                    "id": "8adf1813-a157-4d84-a4ab-ee26f1a5f955",
+                    "name": "acceptDeliveryRoute",
+                    "type": "in"
+                },
+                {
+                    "id": "6d20f2cd-0c2a-49c5-96b9-328d76c931c1",
+                    "name": "dropDelivery",
+                    "type": "out"
+                },
+                {
+                    "id": "e9e0d037-9512-4f66-ae1c-80275ae01673",
+                    "name": "dailyDeliveryCost",
+                    "type": "out"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "vehicle_id",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "capacity",
+                    "type": "float",
+                    "value": 144
+                },
+                {
+                    "name": "cost_per_km",
+                    "type": "float",
+                    "value": 1
+                },
+                {
+                    "name": "speed_km_hr",
+                    "type": "float",
+                    "value": 150
+                },
+                {
+                    "name": "manufacturer_x",
+                    "type": "float",
+                    "value": 154
+                },
+                {
+                    "name": "manufacturer_y",
+                    "type": "float",
+                    "value": 417
+                },
+                {
+                    "name": "minutes_per_delivery",
+                    "type": "int",
+                    "value": 15
+                },
+                {
+                    "name": "closing_hour",
+                    "type": "int",
+                    "value": 16
+                }
+            ],
+            "connections": [
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                        "port": "receiveDelivery"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                        "port": "receiveDelivery"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                        "port": "receiveDelivery"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                        "port": "receiveDelivery"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                        "port": "dropDelivery"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                        "port": "receiveDelivery"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "name": "Manufacturer",
+            "code": "#MANUFACTURER_CODE#",
+            "language": "python",
+            "ports": [
+                {
+                    "id": "b7f8fef5-5622-42c8-a545-d4ce4da98613",
+                    "name": "acceptDeliverySchedule",
+                    "type": "in"
+                },
+                {
+                    "id": "06fa00ec-8022-48a8-89f8-772d361866fc",
+                    "name": "acceptDelivery",
+                    "type": "in"
+                },
+                {
+                    "id": "f0e5511d-7532-4d2f-9d2e-87ebb7b3adcb",
+                    "name": "postDeliveryRoute",
+                    "type": "out"
+                },
+                {
+                    "id": "fb4844a9-32ac-4167-ae00-9dfad0becf57",
+                    "name": "dailyInventoryCost",
+                    "type": "out"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "manufacturer_id",
+                    "type": "int",
+                    "value": 0
+                },
+                {
+                    "name": "starting_inventory",
+                    "type": "float",
+                    "value": 510
+                },
+                {
+                    "name": "daily_production",
+                    "type": "float",
+                    "value": 193
+                },
+                {
+                    "name": "inventory_cost",
+                    "type": "float",
+                    "value": 0.03
+                },
+                {
+                    "name": "opening_hour",
+                    "type": "int",
+                    "value": 6
+                },
+                {
+                    "name": "manufacturer_report_minute",
+                    "type": "int",
+                    "value": 1
+                }
+            ],
+            "connections": [
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                        "port": "postDeliveryRoute"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                        "port": "acceptDeliveryRoute"
+                    }
+                },
+                {
+                    "from": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                        "port": "postDeliveryRoute"
+                    },
+                    "to": {
+                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                        "port": "acceptDeliveryRoute"
+                    }
+                }
+            ]
+        },
+        {
+            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "name": "Retailer",
+            "code": "#RETAILER_CODE#",
+            "language": "python",
+            "ports": [
+                {
+                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+                    "name": "receiveDelivery",
+                    "type": "in"
+                },
+                {
+                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+                    "name": "dailyInventoryCost",
+                    "type": "out"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "retailer_id",
+                    "type": "int",
+                    "value": 2
+                },
+                {
+                    "name": "starting_inventory",
+                    "type": "float",
+                    "value": 58
+                },
+                {
+                    "name": "min_inventory",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "max_inventory",
+                    "type": "float",
+                    "value": 116
+                },
+                {
+                    "name": "daily_consumption",
+                    "type": "float",
+                    "value": 58
+                },
+                {
+                    "name": "inventory_cost",
+                    "type": "float",
+                    "value": 0.03
+                },
+                {
+                    "name": "closing_hour",
+                    "type": "int",
+                    "value": 16
+                }
+            ],
+            "connections": []
+        },
+        {
+            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "name": "Retailer",
+            "code": "#RETAILER_CODE#",
+            "language": "python",
+            "ports": [
+                {
+                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+                    "name": "receiveDelivery",
+                    "type": "in"
+                },
+                {
+                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+                    "name": "dailyInventoryCost",
+                    "type": "out"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "retailer_id",
+                    "type": "int",
+                    "value": 3
+                },
+                {
+                    "name": "starting_inventory",
+                    "type": "float",
+                    "value": 48
+                },
+                {
+                    "name": "min_inventory",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "max_inventory",
+                    "type": "float",
+                    "value": 72
+                },
+                {
+                    "name": "daily_consumption",
+                    "type": "float",
+                    "value": 24
+                },
+                {
+                    "name": "inventory_cost",
+                    "type": "float",
+                    "value": 0.02
+                },
+                {
+                    "name": "closing_hour",
+                    "type": "int",
+                    "value": 16
+                }
+            ],
+            "connections": []
+        },
+        {
+            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "name": "Retailer",
+            "code": "#RETAILER_CODE#",
+            "language": "python",
+            "ports": [
+                {
+                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+                    "name": "receiveDelivery",
+                    "type": "in"
+                },
+                {
+                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+                    "name": "dailyInventoryCost",
+                    "type": "out"
+                }
+            ],
+            "parameters": [
+                {
+                    "name": "retailer_id",
+                    "type": "int",
+                    "value": 4
+                },
+                {
+                    "name": "starting_inventory",
+                    "type": "float",
+                    "value": 11
+                },
+                {
+                    "name": "min_inventory",
+                    "type": "float",
+                    "value": 0
+                },
+                {
+                    "name": "max_inventory",
+                    "type": "float",
+                    "value": 22
+                },
+                {
+                    "name": "daily_consumption",
+                    "type": "float",
+                    "value": 11
+                },
+                {
+                    "name": "inventory_cost",
+                    "type": "float",
+                    "value": 0.02
+                },
+                {
+                    "name": "closing_hour",
+                    "type": "int",
+                    "value": 16
+                }
+            ],
+            "connections": []
+        }
+    ],
+    "count": 1,
+    "simulationId": "test-irp"
+}

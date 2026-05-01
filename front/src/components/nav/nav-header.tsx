@@ -1,4 +1,5 @@
 import React from "react";
+import type { components } from "@/api/v1";
 import { ModeToggle } from "@/components/mode-toggle";
 import {
 	Breadcrumb,
@@ -25,6 +26,7 @@ type NavHeaderProps = {
 	simulateFunction?: () => Promise<void>;
 	validateFunction?: () => Promise<void>;
 	deployFunction?: () => Promise<void>;
+	modelId: components["schemas"]["model.Model"]["id"];
 };
 
 const NavHeader: React.FC<NavHeaderProps> = ({
@@ -37,6 +39,7 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 	simulateFunction,
 	validateFunction,
 	deployFunction,
+	modelId,
 }) => {
 	const lastIndex = breadcrumbs.length - 1;
 
@@ -67,14 +70,15 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 				</BreadcrumbList>
 			</Breadcrumb>
 			<div className="ml-auto px-3 flex items-center gap-2">
-				{showNavActions && (
+				{showNavActions ? (
 					<NavActions
 						deployFunction={deployFunction}
+						modelId={modelId}
 						saveFunction={saveFunction}
 						simulateFunction={simulateFunction}
 						validateFunction={validateFunction}
 					/>
-				)}
+				) : null}
 				{showModeToggle && <ModeToggle />}
 			</div>
 		</header>

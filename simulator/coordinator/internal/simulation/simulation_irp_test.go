@@ -12,10 +12,10 @@ import (
 	"gotest.tools/v3/golden"
 )
 
-func Test3Lang(t *testing.T) {
-	manifestPath := filepath.Join("testdata", "multi_language", "runnable_manifest.json")
+func TestIrp(t *testing.T) {
+	manifestPath := filepath.Join("testdata", "irp", "runnable_manifest.json")
 
-	manifest, err := loadManifestWithCode(manifestPath)
+	manifest, err := loadManifestWithCodeIrp(manifestPath)
 	if err != nil {
 		t.Fatalf("Failed to load manifest: %v", err)
 	}
@@ -26,7 +26,7 @@ func Test3Lang(t *testing.T) {
 	}
 	jsonStr := string(jsonBytes)
 
-	kafkaTopic := "test-multi-lang"
+	kafkaTopic := "test-irp"
 
 	if status, err := RunSimulation(types.SimulationParams{
 		Json:         &jsonStr,
@@ -35,7 +35,7 @@ func Test3Lang(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("Simulation failed: %v", err)
 	} else {
-		t.Log("Check simulation.json golden")
+		t.Log("Check simulation.golden.json golden")
 		status.CreatedAt = 1
 		status.EndedAt = 1
 		data, err := json.MarshalIndent(&status, " ", "  ")
@@ -46,12 +46,12 @@ func Test3Lang(t *testing.T) {
 		// Normaliser les messageId pour des tests déterministes
 		normalized := testsutils.NormalizeMessageIds(data)
 
-		goldenPath := filepath.Join("multi_language", "simulation.golden.json")
+		goldenPath := filepath.Join("irp", "simulation.golden.json")
 		golden.Assert(t, string(normalized), goldenPath)
 	}
 }
 
-func loadManifestWithCode(manifestPath string) (*shared.RunnableManifest, error) {
+func loadManifestWithCodeIrp(manifestPath string) (*shared.RunnableManifest, error) {
 	data, err := os.ReadFile(manifestPath)
 	if err != nil {
 		return nil, err
@@ -66,13 +66,13 @@ func loadManifestWithCode(manifestPath string) (*shared.RunnableManifest, error)
 
 	for _, model := range manifest.Models {
 		var codeFile string
-		switch model.Language {
-		case "go":
-			codeFile = filepath.Join(baseDir, "m1.go")
-		case "python":
-			codeFile = filepath.Join(baseDir, "m1.py")
-		case "java":
-			codeFile = filepath.Join(baseDir, "JavaCollector.java")
+		switch model.Name {
+		case "Retailer":
+			codeFile = filepath.Join(baseDir, "retailer.py")
+		case "Vehicle":
+			codeFile = filepath.Join(baseDir, "vehicle.py")
+		case "Manufacturer":
+			codeFile = filepath.Join(baseDir, "manufacturer.py")
 		default:
 			continue
 		}
