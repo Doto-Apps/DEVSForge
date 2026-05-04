@@ -1,5 +1,29 @@
 basePath: /
 definitions:
+  devsforge-shared_enum.ModelPortDirection:
+    enum:
+    - in
+    - out
+    type: string
+    x-enum-varnames:
+    - ModelPortDirectionIn
+    - ModelPortDirectionOut
+  devsforge_enum.ModelPortDirection:
+    enum:
+    - in
+    - out
+    type: string
+    x-enum-varnames:
+    - ModelPortDirectionIn
+    - ModelPortDirectionOut
+  devsforge_enum.ModelType:
+    enum:
+    - atomic
+    - coupled
+    type: string
+    x-enum-varnames:
+    - Atomic
+    - Coupled
   enum.ModelLanguage:
     enum:
     - go
@@ -8,22 +32,6 @@ definitions:
     x-enum-varnames:
     - ModelLanguageGo
     - ModelLanguagePython
-  enum.ModelPortDirection:
-    enum:
-    - in
-    - out
-    type: string
-    x-enum-varnames:
-    - ModelPortDirectionIn
-    - ModelPortDirectionOut
-  enum.ModelType:
-    enum:
-    - atomic
-    - coupled
-    type: string
-    x-enum-varnames:
-    - Atomic
-    - Coupled
   json.ModelColors:
     properties:
       bodyBackgroundColor:
@@ -120,7 +128,7 @@ definitions:
       name:
         type: string
       type:
-        $ref: '#/definitions/enum.ModelPortDirection'
+        $ref: '#/definitions/devsforge_enum.ModelPortDirection'
     required:
     - id
     - name
@@ -218,7 +226,7 @@ definitions:
       bindingKey:
         type: string
       direction:
-        $ref: '#/definitions/enum.ModelPortDirection'
+        $ref: '#/definitions/devsforge_enum.ModelPortDirection'
       name:
         type: string
       portId:
@@ -324,7 +332,7 @@ definitions:
           $ref: '#/definitions/json.ModelPort'
         type: array
       type:
-        $ref: '#/definitions/enum.ModelType'
+        $ref: '#/definitions/devsforge_enum.ModelType'
       updatedAt:
         type: string
       userId:
@@ -419,7 +427,7 @@ definitions:
         type: string
       type:
         allOf:
-        - $ref: '#/definitions/enum.ModelType'
+        - $ref: '#/definitions/devsforge_enum.ModelType'
         enum:
         - atomic
         - coupled
@@ -434,7 +442,7 @@ definitions:
         type: string
       type:
         allOf:
-        - $ref: '#/definitions/enum.ModelPortDirection'
+        - $ref: '#/definitions/devsforge_enum.ModelPortDirection'
         enum:
         - in
         - out
@@ -632,7 +640,7 @@ definitions:
           $ref: '#/definitions/json.ModelPort'
         type: array
       type:
-        $ref: '#/definitions/enum.ModelType'
+        $ref: '#/definitions/devsforge_enum.ModelType'
     required:
     - code
     - components
@@ -932,6 +940,11 @@ definitions:
     - refreshToken
     - username
     type: object
+  response.ManifestResponse:
+    properties:
+      manifest:
+        $ref: '#/definitions/shared.RunnableManifest'
+    type: object
   response.Model:
     properties:
       components:
@@ -974,7 +987,7 @@ definitions:
           $ref: '#/definitions/json.ModelPort'
         type: array
       type:
-        $ref: '#/definitions/enum.ModelType'
+        $ref: '#/definitions/devsforge_enum.ModelType'
       userId:
         type: string
     required:
@@ -1055,7 +1068,7 @@ definitions:
         type: string
       id:
         type: string
-      msgType:
+      messageType:
         type: string
       payload: {}
       sender:
@@ -1155,6 +1168,117 @@ definitions:
         $ref: '#/definitions/json.WebAppContract'
       uiSchema:
         $ref: '#/definitions/json.WebAppUISchema'
+    type: object
+  shared.ModelLink:
+    properties:
+      id:
+        type: string
+      port:
+        type: string
+    required:
+    - id
+    - port
+    type: object
+  shared.ParameterType:
+    enum:
+    - go
+    - java
+    - python
+    - int
+    - float
+    - bool
+    - string
+    - object
+    type: string
+    x-enum-varnames:
+    - Go
+    - Java
+    - Python
+    - ParameterTypeInt
+    - ParameterTypeFloat
+    - ParameterTypeBool
+    - ParameterTypeString
+    - ParameterTypeObject
+  shared.RunnableManifest:
+    properties:
+      count:
+        type: integer
+      maxTime:
+        description: 0 = no limit
+        type: number
+      models:
+        items:
+          $ref: '#/definitions/shared.RunnableModel'
+        type: array
+      simulationId:
+        type: string
+    type: object
+  shared.RunnableModel:
+    properties:
+      code:
+        type: string
+      connections:
+        items:
+          $ref: '#/definitions/shared.RunnableModelConnection'
+        type: array
+      id:
+        type: string
+      language:
+        type: string
+      name:
+        type: string
+      parameters:
+        items:
+          $ref: '#/definitions/shared.RunnableModelParameter'
+        type: array
+      ports:
+        items:
+          $ref: '#/definitions/shared.RunnableModelPort'
+        type: array
+    required:
+    - code
+    - connections
+    - id
+    - language
+    - name
+    - ports
+    type: object
+  shared.RunnableModelConnection:
+    properties:
+      from:
+        $ref: '#/definitions/shared.ModelLink'
+      to:
+        $ref: '#/definitions/shared.ModelLink'
+    required:
+    - from
+    - to
+    type: object
+  shared.RunnableModelParameter:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/shared.ParameterType'
+      value: {}
+    required:
+    - name
+    - type
+    - value
+    type: object
+  shared.RunnableModelPort:
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/devsforge-shared_enum.ModelPortDirection'
+    required:
+    - id
+    - name
+    - type
     type: object
 host: localhost:3000
 info:
@@ -1935,6 +2059,46 @@ paths:
       summary: Update a model
       tags:
       - models
+  /model/{id}/manifest:
+    get:
+      description: Generate and retrieve the DEVS manifest for a model (without creating
+        a simulation)
+      parameters:
+      - description: Model ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: 'Optional: maxTime and runtime overrides'
+        in: body
+        name: body
+        schema:
+          $ref: '#/definitions/request.SimulationStartRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ManifestResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Generate model manifest
+      tags:
+      - models
   /model/{id}/recursive:
     get:
       description: Retrieve a single model by its ID
@@ -2104,6 +2268,35 @@ paths:
             additionalProperties: true
             type: object
       summary: Get simulation events
+      tags:
+      - simulations
+  /simulation/{simId}/manifest:
+    get:
+      description: Retrieve the DEVS manifest for an existing simulation
+      parameters:
+      - description: Simulation ID
+        in: path
+        name: simId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ManifestResponse'
+        "404":
+          description: Not Found
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Get simulation manifest
       tags:
       - simulations
   /simulation/{simId}/start:

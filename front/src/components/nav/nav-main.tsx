@@ -20,7 +20,7 @@ export function NavMain({
 }) {
 	const location = useLocation();
 	return (
-		<SidebarGroup className="group-data-[collapsible=icon]:hidden">
+		<SidebarGroup>
 			<SidebarMenu>
 				{mains.map((item) => (
 					<SidebarMenuButton

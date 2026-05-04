@@ -42,6 +42,17 @@ export function SimulateModel() {
 			: null,
 	);
 
+	const reactFlowModel = useMemo(() => {
+		if (!recursiveModels || recursiveModels.length === 0) {
+			return null;
+		}
+		try {
+			return modelToReactflow(recursiveModels);
+		} catch {
+			return null;
+		}
+	}, [recursiveModels]);
+
 	const modelNameById = useMemo(() => {
 		const map: Record<string, string> = {};
 		for (const item of recursiveModels ?? []) {
@@ -49,41 +60,44 @@ export function SimulateModel() {
 				map[item.id] = item.name;
 			}
 		}
+		for (const node of reactFlowModel?.nodes ?? []) {
+			if (typeof node.id !== "string" || node.id.length === 0) {
+				continue;
+			}
+			if (typeof node.data.label === "string" && node.data.label.length > 0) {
+				map[node.id] = node.data.label;
+			}
+		}
 		if (model?.id && model?.name) {
 			map[model.id] = model.name;
 		}
 		return map;
-	}, [recursiveModels, model?.id, model?.name]);
+	}, [recursiveModels, reactFlowModel, model?.id, model?.name]);
 
 	const parameterTargets = useMemo<SimulationParameterTarget[]>(() => {
-		if (!recursiveModels || recursiveModels.length === 0) {
+		if (!reactFlowModel) {
 			return [];
 		}
 
-		try {
-			const reactFlow = modelToReactflow(recursiveModels);
-			return reactFlow.nodes
-				.filter(
-					(node) =>
-						node.data.modelType === "atomic" &&
-						(node.data.parameters?.length ?? 0) > 0,
-				)
-				.map((node) => ({
-					instanceModelId: node.id,
-					modelId: node.data.id,
-					modelName: node.data.label || node.data.id,
-					parameters: (node.data.parameters ?? []).map((param) => ({
-						description: param.description,
-						name: param.name,
-						type: param.type,
-						value: param.value,
-					})),
-				}))
-				.sort((a, b) => a.instanceModelId.localeCompare(b.instanceModelId));
-		} catch {
-			return [];
-		}
-	}, [recursiveModels]);
+		return reactFlowModel.nodes
+			.filter(
+				(node) =>
+					node.data.modelType === "atomic" &&
+					(node.data.parameters?.length ?? 0) > 0,
+			)
+			.map((node) => ({
+				instanceModelId: node.id,
+				modelId: node.data.id,
+				modelName: node.data.label || node.data.id,
+				parameters: (node.data.parameters ?? []).map((param) => ({
+					description: param.description,
+					name: param.name,
+					type: param.type,
+					value: param.value,
+				})),
+			}))
+			.sort((a, b) => a.instanceModelId.localeCompare(b.instanceModelId));
+	}, [reactFlowModel]);
 
 	if (isLoadingModel || isLoadingLib) {
 		return (

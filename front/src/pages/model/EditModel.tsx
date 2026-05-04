@@ -232,6 +232,7 @@ export function EditModel() {
 					{ label: mainModel?.data.label ?? "Edit Model" },
 				]}
 				deployFunction={deployWebApp}
+				modelId={modelId}
 				saveFunction={saveModelChange}
 				showModeToggle
 				showNavActions

@@ -8,7 +8,10 @@ import (
 	"devsforge/request"
 	"devsforge/response"
 	"devsforge/services/simulation"
+	"encoding/json"
 	"strconv"
+
+	shared "devsforge-shared"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -24,6 +27,7 @@ func SetupSimulationRoutes(app *fiber.App) {
 	group.Post("/:simId/start", startSimulation)
 	group.Get("/:simId", getSimulation)
 	group.Get("/:simId/events", getSimulationEvents)
+	group.Get("/:simId/manifest", getSimulationManifest)
 	group.Get("/model/:modelId", getSimulationsByModel)
 	group.Get("", getUserSimulations)
 }
@@ -254,4 +258,36 @@ func getSimulationEvents(c *fiber.Ctx) error {
 		Find(&events)
 
 	return c.JSON(response.CreateSimulationEventsResponse(events, total, limit, offset, *simulation))
+}
+
+// getSimulationManifest retrieves the DEVS manifest for a simulation
+//
+//	@Summary		Get simulation manifest
+//	@Description	Retrieve the DEVS manifest for an existing simulation
+//	@Tags			simulations
+//	@Produce		json
+//	@Param			simId	path		string	true	"Simulation ID"
+//	@Success		200		{object}	response.ManifestResponse
+//	@Failure		404		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
+//	@Router			/simulation/{simId}/manifest [get]
+func getSimulationManifest(c *fiber.Ctx) error {
+	simID := c.Params("simId")
+	userID := c.Locals("user_id").(string)
+
+	simulation, err := simulationService.GetSimulation(simID, userID)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": "Simulation not found",
+		})
+	}
+
+	var manifest shared.RunnableManifest
+	if err := json.Unmarshal([]byte(simulation.Manifest), &manifest); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to parse manifest",
+		})
+	}
+
+	return c.JSON(response.CreateManifestResponse(&manifest))
 }

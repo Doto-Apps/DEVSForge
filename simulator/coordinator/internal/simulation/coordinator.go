@@ -10,13 +10,13 @@ import (
 )
 
 type Coordinator struct {
-	Config       *types.CoordConfig
+	Config       *types.CoordinatorConfig
 	Context      context.Context
 	RunnerStates types.RunnerStates
 	Logger       *slog.Logger
 }
 
-func CreateCoordinnator(cfg *types.CoordConfig, ctx context.Context, runnerStates types.RunnerStates) Coordinator {
+func CreateCoordinnator(cfg *types.CoordinatorConfig, ctx context.Context, runnerStates types.RunnerStates) Coordinator {
 	return Coordinator{
 		Config:       cfg,
 		Context:      ctx,
@@ -24,27 +24,36 @@ func CreateCoordinnator(cfg *types.CoordConfig, ctx context.Context, runnerState
 	}
 }
 
-// RunCoordinator lance la boucle de coordination DEVS
+func (c *Coordinator) GetBaseKafkaMessage(receiverID string) *kafka.BaseKafkaMessage {
+	return &kafka.BaseKafkaMessage{
+		SimulationRunID: c.Config.SimulationID,
+		SenderID:        kafka.CoordinatorId,
+		ReceiverID:      receiverID,
+	}
+}
+
 func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
-	nextTimeCh := make(chan *kafka.BaseKafkaMessage)
-	transitionDoneCh := make(chan *kafka.BaseKafkaMessage)
-	outputCh := make(chan *kafka.BaseKafkaMessage)
+	nextTimeCh := make(chan *kafka.KafkaMessageNextInternalTimeReport)
+	transitionDoneCh := make(chan *kafka.KafkaMessageTransitionComplete)
+	outputCh := make(chan *kafka.KafkaMessageOutputReport)
 
 	go func() {
-		err := c.StartReceiveLoop(func(msg *kafka.BaseKafkaMessage) error {
-			if msg.SenderID == "" {
-				return nil
+		err := c.StartReceiveLoop(func(msg any) error {
+			if m, ok := msg.(kafka.KafkaMessageInterface); ok {
+				if m.GetSenderID() == "" || m.GetSenderID() == kafka.CoordinatorId {
+					return nil
+				}
 			}
-
-			switch msg.MsgType {
-			case kafka.MsgTypeNextInternalTimeReport:
-				nextTimeCh <- msg
-			case kafka.MsgTypeTransitionComplete:
-				transitionDoneCh <- msg
-			case kafka.MsgTypeOutputReport:
-				outputCh <- msg
+			switch m := msg.(type) {
+			case *kafka.KafkaMessageNextInternalTimeReport:
+				nextTimeCh <- m
+			case *kafka.KafkaMessageTransitionComplete:
+				transitionDoneCh <- m
+			case *kafka.KafkaMessageOutputReport:
+				outputCh <- m
 			default:
-				slog.Warn("Unrecognized message", "type", msg.MsgType)
+				slog.Warn("Unrecognized message", "message", m)
+				return nil
 			}
 			return nil
 		})
@@ -53,79 +62,70 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 		}
 	}()
 
-	// --- Phase 1 : InitSim pour tous les modèles ---
 	slog.Info("Sending InitSim to all runners")
 	err := c.RunInitSim()
 	if err != nil {
 		return err
 	}
-	// Attente d'un NextInternalTime par runner
+
 	slog.Info("Waiting runners answers with initial NextInternalTime")
 	if err = c.RunNextInternalTime(nextTimeCh); err != nil {
 		return err
 	}
-	slog.Info("All runners responded with initial NextInternalTime")
 
-	// --- Phase 2 : Boucle principale de simulation ---
+	slog.Info("All runners responded with initial NextInternalTime")
+	currentTime := 0.0
 	for {
-		tmin := computeMinTime(c.RunnerStates)
-		if tmin == math.MaxFloat64 {
+		currentTime = computeGlobalMinTime(c.RunnerStates)
+		if currentTime == math.MaxFloat64 {
 			slog.Info("Simulation ended: all nextTimes are +Inf")
 			break
 		}
 
-		// Check if we've reached the maximum simulation time
-		if manifest.MaxTime > 0 && tmin >= manifest.MaxTime {
-			slog.Info("Simulation ended: max time reached", "tmin", tmin, "maxTime", manifest.MaxTime)
+		if manifest.MaxTime > 0 && currentTime >= manifest.MaxTime {
+			slog.Info("Simulation ended: max time reached", "tmin", currentTime, "maxTime", manifest.MaxTime)
 			break
 		}
 
-		// 1) trouver les imminents
 		imminents := []*types.RunnerState{}
 		for _, st := range c.RunnerStates {
-			if st.NextInternalTime == tmin {
+			if st.NextInternalTime == currentTime {
 				imminents = append(imminents, st)
 			}
-			// vider l'Inbox pour le nouveau pas de temps
-			st.Inbox = nil
+			st.InPorts = nil
 		}
 
-		slog.Debug("Coordination step", "tmin", tmin, "imminents", len(imminents))
+		slog.Debug("Coordination step", "currentTime", currentTime, "imminents", len(imminents))
 
-		// 2) demander les outputs aux imminents
-		err := c.RunSendOutput(imminents, tmin)
+		err := c.RunSendOutput(imminents, currentTime)
 		if err != nil {
 			return err
 		}
 
-		// 3) récupérer les ModelOutput des imminents
-		outputsBySender := map[string]*kafka.ModelOutput{}
+		outputsBySender := map[string]*kafka.KafkaMessageOutputReportPayload{}
 		for range imminents {
 			msg := <-outputCh
-			outputsBySender[msg.SenderID] = msg.ModelOutput
+			outputsBySender[msg.SenderID] = &msg.Payload
 		}
 
-		// 4) router les outputs vers les Inbox des destinataires
 		routeOutputs(manifest, c.RunnerStates, outputsBySender)
 
-		// 5) déterminer qui transitionne
 		transitionTargets := map[string]*types.RunnerState{}
+		// TODO: Bizarre ce truc
 		for _, st := range imminents {
 			transitionTargets[st.ID] = st
 		}
 		for _, st := range c.RunnerStates {
-			if len(st.Inbox) > 0 {
+			if len(st.InPorts) > 0 {
 				transitionTargets[st.ID] = st
 			}
 		}
 
-		// 6) envoyer ExecuteTransition
-		err = c.RunExecuteTransition(transitionTargets, tmin)
+		err = c.RunExecuteTransition(transitionTargets, currentTime)
 		if err != nil {
 			return err
 		}
 
-		// 7) attendre les TransitionDone
 		for range transitionTargets {
 			msg := <-transitionDoneCh
 			st, ok := c.RunnerStates[msg.SenderID]
@@ -133,18 +133,13 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 				slog.Warn("TransitionDone from unknown runner", "sender", msg.SenderID)
 				continue
 			}
-			if msg.NextInternalTime == nil {
-				st.NextInternalTime = math.MaxFloat64
-			} else {
-				st.NextInternalTime = msg.NextInternalTime.T
-			}
+
+			st.NextInternalTime = msg.NextInternalTime
 		}
 	}
 
-	// --- Phase 3 : SimulationDone ---
-
 	slog.Info("Sending SimulationDone to all runners")
-	err = c.RunSimulationDone()
+	err = c.RunSimulationDone(currentTime)
 	if err != nil {
 		return err
 	}

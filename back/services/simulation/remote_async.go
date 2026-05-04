@@ -3,6 +3,7 @@ package simulation
 import (
 	"bytes"
 	"context"
+	"devsforge-shared/kafka"
 	shared_sim "devsforge-shared/simulation"
 	"devsforge/config"
 	"devsforge/database"
@@ -102,8 +103,8 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 	// NOTE: May be put this as env vars ?
 	pollInterval := 1 * time.Second
 	timeout := 15 * time.Minute
-	maxEmptyPolls := 5
-	maxConsecutiveErrors := 5
+	maxEmptyPolls := 3
+	maxConsecutiveErrors := 3
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -180,6 +181,7 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 				}
 				continue
 			}
+
 			_ = resp.Body.Close()
 
 			consecutiveErrors = 0
@@ -246,35 +248,43 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []sha
 	seen := make(map[string]bool)
 	events := make([]model.SimulationEvent, 0, len(logs))
 	for _, logMsg := range logs {
-		if logMsg.MsgType == "" {
+		m, ok := logMsg.Data.(kafka.CommonKafkaMessage)
+		if !ok {
 			continue
 		}
 
-		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", logMsg.MsgType, logMsg.Data.ReceiverID, logMsg.SenderID, logMsg.Timestamp, logMsg.Data)
+		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", m.MessageType, m.ReceiverID, m.SenderID, logMsg.Sequence, logMsg.Data)
 		if seen[dedupKey] {
 			continue
 		}
 		seen[dedupKey] = true
 
-		payloadJSON, err := json.Marshal(logMsg.Data)
-		if err != nil {
-			log.Warn("Failed to marshal log payload", "error", err)
-			payloadJSON = []byte("{}")
+		var simulationTime float64 = 0
+		switch subM := logMsg.Data.(type) {
+		case kafka.KafkaMessageSimulationInit:
+			simulationTime = subM.EventTime
+		case kafka.KafkaMessageExecuteTransition:
+			simulationTime = subM.EventTime
+		case kafka.KafkaMessageRequestOutput:
+			simulationTime = subM.EventTime
+		case kafka.KafkaMessageSimulationTerminate:
+			simulationTime = subM.EventTime
 		}
 
-		var simulationTime *float64
-		if logMsg.Data.EventTime != nil {
-			simulationTime = &logMsg.Data.EventTime.T
+		payload, err := json.Marshal(m)
+		if err != nil {
+			log.Warn("Failed to marshal message", "error", err)
+			continue
 		}
 
 		event := model.SimulationEvent{
 			SimulationID:           simulationID,
-			SimulationTime:         simulationTime,
-			MsgType:                logMsg.MsgType,
+			SimulationTime:         &simulationTime,
+			MessageType:            logMsg.MessageType,
 			Sender:                 &logMsg.SenderID,
-			Target:                 &logMsg.Data.ReceiverID,
-			Payload:                datatypes.JSON(payloadJSON),
-			RelativeEventTimestamp: logMsg.Timestamp,
+			Target:                 &m.ReceiverID,
+			Payload:                datatypes.JSON(payload),
+			RelativeEventTimestamp: logMsg.Sequence,
 		}
 		events = append(events, event)
 	}

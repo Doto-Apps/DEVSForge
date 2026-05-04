@@ -1,0 +1,1192 @@
+{
+    "createdAt": 1,
+    "endedAt": 1,
+    "kafkaTopic": "test-irp",
+    "messages": [
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "SimulationInit",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationInit",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "SimulationInit",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationInit",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "SimulationInit",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationInit",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "SimulationInit",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationInit",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "SimulationInit",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationInit",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "SimulationInit",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationInit",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "SimulationInit",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationInit",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "SimulationInit",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationInit",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "NextInternalTimeReport",
+                "nextInternalTime": 960,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "NextInternalTimeReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "NextInternalTimeReport",
+                "nextInternalTime": 1.7976931348623157e+308,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "NextInternalTimeReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "NextInternalTimeReport",
+                "nextInternalTime": 1,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "NextInternalTimeReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "NextInternalTimeReport",
+                "nextInternalTime": 960,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "NextInternalTimeReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "NextInternalTimeReport",
+                "nextInternalTime": 1.7976931348623157e+308,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "NextInternalTimeReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "NextInternalTimeReport",
+                "nextInternalTime": 960,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "NextInternalTimeReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "NextInternalTimeReport",
+                "nextInternalTime": 960,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "NextInternalTimeReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "NextInternalTimeReport",
+                "nextInternalTime": 960,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "NextInternalTimeReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 1,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 1,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 21.09,
+                                "day": 1,
+                                "retailerId": 0
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 1,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 1,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 1441,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 960,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 0,
+                                "day": 1,
+                                "retailerId": 4
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 960,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 1.3,
+                                "day": 1,
+                                "retailerId": 0
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 960,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 1.05,
+                                "day": 1,
+                                "retailerId": 1
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 960,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 0,
+                                "day": 1,
+                                "retailerId": 2
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 0,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 960,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 0.48,
+                                "day": 1,
+                                "retailerId": 3
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 2400,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 2400,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 2400,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 2400,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 2400,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 1441,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 1,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 1441,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 26.88,
+                                "day": 2,
+                                "retailerId": 0
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 1441,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 1441,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 2881,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 2400,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": -1.74,
+                                "day": 2,
+                                "retailerId": 2
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 2400,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 0,
+                                "day": 2,
+                                "retailerId": 3
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 2400,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": -0.22,
+                                "day": 2,
+                                "retailerId": 4
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "RequestOutput",
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "RequestOutput",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 2400,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 0,
+                                "day": 2,
+                                "retailerId": 0
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 960,
+                "messageId": "test-uuid",
+                "messageType": "OutputReport",
+                "nextInternalTime": 2400,
+                "payload": {
+                    "additionalFields": {},
+                    "outputs": [
+                        {
+                            "portName": "dailyInventoryCost",
+                            "value": {
+                                "cost": 0,
+                                "day": 2,
+                                "retailerId": 1
+                            }
+                        }
+                    ]
+                },
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "OutputReport",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 3840,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 3840,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 3840,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "ExecuteTransition",
+                "payload": {
+                    "inputs": null
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "ExecuteTransition",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 3840,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2400,
+                "messageId": "test-uuid",
+                "messageType": "TransitionComplete",
+                "nextInternalTime": 3840,
+                "receiverId": "Coordinator",
+                "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "TransitionComplete",
+            "senderId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2881,
+                "messageId": "test-uuid",
+                "messageType": "SimulationTerminate",
+                "payload": {
+                    "reason": ""
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationTerminate",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2881,
+                "messageId": "test-uuid",
+                "messageType": "SimulationTerminate",
+                "payload": {
+                    "reason": ""
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationTerminate",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2881,
+                "messageId": "test-uuid",
+                "messageType": "SimulationTerminate",
+                "payload": {
+                    "reason": ""
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationTerminate",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2881,
+                "messageId": "test-uuid",
+                "messageType": "SimulationTerminate",
+                "payload": {
+                    "reason": ""
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationTerminate",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2881,
+                "messageId": "test-uuid",
+                "messageType": "SimulationTerminate",
+                "payload": {
+                    "reason": ""
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationTerminate",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2881,
+                "messageId": "test-uuid",
+                "messageType": "SimulationTerminate",
+                "payload": {
+                    "reason": ""
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationTerminate",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2881,
+                "messageId": "test-uuid",
+                "messageType": "SimulationTerminate",
+                "payload": {
+                    "reason": ""
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationTerminate",
+            "senderId": "Coordinator",
+            "sequence": 0
+        },
+        {
+            "data": {
+                "eventTime": 2881,
+                "messageId": "test-uuid",
+                "messageType": "SimulationTerminate",
+                "payload": {
+                    "reason": ""
+                },
+                "receiverId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+                "senderId": "Coordinator",
+                "simulationRunId": "test-irp"
+            },
+            "messageType": "SimulationTerminate",
+            "senderId": "Coordinator",
+            "sequence": 0
+        }
+    ],
+    "status": "completed"
+}

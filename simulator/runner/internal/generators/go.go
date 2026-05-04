@@ -85,7 +85,7 @@ func PrepareGoWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest) err
 		return fmt.Errorf("failed to start model process: %w", err)
 	}
 
-	slog.Info(fmt.Sprintf("Started model process (id=%s, pid=%d)", cfg.ID, cmd.Process.Pid))
+	slog.Info(fmt.Sprintf("Started model process (id=%s, pid=%d)", cfg.Model.ID, cmd.Process.Pid))
 	wrapper.Cmd = cmd
 
 	// On surveille le process pour détecter un crash avant que le gRPC soit prêt

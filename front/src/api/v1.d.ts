@@ -1531,6 +1531,86 @@ export interface paths {
 		};
 		trace?: never;
 	};
+	"/model/{id}/manifest": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Generate model manifest
+		 * @description Generate and retrieve the DEVS manifest for a model (without creating a simulation)
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model ID */
+					id: string;
+				};
+				cookie?: never;
+			};
+			/** @description Optional: maxTime and runtime overrides */
+			requestBody?: {
+				content: {
+					"application/json": components["schemas"]["request.SimulationStartRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ManifestResponse"];
+					};
+				};
+				/** @description Bad Request */
+				400: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/model/{id}/recursive": {
 		parameters: {
 			query?: never;
@@ -1861,6 +1941,70 @@ export interface paths {
 				};
 				/** @description Not Found */
 				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/simulation/{simId}/manifest": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/**
+		 * Get simulation manifest
+		 * @description Retrieve the DEVS manifest for an existing simulation
+		 */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Simulation ID */
+					simId: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["response.ManifestResponse"];
+					};
+				};
+				/** @description Not Found */
+				404: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": {
+							[key: string]: unknown;
+						};
+					};
+				};
+				/** @description Internal Server Error */
+				500: {
 					headers: {
 						[name: string]: unknown;
 					};
@@ -2791,11 +2935,13 @@ export interface components {
 	responses: never;
 	schemas: {
 		/** @enum {string} */
+		"devsforge-shared_enum.ModelPortDirection": "in" | "out";
+		/** @enum {string} */
+		"devsforge_enum.ModelPortDirection": "in" | "out";
+		/** @enum {string} */
+		"devsforge_enum.ModelType": "atomic" | "coupled";
+		/** @enum {string} */
 		"enum.ModelLanguage": "go" | "python";
-		/** @enum {string} */
-		"enum.ModelPortDirection": "in" | "out";
-		/** @enum {string} */
-		"enum.ModelType": "atomic" | "coupled";
 		"json.ModelColors": {
 			bodyBackgroundColor?: string;
 			headerBackgroundColor?: string;
@@ -2836,7 +2982,7 @@ export interface components {
 		"json.ModelPort": {
 			id: string;
 			name: string;
-			type: components["schemas"]["enum.ModelPortDirection"];
+			type: components["schemas"]["devsforge_enum.ModelPortDirection"];
 		};
 		"json.ModelPosition": {
 			x: number;
@@ -2871,7 +3017,7 @@ export interface components {
 		};
 		"json.WebAppPortBinding": {
 			bindingKey?: string;
-			direction?: components["schemas"]["enum.ModelPortDirection"];
+			direction?: components["schemas"]["devsforge_enum.ModelPortDirection"];
 			name?: string;
 			portId?: string;
 		};
@@ -2919,7 +3065,7 @@ export interface components {
 			metadata?: components["schemas"]["json.ModelMetadata"];
 			name?: string;
 			ports?: components["schemas"]["json.ModelPort"][];
-			type?: components["schemas"]["enum.ModelType"];
+			type?: components["schemas"]["devsforge_enum.ModelType"];
 			updatedAt?: string;
 			userId?: string;
 		};
@@ -3045,7 +3191,7 @@ export interface components {
 			metadata: components["schemas"]["json.ModelMetadata"];
 			name: string;
 			ports: components["schemas"]["json.ModelPort"][];
-			type: components["schemas"]["enum.ModelType"];
+			type: components["schemas"]["devsforge_enum.ModelType"];
 		};
 		"request.PasswordRequest": {
 			password: string;
@@ -3179,6 +3325,9 @@ export interface components {
 			refreshToken: string;
 			username: string;
 		};
+		"response.ManifestResponse": {
+			manifest?: components["schemas"]["shared.RunnableManifest"];
+		};
 		"response.Model": {
 			components?: string[];
 			id?: string;
@@ -3195,7 +3344,7 @@ export interface components {
 			metadata: components["schemas"]["json.ModelMetadata"];
 			name: string;
 			ports: components["schemas"]["json.ModelPort"][];
-			type: components["schemas"]["enum.ModelType"];
+			type: components["schemas"]["devsforge_enum.ModelType"];
 			userId: string;
 		};
 		/** @enum {string} */
@@ -3225,7 +3374,7 @@ export interface components {
 		"response.SimulationEventResponse": {
 			createdAt?: string;
 			id?: string;
-			msgType?: string;
+			messageType?: string;
 			payload?: unknown;
 			sender?: string;
 			simulationId?: string;
@@ -3276,6 +3425,51 @@ export interface components {
 		"response.WebAppSkeletonResponse": {
 			contract?: components["schemas"]["json.WebAppContract"];
 			uiSchema?: components["schemas"]["json.WebAppUISchema"];
+		};
+		"shared.ModelLink": {
+			id: string;
+			port: string;
+		};
+		/** @enum {string} */
+		"shared.ParameterType":
+			| "go"
+			| "java"
+			| "python"
+			| "int"
+			| "float"
+			| "bool"
+			| "string"
+			| "object";
+		"shared.RunnableManifest": {
+			count?: number;
+			/** @description 0 = no limit */
+			maxTime?: number;
+			models?: components["schemas"]["shared.RunnableModel"][];
+			simulationId?: string;
+		};
+		"shared.RunnableModel": {
+			code: string;
+			connections: components["schemas"]["shared.RunnableModelConnection"][];
+			id: string;
+			language: string;
+			name: string;
+			parameters?: components["schemas"]["shared.RunnableModelParameter"][];
+			ports: components["schemas"]["shared.RunnableModelPort"][];
+		};
+		"shared.RunnableModelConnection": {
+			from: components["schemas"]["shared.ModelLink"];
+			to: components["schemas"]["shared.ModelLink"];
+		};
+		"shared.RunnableModelParameter": {
+			description?: string;
+			name: string;
+			type: components["schemas"]["shared.ParameterType"];
+			value: unknown;
+		};
+		"shared.RunnableModelPort": {
+			id: string;
+			name: string;
+			type: components["schemas"]["devsforge-shared_enum.ModelPortDirection"];
 		};
 	};
 }

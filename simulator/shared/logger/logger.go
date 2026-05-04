@@ -3,25 +3,24 @@ package logger
 
 import (
 	"fmt"
+	"io"
 	"log/slog"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
-
-	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 // Config holds the logger configuration
 type Config struct {
-	LogDir       string // Base directory for logs (env LOG_DIR or default "logs")
-	SimulationID string // Unique simulation identifier
-	MaxSize      int    // Maximum size in MB before rotation (default: 10)
-	MaxBackups   int    // Number of backup files to retain (default: 10)
-	Compress     bool   // Enable gzip compression for rotated files (default: true)
-	Level        string // Minimum log level: DEBUG, INFO, WARN, ERROR (default: DEBUG)
-	DirMode      int    // Directory permissions in octal (default: 0777 for Docker compatibility)
-	LogMode      string // Log output mode: "json", "console", or "all" (default: "all")
+	LogDir       string
+	SimulationID string
+	MaxSize      int
+	MaxBackups   int
+	Compress     bool
+	Level        string
+	DirMode      int
+	LogMode      string
 }
 
 // DefaultConfig returns a Config with default values
@@ -43,7 +42,6 @@ func DefaultConfig(simulationID string) Config {
 // processType: "coordinator" or "runner"
 // processID: model ID for runners, empty for coordinator
 func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error) {
-	// Parse log mode
 	logMode := strings.ToLower(cfg.LogMode)
 	if logMode == "" {
 		logMode = "all"
@@ -53,7 +51,6 @@ func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error)
 		return nil, fmt.Errorf("simulationID is required")
 	}
 
-	// Set defaults
 	if cfg.MaxSize <= 0 {
 		cfg.MaxSize = 10
 	}
@@ -67,59 +64,46 @@ func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error)
 		cfg.DirMode = 0o777
 	}
 
-	var fileWriter *lumberjack.Logger
+	var fileWriter *os.File
 	if logMode != "console" {
-		// Create log directory with proper permissions
 		logDir := filepath.Join(cfg.LogDir, cfg.SimulationID)
 		if err := os.MkdirAll(logDir, os.FileMode(cfg.DirMode)); err != nil {
 			return nil, fmt.Errorf("failed to create log directory: %w", err)
 		}
 
-		// Determine log filename
 		var logFilename string
 		if processType == "runner" && processID != "" {
-			logFilename = fmt.Sprintf("runner-%s.log", processID)
+			logFilename = fmt.Sprintf("runner-%s.log", sanitizePathToken(processID))
 		} else {
 			logFilename = fmt.Sprintf("%s.log", processType)
 		}
 
 		logPath := filepath.Join(logDir, logFilename)
+		// Just try to clean if exists but dont care if error happens
+		_ = os.Remove(logPath)
 		if f, err := os.Create(logPath); err != nil {
 			return nil, fmt.Errorf("cannot create log file: %w", err)
 		} else {
 			if err = f.Chmod(os.FileMode(cfg.DirMode)); err != nil {
 				return nil, fmt.Errorf("cannot set log file permissions: %w", err)
 			}
+			fileWriter = f
 		}
-
-		// Create lumberjack writer for file logging
-		fileWriter = &lumberjack.Logger{
-			Filename:   logPath,
-			MaxSize:    cfg.MaxSize,
-			MaxBackups: cfg.MaxBackups,
-			Compress:   cfg.Compress,
-			LocalTime:  true,
-		}
-
 	}
 
-	// Parse log level
 	level := parseLevel(cfg.Level)
 
-	// Create custom attributes
-	attrs := []any{
-		slog.String("simulation_id", cfg.SimulationID),
-		slog.String("process_type", processType),
-	}
-	if processID != "" {
-		attrs = append(attrs, slog.String("process_id", processID))
+	var outputWriter io.Writer = os.Stdout
+	switch processType {
+	case "coordinator":
+		outputWriter = NewColorWriter(os.Stdout, "36", processType)
+	case "runner":
+		outputWriter = NewColorWriter(os.Stdout, "32", processID)
 	}
 
-	// Create handler based on log mode
 	var handler slog.Handler
 	switch logMode {
 	case "json":
-		// File only (JSON format)
 		handler = slog.NewJSONHandler(fileWriter, &slog.HandlerOptions{
 			Level:     level,
 			AddSource: true,
@@ -129,16 +113,14 @@ func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error)
 		})
 	case "console":
 		// Console only (Text format)
-		handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		handler = slog.NewTextHandler(outputWriter, &slog.HandlerOptions{
 			Level:     level,
-			AddSource: false,
+			AddSource: true,
 		})
 	case "all":
 		fallthrough
 	default:
-		// Both file (JSON) and console (Text)
 		handler = NewDualHandler(
-			// File handler: JSON format with rotation
 			slog.NewJSONHandler(fileWriter, &slog.HandlerOptions{
 				Level:     level,
 				AddSource: true,
@@ -146,16 +128,14 @@ func InitLogger(cfg Config, processType, processID string) (*slog.Logger, error)
 					return a
 				},
 			}),
-			// Console handler: Text format
-			slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+			slog.NewTextHandler(outputWriter, &slog.HandlerOptions{
 				Level:     level,
 				AddSource: false,
 			}),
 		)
 	}
 
-	// Create logger with custom attributes
-	logger := slog.New(handler).With(attrs...)
+	logger := slog.New(handler)
 
 	return logger, nil
 }
@@ -182,12 +162,41 @@ func GetLogFilePath(cfg Config, processType, processID string) string {
 
 	var logFilename string
 	if processType == "runner" && processID != "" {
-		logFilename = fmt.Sprintf("runner-%s.log", processID)
+		logFilename = fmt.Sprintf("runner-%s.log", sanitizePathToken(processID))
 	} else {
 		logFilename = fmt.Sprintf("%s.log", processType)
 	}
 
 	return filepath.Join(logDir, logFilename)
+}
+
+func sanitizePathToken(raw string) string {
+	if raw == "" {
+		return "runner"
+	}
+
+	var b strings.Builder
+	lastUnderscore := false
+	for _, r := range raw {
+		isAlphaNum := r >= 'a' && r <= 'z' || r >= 'A' && r <= 'Z' || r >= '0' && r <= '9'
+		if isAlphaNum || r == '-' || r == '_' {
+			b.WriteRune(r)
+			lastUnderscore = false
+			continue
+		}
+
+		if !lastUnderscore {
+			b.WriteRune('_')
+			lastUnderscore = true
+		}
+	}
+
+	sanitized := strings.Trim(b.String(), "_")
+	if sanitized == "" {
+		return "runner"
+	}
+
+	return sanitized
 }
 
 // SourceLocation captures the caller's source location

@@ -7,5 +7,6 @@ import (
 )
 
 func RunOneSimulation(params types.SimulationParams) error {
-	return simulation.RunSimulation(params)
+	_, err := simulation.RunSimulation(params)
+	return err
 }
