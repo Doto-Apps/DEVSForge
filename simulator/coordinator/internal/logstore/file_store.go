@@ -2,6 +2,7 @@ package logstore
 
 import (
 	"bufio"
+	"devsforge-coordinator/internal/types"
 	"devsforge-shared/kafka"
 	shared_sim "devsforge-shared/simulation"
 	"encoding/json"
@@ -178,9 +179,9 @@ func (f *fileLogStore) DeleteAll() error {
 	return nil
 }
 
-func (f *fileLogStore) SetStatus(simulationID string, status SimulationStatus) error {
+func (f *fileLogStore) SetStatus(simulationID string, status types.SimulationStatus) error {
 	dir := filepath.Join(f.logDir, simulationID)
-	slog.Info("Prepare wrote in simulation.json", "status", status)
+	slog.Info("Prepare wrote in simulation.json")
 	if err := os.MkdirAll(dir, filePermissions); err != nil {
 		return fmt.Errorf("failed to create log directory: %w", err)
 	}
@@ -195,12 +196,12 @@ func (f *fileLogStore) SetStatus(simulationID string, status SimulationStatus) e
 		return fmt.Errorf("failed to write status file: %w", err)
 	}
 
-	slog.Info(fmt.Sprintf("Wrote in %s", statusPath), "status", status)
+	slog.Info(fmt.Sprintf("Wrote in %s", statusPath))
 
 	return nil
 }
 
-func (f *fileLogStore) GetStatus(simulationID string) (*SimulationStatus, error) {
+func (f *fileLogStore) GetStatus(simulationID string) (*types.SimulationStatus, error) {
 	dir := filepath.Join(f.logDir, simulationID)
 	statusPath := filepath.Join(dir, "simulation.json")
 
@@ -209,7 +210,7 @@ func (f *fileLogStore) GetStatus(simulationID string) (*SimulationStatus, error)
 		return nil, fmt.Errorf("failed to read status file: %w", err)
 	}
 
-	var status SimulationStatus
+	var status types.SimulationStatus
 	if err := json.Unmarshal(data, &status); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal status: %w", err)
 	}

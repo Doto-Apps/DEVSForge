@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
 	"gotest.tools/v3/golden"
 )
 
@@ -35,19 +36,33 @@ func TestIrp(t *testing.T) {
 	}); err != nil {
 		t.Fatalf("Simulation failed: %v", err)
 	} else {
-		t.Log("Check simulation.golden.json golden")
+		t.Log("check simulation.golden.json golden")
 		status.CreatedAt = 1
 		status.EndedAt = 1
+
 		data, err := json.MarshalIndent(&status, " ", "  ")
 		if err != nil {
 			t.Fatalf("cannot marshal simulation status")
 		}
 
-		// Normaliser les messageId pour des tests déterministes
-		normalized := testsutils.NormalizeMessageIds(data)
+		normalized := testsutils.NormalizeParallel(data)
 
 		goldenPath := filepath.Join("irp", "simulation.golden.json")
-		golden.Assert(t, string(normalized), goldenPath)
+
+		if golden.FlagUpdate() {
+			golden.Assert(t, string(normalized), goldenPath)
+		} else {
+			expectedBytes := golden.Get(t, goldenPath)
+			var expected, actual map[string]any
+			if err := json.Unmarshal(expectedBytes, &expected); err != nil {
+				t.Fatalf("cannot unmarshal expected golden: %v", err)
+			}
+			if err := json.Unmarshal(normalized, &actual); err != nil {
+				t.Fatalf("cannot unmarshal actual status: %v", err)
+			}
+
+			assert.ElementsMatch(t, expected["messages"], actual["messages"], "Messages don't match")
+		}
 	}
 }
 

@@ -598,5 +598,6 @@
         }
     ],
     "count": 1,
-    "simulationId": "test-irp"
+    "simulationId": "test-irp",
+    "maxTime": 2880.0
 }

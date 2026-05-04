@@ -17,7 +17,7 @@ import (
 const ERROR_CODE_COORDINATOR_SIMULATION_ERROR = 5000
 
 func handleError(logStore logstore.LogStore, simulationID string, kafkaTopic string, err error, createdAt int64) error {
-	return logStore.SetStatus(simulationID, logstore.SimulationStatus{
+	return logStore.SetStatus(simulationID, types.SimulationStatus{
 		Status:       "failed",
 		CreatedAt:    createdAt,
 		EndedAt:      time.Now().Unix(),
@@ -26,7 +26,7 @@ func handleError(logStore logstore.LogStore, simulationID string, kafkaTopic str
 	})
 }
 
-func RunSimulation(params types.SimulationParams) (*logstore.SimulationStatus, error) {
+func RunSimulation(params types.SimulationParams) (*types.SimulationStatus, error) {
 	manifest, err := CreateManifest(params.Json, params.File)
 	if err != nil {
 		return nil, err
@@ -95,7 +95,7 @@ func RunSimulation(params types.SimulationParams) (*logstore.SimulationStatus, e
 
 	cfg := InitConfig(yamlConfig, manifest.SimulationID)
 
-	err = logStore.SetStatus(manifest.SimulationID, logstore.SimulationStatus{
+	err = logStore.SetStatus(manifest.SimulationID, types.SimulationStatus{
 		Status:     "running",
 		CreatedAt:  createdAt,
 		KafkaTopic: getKafkaTopic(params.KafkaTopic),
@@ -126,7 +126,7 @@ func RunSimulation(params types.SimulationParams) (*logstore.SimulationStatus, e
 	if len(messages) == 0 {
 		slog.Warn("no messages retrieved to store in simulation.json")
 	}
-	finalStatus := logstore.SimulationStatus{
+	finalStatus := types.SimulationStatus{
 		Status:       "completed",
 		CreatedAt:    createdAt,
 		EndedAt:      time.Now().UnixMicro(),
