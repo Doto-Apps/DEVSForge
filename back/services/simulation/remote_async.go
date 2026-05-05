@@ -248,12 +248,8 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []sha
 	seen := make(map[string]bool)
 	events := make([]model.SimulationEvent, 0, len(logs))
 	for _, logMsg := range logs {
-		m, ok := logMsg.Data.(kafka.CommonKafkaMessage)
-		if !ok {
-			continue
-		}
 
-		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", m.MessageType, m.ReceiverID, m.SenderID, logMsg.Sequence, logMsg.Data)
+		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", logMsg.Data.GetMessageType(), logMsg.Data.GetReceiverID(), logMsg.Data.GetSenderID(), logMsg.Sequence, logMsg.Data)
 		if seen[dedupKey] {
 			continue
 		}
@@ -261,28 +257,29 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []sha
 
 		var simulationTime float64 = 0
 		switch subM := logMsg.Data.(type) {
-		case kafka.KafkaMessageSimulationInit:
+		case *kafka.KafkaMessageSimulationInit:
 			simulationTime = subM.EventTime
-		case kafka.KafkaMessageExecuteTransition:
+		case *kafka.KafkaMessageExecuteTransition:
 			simulationTime = subM.EventTime
-		case kafka.KafkaMessageRequestOutput:
+		case *kafka.KafkaMessageRequestOutput:
 			simulationTime = subM.EventTime
-		case kafka.KafkaMessageSimulationTerminate:
+		case *kafka.KafkaMessageSimulationTerminate:
 			simulationTime = subM.EventTime
 		}
 
-		payload, err := json.Marshal(m)
+		payload, err := json.Marshal(logMsg.Data)
 		if err != nil {
 			log.Warn("Failed to marshal message", "error", err)
 			continue
 		}
 
+		receiverID := logMsg.Data.GetReceiverID()
 		event := model.SimulationEvent{
 			SimulationID:           simulationID,
 			SimulationTime:         &simulationTime,
 			MessageType:            logMsg.MessageType,
 			Sender:                 &logMsg.SenderID,
-			Target:                 &m.ReceiverID,
+			Target:                 &receiverID,
 			Payload:                datatypes.JSON(payload),
 			RelativeEventTimestamp: logMsg.Sequence,
 		}

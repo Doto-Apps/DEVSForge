@@ -21,9 +21,12 @@ FROM python:3.12-slim AS simulator
 
 WORKDIR /app
 RUN mkdir /opt/devsforge/
+
 ENV LOG_DIR="/tmp/sim-logs"
 ENV PATHS_SIM_ROOT="/tmp/simulations"
+ENV SIMULATOR_CMD="/opt/devsforge/devsforge-coordinator"
 ENV PATHS_RUNNER_CMD="/opt/devsforge/devsforge-runner"
+ENV PATHS_WRAPPERS_DIR="/opt/devsforge/wrappers"
 
 # Install Java 21 and Maven
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -49,7 +52,7 @@ ENV PYTHONPYCACHEPREFIX=/opt/python-cache
 RUN mkdir -p /opt/python-cache && chmod -R 777 /opt/python-cache
 # Cache preexisting files
 COPY --from=builder /app/simulator/wrappers /opt/devsforge/wrappers
-RUN python3 -m compileall ./app/wrappers/python
+RUN python3 -m compileall ./opt/devsforge/wrappers/python
 
 # Cache deps and preexisiting files
 COPY --from=builder /app/simulator/wrappers/go /tmp/go-preheat-wrappers

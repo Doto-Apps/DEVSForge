@@ -23,11 +23,10 @@ const asString = (value: unknown): string | null => {
 const extractErrorReportMessage = (
 	event: SimulationEventResponse,
 ): string | null => {
-	const msgType = event.msgType ?? "";
+	const { messageType = "" } = event;
 	const payload = asRecord(event.payload);
-	const messageType = asString(payload?.messageType);
 	const isErrorReport =
-		msgType.includes("ErrorReport") || messageType === "ErrorReport";
+		messageType.includes("ErrorReport") || messageType === "ErrorReport";
 	if (!isErrorReport) return null;
 
 	const reportPayload = asRecord(payload?.payload);

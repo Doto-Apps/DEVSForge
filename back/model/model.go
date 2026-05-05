@@ -9,19 +9,19 @@ import (
 )
 
 type Model struct {
-	ID          string                 `gorm:"type:uuid;default:uuid_generate_v4();primaryKey;<-:false" json:"id"`
-	UserID      string                 `gorm:"type:uuid" json:"userId"`
-	LibID       *string                `gorm:"type:uuid" json:"libId"`
-	Name        string                 `gorm:"type:varchar(255);not null" json:"name"`
-	Type        enum.ModelType         `gorm:"type:model_type;not null" json:"type"`
-	Language    enum.ModelLanguage     `gorm:"type:model_language;not null;default:'python'" json:"language"`
-	Description string                 `gorm:"type:text;not null" json:"description"`
-	Code        string                 `gorm:"type:text;not null" json:"code"`
-	Ports       []json.ModelPort       `gorm:"type:json;default:'[]';serializer:json" json:"ports"`
-	Metadata    json.ModelMetadata     `gorm:"type:json;default:'{}';serializer:json" json:"metadata"`
-	Connections []json.ModelConnection `gorm:"type:json;default:'[]';serializer:json" json:"connections"`
-	CreatedAt   time.Time              `gorm:"type:timestamp;default:now()" json:"createdAt"`
-	UpdatedAt   time.Time              `gorm:"type:timestamp;default:now()" json:"updatedAt"`
+	ID          string                 `gorm:"primaryKey;default:uuid_generate_v4();<-:false" json:"id"`
+	UserID      string                 `json:"userId"`
+	LibID       *string                `json:"libId"`
+	Name        string                 `json:"name"`
+	Type        enum.ModelType         `gorm:"type:model_type" json:"type"`
+	Language    enum.ModelLanguage     `gorm:"type:model_language" json:"language"`
+	Description string                 `json:"description"`
+	Code        string                 `json:"code"`
+	Ports       []json.ModelPort       `gorm:"serializer:json" json:"ports"`
+	Metadata    json.ModelMetadata     `gorm:"serializer:json" json:"metadata"`
+	Connections []json.ModelConnection `gorm:"serializer:json" json:"connections"`
+	CreatedAt   time.Time              `json:"createdAt"`
+	UpdatedAt   time.Time              `json:"updatedAt"`
 	DeletedAt   *time.Time             `gorm:"index" json:"deletedAt"`
-	Components  []json.ModelComponent  `gorm:"type:json;default:'[]';serializer:json" json:"components"`
+	Components  []json.ModelComponent  `gorm:"serializer:json" json:"components"`
 }

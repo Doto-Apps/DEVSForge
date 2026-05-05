@@ -3,6 +3,7 @@ package response
 import (
 	"devsforge/model"
 	"encoding/json"
+	"log/slog"
 	"time"
 )
 
@@ -31,14 +32,13 @@ type SimulationResultResponse struct {
 
 // SimulationEventResponse represents a single DEVS event
 type SimulationEventResponse struct {
-	ID             string    `json:"id"`
-	SimulationID   string    `json:"simulationId"`
-	CreatedAt      time.Time `json:"createdAt"`
-	SimulationTime *float64  `json:"simulationTime"`
-	MessageType    string    `json:"messageType"`
-	Sender         *string   `json:"sender"`
-	Target         *string   `json:"target"`
-	Payload        any       `json:"payload"`
+	ID           string         `json:"id"`
+	SimulationID string         `json:"simulationId"`
+	CreatedAt    time.Time      `json:"createdAt"`
+	MessageType  string         `json:"messageType"`
+	Sender       *string        `json:"sender"`
+	Target       *string        `json:"target"`
+	Payload      map[string]any `json:"payload"`
 }
 
 // SimulationEventsResponse is the paginated response for events
@@ -65,20 +65,24 @@ func CreateSimulationResponse(s model.Simulation) SimulationResponse {
 
 // CreateSimulationEventResponse creates a response from a SimulationEvent model
 func CreateSimulationEventResponse(e model.SimulationEvent) SimulationEventResponse {
-	var payload any
+	var payload map[string]any
 	if len(e.Payload) > 0 {
-		_ = json.Unmarshal(e.Payload, &payload)
+		var raw any
+		if err := json.Unmarshal(e.Payload, &raw); err != nil {
+			slog.Warn("cannot unmarshal payload", "error", err)
+		} else if m, ok := raw.(map[string]any); ok {
+			payload = m
+		}
 	}
 
 	return SimulationEventResponse{
-		ID:             e.ID,
-		SimulationID:   e.SimulationID,
-		CreatedAt:      e.CreatedAt,
-		SimulationTime: e.SimulationTime,
-		MessageType:    e.MessageType,
-		Sender:         e.Sender,
-		Target:         e.Target,
-		Payload:        payload,
+		ID:           e.ID,
+		SimulationID: e.SimulationID,
+		CreatedAt:    e.CreatedAt,
+		MessageType:  e.MessageType,
+		Sender:       e.Sender,
+		Target:       e.Target,
+		Payload:      payload,
 	}
 }
 

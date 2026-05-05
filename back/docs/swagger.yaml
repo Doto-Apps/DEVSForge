@@ -1070,13 +1070,13 @@ definitions:
         type: string
       messageType:
         type: string
-      payload: {}
+      payload:
+        additionalProperties: {}
+        type: object
       sender:
         type: string
       simulationId:
         type: string
-      simulationTime:
-        type: number
       target:
         type: string
     type: object

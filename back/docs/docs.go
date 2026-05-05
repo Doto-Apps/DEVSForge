@@ -3790,15 +3790,15 @@ const docTemplate = `{
                 "messageType": {
                     "type": "string"
                 },
-                "payload": {},
+                "payload": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
                 "sender": {
                     "type": "string"
                 },
                 "simulationId": {
                     "type": "string"
-                },
-                "simulationTime": {
-                    "type": "number"
                 },
                 "target": {
                     "type": "string"

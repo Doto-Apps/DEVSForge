@@ -345,6 +345,7 @@ func MarshalKafkaMessage(msg KafkaMessageInterface) ([]byte, error) {
 	return json.Marshal(msg)
 }
 
+// UnmarshalKafkaMessage transform []byte to a kafka message type, you need to downcast it
 // Usage example:
 // msg, err := kafkaShared.UnmarshalKafkaMessage(record.Value)
 // if err != nil { /* handle error */ }

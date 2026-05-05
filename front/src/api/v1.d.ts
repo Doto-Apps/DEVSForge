@@ -3375,10 +3375,11 @@ export interface components {
 			createdAt?: string;
 			id?: string;
 			messageType?: string;
-			payload?: unknown;
+			payload?: {
+				[key: string]: unknown;
+			};
 			sender?: string;
 			simulationId?: string;
-			simulationTime?: number;
 			target?: string;
 		};
 		"response.SimulationEventsResponse": {

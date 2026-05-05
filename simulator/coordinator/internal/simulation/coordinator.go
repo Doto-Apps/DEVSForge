@@ -82,8 +82,9 @@ func (c *Coordinator) RunCoordinator(manifest *shared.RunnableManifest) error {
 			break
 		}
 
-		if manifest.MaxTime > 0 && currentTime >= manifest.MaxTime {
-			slog.Info("Simulation ended: max time reached", "tmin", currentTime, "maxTime", manifest.MaxTime)
+		if manifest.MaxTime > 0 && currentTime > manifest.MaxTime {
+			currentTime = manifest.MaxTime
+			slog.Info("Simulation ended: currentTime above max time", "tmin", currentTime, "maxTime", manifest.MaxTime)
 			break
 		}
 
