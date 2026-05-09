@@ -3374,13 +3374,8 @@ export interface components {
 		"response.SimulationEventResponse": {
 			createdAt?: string;
 			id?: string;
-			messageType?: string;
-			payload?: {
-				[key: string]: unknown;
-			};
-			sender?: string;
+			message?: unknown;
 			simulationId?: string;
-			target?: string;
 		};
 		"response.SimulationEventsResponse": {
 			events?: components["schemas"]["response.SimulationEventResponse"][];

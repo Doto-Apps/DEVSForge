@@ -37,13 +37,8 @@ type Simulation struct {
 
 // SimulationEvent represents a single DEVS message that transited during a simulation
 type SimulationEvent struct {
-	ID                     string         `gorm:"primaryKey;default:uuid_generate_v4();<-:false" json:"id"`
-	SimulationID           string         `gorm:"index" json:"simulationId"`
-	CreatedAt              time.Time      `json:"createdAt"`
-	SimulationTime         *float64       `json:"simulationTime"`
-	RelativeEventTimestamp int64          `json:"relativeEventTimestamp"`
-	MessageType            string         `gorm:"column:msg_type" json:"msgType"`
-	Sender                 *string        `json:"sender,omitempty"`
-	Target                 *string        `json:"target"`
-	Payload                datatypes.JSON `gorm:"serializer:json" json:"payload"`
+	ID           string         `gorm:"primaryKey;default:uuid_generate_v4();<-:false" json:"id"`
+	SimulationID string         `gorm:"index" json:"simulationId"`
+	CreatedAt    time.Time      `json:"createdAt"`
+	Message      datatypes.JSON `gorm:"column:payload;serializer:json" json:"message"`
 }

@@ -1068,16 +1068,8 @@ definitions:
         type: string
       id:
         type: string
-      messageType:
-        type: string
-      payload:
-        additionalProperties: {}
-        type: object
-      sender:
-        type: string
+      message: {}
       simulationId:
-        type: string
-      target:
         type: string
     type: object
   response.SimulationEventsResponse:

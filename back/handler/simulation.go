@@ -252,7 +252,7 @@ func getSimulationEvents(c *fiber.Ctx) error {
 	db := database.DB
 	db.Model(&model.SimulationEvent{}).Where("simulation_id = ?", simID).Count(&total)
 	db.Where("simulation_id = ?", simID).
-		Order("relative_event_timestamp ASC, simulation_time ASC").
+		Order("created_at ASC").
 		Limit(limit).
 		Offset(offset).
 		Find(&events)

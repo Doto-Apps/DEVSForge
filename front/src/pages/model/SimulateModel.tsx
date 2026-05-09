@@ -126,6 +126,7 @@ export function SimulateModel() {
 					},
 					{ label: "Simulation" },
 				]}
+				modelId={modelId}
 				showModeToggle
 				showNavActions={false}
 			/>
@@ -136,6 +137,7 @@ export function SimulateModel() {
 					modelName={model.name}
 					modelNameById={modelNameById}
 					parameterTargets={parameterTargets}
+					recursiveModels={recursiveModels}
 				/>
 			</div>
 		</div>

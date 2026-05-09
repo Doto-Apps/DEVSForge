@@ -3787,20 +3787,8 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "messageType": {
-                    "type": "string"
-                },
-                "payload": {
-                    "type": "object",
-                    "additionalProperties": {}
-                },
-                "sender": {
-                    "type": "string"
-                },
+                "message": {},
                 "simulationId": {
-                    "type": "string"
-                },
-                "target": {
                     "type": "string"
                 }
             }

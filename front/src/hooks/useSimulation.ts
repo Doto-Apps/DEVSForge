@@ -1,12 +1,11 @@
 import { useCallback, useState } from "react";
 import type { components } from "@/api/v1";
 import type { Simulation } from "@/types";
+import type { SimulationEventResponse } from "@/types/simulation-events";
 import { useSimulationPolling } from "./useSimulationPolling";
 
 const API_BASE_URL = window.API_URL?.replace(/\/+$/, "");
 
-type SimulationEventResponse =
-	components["schemas"]["response.SimulationEventResponse"];
 type SimulationStartRequest =
 	components["schemas"]["request.SimulationStartRequest"];
 type APISimulationInstanceOverride = NonNullable<

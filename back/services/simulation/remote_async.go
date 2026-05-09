@@ -3,7 +3,6 @@ package simulation
 import (
 	"bytes"
 	"context"
-	"devsforge-shared/kafka"
 	shared_sim "devsforge-shared/simulation"
 	"devsforge/config"
 	"devsforge/database"
@@ -255,33 +254,15 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []sha
 		}
 		seen[dedupKey] = true
 
-		var simulationTime float64 = 0
-		switch subM := logMsg.Data.(type) {
-		case *kafka.KafkaMessageSimulationInit:
-			simulationTime = subM.EventTime
-		case *kafka.KafkaMessageExecuteTransition:
-			simulationTime = subM.EventTime
-		case *kafka.KafkaMessageRequestOutput:
-			simulationTime = subM.EventTime
-		case *kafka.KafkaMessageSimulationTerminate:
-			simulationTime = subM.EventTime
-		}
-
 		payload, err := json.Marshal(logMsg.Data)
 		if err != nil {
 			log.Warn("Failed to marshal message", "error", err)
 			continue
 		}
 
-		receiverID := logMsg.Data.GetReceiverID()
 		event := model.SimulationEvent{
-			SimulationID:           simulationID,
-			SimulationTime:         &simulationTime,
-			MessageType:            logMsg.MessageType,
-			Sender:                 &logMsg.SenderID,
-			Target:                 &receiverID,
-			Payload:                datatypes.JSON(payload),
-			RelativeEventTimestamp: logMsg.Sequence,
+			SimulationID: simulationID,
+			Message:      datatypes.JSON(payload),
 		}
 		events = append(events, event)
 	}
