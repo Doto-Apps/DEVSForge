@@ -712,7 +712,7 @@
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Language ID (go, python)",
+                        "description": "Language ID (go, python, java)",
                         "name": "lang",
                         "in": "path",
                         "required": true
@@ -925,7 +925,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.LibraryRequest"
+                            "$ref": "#/definitions/request.LibraryPatchRequest"
                         }
                     }
                 ],
@@ -2250,11 +2250,13 @@
             "type": "string",
             "enum": [
                 "go",
-                "python"
+                "python",
+                "java"
             ],
             "x-enum-varnames": [
                 "ModelLanguageGo",
-                "ModelLanguagePython"
+                "ModelLanguagePython",
+                "ModelLanguageJava"
             ]
         },
         "json.ModelColors": {
@@ -3062,6 +3064,17 @@
                     "type": "string"
                 },
                 "userPrompt": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.LibraryPatchRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }

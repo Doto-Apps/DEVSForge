@@ -718,7 +718,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Language ID (go, python)",
+                        "description": "Language ID (go, python, java)",
                         "name": "lang",
                         "in": "path",
                         "required": true
@@ -931,7 +931,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/request.LibraryRequest"
+                            "$ref": "#/definitions/request.LibraryPatchRequest"
                         }
                     }
                 ],
@@ -2256,11 +2256,13 @@ const docTemplate = `{
             "type": "string",
             "enum": [
                 "go",
-                "python"
+                "python",
+                "java"
             ],
             "x-enum-varnames": [
                 "ModelLanguageGo",
-                "ModelLanguagePython"
+                "ModelLanguagePython",
+                "ModelLanguageJava"
             ]
         },
         "json.ModelColors": {
@@ -3068,6 +3070,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "userPrompt": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.LibraryPatchRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 }
             }

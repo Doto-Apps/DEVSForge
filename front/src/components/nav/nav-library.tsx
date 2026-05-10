@@ -23,6 +23,7 @@ import {
 import { librairiesToFront } from "@/lib/librairiesToFront";
 import { modelToReactflow } from "@/lib/modelToReactflow";
 import { LibraryDeleteDialog } from "@/modals/library/LibraryDeleteDialog";
+import { LibraryRenameDialog } from "@/modals/library/LibraryRenameDialog";
 import { ModelDeleteDialog } from "@/modals/model/ModelDeleteDialog";
 import { useDnD } from "@/providers/DnDContext";
 import { useGetLibraries } from "@/queries/library/useGetLibraries";
@@ -140,6 +141,20 @@ export function NavLibrary() {
 											New model...
 										</Link>
 									</ContextMenuItem>
+									{item.id ? (
+										<LibraryRenameDialog
+											disclosure={
+												<ContextMenuItem onSelect={(e) => e.preventDefault()}>
+													Rename
+												</ContextMenuItem>
+											}
+											libraryId={item.id}
+											libraryName={item.title}
+											onSubmitSuccess={async () => {
+												await libraries.mutate();
+											}}
+										/>
+									) : null}
 									{item.id ? (
 										<LibraryDeleteDialog
 											disclosure={

@@ -982,7 +982,7 @@ export interface paths {
 				};
 				header?: never;
 				path: {
-					/** @description Language ID (go, python) */
+					/** @description Language ID (go, python, java) */
 					lang: string;
 				};
 				cookie?: never;
@@ -1247,7 +1247,7 @@ export interface paths {
 			/** @description Fields to update */
 			requestBody: {
 				content: {
-					"application/json": components["schemas"]["request.LibraryRequest"];
+					"application/json": components["schemas"]["request.LibraryPatchRequest"];
 				};
 			};
 			responses: {
@@ -2941,7 +2941,7 @@ export interface components {
 		/** @enum {string} */
 		"devsforge_enum.ModelType": "atomic" | "coupled";
 		/** @enum {string} */
-		"enum.ModelLanguage": "go" | "python";
+		"enum.ModelLanguage": "go" | "python" | "java";
 		"json.ModelColors": {
 			bodyBackgroundColor?: string;
 			headerBackgroundColor?: string;
@@ -3168,6 +3168,10 @@ export interface components {
 			modelId: string;
 			name?: string;
 			userPrompt: string;
+		};
+		"request.LibraryPatchRequest": {
+			description?: string;
+			title?: string;
 		};
 		"request.LibraryRequest": {
 			description: string;

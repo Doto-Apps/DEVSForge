@@ -26,7 +26,7 @@ type NavHeaderProps = {
 	simulateFunction?: () => Promise<void>;
 	validateFunction?: () => Promise<void>;
 	deployFunction?: () => Promise<void>;
-	modelId: components["schemas"]["model.Model"]["id"];
+	modelId?: components["schemas"]["model.Model"]["id"];
 };
 
 const NavHeader: React.FC<NavHeaderProps> = ({

@@ -5,6 +5,7 @@ type ModelLanguage string
 const (
 	ModelLanguageGo     ModelLanguage = "go"
 	ModelLanguagePython ModelLanguage = "python"
+	ModelLanguageJava   ModelLanguage = "java"
 )
 
 func (m ModelLanguage) String() string {
@@ -13,7 +14,7 @@ func (m ModelLanguage) String() string {
 
 func (m ModelLanguage) IsValid() bool {
 	switch m {
-	case ModelLanguageGo, ModelLanguagePython:
+	case ModelLanguageGo, ModelLanguagePython, ModelLanguageJava:
 		return true
 	}
 	return false
@@ -24,5 +25,6 @@ func AllModelLanguages() []ModelLanguage {
 	return []ModelLanguage{
 		ModelLanguageGo,
 		ModelLanguagePython,
+		ModelLanguageJava,
 	}
 }

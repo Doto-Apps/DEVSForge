@@ -28,10 +28,12 @@ definitions:
     enum:
     - go
     - python
+    - java
     type: string
     x-enum-varnames:
     - ModelLanguageGo
     - ModelLanguagePython
+    - ModelLanguageJava
   json.ModelColors:
     properties:
       bodyBackgroundColor:
@@ -583,6 +585,13 @@ definitions:
     required:
     - modelId
     - userPrompt
+    type: object
+  request.LibraryPatchRequest:
+    properties:
+      description:
+        type: string
+      title:
+        type: string
     type: object
   request.LibraryRequest:
     properties:
@@ -1750,7 +1759,7 @@ paths:
     get:
       description: Returns the atomic model code template for the specified language
       parameters:
-      - description: Language ID (go, python)
+      - description: Language ID (go, python, java)
         in: path
         name: lang
         required: true
@@ -1897,7 +1906,7 @@ paths:
         name: updateData
         required: true
         schema:
-          $ref: '#/definitions/request.LibraryRequest'
+          $ref: '#/definitions/request.LibraryPatchRequest'
       produces:
       - application/json
       responses:

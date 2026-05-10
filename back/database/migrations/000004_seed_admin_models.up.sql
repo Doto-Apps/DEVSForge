@@ -171,38 +171,7 @@ FROM users u
 WHERE u.username = 'admin'
 ON CONFLICT (id) DO NOTHING;
 INSERT INTO models (id, user_id, lib_id, name, type, language, description, code, ports, metadata, connections, components, created_at, updated_at, deleted_at)
-SELECT '604a54ad-bc31-4a94-917e-ebb49c488452'::uuid, u.id, 'bd9dd34b-9b4d-4b2d-929b-145b96435eef'::uuid, 'BasicExperimentalFrame', 'coupled'::model_type, 'python'::model_language, '', '', '[]'::jsonb, '{"style": {"width": 1681, "height": 1718}, "keyword": [], "position": {"x": -1653.2022877125557, "y": -670.2027664974363}, "modelRole": "", "modelColors": {}}'::jsonb, '[{"to": {"port": "receiveDeliverySchedule", "instanceId": "580c5c9d-f085-4c63-b85e-57965fd68838"}, "from": {"port": "postDeliverySchedule", "instanceId": "1b169311-a8d2-4af2-80f6-492f000a901c"}}, {"to": {"port": "aggregateInventoryCost", "instanceId": "f8537458-e594-4412-a892-1e439b25d9df"}, "from": {"port": "reportInventoryCost", "instanceId": "580c5c9d-f085-4c63-b85e-57965fd68838"}}, {"to": {"port": "aggregateVehicleCost", "instanceId": "f8537458-e594-4412-a892-1e439b25d9df"}, "from": {"port": "reportVehicleCost", "instanceId": "580c5c9d-f085-4c63-b85e-57965fd68838"}}]'::jsonb, '[{"modelId": "d5cf6d62-7884-4ed9-b03a-3d129a62014a", "instanceId": "1b169311-a8d2-4af2-80f6-492f000a901c", "instanceMetadata": {"style": {"width": 200, "height": 200}, "keyword": [], "position": {"x": 63.48721200787509, "y": 744.3605266425859}, "modelRole": "", "parameters": [{"name": "num_time_periods", "type": "int", "value": 3}, {"name": "num_vehicles", "type": "int", "value": 2}, {"name": "vehicle_capacity", "type": "float", "value": 144}, {"name": "retailers", "type": "object", "value": [
-  {
-    "daily_consumption": 65,
-    "id": 0,
-    "x": 172,
-    "y": 334
-  },
-  {
-    "daily_consumption": 35,
-    "id": 1,
-    "x": 267,
-    "y": 87
-  },
-  {
-    "daily_consumption": 58,
-    "id": 2,
-    "x": 148,
-    "y": 433
-  },
-  {
-    "daily_consumption": 24,
-    "id": 3,
-    "x": 355,
-    "y": 444
-  },
-  {
-    "daily_consumption": 11,
-    "id": 4,
-    "x": 38,
-    "y": 152
-  }
-]}], "modelColors": {}}}, {"modelId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43", "instanceId": "580c5c9d-f085-4c63-b85e-57965fd68838", "instanceMetadata": {"style": {"width": 892, "height": 1388}, "keyword": [], "position": {"x": 385.40506044493077, "y": 104.99789384859696}, "modelRole": "", "modelColors": {}}}, {"modelId": "331408a8-51e6-42b0-9185-f3ca3d4a4fc8", "instanceId": "f8537458-e594-4412-a892-1e439b25d9df", "instanceMetadata": {"style": {"width": 200, "height": 200}, "keyword": [], "position": {"x": 1407.893513445477, "y": 723.2689485994332}, "modelRole": "", "parameters": [{"name": "last_day", "type": "int", "value": 3}], "modelColors": {}}}]'::jsonb, '2026-05-01 06:53:56.327543+00'::timestamptz, '2026-05-01 06:53:56.327543+00'::timestamptz, NULL
+SELECT '604a54ad-bc31-4a94-917e-ebb49c488452'::uuid, u.id, 'bd9dd34b-9b4d-4b2d-929b-145b96435eef'::uuid, 'BasicExperimentalFrame', 'coupled'::model_type, 'python'::model_language, '', '', '[]'::jsonb, '{"style": {"width": 1681, "height": 1718}, "keyword": [], "position": {"x": -1653.2022877125557, "y": -670.2027664974363}, "modelRole": "", "modelColors": {}}'::jsonb, '[{"to": {"port": "receiveDeliverySchedule", "instanceId": "580c5c9d-f085-4c63-b85e-57965fd68838"}, "from": {"port": "postDeliverySchedule", "instanceId": "1b169311-a8d2-4af2-80f6-492f000a901c"}}, {"to": {"port": "aggregateInventoryCost", "instanceId": "f8537458-e594-4412-a892-1e439b25d9df"}, "from": {"port": "reportInventoryCost", "instanceId": "580c5c9d-f085-4c63-b85e-57965fd68838"}}, {"to": {"port": "aggregateVehicleCost", "instanceId": "f8537458-e594-4412-a892-1e439b25d9df"}, "from": {"port": "reportVehicleCost", "instanceId": "580c5c9d-f085-4c63-b85e-57965fd68838"}}]'::jsonb, '[{"modelId": "d5cf6d62-7884-4ed9-b03a-3d129a62014a", "instanceId": "1b169311-a8d2-4af2-80f6-492f000a901c", "instanceMetadata": {"style": {"width": 200, "height": 200}, "keyword": [], "position": {"x": 63.48721200787509, "y": 744.3605266425859}, "modelRole": "", "parameters": [{"name": "num_time_periods", "type": "int", "value": 3}, {"name": "num_vehicles", "type": "int", "value": 2}, {"name": "vehicle_capacity", "type": "float", "value": 144}, {"name": "retailers", "type": "object", "value": []}], "modelColors": {}}}, {"modelId": "a4c1c8fe-5713-4e51-a53d-4192aac53c43", "instanceId": "580c5c9d-f085-4c63-b85e-57965fd68838", "instanceMetadata": {"style": {"width": 892, "height": 1388}, "keyword": [], "position": {"x": 385.40506044493077, "y": 104.99789384859696}, "modelRole": "", "modelColors": {}}}, {"modelId": "331408a8-51e6-42b0-9185-f3ca3d4a4fc8", "instanceId": "f8537458-e594-4412-a892-1e439b25d9df", "instanceMetadata": {"style": {"width": 200, "height": 200}, "keyword": [], "position": {"x": 1407.893513445477, "y": 723.2689485994332}, "modelRole": "", "parameters": [{"name": "last_day", "type": "int", "value": 3}], "modelColors": {}}}]'::jsonb, '2026-05-01 06:53:56.327543+00'::timestamptz, '2026-05-01 06:53:56.327543+00'::timestamptz, NULL
 FROM users u
 WHERE u.username = 'admin'
 ON CONFLICT (id) DO NOTHING;

@@ -189,54 +189,65 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 				s.saveSimulationEvents(simulationID, logsResp.Logs, log)
 				lastOffset += len(logsResp.Logs)
 				emptyPollsCount = 0
-			} else {
+			} else if simulationEnded {
 				emptyPollsCount++
 			}
 
-			if !simulationEnded && logsResp.Status != "running" {
+			if !simulationEnded && logsResp.Status != "" && logsResp.Status != "running" {
 				simulationEnded = true
 				finalStatus = logsResp.Status
 				finalErrorMessage = logsResp.ErrorMessage
+				emptyPollsCount = 0
 				log.Info("Simulation ended, draining remaining messages", "status", finalStatus)
 			}
 
-			if simulationEnded || emptyPollsCount >= maxEmptyPolls {
-				log.Info("All messages collected", "totalMessages", lastOffset)
-
-				now := time.Now()
-
-				switch finalStatus {
-				case "completed":
-					result := db.Model(&model.Simulation{}).
-						Where("id = ?", simulationID).
-						Updates(map[string]any{
-							"status":       model.SimulationStatusCompleted,
-							"completed_at": now,
-						})
-					if result.Error != nil {
-						log.Error("Failed to update simulation status", "error", result.Error)
-					}
-				case "failed", "error":
-					errMsg := "Simulation failed"
-					if finalErrorMessage != "" {
-						errMsg = finalErrorMessage
-					}
-					result := db.Model(&model.Simulation{}).
-						Where("id = ?", simulationID).
-						Updates(map[string]any{
-							"status":        model.SimulationStatusFailed,
-							"error_message": errMsg,
-							"completed_at":  now,
-						})
-					if result.Error != nil {
-						log.Error("Failed to update simulation status", "error", result.Error)
-					}
-				}
-
-				s.cleanSimulationLogs(simulationID, log)
-
-				return
+			if !simulationEnded {
+				continue
 			}
+
+			if logsResp.TotalMessages != nil && lastOffset < *logsResp.TotalMessages {
+				continue
+			}
+
+			if logsResp.TotalMessages == nil && emptyPollsCount < maxEmptyPolls {
+				continue
+			}
+
+			log.Info("All messages collected", "totalMessages", lastOffset)
+
+			now := time.Now()
+
+			switch finalStatus {
+			case "completed":
+				result := db.Model(&model.Simulation{}).
+					Where("id = ?", simulationID).
+					Updates(map[string]any{
+						"status":       model.SimulationStatusCompleted,
+						"completed_at": now,
+					})
+				if result.Error != nil {
+					log.Error("Failed to update simulation status", "error", result.Error)
+				}
+			case "failed", "error":
+				errMsg := "Simulation failed"
+				if finalErrorMessage != "" {
+					errMsg = finalErrorMessage
+				}
+				result := db.Model(&model.Simulation{}).
+					Where("id = ?", simulationID).
+					Updates(map[string]any{
+						"status":        model.SimulationStatusFailed,
+						"error_message": errMsg,
+						"completed_at":  now,
+					})
+				if result.Error != nil {
+					log.Error("Failed to update simulation status", "error", result.Error)
+				}
+			}
+
+			s.cleanSimulationLogs(simulationID, log)
+
+			return
 		}
 	}
 }

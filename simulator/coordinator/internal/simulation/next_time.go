@@ -8,7 +8,7 @@ import (
 )
 
 func (c *Coordinator) RunNextInternalTime(nextTimeCh chan *kafka.KafkaMessageNextInternalTimeReport) error {
-	timeout := 10 * time.Second
+	timeout := 5 * time.Minute
 	for range c.RunnerStates {
 		select {
 		case msg := <-nextTimeCh:

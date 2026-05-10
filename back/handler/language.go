@@ -17,13 +17,19 @@ var languageInfoMap = map[enum.ModelLanguage]response.LanguageInfo{
 		ID:          "go",
 		Name:        "Go",
 		Extension:   ".go",
-		Description: "Modèle DEVS en Go - performant et typé statiquement",
+		Description: "Performant and strongly typed",
 	},
 	enum.ModelLanguagePython: {
 		ID:          "python",
 		Name:        "Python",
 		Extension:   ".py",
-		Description: "Modèle DEVS en Python - simple et flexible",
+		Description: "Simple and flexible",
+	},
+	enum.ModelLanguageJava: {
+		ID:          "java",
+		Name:        "Java",
+		Extension:   ".java",
+		Description: "JVM-based and strongly typed",
 	},
 }
 
@@ -55,7 +61,7 @@ func GetLanguages(c *fiber.Ctx) error {
 //	@Description	Returns the atomic model code template for the specified language
 //	@Tags			Languages
 //	@Produce		json
-//	@Param			lang	path		string	true	"Language ID (go, python)"
+//	@Param			lang	path		string	true	"Language ID (go, python, java)"
 //	@Param			name	query		string	false	"Model name to inject in template"	default(MyModel)
 //	@Success		200		{object}	response.LanguageTemplateResponse
 //	@Failure		400		{object}	map[string]any
@@ -80,6 +86,8 @@ func GetLanguageTemplate(c *fiber.Ctx) error {
 		templatePath = "go/atomic.tmpl"
 	case enum.ModelLanguagePython:
 		templatePath = "python/atomic.tmpl"
+	case enum.ModelLanguageJava:
+		templatePath = "java/atomic.tmpl"
 	default:
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Template not found for language: " + langParam,

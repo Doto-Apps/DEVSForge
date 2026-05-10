@@ -1,0 +1,4 @@
+-- Remove IRP Go and Java seed models inserted by 000007_seed_irp_go_java_models.up.sql.
+
+DELETE FROM models WHERE id IN ('79af7ea9-62b1-5dc2-ac95-51c8e5808289', 'cf77c380-b57c-57b3-bb95-2edb46eb8356', '01c4c9e8-1ff6-51eb-9bf6-c9f1a213a178', 'b7f07e1f-0a16-5030-aa68-8372375763a4', '17aedad2-b788-508e-b7eb-bb53bd329f1a', '8a54f84f-6095-587b-b7c9-04dfe2e95a60', '49fd520a-86f3-5157-97e3-5a5bc4def5b2', 'caf4b1c4-a5bc-5e17-bdfe-769bf5f3a6a3', '764fd6f2-8965-5dc9-9a68-21246829d746', 'b640fe1d-2cc7-562e-8f5b-e18edb5092e0', '88779612-a3b2-5900-a3d8-e24ea1943162', '97536cbb-fd69-5982-9862-7f5aea2a1045', 'd4105b49-927b-56f0-a0b8-d05d448a9275', '173bdabb-71ef-5950-8ff5-536e93c83350');
+DELETE FROM libraries l WHERE l.id IN ('2f49a189-7084-5e0d-bdc0-9082a7faac9d', 'f53eab46-2ee5-5dbf-8e1a-301dd06af6c1') AND NOT EXISTS (SELECT 1 FROM models m WHERE m.lib_id = l.id);
