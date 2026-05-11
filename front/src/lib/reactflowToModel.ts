@@ -64,42 +64,62 @@ const getModelConnection = (
 	node: ReactFlowInput["nodes"][number],
 	nodesAndEdges: ReactFlowInput,
 ): components["schemas"]["json.ModelConnection"][] => {
-	const holdersEdge = nodesAndEdges.edges.filter(
-		(edge) => edge.data?.holderId === node.id,
-	);
+	const nodesById = new Map(nodesAndEdges.nodes.map((n) => [n.id, n]));
 
-	const modelConnection = holdersEdge.flatMap((anEdge) => [
-		{
-			from: {
-				instanceId:
-					anEdge.source === node.id
-						? "root"
-						: (anEdge.source.split("/").pop() ?? ""),
-				port: resolvePortNameFromNode(
-					nodesAndEdges.nodes.find(
-						(candidate) => candidate.id === anEdge.source,
-					),
-					getPortIdentifierFromHandle(anEdge.sourceHandle),
-					"out",
-				),
-			},
-			to: {
-				instanceId:
-					anEdge.target === node.id
-						? "root"
-						: (anEdge.target.split("/").pop() ?? ""),
-				port: resolvePortNameFromNode(
-					nodesAndEdges.nodes.find(
-						(candidate) => candidate.id === anEdge.target,
-					),
-					getPortIdentifierFromHandle(anEdge.targetHandle),
-					"in",
-				),
-			},
-		},
-	]);
+	const isValidEndpoint = (endpointId: string) => {
+		if (endpointId === node.id) return true;
 
-	return modelConnection;
+		const endpointNode = nodesById.get(endpointId);
+		if (!endpointNode) return false;
+
+		return endpointNode.parentId === node.id;
+	};
+
+	const getInstanceId = (endpointId: string) => {
+		if (endpointId === node.id) return "root";
+		return endpointId.split("/").pop() ?? "";
+	};
+
+	return nodesAndEdges.edges
+		.filter((edge) => edge.data?.holderId === node.id)
+		.filter(
+			(edge) => isValidEndpoint(edge.source) && isValidEndpoint(edge.target),
+		)
+		.map((edge) => {
+			const sourceNode = nodesById.get(edge.source);
+			const targetNode = nodesById.get(edge.target);
+
+			const sourcePort = resolvePortNameFromNode(
+				sourceNode,
+				getPortIdentifierFromHandle(edge.sourceHandle),
+				"out",
+			);
+
+			const targetPort = resolvePortNameFromNode(
+				targetNode,
+				getPortIdentifierFromHandle(edge.targetHandle),
+				"in",
+			);
+
+			return {
+				from: {
+					instanceId: getInstanceId(edge.source),
+					port: sourcePort,
+				},
+				to: {
+					instanceId: getInstanceId(edge.target),
+					port: targetPort,
+				},
+			};
+		})
+		.filter((connection) => {
+			return (
+				connection.from.instanceId &&
+				connection.to.instanceId &&
+				connection.from.port &&
+				connection.to.port
+			);
+		});
 };
 
 const getModelPorts = (

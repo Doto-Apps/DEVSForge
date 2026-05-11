@@ -162,4 +162,5 @@ jobs:
             -v ${{ github.workspace }}:/app \
             -w /app \
             devsforge-test-runner:latest \
-            go test -v ./simulator/runner/tests/...
+            go test -v ./simulator/runner/...
+

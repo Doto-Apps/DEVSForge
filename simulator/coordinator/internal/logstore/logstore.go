@@ -2,18 +2,10 @@
 package logstore
 
 import (
+	"devsforge-coordinator/internal/types"
 	"devsforge-shared/simulation"
 	"log/slog"
 )
-
-type SimulationStatus struct {
-	Status       string                  `json:"status"`
-	CreatedAt    int64                   `json:"createdAt"`
-	EndedAt      int64                   `json:"endedAt,omitempty"`
-	ErrorMessage string                  `json:"errorMessage,omitempty"`
-	KafkaTopic   string                  `json:"kafkaTopic"`
-	Messages     []simulation.LogMessage `json:"messages,omitempty"`
-}
 
 type LogStore interface {
 	GetLogger(simulationID string) (*slog.Logger, error)
@@ -22,8 +14,8 @@ type LogStore interface {
 	GetPaginated(simulationID string, offset int, limit int) ([]simulation.LogMessage, int, error)
 	Delete(simulationID string) error
 	DeleteAll() error
-	SetStatus(simulationID string, status SimulationStatus) error
-	GetStatus(simulationID string) (*SimulationStatus, error)
+	SetStatus(simulationID string, status types.SimulationStatus) error
+	GetStatus(simulationID string) (*types.SimulationStatus, error)
 	DeleteAllLog(simulationID string) error
 	GetLogDir(simulationID string) string
 }

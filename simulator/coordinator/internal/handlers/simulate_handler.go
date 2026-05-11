@@ -66,7 +66,7 @@ func handleSimulateAsync(w http.ResponseWriter, r *http.Request) error {
 
 	slog.Info("Launching simulation synchronously", "simulationId", simulationID)
 	go func() {
-		if err := simulation.RunSimulation(params); err != nil {
+		if _, err := simulation.RunSimulation(params); err != nil {
 			slog.Error("Async simulation error", "simulationId", simulationID, "error", err)
 		} else {
 			slog.Info("Async simulation finished", "simulationId", simulationID)
@@ -134,7 +134,7 @@ func handleSimulate(w http.ResponseWriter, r *http.Request) error {
 	}
 
 	slog.Info("Launching simulation synchronously", "simulationId", simulationID)
-	if err := simulation.RunSimulation(params); err != nil {
+	if _, err := simulation.RunSimulation(params); err != nil {
 		slog.Error("Sync simulation error", "simulationId", simulationID, "error", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return json.NewEncoder(w).Encode(SimulateResponse{

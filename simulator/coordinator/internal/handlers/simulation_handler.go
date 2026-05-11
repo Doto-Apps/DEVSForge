@@ -35,6 +35,7 @@ func handleGetSimulationLogs(w http.ResponseWriter, r *http.Request) error {
 	}
 	dir := filepath.Join(logStore.GetLogDir(simulationID), simulationID)
 	if _, err := os.Stat(dir); err != nil {
+		slog.Error("cannot retrieve logDir", "error", err)
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusInternalServerError)
 		return json.NewEncoder(w).Encode(ErrorResponse{Error: "cannot retrieve logDir"})

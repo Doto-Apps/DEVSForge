@@ -3,6 +3,7 @@ package types
 
 import (
 	"devsforge-shared/kafka"
+	"devsforge-shared/simulation"
 
 	"github.com/twmb/franz-go/pkg/kgo"
 )
@@ -11,7 +12,8 @@ type RunnerState struct {
 	ID               string
 	NextInternalTime float64
 	HasInit          bool
-	Inbox            []kafka.PortValue // messages reçus avant un ExecuteTransition
+	InPorts          []*kafka.KafkaMessagePortPayload
+	OutPorts         []*kafka.KafkaMessagePortPayload
 }
 
 type SimulationParams struct {
@@ -23,7 +25,17 @@ type SimulationParams struct {
 
 type RunnerStates = map[string]*RunnerState
 
-type CoordConfig struct {
-	KafkaConfig kafka.KafkaConfig
-	KafkaClient *kgo.Client
+type CoordinatorConfig struct {
+	KafkaConfig  kafka.KafkaConfig
+	KafkaClient  *kgo.Client
+	SimulationID string
+}
+
+type SimulationStatus struct {
+	Status       string                  `json:"status"`
+	CreatedAt    int64                   `json:"createdAt"`
+	EndedAt      int64                   `json:"endedAt,omitempty"`
+	ErrorMessage string                  `json:"errorMessage,omitempty"`
+	KafkaTopic   string                  `json:"kafkaTopic"`
+	Messages     []simulation.LogMessage `json:"messages,omitempty"`
 }

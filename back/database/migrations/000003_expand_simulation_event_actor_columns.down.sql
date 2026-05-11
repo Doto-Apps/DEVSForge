@@ -1,0 +1,2 @@
+ALTER TABLE simulation_events ALTER COLUMN sender TYPE VARCHAR(100);
+ALTER TABLE simulation_events ALTER COLUMN target TYPE VARCHAR(100);

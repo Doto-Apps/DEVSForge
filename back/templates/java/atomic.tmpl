@@ -1,0 +1,69 @@
+package com.devsforge.runner;
+
+import com.devsforge.runner.modeling.Atomic;
+import com.devsforge.runner.modeling.Port;
+import com.devsforge.runner.modeling.RunnableModel;
+import com.devsforge.runner.modeling.RunnableModelParameter;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class {{.Name}} extends Atomic {
+    private final Map<String, Object> parameters;
+
+    public {{.Name}}(RunnableModel cfg) {
+        super(cfg);
+        this.parameters = new HashMap<>();
+
+        if (cfg.getParameters() != null) {
+            for (RunnableModelParameter parameter : cfg.getParameters()) {
+                if (parameter.getName() != null && !parameter.getName().isEmpty()) {
+                    this.parameters.put(parameter.getName(), parameter.getValue());
+                }
+            }
+        }
+    }
+
+    // Initialize is called before simulation.
+    @Override
+    public void initialize() {
+        holdIn("active", 1.0);
+    }
+
+    // Exit is called after simulation.
+    @Override
+    public void exit() {
+        // No-op by default
+    }
+
+    // DeltInt: internal transition.
+    @Override
+    public void deltInt() {
+        passivate();
+    }
+
+    // DeltExt: external transition.
+    @Override
+    public void deltExt(double e) {
+        continueSim(e);
+    }
+
+    // DeltCon: confluent transition (internal + external at same time).
+    @Override
+    public void deltCon(double e) {
+        deltInt();
+    }
+
+    // Lambda: output function.
+    @Override
+    public void lambda() {
+        List<Port> outPorts = getPorts("out");
+        if (outPorts.isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("msg", "hello");
+        outPorts.get(0).addValue(payload);
+    }
+}

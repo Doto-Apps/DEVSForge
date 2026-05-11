@@ -25,6 +25,7 @@ func SetupModelRoutes(app *fiber.App) {
 	group.Patch("/:id", patchModel)
 	group.Get("/:id/recursive", getModelRecursive)
 	group.Get("/:id/simulate", generateSimulationFile)
+	group.Get("/:id/manifest", getModelManifest)
 }
 
 // getAllModels retrieves a list of all models
@@ -211,4 +212,61 @@ func generateSimulationFile(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(res)
+}
+
+// getModelManifest generates and returns the DEVS manifest for a model
+//
+//	@Summary		Generate model manifest
+//	@Description	Generate and retrieve the DEVS manifest for a model (without creating a simulation)
+//	@Tags			models
+//	@Produce		json
+//	@Param			id		path		string							true	"Model ID"
+//	@Param			body	body		request.SimulationStartRequest	false	"Optional: maxTime and runtime overrides"
+//	@Success		200		{object}	response.ManifestResponse
+//	@Failure		400		{object}	map[string]any
+//	@Failure		404		{object}	map[string]any
+//	@Failure		500		{object}	map[string]any
+//	@Router			/model/{id}/manifest [get]
+func getModelManifest(c *fiber.Ctx) error {
+	modelID := c.Params("id")
+	userID := c.Locals("user_id").(string)
+
+	if modelID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Model ID is required",
+		})
+	}
+
+	// Parse optional request body for runtime overrides
+	var req request.SimulationStartRequest
+	_ = c.BodyParser(&req) // Ignore error if body is empty
+
+	runtimeOverrides := make([]lib.RuntimeInstanceOverride, 0, len(req.Overrides))
+	for _, override := range req.Overrides {
+		params := make([]lib.RuntimeParameterOverride, 0, len(override.OverrideParams))
+		for _, param := range override.OverrideParams {
+			params = append(params, lib.RuntimeParameterOverride{
+				Name:  param.Name,
+				Value: param.Value,
+			})
+		}
+		runtimeOverrides = append(runtimeOverrides, lib.RuntimeInstanceOverride{
+			InstanceModelID: override.InstanceModelID,
+			OverrideParams:  params,
+		})
+	}
+
+	// Get models recursively
+	models, err := services.GetModelRecursice(modelID, userID)
+	if err != nil {
+		return SendRequestError(c, fiber.StatusInternalServerError, err)
+	}
+
+	// Generate manifest (use a temporary simulation ID)
+	manifest, err := lib.ModelToManifest(models, modelID, "temp", req.MaxTime, runtimeOverrides)
+	if err != nil {
+		return SendRequestError(c, fiber.StatusInternalServerError, err)
+	}
+
+	return c.JSON(response.CreateManifestResponse(manifest))
 }

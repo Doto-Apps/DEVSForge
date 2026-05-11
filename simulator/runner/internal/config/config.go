@@ -30,8 +30,9 @@ type EnvConfig struct {
 }
 
 type LogConfig struct {
-	Dir  string `env:"LOG_DIR" envDefault:"/tmp/devsforge-logs/"`
-	Mode string `env:"LOG_MODE" envDefault:"all"`
+	Dir   string `env:"LOG_DIR" envDefault:"/tmp/devsforge-logs/"`
+	Mode  string `env:"LOG_MODE" envDefault:"all"`
+	Level string `env:"LOG_LEVEL" envDefault:"DEBUG"`
 }
 
 type PathsConfig struct {
@@ -50,7 +51,6 @@ type KafkaConfig struct {
 type RunnerConfig struct {
 	SimulationID string
 	Model        *shared.RunnableModel
-	ID           string
 	KafkaConfig  kafka.KafkaConfig
 	KafkaClient  *kgo.Client
 	GRPC         shared.YamlInputConfigGRPC
@@ -132,7 +132,6 @@ func InitConfig(manifest shared.RunnableManifest, yamlConfigPath string) *Runner
 
 	instance = &RunnerConfig{
 		SimulationID: manifest.SimulationID,
-		ID:           model.ID,
 		Model:        &model,
 		KafkaConfig:  *kafkaConfig,
 		GRPC:         grpcConfig,

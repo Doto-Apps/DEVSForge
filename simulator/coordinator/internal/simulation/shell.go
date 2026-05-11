@@ -7,6 +7,7 @@ import (
 	"devsforge-coordinator/internal/logstore"
 	"devsforge-coordinator/internal/types"
 	shared "devsforge-shared"
+	"devsforge-shared/kafka"
 	"fmt"
 	"log/slog"
 	"math"
@@ -14,7 +15,7 @@ import (
 	"os/exec"
 )
 
-func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, coordCfg *types.CoordConfig, logStore logstore.LogStore, logger *slog.Logger) error {
+func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, coordCfg *types.CoordinatorConfig, logStore logstore.LogStore, logger *slog.Logger) error {
 	slog.Info("Launching runners using shell", "count", len(manifest.Models), "loggerIsNil", logger == nil)
 	errCh := make(chan error, len(manifest.Models)+1) // +1 for coordinator
 	runnerCmd := config.Get().Paths.RunnerCmd
@@ -34,7 +35,7 @@ func RunShellSimulation(manifest shared.RunnableManifest, configFile *os.File, c
 			ID:               m.ID,
 			NextInternalTime: math.Inf(1),
 			HasInit:          false,
-			Inbox:            nil,
+			InPorts:          make([]*kafka.KafkaMessagePortPayload, 0),
 		}
 	}
 

@@ -6,18 +6,15 @@ import (
 	"fmt"
 )
 
-func (c *Coordinator) RunSendOutput(imminents []*types.RunnerState, tmin float64) error {
-	for _, st := range imminents {
-		msg := &kafka.KafkaMessageSendOutput{
-			MsgType: kafka.MsgTypeRequestOutput,
-			EventTime: &kafka.SimTime{
-				TimeType: kafka.DevsDoubleSimTime.String(),
-				T:        tmin,
+func (c *Coordinator) RunSendOutput(imminents []*types.RunnerState, eventTime float64) error {
+	for _, imminent := range imminents {
+		msg := c.GetBaseKafkaMessage(imminent.ID).NewKafkaMessageRequestOutput(
+			kafka.KafkaMessageRequestOutputParams{
+				EventTime: eventTime,
 			},
-			ReceiverID: st.ID,
-		}
+		)
 		if err := c.SendMessage(msg); err != nil {
-			return fmt.Errorf("error sending SendOutput to %s: %w", st.ID, err)
+			return fmt.Errorf("error sending KafkaMessageRequestOutput to %s: %w", imminent.ID, err)
 		}
 	}
 

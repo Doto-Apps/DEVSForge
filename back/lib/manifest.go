@@ -65,6 +65,9 @@ func ModelToManifest(
 
 	// Step 1: Collect all atomic instances with their paths
 	atomicNodes := collectFlattenedAtomics(rootModel, modelMap, []string{}, nil)
+	for _, node := range atomicNodes {
+		node.instanceID = buildCanonicalInstanceID(rootID, node)
+	}
 
 	// Step 1.5: Apply optional runtime parameter overrides
 	if err := applyRuntimeOverrides(rootID, atomicNodes, runtimeOverrides); err != nil {
@@ -107,12 +110,10 @@ func collectFlattenedAtomics(
 	result := make([]*flatNode, 0)
 
 	if m.Type == "atomic" {
-		// Use model ID as instance ID for atomics (they are unique)
 		result = append(result, &flatNode{
 			modelID:          m.ID,
 			model:            m,
 			path:             currentPath,
-			instanceID:       m.ID,
 			instanceMetadata: instanceMetadata,
 		})
 		return result
@@ -178,9 +179,13 @@ func applyRuntimeOverrides(
 }
 
 func buildRuntimeIdentifiers(rootID string, node *flatNode) []string {
-	identifiers := make([]string, 0, 3)
+	identifiers := make([]string, 0, 4)
+	canonical := normalizeRuntimeIdentifier(node.instanceID)
 	path := normalizeRuntimeIdentifier(pathToString(node.path))
 	root := normalizeRuntimeIdentifier(rootID)
+	if canonical != "" {
+		identifiers = append(identifiers, canonical)
+	}
 
 	if path == "" {
 		if root != "" {
@@ -227,10 +232,10 @@ func uniqueStrings(values []string) []string {
 
 // flatConnection represents a resolved direct connection between two atomics
 type flatConnection struct {
-	fromModelID string
-	fromPort    string
-	toModelID   string
-	toPort      string
+	fromInstanceID string
+	fromPort       string
+	toInstanceID   string
+	toPort         string
 }
 
 // resolveFlattenedConnections resolves all connections through the hierarchy
@@ -269,10 +274,10 @@ func processModelConnections(m *model.Model, modelMap map[string]*model.Model, c
 		for _, from := range fromEndpoints {
 			for _, to := range toEndpoints {
 				result = append(result, flatConnection{
-					fromModelID: from.modelID,
-					fromPort:    from.port,
-					toModelID:   to.modelID,
-					toPort:      to.port,
+					fromInstanceID: from.instanceID,
+					fromPort:       from.port,
+					toInstanceID:   to.instanceID,
+					toPort:         to.port,
 				})
 			}
 		}
@@ -290,10 +295,10 @@ func processModelConnections(m *model.Model, modelMap map[string]*model.Model, c
 	return result
 }
 
-// resolvedEndpoint is an atomic endpoint (model ID + port)
+// resolvedEndpoint is an atomic endpoint (instance ID + port)
 type resolvedEndpoint struct {
-	modelID string
-	port    string
+	instanceID string
+	port       string
 }
 
 // resolveEndpointToAtomics resolves a connection endpoint to atomic model(s)
@@ -330,9 +335,13 @@ func resolveEndpointToAtomics(link json.ModelLink, context *model.Model, modelMa
 
 	if childModel.Type == "atomic" {
 		// Direct atomic - we found our endpoint
+		atomicNode := pathToAtomic[pathToString(childPath)]
+		if atomicNode == nil {
+			return result
+		}
 		result = append(result, resolvedEndpoint{
-			modelID: childModel.ID,
-			port:    normalizedLinkPort,
+			instanceID: atomicNode.instanceID,
+			port:       normalizedLinkPort,
 		})
 		return result
 	}
@@ -421,14 +430,14 @@ func buildRunnableModel(node *flatNode, allConnections []flatConnection) (*share
 	// Collect connections where this model is the source
 	connections := make([]shared.RunnableModelConnection, 0)
 	for _, conn := range allConnections {
-		if conn.fromModelID == node.modelID {
+		if conn.fromInstanceID == node.instanceID {
 			connections = append(connections, shared.RunnableModelConnection{
 				From: shared.ModelLink{
-					ID:   conn.fromModelID,
+					ID:   conn.fromInstanceID,
 					Port: conn.fromPort,
 				},
 				To: shared.ModelLink{
-					ID:   conn.toModelID,
+					ID:   conn.toInstanceID,
 					Port: conn.toPort,
 				},
 			})
@@ -436,7 +445,7 @@ func buildRunnableModel(node *flatNode, allConnections []flatConnection) (*share
 	}
 
 	return &shared.RunnableModel{
-		ID:          m.ID,
+		ID:          node.instanceID,
 		Name:        m.Name,
 		Code:        m.Code,
 		Language:    shared.CodeLanguage(m.Language),
@@ -622,6 +631,22 @@ func pathToString(path []string) string {
 		result += "/" + path[i]
 	}
 	return result
+}
+
+func buildCanonicalInstanceID(rootID string, node *flatNode) string {
+	root := normalizeRuntimeIdentifier(rootID)
+	path := normalizeRuntimeIdentifier(pathToString(node.path))
+
+	switch {
+	case path == "" && root != "":
+		return root
+	case path != "" && root != "":
+		return root + "/" + path
+	case path != "":
+		return path
+	default:
+		return normalizeRuntimeIdentifier(node.modelID)
+	}
 }
 
 func normalizePortIdentifier(m *model.Model, rawPort string) string {

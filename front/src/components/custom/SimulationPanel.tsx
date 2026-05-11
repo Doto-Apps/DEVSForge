@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
 	Select,
 	SelectContent,
@@ -41,26 +42,33 @@ import {
 	type SimulationInstanceOverride,
 	useStartSimulation,
 } from "@/hooks/useSimulation";
+import { modelToReactflow } from "@/lib/modelToReactflow";
 import { cn } from "@/lib/utils";
-import type { SimulationStatus } from "@/types";
+import type { ReactFlowInput, SimulationStatus } from "@/types";
+import {
+	getKafkaMessageEventTime,
+	type KafkaMessage,
+	type SimulationEventResponse,
+} from "@/types/simulation-events";
 
-type SimulationEventResponse =
-	components["schemas"]["response.SimulationEventResponse"];
-
-type ParsedPortValue = {
+type PortValue = {
 	portIdentifier: string;
-	portType: string | null;
 	value: unknown;
 	valueKey: string;
 };
 
-type OutputCandidate = {
+type PortRoute = {
+	sourceModel: string;
+	sourcePort: string;
+	targetModel: string;
+	targetPort: string;
+};
+
+type TransitionCandidate = {
 	id: string;
+	eventID: string;
 	simulationTime: number | null;
 	createdAt: string | null;
-	model: string | null;
-	port: string;
-	value: unknown;
 	valueKey: string;
 };
 
@@ -99,6 +107,7 @@ type SimulationPanelProps = {
 	modelId: string;
 	modelName?: string;
 	modelNameById?: Record<string, string>;
+	recursiveModels?: components["schemas"]["response.ModelResponse"][];
 	parameterTargets?: SimulationParameterTarget[];
 	panelTitle?: string;
 	panelDescription?: string;
@@ -122,15 +131,9 @@ const statusLabels: Record<SimulationStatus, string> = {
 	running: "Running",
 };
 
-const asRecord = (value: unknown): Record<string, unknown> | null => {
-	if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-	return value as Record<string, unknown>;
-};
-
-const asString = (value: unknown): string | null => {
-	if (typeof value !== "string") return null;
-	const trimmed = value.trim();
-	return trimmed.length > 0 ? trimmed : null;
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+	if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+	return true;
 };
 
 const parseMaybeJSON = (value: unknown): unknown => {
@@ -153,13 +156,12 @@ const normalizeForKey = (value: unknown): unknown => {
 	if (Array.isArray(parsed)) {
 		return parsed.map(normalizeForKey);
 	}
-	const rec = asRecord(parsed);
-	if (!rec) return parsed;
+	if (!isRecord(parsed)) return parsed;
 
-	const keys = Object.keys(rec).sort((a, b) => a.localeCompare(b));
+	const keys = Object.keys(parsed).sort((a, b) => a.localeCompare(b));
 	const normalized: Record<string, unknown> = {};
 	for (const key of keys) {
-		normalized[key] = normalizeForKey(rec[key]);
+		normalized[key] = normalizeForKey(parsed[key]);
 	}
 	return normalized;
 };
@@ -192,21 +194,43 @@ const formatValuePretty = (value: unknown): string => {
 	}
 };
 
+const getPortRouteKey = (modelID: string, portIdentifier: string): string =>
+	`${modelID}::${portIdentifier}`;
+
+const getTransitionCandidateKey = (
+	modelID: string,
+	portIdentifier: string,
+	valueKey: string,
+): string => `${getPortRouteKey(modelID, portIdentifier)}::${valueKey}`;
+
+const getPortIdentifierFromHandle = (
+	handle: string | undefined | null,
+): string => {
+	const parts = handle?.split(":") ?? [];
+	return parts.length > 1 ? parts.slice(1).join(":") : "";
+};
+
 const getEventTime = (event: SimulationEventResponse): number | null => {
-	if (typeof event.simulationTime === "number") return event.simulationTime;
-	const payload = asRecord(event.payload);
-	const time = asRecord(payload?.time);
-	const maybeTime = time?.t;
-	return typeof maybeTime === "number" ? maybeTime : null;
+	return getKafkaMessageEventTime(event.message);
 };
 
 const getEventCategory = (event: SimulationEventResponse): EventTypeFilter => {
-	if (event.msgType?.includes("Message")) return "message";
-	if (event.msgType?.includes("Transition")) return "transition";
+	const { messageType } = event.message;
+	if (messageType === "OutputReport" || messageType === "MonitoringMessage") {
+		return "message";
+	}
 	if (
-		event.msgType?.includes("InitSim") ||
-		event.msgType?.includes("NextTime") ||
-		event.msgType?.includes("SimulationDone")
+		messageType === "ExecuteTransition" ||
+		messageType === "TransitionComplete"
+	) {
+		return "transition";
+	}
+	if (
+		messageType === "SimulationInit" ||
+		messageType === "NextInternalTimeReport" ||
+		messageType === "RequestOutput" ||
+		messageType === "SimulationTerminate" ||
+		messageType === "ModelTerminated"
 	) {
 		return "lifecycle";
 	}
@@ -215,60 +239,74 @@ const getEventCategory = (event: SimulationEventResponse): EventTypeFilter => {
 
 const extractPortValues = (
 	event: SimulationEventResponse,
-	path: "modelOutput" | "modelInputsOption",
-): ParsedPortValue[] => {
-	const payload = asRecord(event.payload);
-	const branch = asRecord(payload?.[path]);
-	const rawList = branch?.portValueList;
-	if (!Array.isArray(rawList)) return [];
+	path: "outputs" | "inputs",
+): PortValue[] => {
+	const { message } = event;
+	const rawList =
+		path === "outputs" && message.messageType === "OutputReport"
+			? (message.payload.outputs ?? [])
+			: path === "inputs" && message.messageType === "ExecuteTransition"
+				? (message.payload.inputs ?? [])
+				: [];
 
-	return rawList
-		.map((item) => {
-			const rec = asRecord(item);
-			if (!rec) return null;
-			const portIdentifier = asString(rec.portIdentifier);
-			if (!portIdentifier) return null;
-			const value = parseMaybeJSON(rec.value);
-			return {
-				portIdentifier,
-				portType: asString(rec.portType),
-				value,
-				valueKey: stableValueKey(value),
-			} as ParsedPortValue;
-		})
-		.filter((item): item is ParsedPortValue => item !== null);
+	return rawList.map((item) => {
+		const value = parseMaybeJSON(item.value);
+		return {
+			portIdentifier: item.portName,
+			value,
+			valueKey: stableValueKey(value),
+		};
+	});
 };
 
-const getEventIcon = (msgType?: string) => {
-	if (msgType?.includes("ModelOutputMessage")) return Send;
-	if (msgType?.includes("ErrorReport")) return AlertTriangle;
-	if (msgType?.includes("ExecuteTransition")) return ArrowRightLeft;
-	if (msgType?.includes("TransitionDone")) return Activity;
-	if (msgType?.includes("SimulationDone")) return Square;
-	if (msgType?.includes("InitSim")) return Play;
-	if (msgType?.includes("NextTime")) return Clock3;
-	return ListTree;
+const getEventIcon = (messageType: KafkaMessage["messageType"]) => {
+	switch (messageType) {
+		case "OutputReport":
+			return Send;
+		case "ErrorReport":
+			return AlertTriangle;
+		case "ExecuteTransition":
+			return ArrowRightLeft;
+		case "TransitionComplete":
+			return Activity;
+		case "SimulationTerminate":
+		case "ModelTerminated":
+			return Square;
+		case "SimulationInit":
+			return Play;
+		case "NextInternalTimeReport":
+		case "RequestOutput":
+			return Clock3;
+		case "MonitoringMessage":
+			return ListTree;
+	}
 };
 
-const getEventBadgeClass = (msgType?: string) => {
-	if (msgType?.includes("Message"))
-		return "bg-blue-500/10 text-blue-700 border-blue-200";
-	if (msgType?.includes("ErrorReport")) {
-		return "bg-red-500/10 text-red-700 border-red-200";
+const getEventBadgeClass = (messageType: KafkaMessage["messageType"]) => {
+	switch (messageType) {
+		case "OutputReport":
+		case "MonitoringMessage":
+			return "bg-blue-500/10 text-blue-700 border-blue-200";
+		case "ErrorReport":
+			return "bg-red-500/10 text-red-700 border-red-200";
+		case "ExecuteTransition":
+		case "TransitionComplete":
+			return "bg-amber-500/10 text-amber-700 border-amber-200";
+		case "SimulationTerminate":
+		case "ModelTerminated":
+			return "bg-green-500/10 text-green-700 border-green-200";
+		case "SimulationInit":
+		case "NextInternalTimeReport":
+		case "RequestOutput":
+			return "bg-muted text-muted-foreground";
 	}
-	if (msgType?.includes("Transition")) {
-		return "bg-amber-500/10 text-amber-700 border-amber-200";
-	}
-	if (msgType?.includes("SimulationTerminate")) {
-		return "bg-green-500/10 text-green-700 border-green-200";
-	}
-	return "bg-muted text-muted-foreground";
 };
 
 export function SimulationPanel({
 	modelId,
 	modelName,
 	modelNameById = {},
+	recursiveModels = [],
 	parameterTargets = [],
 	panelTitle = "Simulation",
 	panelDescription,
@@ -298,6 +336,16 @@ export function SimulationPanel({
 		Record<string, Record<string, unknown>>
 	>({});
 	const [objectInputs, setObjectInputs] = useState<Record<string, string>>({});
+
+	const modelIdentityById = useMemo(() => {
+		const map = { ...modelNameById };
+		for (const item of recursiveModels) {
+			if (item.id && item.name) {
+				map[item.id] = item.name;
+			}
+		}
+		return map;
+	}, [modelNameById, recursiveModels]);
 
 	const setOverrideValue = (
 		instanceModelId: string,
@@ -403,84 +451,200 @@ export function SimulationPanel({
 
 	const formatModelIdentity = (id: string | null): string => {
 		if (!id) return "unknown";
-		const name = modelNameById[id];
+		const exactName = modelIdentityById[id];
+		if (exactName) return `${exactName} (${id})`;
+
+		const atomicModelID = id.split("/").at(-1);
+		const name = atomicModelID ? modelIdentityById[atomicModelID] : null;
 		if (!name) return id;
 		return `${name} (${id})`;
 	};
 
-	const transitMessages = useMemo(() => {
-		const outputsByTime = new Map<string, OutputCandidate[]>();
-		const transits: TransitMessage[] = [];
-
-		const addOutputCandidate = (candidate: OutputCandidate) => {
-			const key = String(candidate.simulationTime ?? "null");
-			const list = outputsByTime.get(key) ?? [];
-			list.push(candidate);
-			outputsByTime.set(key, list);
+	const modelRouteGraph = useMemo(() => {
+		const emptyGraph: {
+			edgesBySource: Map<string, PortRoute[]>;
+			nodesById: Map<string, ReactFlowInput["nodes"][number]>;
+		} = {
+			edgesBySource: new Map(),
+			nodesById: new Map(),
 		};
 
-		const findCandidate = (
-			simulationTime: number | null,
-			valueKey: string,
-		): OutputCandidate | null => {
-			const key = String(simulationTime ?? "null");
-			const candidates = outputsByTime.get(key) ?? [];
-			const exact = candidates.find(
-				(candidate) => candidate.valueKey === valueKey,
-			);
-			if (exact) return exact;
+		if (recursiveModels.length === 0) return emptyGraph;
 
-			if (candidates.length === 1) return candidates[0];
-			return null;
+		let reactFlowModel: ReactFlowInput;
+		try {
+			reactFlowModel = modelToReactflow(recursiveModels);
+		} catch {
+			return emptyGraph;
+		}
+
+		const nodesById = new Map(
+			reactFlowModel.nodes.map((node) => [node.id, node]),
+		);
+		const edgesBySource = new Map<string, PortRoute[]>();
+
+		for (const edge of reactFlowModel.edges) {
+			const sourcePort = getPortIdentifierFromHandle(edge.sourceHandle);
+			const targetPort = getPortIdentifierFromHandle(edge.targetHandle);
+			if (!edge.source || !edge.target || !sourcePort || !targetPort) {
+				continue;
+			}
+
+			const route: PortRoute = {
+				sourceModel: edge.source,
+				sourcePort,
+				targetModel: edge.target,
+				targetPort,
+			};
+			const key = getPortRouteKey(route.sourceModel, route.sourcePort);
+			edgesBySource.set(key, [...(edgesBySource.get(key) ?? []), route]);
+		}
+
+		return { edgesBySource, nodesById };
+	}, [recursiveModels]);
+
+	const transitMessages = useMemo(() => {
+		const transits: TransitMessage[] = [];
+		const claimedTransitionIDs = new Set<string>();
+		const transitionCandidatesByTarget = new Map<
+			string,
+			TransitionCandidate[]
+		>();
+
+		const resolveAtomicTargets = (
+			sourceModel: string,
+			sourcePort: string,
+		): PortRoute[] => {
+			const resolved: PortRoute[] = [];
+			const queue = [{ model: sourceModel, port: sourcePort }];
+			const visited = new Set<string>();
+
+			while (queue.length > 0) {
+				const current = queue.shift();
+				if (!current) break;
+
+				const currentKey = getPortRouteKey(current.model, current.port);
+				if (visited.has(currentKey)) continue;
+				visited.add(currentKey);
+
+				for (const edge of modelRouteGraph.edgesBySource.get(currentKey) ??
+					[]) {
+					const targetNode = modelRouteGraph.nodesById.get(edge.targetModel);
+					if (!targetNode || targetNode.data.modelType === "atomic") {
+						resolved.push({
+							sourceModel,
+							sourcePort,
+							targetModel: edge.targetModel,
+							targetPort: edge.targetPort,
+						});
+						continue;
+					}
+
+					queue.push({ model: edge.targetModel, port: edge.targetPort });
+				}
+			}
+
+			return resolved;
+		};
+
+		const findTransitionCandidate = (
+			route: PortRoute,
+			valueKey: string,
+			outputSimulationTime: number | null,
+		): TransitionCandidate | null => {
+			const key = getTransitionCandidateKey(
+				route.targetModel,
+				route.targetPort,
+				valueKey,
+			);
+			const candidates = (transitionCandidatesByTarget.get(key) ?? []).filter(
+				(candidate) => !claimedTransitionIDs.has(candidate.id),
+			);
+
+			const exactTimeCandidate = candidates.find(
+				(candidate) => candidate.simulationTime === outputSimulationTime,
+			);
+			const nextCandidate =
+				outputSimulationTime === null
+					? null
+					: candidates.find(
+							(candidate) =>
+								candidate.simulationTime !== null &&
+								candidate.simulationTime >= outputSimulationTime,
+						);
+			const candidate = exactTimeCandidate ?? nextCandidate ?? candidates[0];
+
+			if (candidate) claimedTransitionIDs.add(candidate.id);
+			return candidate ?? null;
 		};
 
 		events.forEach((event, index) => {
+			if (event.message.messageType !== "ExecuteTransition") return;
+			if (!event.message.receiverId) return;
+
 			const simulationTime = getEventTime(event);
 			const eventID = event.id ?? `event-${index}`;
+			const inputs = extractPortValues(event, "inputs");
 
-			if (event.msgType === "ModelOutputMessage") {
-				const outputs = extractPortValues(event, "modelOutput");
-				outputs.forEach((output, outputIndex) => {
-					addOutputCandidate({
+			inputs.forEach((input, inputIndex) => {
+				const key = getTransitionCandidateKey(
+					event.message.receiverId ?? "",
+					input.portIdentifier,
+					input.valueKey,
+				);
+				const candidates = transitionCandidatesByTarget.get(key) ?? [];
+				transitionCandidatesByTarget.set(key, [
+					...candidates,
+					{
 						createdAt: event.createdAt ?? null,
-						id: `${eventID}-out-${outputIndex}`,
-						model: event.sender ?? null,
-						port: output.portIdentifier,
+						eventID,
+						id: `${eventID}-in-${inputIndex}`,
 						simulationTime,
+						valueKey: input.valueKey,
+					},
+				]);
+			});
+		});
+
+		events.forEach((event, index) => {
+			if (event.message.messageType !== "OutputReport") return;
+			if (!event.message.senderId) return;
+
+			const sourceModel = event.message.senderId;
+			const simulationTime = getEventTime(event);
+			const eventID = event.id ?? `event-${index}`;
+			const outputs = extractPortValues(event, "outputs");
+
+			outputs.forEach((output, outputIndex) => {
+				const routes = resolveAtomicTargets(sourceModel, output.portIdentifier);
+
+				routes.forEach((route, routeIndex) => {
+					const targetCandidate = findTransitionCandidate(
+						route,
+						output.valueKey,
+						simulationTime,
+					);
+
+					transits.push({
+						createdAt: event.createdAt ?? targetCandidate?.createdAt ?? null,
+						fromModel: route.sourceModel,
+						fromPort: route.sourcePort,
+						id: `${eventID}-out-${outputIndex}-route-${routeIndex}`,
+						matched: Boolean(targetCandidate),
+						simulationTime,
+						sourceEventID: `${eventID}-out-${outputIndex}`,
+						targetEventID: targetCandidate?.eventID ?? null,
+						toModel: route.targetModel,
+						toPort: route.targetPort,
 						value: output.value,
 						valueKey: output.valueKey,
 					});
-				});
-				return;
-			}
-
-			if (event.msgType !== "ExecuteTransition") return;
-
-			const inputs = extractPortValues(event, "modelInputsOption");
-			if (inputs.length === 0) return;
-
-			inputs.forEach((input, inputIndex) => {
-				const matchedCandidate = findCandidate(simulationTime, input.valueKey);
-
-				transits.push({
-					createdAt: event.createdAt ?? null,
-					fromModel: matchedCandidate?.model ?? event.sender ?? null,
-					fromPort: matchedCandidate?.port ?? null,
-					id: `${eventID}-in-${inputIndex}`,
-					matched: Boolean(matchedCandidate),
-					simulationTime,
-					sourceEventID: matchedCandidate?.id ?? null,
-					targetEventID: eventID,
-					toModel: event.target ?? null,
-					toPort: input.portIdentifier,
-					value: input.value,
-					valueKey: input.valueKey,
 				});
 			});
 		});
 
 		return transits;
-	}, [events]);
+	}, [events, modelRouteGraph]);
 
 	const maxSimTime = useMemo(() => {
 		const values = events
@@ -522,18 +686,18 @@ export function SimulationPanel({
 			}
 
 			if (onlyEventsWithPayload) {
-				const inputValues = extractPortValues(event, "modelInputsOption");
-				const outputValues = extractPortValues(event, "modelOutput");
+				const inputValues = extractPortValues(event, "inputs");
+				const outputValues = extractPortValues(event, "outputs");
 				if (inputValues.length === 0 && outputValues.length === 0) return false;
 			}
 
 			if (!normalizedSearch) return true;
 
 			const haystack = [
-				event.msgType,
-				event.sender ?? "",
-				event.target ?? "",
-				formatValueCompact(event.payload, 300),
+				event.message.messageType,
+				event.message.senderId ?? "",
+				event.message.receiverId ?? "",
+				formatValueCompact(event.message, 300),
 			]
 				.join(" ")
 				.toLowerCase();
@@ -543,17 +707,25 @@ export function SimulationPanel({
 	}, [eventTypeFilter, events, onlyEventsWithPayload, search]);
 
 	const eventSummary = useMemo(() => {
-		const messages = events.filter((e) => e.msgType?.includes("Message"));
-		const transitions = events.filter((e) => e.msgType?.includes("Transition"));
-		const others = events.filter(
-			(e) =>
-				!e.msgType?.includes("Message") && !e.msgType?.includes("Transition"),
-		);
+		let messages = 0;
+		let transitions = 0;
+		let others = 0;
+
+		for (const event of events) {
+			const category = getEventCategory(event);
+			if (category === "message") {
+				messages += 1;
+			} else if (category === "transition") {
+				transitions += 1;
+			} else {
+				others += 1;
+			}
+		}
 
 		return {
-			messages: messages.length,
-			others: others.length,
-			transitions: transitions.length,
+			messages,
+			others,
+			transitions,
 			transits: transitMessages.length,
 		};
 	}, [events, transitMessages.length]);
@@ -679,162 +851,168 @@ export function SimulationPanel({
 								</div>
 							</div>
 
-							<div className="max-h-72 overflow-auto space-y-3 pr-1">
-								{parameterTargetsWithParams.map((target) => {
-									const instanceOverrides =
-										parameterOverrides[target.instanceModelId] ?? {};
+							<ScrollArea className="h-72 pr-1">
+								<div className="space-y-3">
+									{parameterTargetsWithParams.map((target) => {
+										const instanceOverrides =
+											parameterOverrides[target.instanceModelId] ?? {};
 
-									return (
-										<div
-											className="rounded-md border p-3 space-y-3"
-											key={target.instanceModelId}
-										>
-											<div className="space-y-1">
-												<div className="text-sm font-medium leading-none">
-													{target.modelName}
+										return (
+											<div
+												className="rounded-md border p-3 space-y-3"
+												key={target.instanceModelId}
+											>
+												<div className="space-y-1">
+													<div className="text-sm font-medium leading-none">
+														{target.modelName}
+													</div>
+													<div className="text-xs text-muted-foreground font-mono break-all">
+														{target.instanceModelId}
+													</div>
 												</div>
-												<div className="text-xs text-muted-foreground font-mono break-all">
-													{target.instanceModelId}
-												</div>
-											</div>
 
-											<div className="grid gap-3 md:grid-cols-2">
-												{target.parameters.map((param) => {
-													const hasRuntimeOverride = Object.hasOwn(
-														instanceOverrides,
-														param.name,
-													);
-													const currentValue = hasRuntimeOverride
-														? instanceOverrides[param.name]
-														: param.value;
-													const objectInputKey = `${target.instanceModelId}::${param.name}`;
+												<div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
+													{target.parameters.map((param) => {
+														const hasRuntimeOverride = Object.hasOwn(
+															instanceOverrides,
+															param.name,
+														);
+														const currentValue = hasRuntimeOverride
+															? instanceOverrides[param.name]
+															: param.value;
+														const objectInputKey = `${target.instanceModelId}::${param.name}`;
 
-													return (
-														<div className="space-y-1.5" key={param.name}>
-															<div className="flex items-center justify-between gap-2">
-																<Label className="text-xs font-semibold">
-																	{param.name}
-																</Label>
-																<Badge
-																	className={cn(
-																		"text-[10px]",
-																		hasRuntimeOverride
-																			? "border-blue-300 text-blue-700"
-																			: "text-muted-foreground",
-																	)}
-																	variant="outline"
-																>
-																	{param.type}
-																</Badge>
-															</div>
+														return (
+															<div className="space-y-1.5" key={param.name}>
+																<div className="flex items-center justify-between gap-2">
+																	<Label className="text-xs font-semibold">
+																		{param.name}
+																	</Label>
+																	<Badge
+																		className={cn(
+																			"text-[10px]",
+																			hasRuntimeOverride
+																				? "border-blue-300 text-blue-700"
+																				: "text-muted-foreground",
+																		)}
+																		variant="outline"
+																	>
+																		{param.type}
+																	</Badge>
+																</div>
 
-															{param.type === "bool" ? (
-																<div className="flex h-10 items-center rounded-md border px-3">
-																	<Switch
-																		checked={Boolean(currentValue)}
-																		onCheckedChange={(checked) =>
+																{param.type === "bool" ? (
+																	<div className="flex h-10 items-center rounded-md border px-3">
+																		<Switch
+																			checked={Boolean(currentValue)}
+																			onCheckedChange={(checked) =>
+																				setOverrideValue(
+																					target.instanceModelId,
+																					param.name,
+																					param.value,
+																					checked,
+																				)
+																			}
+																		/>
+																	</div>
+																) : null}
+
+																{param.type === "string" ? (
+																	<Input
+																		onChange={(event) =>
 																			setOverrideValue(
 																				target.instanceModelId,
 																				param.name,
 																				param.value,
-																				checked,
+																				event.target.value,
+																			)
+																		}
+																		type="text"
+																		value={
+																			typeof currentValue === "string"
+																				? currentValue
+																				: String(currentValue ?? "")
+																		}
+																	/>
+																) : null}
+
+																{param.type === "int" ||
+																param.type === "float" ? (
+																	<Input
+																		onChange={(event) => {
+																			const raw = event.target.value;
+																			if (raw === "") {
+																				setOverrideValue(
+																					target.instanceModelId,
+																					param.name,
+																					param.value,
+																					param.value,
+																				);
+																				return;
+																			}
+																			const parsed = Number(raw);
+																			if (Number.isNaN(parsed)) return;
+
+																			setOverrideValue(
+																				target.instanceModelId,
+																				param.name,
+																				param.value,
+																				param.type === "int"
+																					? Math.trunc(parsed)
+																					: parsed,
+																			);
+																		}}
+																		step={param.type === "int" ? 1 : 0.1}
+																		type="number"
+																		value={
+																			typeof currentValue === "number" &&
+																			Number.isFinite(currentValue)
+																				? currentValue
+																				: ""
+																		}
+																	/>
+																) : null}
+
+																{param.type === "object" ? (
+																	<Textarea
+																		className="font-mono min-h-24"
+																		onChange={(event) => {
+																			const raw = event.target.value;
+																			setObjectInputs((prev) => ({
+																				...prev,
+																				[objectInputKey]: raw,
+																			}));
+																			try {
+																				const parsed = JSON.parse(raw);
+																				setOverrideValue(
+																					target.instanceModelId,
+																					param.name,
+																					param.value,
+																					parsed,
+																				);
+																			} catch {
+																				// keep raw editing until valid JSON
+																			}
+																		}}
+																		value={
+																			objectInputs[objectInputKey] ??
+																			JSON.stringify(
+																				currentValue ?? {},
+																				null,
+																				2,
 																			)
 																		}
 																	/>
-																</div>
-															) : null}
-
-															{param.type === "string" ? (
-																<Input
-																	onChange={(event) =>
-																		setOverrideValue(
-																			target.instanceModelId,
-																			param.name,
-																			param.value,
-																			event.target.value,
-																		)
-																	}
-																	type="text"
-																	value={
-																		typeof currentValue === "string"
-																			? currentValue
-																			: String(currentValue ?? "")
-																	}
-																/>
-															) : null}
-
-															{param.type === "int" ||
-															param.type === "float" ? (
-																<Input
-																	onChange={(event) => {
-																		const raw = event.target.value;
-																		if (raw === "") {
-																			setOverrideValue(
-																				target.instanceModelId,
-																				param.name,
-																				param.value,
-																				param.value,
-																			);
-																			return;
-																		}
-																		const parsed = Number(raw);
-																		if (Number.isNaN(parsed)) return;
-
-																		setOverrideValue(
-																			target.instanceModelId,
-																			param.name,
-																			param.value,
-																			param.type === "int"
-																				? Math.trunc(parsed)
-																				: parsed,
-																		);
-																	}}
-																	step={param.type === "int" ? 1 : 0.1}
-																	type="number"
-																	value={
-																		typeof currentValue === "number" &&
-																		Number.isFinite(currentValue)
-																			? currentValue
-																			: ""
-																	}
-																/>
-															) : null}
-
-															{param.type === "object" ? (
-																<Textarea
-																	className="font-mono min-h-24"
-																	onChange={(event) => {
-																		const raw = event.target.value;
-																		setObjectInputs((prev) => ({
-																			...prev,
-																			[objectInputKey]: raw,
-																		}));
-																		try {
-																			const parsed = JSON.parse(raw);
-																			setOverrideValue(
-																				target.instanceModelId,
-																				param.name,
-																				param.value,
-																				parsed,
-																			);
-																		} catch {
-																			// keep raw editing until valid JSON
-																		}
-																	}}
-																	value={
-																		objectInputs[objectInputKey] ??
-																		JSON.stringify(currentValue ?? {}, null, 2)
-																	}
-																/>
-															) : null}
-														</div>
-													);
-												})}
+																) : null}
+															</div>
+														);
+													})}
+												</div>
 											</div>
-										</div>
-									);
-								})}
-							</div>
+										);
+									})}
+								</div>
+							</ScrollArea>
 						</div>
 					) : null}
 
@@ -933,7 +1111,7 @@ export function SimulationPanel({
 						<CardContent className="space-y-3">
 							<div className="flex items-center justify-between rounded-md border px-3 py-2">
 								<div className="text-sm text-muted-foreground">
-									Show only matched transits
+									Show only confirmed transitions
 								</div>
 								<Switch
 									checked={showOnlyMatchedTransit}
@@ -941,7 +1119,7 @@ export function SimulationPanel({
 								/>
 							</div>
 
-							<div className="max-h-[420px] overflow-auto rounded-md border">
+							<ScrollArea className="h-[420px] rounded-md border">
 								{filteredTransitMessages.length === 0 ? (
 									<div className="p-4 text-sm text-muted-foreground text-center">
 										No transits visible with current filters.
@@ -965,7 +1143,7 @@ export function SimulationPanel({
 														)}
 														variant="outline"
 													>
-														{message.matched ? "match exact" : "inference"}
+														{message.matched ? "transition seen" : "route only"}
 													</Badge>
 												</div>
 												<div className="font-mono text-xs flex items-center gap-2 break-all">
@@ -986,7 +1164,7 @@ export function SimulationPanel({
 										))}
 									</div>
 								)}
-							</div>
+							</ScrollArea>
 						</CardContent>
 					</Card>
 
@@ -1016,7 +1194,7 @@ export function SimulationPanel({
 								/>
 							</div>
 
-							<div className="max-h-[420px] overflow-auto rounded-md border">
+							<ScrollArea className="h-[420px] rounded-md border">
 								{filteredEvents.length === 0 ? (
 									<div className="p-4 text-center text-sm text-muted-foreground">
 										No events visible with current filters.
@@ -1024,15 +1202,10 @@ export function SimulationPanel({
 								) : (
 									<div className="divide-y">
 										{[...filteredEvents].reverse().map((event, index) => {
-											const EventIcon = getEventIcon(event.msgType);
-											const inputValues = extractPortValues(
-												event,
-												"modelInputsOption",
-											);
-											const outputValues = extractPortValues(
-												event,
-												"modelOutput",
-											);
+											const EventIcon = getEventIcon(event.message.messageType);
+											const eventTime = getEventTime(event);
+											const inputValues = extractPortValues(event, "inputs");
+											const outputValues = extractPortValues(event, "outputs");
 											const eventID = event.id || `event-${index}`;
 
 											return (
@@ -1043,16 +1216,14 @@ export function SimulationPanel({
 															<Badge
 																className={cn(
 																	"text-[10px]",
-																	getEventBadgeClass(event.msgType),
+																	getEventBadgeClass(event.message.messageType),
 																)}
 																variant="outline"
 															>
-																{event.msgType}
+																{event.message.messageType}
 															</Badge>
 															<span className="text-xs text-muted-foreground">
-																{getEventTime(event) === null
-																	? "t=?"
-																	: `t=${getEventTime(event)}`}
+																{eventTime === null ? "t=?" : `t=${eventTime}`}
 															</span>
 														</div>
 														<span className="text-[10px] text-muted-foreground">
@@ -1063,12 +1234,20 @@ export function SimulationPanel({
 													</div>
 
 													<div className="flex items-center gap-2 text-xs font-mono break-all">
-														<span className="rounded bg-muted px-1.5 py-0.5">
-															{event.sender ?? "coordinator"}
+														<span className="rounded bg-muted px-1.5 py-0.5 flex flex-col ">
+															<div className="font-bold text-sm">
+																{formatModelIdentity(
+																	event.message.senderId ?? "Coordinator",
+																)}
+															</div>
 														</span>
 														<ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-														<span className="rounded bg-muted px-1.5 py-0.5">
-															{event.target ?? "broadcast"}
+														<span className="rounded bg-muted px-1.5 py-0.5 flex flex-col ">
+															<div className="font-bold text-sm">
+																{formatModelIdentity(
+																	event.message.receiverId ?? "broadcast",
+																)}
+															</div>
 														</span>
 													</div>
 
@@ -1100,11 +1279,11 @@ export function SimulationPanel({
 
 													<details className="rounded-md border bg-muted/20 px-2 py-1.5">
 														<summary className="cursor-pointer text-xs text-muted-foreground">
-															Show raw payload
+															Show raw message
 														</summary>
 														<Separator className="my-2" />
 														<pre className="text-[11px] leading-relaxed whitespace-pre-wrap break-all text-muted-foreground font-mono">
-															{formatValuePretty(event.payload)}
+															{formatValuePretty(event.message)}
 														</pre>
 													</details>
 												</div>
@@ -1112,7 +1291,7 @@ export function SimulationPanel({
 										})}
 									</div>
 								)}
-							</div>
+							</ScrollArea>
 						</CardContent>
 					</Card>
 				</div>

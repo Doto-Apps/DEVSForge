@@ -130,6 +130,13 @@ func TestGetLogFilePath(t *testing.T) {
 	if runnerPath != expected {
 		t.Errorf("Runner path: got %s, expected %s", runnerPath, expected)
 	}
+
+	// Test runner with instance path style ID
+	runnerPath = GetLogFilePath(cfg, "runner", "root/model-a/child-b")
+	expected = "/tmp/logs/test-123/runner-root_model-a_child-b.log"
+	if runnerPath != expected {
+		t.Errorf("Runner path with slash: got %s, expected %s", runnerPath, expected)
+	}
 }
 
 func TestInitLoggerValidation(t *testing.T) {

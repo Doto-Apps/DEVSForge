@@ -8,6 +8,7 @@ import {
 	type EdgeChange,
 	MiniMap,
 	type NodeChange,
+	type OnDelete,
 	ReactFlow,
 	useReactFlow,
 } from "@xyflow/react";
@@ -122,35 +123,52 @@ export function ModelViewEditor({
 
 	const onNodesChange = useCallback(
 		(changes: NodeChange<(typeof nodes)[number]>[]) => {
-			if (!onChange || !models) return;
-
 			const updatedNodes = applyNodeChanges(changes, nodes);
-			const newState = {
+
+			const deletedNodeIds = new Set(
+				changes
+					.filter((change) => change.type === "remove")
+					.map((change) => change.id),
+			);
+
+			const updatedEdges =
+				deletedNodeIds.size === 0
+					? edges
+					: edges.filter(
+							(edge) =>
+								!deletedNodeIds.has(edge.source) &&
+								!deletedNodeIds.has(edge.target),
+						);
+
+			const newState: ReactFlowInput = {
 				...models,
+				edges: updatedEdges,
 				nodes: updatedNodes,
 			};
+
 			setInternalStructure(newState);
 			debouncedChange(newState);
 		},
-		[models, onChange, nodes, debouncedChange],
+		[models, nodes, edges, debouncedChange],
 	);
 
 	const onEdgesChange = useCallback(
 		(changes: EdgeChange<(typeof edges)[number]>[]) => {
-			if (!onChange || !models) return;
-
 			const updatedEdges = applyEdgeChanges<(typeof edges)[number]>(
 				changes,
 				edges,
 			);
-			onChange({
+
+			const newState: ReactFlowInput = {
 				...models,
 				edges: updatedEdges,
-			});
-		},
-		[models, onChange, edges],
-	);
+			};
 
+			setInternalStructure(newState);
+			onChange(newState);
+		},
+		[models, edges, onChange],
+	);
 	const onLayoutFn = async ({ direction = "RIGHT" }) => {
 		const opts = direction;
 		if (models) {

@@ -1,55 +1,39 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { components } from "@/api/v1";
+import type {
+	SimulationEventResponse,
+	SimulationEventsResponse,
+} from "@/types/simulation-events";
 
 type SimulationResponse = components["schemas"]["response.SimulationResponse"];
-type SimulationEventResponse =
-	components["schemas"]["response.SimulationEventResponse"];
-type SimulationEventsResponse =
-	components["schemas"]["response.SimulationEventsResponse"];
 
 const API_BASE_URL = window.API_URL?.replace(/\/+$/, "");
-
-const asRecord = (value: unknown): Record<string, unknown> | null => {
-	if (!value || typeof value !== "object" || Array.isArray(value)) return null;
-	return value as Record<string, unknown>;
-};
-
-const asString = (value: unknown): string | null => {
-	if (typeof value !== "string") return null;
-	const trimmed = value.trim();
-	return trimmed.length > 0 ? trimmed : null;
-};
 
 const extractErrorReportMessage = (
 	event: SimulationEventResponse,
 ): string | null => {
-	const msgType = event.msgType ?? "";
-	const payload = asRecord(event.payload);
-	const messageType = asString(payload?.messageType);
-	const isErrorReport =
-		msgType.includes("ErrorReport") || messageType === "ErrorReport";
-	if (!isErrorReport) return null;
+	const { message } = event;
+	if (message.messageType !== "ErrorReport") return null;
 
-	const reportPayload = asRecord(payload?.payload);
-	const severity = asString(reportPayload?.severity)?.toLowerCase();
-	if (severity === "warning" || severity === "info") {
+	if (
+		message.payload.severity === "warning" ||
+		message.payload.severity === "info"
+	) {
 		return null;
 	}
 
-	const message =
-		asString(reportPayload?.message) ??
-		asString(payload?.errorMessage) ??
-		"Simulation error report received";
-	const originRole = asString(reportPayload?.originRole);
-	const originID = asString(reportPayload?.originId);
+	const errorMessage =
+		message.payload.message || "Simulation error report received";
+	const { originRole } = message.payload;
+	const originID = message.payload.originId;
 
 	if (originRole && originID) {
-		return `[${originRole}:${originID}] ${message}`;
+		return `[${originRole}:${originID}] ${errorMessage}`;
 	}
 	if (originRole) {
-		return `[${originRole}] ${message}`;
+		return `[${originRole}] ${errorMessage}`;
 	}
-	return message;
+	return errorMessage;
 };
 
 type UseSimulationPollingOptions = {

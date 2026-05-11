@@ -17,12 +17,12 @@ import {
 	Save,
 	Settings2,
 	ShieldCheck,
-	Star,
 	Trash,
 	Trash2,
 } from "lucide-react";
 import * as React from "react";
-
+import { client } from "@/api/client";
+import type { components } from "@/api/v1";
 import { Button } from "@/components/ui/button";
 import {
 	Popover,
@@ -119,6 +119,7 @@ type NavActionsProps = {
 	simulateFunction?: () => Promise<void>;
 	validateFunction?: () => Promise<void>;
 	deployFunction?: () => Promise<void>;
+	modelId: components["schemas"]["model.Model"]["id"];
 };
 
 export function NavActions({
@@ -126,28 +127,53 @@ export function NavActions({
 	simulateFunction,
 	validateFunction,
 	deployFunction,
+	modelId,
 }: NavActionsProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
+
+	const handleExportManifest = async () => {
+		if (modelId) {
+			const res = await client.GET("/model/{id}/manifest", {
+				params: {
+					path: {
+						id: modelId,
+					},
+				},
+			});
+			if (res.data?.manifest) {
+				console.log(res.data.manifest);
+				// const blob = new Blob([JSON.stringify(res.data.manifest, null, 2)], {
+				// 	type: "application/json",
+				// });
+				// const url = URL.createObjectURL(blob);
+				// const a = document.createElement("a");
+				// a.href = url;
+				// a.download = `manifest-${modelId}.json`;
+				// a.click();
+				// URL.revokeObjectURL(url);
+			}
+		}
+	};
 
 	return (
 		<div className="flex items-center gap-2 text-sm">
 			{validateFunction && (
-				<Button className="h-7 w-7" onClick={validateFunction} size="icon">
+				<Button className="size-7" onClick={validateFunction} size="icon">
 					<ShieldCheck />
 				</Button>
 			)}
 			{deployFunction && (
-				<Button className="h-7 w-7" onClick={deployFunction} size="icon">
+				<Button className="size-7" onClick={deployFunction} size="icon">
 					<MonitorPlay />
 				</Button>
 			)}
 			{simulateFunction && (
-				<Button className="h-7 w-7" onClick={simulateFunction} size="icon">
+				<Button className="size-7" onClick={simulateFunction} size="icon">
 					<Play />
 				</Button>
 			)}
 			{saveFunction && (
-				<Button className="h-7 w-7" onClick={saveFunction} size="icon">
+				<Button className="size-7" onClick={saveFunction} size="icon">
 					<Save />
 				</Button>
 			)}
@@ -155,13 +181,10 @@ export function NavActions({
 			<div className="hidden font-medium text-muted-foreground md:inline-block">
 				Edit Oct 08
 			</div>
-			<Button className="h-7 w-7" size="icon" variant="ghost">
-				<Star />
-			</Button>
 			<Popover onOpenChange={setIsOpen} open={isOpen}>
 				<PopoverTrigger asChild>
 					<Button
-						className="h-7 w-7 data-[state=open]:bg-accent"
+						className="size-7 data-[state=open]:bg-accent"
 						size="icon"
 						variant="ghost"
 					>
@@ -192,6 +215,17 @@ export function NavActions({
 									</SidebarGroupContent>
 								</SidebarGroup>
 							))}
+							<SidebarGroup>
+								<SidebarGroupContent className="gap-0">
+									<SidebarMenu>
+										<SidebarMenuItem>
+											<SidebarMenuButton onClick={handleExportManifest}>
+												<ArrowDown /> Export Manifest
+											</SidebarMenuButton>
+										</SidebarMenuItem>
+									</SidebarMenu>
+								</SidebarGroupContent>
+							</SidebarGroup>
 						</SidebarContent>
 					</Sidebar>
 				</PopoverContent>

@@ -102,8 +102,8 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 	// NOTE: May be put this as env vars ?
 	pollInterval := 1 * time.Second
 	timeout := 15 * time.Minute
-	maxEmptyPolls := 5
-	maxConsecutiveErrors := 5
+	maxEmptyPolls := 3
+	maxConsecutiveErrors := 3
 
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
@@ -180,6 +180,7 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 				}
 				continue
 			}
+
 			_ = resp.Body.Close()
 
 			consecutiveErrors = 0
@@ -188,54 +189,65 @@ func (s *SimulationService) pollSimulationStatus(simulationID string, log *slog.
 				s.saveSimulationEvents(simulationID, logsResp.Logs, log)
 				lastOffset += len(logsResp.Logs)
 				emptyPollsCount = 0
-			} else {
+			} else if simulationEnded {
 				emptyPollsCount++
 			}
 
-			if !simulationEnded && logsResp.Status != "running" {
+			if !simulationEnded && logsResp.Status != "" && logsResp.Status != "running" {
 				simulationEnded = true
 				finalStatus = logsResp.Status
 				finalErrorMessage = logsResp.ErrorMessage
+				emptyPollsCount = 0
 				log.Info("Simulation ended, draining remaining messages", "status", finalStatus)
 			}
 
-			if simulationEnded || emptyPollsCount >= maxEmptyPolls {
-				log.Info("All messages collected", "totalMessages", lastOffset)
-
-				now := time.Now()
-
-				switch finalStatus {
-				case "completed":
-					result := db.Model(&model.Simulation{}).
-						Where("id = ?", simulationID).
-						Updates(map[string]any{
-							"status":       model.SimulationStatusCompleted,
-							"completed_at": now,
-						})
-					if result.Error != nil {
-						log.Error("Failed to update simulation status", "error", result.Error)
-					}
-				case "failed", "error":
-					errMsg := "Simulation failed"
-					if finalErrorMessage != "" {
-						errMsg = finalErrorMessage
-					}
-					result := db.Model(&model.Simulation{}).
-						Where("id = ?", simulationID).
-						Updates(map[string]any{
-							"status":        model.SimulationStatusFailed,
-							"error_message": errMsg,
-							"completed_at":  now,
-						})
-					if result.Error != nil {
-						log.Error("Failed to update simulation status", "error", result.Error)
-					}
-				}
-
-				s.cleanSimulationLogs(simulationID, log)
-
-				return
+			if !simulationEnded {
+				continue
 			}
+
+			if logsResp.TotalMessages != nil && lastOffset < *logsResp.TotalMessages {
+				continue
+			}
+
+			if logsResp.TotalMessages == nil && emptyPollsCount < maxEmptyPolls {
+				continue
+			}
+
+			log.Info("All messages collected", "totalMessages", lastOffset)
+
+			now := time.Now()
+
+			switch finalStatus {
+			case "completed":
+				result := db.Model(&model.Simulation{}).
+					Where("id = ?", simulationID).
+					Updates(map[string]any{
+						"status":       model.SimulationStatusCompleted,
+						"completed_at": now,
+					})
+				if result.Error != nil {
+					log.Error("Failed to update simulation status", "error", result.Error)
+				}
+			case "failed", "error":
+				errMsg := "Simulation failed"
+				if finalErrorMessage != "" {
+					errMsg = finalErrorMessage
+				}
+				result := db.Model(&model.Simulation{}).
+					Where("id = ?", simulationID).
+					Updates(map[string]any{
+						"status":        model.SimulationStatusFailed,
+						"error_message": errMsg,
+						"completed_at":  now,
+					})
+				if result.Error != nil {
+					log.Error("Failed to update simulation status", "error", result.Error)
+				}
+			}
+
+			s.cleanSimulationLogs(simulationID, log)
+
+			return
 		}
 	}
 }
@@ -246,35 +258,22 @@ func (s *SimulationService) saveSimulationEvents(simulationID string, logs []sha
 	seen := make(map[string]bool)
 	events := make([]model.SimulationEvent, 0, len(logs))
 	for _, logMsg := range logs {
-		if logMsg.MsgType == "" {
-			continue
-		}
 
-		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", logMsg.MsgType, logMsg.Data.ReceiverID, logMsg.SenderID, logMsg.Timestamp, logMsg.Data)
+		dedupKey := fmt.Sprintf("%s:%s:%s:%d:%v", logMsg.Data.GetMessageType(), logMsg.Data.GetReceiverID(), logMsg.Data.GetSenderID(), logMsg.Sequence, logMsg.Data)
 		if seen[dedupKey] {
 			continue
 		}
 		seen[dedupKey] = true
 
-		payloadJSON, err := json.Marshal(logMsg.Data)
+		payload, err := json.Marshal(logMsg.Data)
 		if err != nil {
-			log.Warn("Failed to marshal log payload", "error", err)
-			payloadJSON = []byte("{}")
-		}
-
-		var simulationTime *float64
-		if logMsg.Data.EventTime != nil {
-			simulationTime = &logMsg.Data.EventTime.T
+			log.Warn("Failed to marshal message", "error", err)
+			continue
 		}
 
 		event := model.SimulationEvent{
-			SimulationID:           simulationID,
-			SimulationTime:         simulationTime,
-			MsgType:                logMsg.MsgType,
-			Sender:                 &logMsg.SenderID,
-			Target:                 &logMsg.Data.ReceiverID,
-			Payload:                datatypes.JSON(payloadJSON),
-			RelativeEventTimestamp: logMsg.Timestamp,
+			SimulationID: simulationID,
+			Message:      datatypes.JSON(payload),
 		}
 		events = append(events, event)
 	}

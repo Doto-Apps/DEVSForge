@@ -117,7 +117,7 @@ func deleteLibrary(c *fiber.Ctx) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id			path		string					true	"Library ID"
-//	@Param			updateData	body		request.LibraryRequest	true	"Fields to update"
+//	@Param			updateData	body		request.LibraryPatchRequest	true	"Fields to update"
 //	@Success		200			{object}	model.Library
 //	@Failure		400			{object}	map[string]any
 //	@Failure		404			{object}	map[string]any
@@ -131,12 +131,33 @@ func patchLibrary(c *fiber.Ctx) error {
 		return c.Status(404).JSON(fiber.Map{"status": "error", "message": "Library not found"})
 	}
 
-	req := new(request.LibraryRequest)
-	if err := c.BodyParser(&req); err != nil {
+	req := new(request.LibraryPatchRequest)
+	if err := c.BodyParser(req); err != nil {
 		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "Invalid input", "data": err.Error()})
 	}
 
-	db.Model(&library).Updates(req)
+	updates := map[string]any{}
+	if req.Title != nil {
+		updates["title"] = *req.Title
+	}
+	if req.Description != nil {
+		updates["description"] = *req.Description
+	}
+
+	if len(updates) == 0 {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "No fields to update"})
+	}
+
+	if err := db.Model(&library).Updates(updates).Error; err != nil {
+		return c.Status(400).JSON(fiber.Map{"status": "error", "message": "Couldn't update library", "data": err.Error()})
+	}
+
+	if req.Title != nil {
+		library.Title = *req.Title
+	}
+	if req.Description != nil {
+		library.Description = *req.Description
+	}
 
 	return c.JSON(library)
 }

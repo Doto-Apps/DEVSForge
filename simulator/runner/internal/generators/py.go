@@ -60,6 +60,7 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 	// Commande Python (python sur Windows, python3 sur Unix)
 	pyCmd := pythonCommand()
 	cmd := exec.Command(pyCmd, pythonMainFileName, "--json", string(modelJSON))
+	wrapper.Cmd = cmd
 	cmd.Dir = wrapper.ModelDir
 
 	if err != nil {
@@ -82,14 +83,12 @@ func PreparePythonWraper(wrapper *WrapperInfo, manifest shared.RunnableManifest)
 		return fmt.Errorf("failed to start python model process: %w", err)
 	}
 
-	slog.Info("Started PY model process", "model_id", cfg.ID, "pid", cmd.Process.Pid)
-	wrapper.Cmd = cmd
+	slog.Info("Started PY model process", "model_id", cfg.Model.ID, "pid", cmd.Process.Pid)
 
 	// On surveille le process pour détecter un crash avant que le gRPC soit prêt
 	procErrCh := make(chan error, 1)
 	go func() {
-		err := cmd.Wait()
-		procErrCh <- err
+		procErrCh <- cmd.Wait()
 	}()
 
 	// Connexion gRPC avec surveillance du process et timeout (même logique que Go)

@@ -122,7 +122,7 @@ func PrepareJavaWrapper(wrapper *WrapperInfo, manifest shared.RunnableManifest) 
 		return fmt.Errorf("failed to start java model process: %w", err)
 	}
 
-	slog.Info("Started JAVA model process", "model_id", cfg.ID, "pid", cmd.Process.Pid)
+	slog.Info("Started JAVA model process", "model_id", cfg.Model.ID, "pid", cmd.Process.Pid)
 	wrapper.Cmd = cmd
 
 	// 7. Monitor process to detect crash before gRPC is ready

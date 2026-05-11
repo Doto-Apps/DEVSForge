@@ -2,6 +2,8 @@ package logger
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"log/slog"
 	"sync"
 )
@@ -23,21 +25,36 @@ func NewDualHandler(h1, h2 slog.Handler) *DualHandler {
 	}
 }
 
-// Enabled reports whether the handler handles records at the given level
+type ColorWriter struct {
+	writer      io.Writer
+	colorCode   string
+	processType string
+}
+
+func NewColorWriter(w io.Writer, colorCode string, processType string) *ColorWriter {
+	return &ColorWriter{
+		writer:      w,
+		colorCode:   colorCode,
+		processType: processType,
+	}
+}
+
+func (w *ColorWriter) Write(p []byte) (n int, err error) {
+	colored := fmt.Sprintf("\033[%sm | %s | %s\033[0m", w.colorCode, w.processType, string(p))
+	return w.writer.Write([]byte(colored))
+}
+
 func (h *DualHandler) Enabled(ctx context.Context, level slog.Level) bool {
 	return h.handler1.Enabled(ctx, level) || h.handler2.Enabled(ctx, level)
 }
 
-// Handle handles the Record
 func (h *DualHandler) Handle(ctx context.Context, r slog.Record) error {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 
-	// Clone the record for each handler to avoid issues with shared state
 	r1 := r.Clone()
 	r2 := r.Clone()
 
-	// Handle to first handler (attributes are already in the record from logger.With())
 	err1 := h.handler1.Handle(ctx, r1)
 
 	// Handle to second handler

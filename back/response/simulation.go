@@ -1,8 +1,9 @@
 package response
 
 import (
+	shared_kafka "devsforge-shared/kafka"
 	"devsforge/model"
-	"encoding/json"
+	"log/slog"
 	"time"
 )
 
@@ -31,14 +32,10 @@ type SimulationResultResponse struct {
 
 // SimulationEventResponse represents a single DEVS event
 type SimulationEventResponse struct {
-	ID             string    `json:"id"`
-	SimulationID   string    `json:"simulationId"`
-	CreatedAt      time.Time `json:"createdAt"`
-	SimulationTime *float64  `json:"simulationTime"`
-	MsgType        string    `json:"msgType"`
-	Sender         *string   `json:"sender"`
-	Target         *string   `json:"target"`
-	Payload        any       `json:"payload"`
+	ID           string                             `json:"id"`
+	SimulationID string                             `json:"simulationId"`
+	CreatedAt    time.Time                          `json:"createdAt"`
+	Message      shared_kafka.KafkaMessageInterface `json:"message"`
 }
 
 // SimulationEventsResponse is the paginated response for events
@@ -65,20 +62,23 @@ func CreateSimulationResponse(s model.Simulation) SimulationResponse {
 
 // CreateSimulationEventResponse creates a response from a SimulationEvent model
 func CreateSimulationEventResponse(e model.SimulationEvent) SimulationEventResponse {
-	var payload any
-	if len(e.Payload) > 0 {
-		_ = json.Unmarshal(e.Payload, &payload)
+	var message shared_kafka.KafkaMessageInterface
+	if len(e.Message) > 0 {
+		rawMessage, err := shared_kafka.UnmarshalKafkaMessage(e.Message)
+		if err != nil {
+			slog.Warn("cannot unmarshal simulation event message", "error", err)
+		} else if typedMessage, ok := rawMessage.(shared_kafka.KafkaMessageInterface); ok {
+			message = typedMessage
+		} else {
+			slog.Warn("unexpected simulation event message type", "type", rawMessage)
+		}
 	}
 
 	return SimulationEventResponse{
-		ID:             e.ID,
-		SimulationID:   e.SimulationID,
-		CreatedAt:      e.CreatedAt,
-		SimulationTime: e.SimulationTime,
-		MsgType:        e.MsgType,
-		Sender:         e.Sender,
-		Target:         e.Target,
-		Payload:        payload,
+		ID:           e.ID,
+		SimulationID: e.SimulationID,
+		CreatedAt:    e.CreatedAt,
+		Message:      message,
 	}
 }
 

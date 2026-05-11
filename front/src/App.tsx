@@ -22,6 +22,7 @@ import { GettingStarted } from "./pages/help/GettingStarted";
 import { HowItWorks } from "./pages/help/HowItWorks";
 import { ModelerHome } from "./pages/home/ModelerHome";
 import { CreateLibrary } from "./pages/library/CreateLibrary";
+import { LibrariesHome } from "./pages/library/LibrariesHome";
 import { CreateModel } from "./pages/model/CreateModel";
 import { EditModel } from "./pages/model/EditModel";
 import { SimulateModel } from "./pages/model/SimulateModel";
@@ -50,6 +51,8 @@ const Main = () => {
 		<DefaultLayout>
 			<Routes>
 				<Route element={<CreateLibrary />} path="/library/new" />
+				<Route element={<LibrariesHome />} path="/library" />
+				<Route element={<LibrariesHome />} path="/library/:libraryId" />
 				<Route element={<CreateModel />} path="/library/:libId/model/new" />
 				<Route
 					element={<EditModel />}
