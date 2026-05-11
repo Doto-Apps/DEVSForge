@@ -8,7 +8,6 @@ import {
 	type EdgeChange,
 	MiniMap,
 	type NodeChange,
-	type OnDelete,
 	ReactFlow,
 	useReactFlow,
 } from "@xyflow/react";

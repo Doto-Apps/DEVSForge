@@ -25,10 +25,8 @@
     "strictNullChecks": true,
     "strictBindCallApply": true,
 
-    "ignoreDeprecations": "6.0", 
-    "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"]

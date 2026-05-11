@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { TriangleAlertIcon } from "lucide-react";
 import { type ReactNode, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -8,11 +7,9 @@ import { Form } from "@/components/form/Form";
 import { FormSubmitError } from "@/components/form/FormSubmitError";
 import { InputField } from "@/components/form/InputField";
 import { Submit } from "@/components/form/Submit";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogFooter,
 	DialogHeader,
 	DialogTitle,
@@ -20,10 +17,9 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 
-const libRenameSchema = (libraryName: string) =>
-	z.object({
-		name: z.string(),
-	});
+const libRenameSchema = z.object({
+	name: z.string(),
+});
 
 type Props = {
 	libraryName: string;
@@ -39,13 +35,12 @@ export function LibraryRenameDialog({
 	onSubmitSuccess,
 }: Props) {
 	const [open, setOpen] = useState(false);
-	const zodSchema = libRenameSchema(libraryName);
-	const methods = useForm<z.infer<typeof zodSchema>>({
+	const methods = useForm<z.infer<typeof libRenameSchema>>({
 		defaultValues: {
 			name: "",
 		},
 		mode: "onChange",
-		resolver: zodResolver(zodSchema),
+		resolver: zodResolver(libRenameSchema),
 	});
 	const { toast } = useToast();
 
