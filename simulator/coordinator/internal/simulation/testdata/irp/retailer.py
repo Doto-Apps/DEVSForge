@@ -45,14 +45,14 @@ class RetailerIRP(Atomic):
                 f"Retailer {self.retailer_id} exceeded max inventory: " 
                 f"current={self.current_inventory} max={self.max_inventory}" 
             ) 
-
+ 
         self.current_inventory -= self.daily_consumption 
-
+ 
         if self.current_inventory < self.min_inventory: 
             print( 
                 f"Retailer {self.retailer_id} below min inventory: " 
                 f"current={self.current_inventory} min={self.min_inventory}" 
-            )
+            ) 
  
         self.next_close_at += MINUTES_PER_DAY 
  
@@ -85,12 +85,12 @@ class RetailerIRP(Atomic):
             "retailerId": self.retailer_id, 
             "cost": predicted_inventory * self.inventory_cost, 
         } 
-
+ 
         try: 
             out_port = self.get_port_by_name("dailyInventoryCost") 
         except KeyError: 
             return 
-        out_port.add_value(payload)
+        out_port.add_value(payload) 
  
  
 def NewModel(config: dict) -> Atomic: 
@@ -103,13 +103,13 @@ def NewModel(config: dict) -> Atomic:
         ) 
         for p in raw_ports 
     ] 
-
+ 
     cfg = RunnableModelCfg( 
         id=config["id"], 
         name=config["name"], 
         ports=ports_cfg, 
     ) 
-
+ 
     model = new_atomic_from_cfg(cfg, RetailerIRP) 
     raw_parameters = config.get("parameters") or [] 
     model.parameters = { 
@@ -117,7 +117,7 @@ def NewModel(config: dict) -> Atomic:
         for p in raw_parameters 
         if isinstance(p, dict) and p.get("name") 
     } 
-    return model
+    return model 
  
  
 def _as_int(value: Any, fallback: int = 0) -> int: 
@@ -136,4 +136,3 @@ def _as_float(value: Any, fallback: float = 0.0) -> float:
  
 def _day_from_minute(minute: int) -> int: 
     return minute // MINUTES_PER_DAY + 1 
-

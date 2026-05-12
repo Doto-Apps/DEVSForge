@@ -1,603 +1,781 @@
 {
-    "models": [
+  "models": [
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/1b169311-a8d2-4af2-80f6-492f000a901c",
+      "name": "DeliveryScheduleGenerator",
+      "code": "from __future__ import annotations\n\nfrom typing import Any\n\nfrom modeling import Atomic, RunnableModelCfg, RunnableModelPortCfg, INFINITY, new_atomic_from_cfg\n\n\nclass DeliveryScheduleGeneratorIRP(Atomic):\n    def __init__(self, id: str, name: str, ports=None):\n        super().__init__(id=id, name=name, ports=ports)\n        self.parameters: dict[str, Any] = {}\n        self.current_time: int = 0\n        self.posted: bool = False\n        self.schedule_data: dict[str, Any] = {\"deliveriesByDayByVehicle\": {}}\n\n    def initialize(self) -> None:\n        self.current_time = 0\n        self.posted = False\n\n        custom_schedule = self.parameters.get(\"delivery_schedule\")\n        if isinstance(custom_schedule, dict):\n            self.schedule_data = custom_schedule\n            return\n\n        self.schedule_data = self._build_schedule_from_parameters()\n\n    def exit(self) -> None:\n        return\n\n    def ta(self) -> float:\n        return INFINITY if self.posted else 0.0\n\n    def delt_int(self) -> None:\n        self.posted = True\n\n    def delt_ext(self, e: float) -> None:\n        self.current_time += int(round(e))\n\n    def delt_con(self, e: float) -> None:\n        self.delt_int()\n        self.delt_ext(0.0)\n\n    def lambda_(self) -> None:\n        if self.posted:\n            return\n\n        try:\n            out_port = self.get_port_by_name(\"postDeliverySchedule\")\n        except KeyError:\n            return\n        out_port.add_value(self.schedule_data)\n\n    def _build_schedule_from_parameters(self) -> dict[str, Any]:\n        num_time_periods = _as_int(self.parameters.get(\"num_time_periods\"), 1)\n        num_vehicles = _as_int(self.parameters.get(\"num_vehicles\"), 1)\n        vehicle_capacity = _as_float(self.parameters.get(\"vehicle_capacity\"), 100.0)\n\n        retailers_raw = self.parameters.get(\"retailers\")\n        retailers = [item for item in retailers_raw if isinstance(item, dict)] if isinstance(retailers_raw, list) else []\n\n        deliveries_by_day_by_vehicle: dict[str, Any] = {}\n\n        for day in range(1, num_time_periods + 1):\n            retailer_index = 0\n            daily_deliveries: dict[str, Any] = {}\n\n            for vehicle_id in range(num_vehicles):\n                delivery_route: dict[str, Any] = {\n                    \"vehicleId\": vehicle_id,\n                    \"deliveries\": [],\n                }\n\n                if retailer_index >= len(retailers):\n                    continue\n\n                retailer_data = retailers[retailer_index]\n                loaded_quantity = _as_float(retailer_data.get(\"daily_consumption\"), 0.0)\n                vehicle_load = 0.0\n\n                while vehicle_load + loaded_quantity < vehicle_capacity and retailer_index < len(retailers):\n                    vehicle_load += loaded_quantity\n                    retailer_id = _as_int(retailer_data.get(\"id\"), retailer_index)\n                    delivery = {\n                        \"retailerId\": retailer_id,\n                        \"retailerLocation\": {\n                            \"x\": _as_float(retailer_data.get(\"x\"), 0.0),\n                            \"y\": _as_float(retailer_data.get(\"y\"), 0.0),\n                        },\n                        \"productAmount\": loaded_quantity,\n                    }\n                    delivery_route[\"deliveries\"].append(delivery)\n                    retailer_index += 1\n\n                    if retailer_index - 1 < len(retailers):\n                        retailer_data = retailers[retailer_index - 1]\n                        loaded_quantity = _as_float(retailer_data.get(\"daily_consumption\"), 0.0)\n\n                if delivery_route[\"deliveries\"]:\n                    daily_deliveries[str(vehicle_id)] = delivery_route\n\n            deliveries_by_day_by_vehicle[str(day)] = daily_deliveries\n\n        return {\"deliveriesByDayByVehicle\": deliveries_by_day_by_vehicle}\n\n\ndef NewModel(config: dict) -> Atomic:\n    raw_ports = config.get(\"ports\") or []\n    ports_cfg = [\n        RunnableModelPortCfg(\n            id=p[\"id\"],\n            name=p.get(\"name\", p[\"id\"]),\n            type=p[\"type\"],\n        )\n        for p in raw_ports\n    ]\n\n    cfg = RunnableModelCfg(\n        id=config[\"id\"],\n        name=config[\"name\"],\n        ports=ports_cfg,\n    )\n\n    model = new_atomic_from_cfg(cfg, DeliveryScheduleGeneratorIRP)\n    raw_parameters = config.get(\"parameters\") or []\n    model.parameters = {\n        p[\"name\"]: p.get(\"value\")\n        for p in raw_parameters\n        if isinstance(p, dict) and p.get(\"name\")\n    }\n    return model\n\n\ndef _as_int(value: Any, fallback: int = 0) -> int:\n    try:\n        return int(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _as_float(value: Any, fallback: float = 0.0) -> float:\n    try:\n        return float(value)\n    except (TypeError, ValueError):\n        return fallback\n",
+      "language": "python",
+      "ports": [
         {
-            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
-            "name": "Retailer",
-            "code": "#RETAILER_CODE#",
-            "language": "python",
-            "ports": [
-                {
-                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
-                    "name": "receiveDelivery",
-                    "type": "in"
-                },
-                {
-                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
-                    "name": "dailyInventoryCost",
-                    "type": "out"
-                }
-            ],
-            "parameters": [
-                {
-                    "name": "retailer_id",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "starting_inventory",
-                    "type": "float",
-                    "value": 130
-                },
-                {
-                    "name": "min_inventory",
-                    "type": "float",
-                    "value": 0
-                },
-                {
-                    "name": "max_inventory",
-                    "type": "float",
-                    "value": 195
-                },
-                {
-                    "name": "daily_consumption",
-                    "type": "float",
-                    "value": 65
-                },
-                {
-                    "name": "inventory_cost",
-                    "type": "float",
-                    "value": 0.02
-                },
-                {
-                    "name": "closing_hour",
-                    "type": "int",
-                    "value": 16
-                }
-            ],
-            "connections": []
-        },
-        {
-            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
-            "name": "Vehicle",
-            "code": "#VEHICLE_CODE#",
-            "language": "python",
-            "ports": [
-                {
-                    "id": "8adf1813-a157-4d84-a4ab-ee26f1a5f955",
-                    "name": "acceptDeliveryRoute",
-                    "type": "in"
-                },
-                {
-                    "id": "6d20f2cd-0c2a-49c5-96b9-328d76c931c1",
-                    "name": "dropDelivery",
-                    "type": "out"
-                },
-                {
-                    "id": "e9e0d037-9512-4f66-ae1c-80275ae01673",
-                    "name": "dailyDeliveryCost",
-                    "type": "out"
-                }
-            ],
-            "parameters": [
-                {
-                    "name": "vehicle_id",
-                    "type": "int",
-                    "value": 1
-                },
-                {
-                    "name": "capacity",
-                    "type": "float",
-                    "value": 144
-                },
-                {
-                    "name": "cost_per_km",
-                    "type": "float",
-                    "value": 1
-                },
-                {
-                    "name": "speed_km_hr",
-                    "type": "float",
-                    "value": 150
-                },
-                {
-                    "name": "manufacturer_x",
-                    "type": "float",
-                    "value": 154
-                },
-                {
-                    "name": "manufacturer_y",
-                    "type": "float",
-                    "value": 417
-                },
-                {
-                    "name": "minutes_per_delivery",
-                    "type": "int",
-                    "value": 15
-                },
-                {
-                    "name": "closing_hour",
-                    "type": "int",
-                    "value": 16
-                }
-            ],
-            "connections": [
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
-                        "port": "receiveDelivery"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
-                        "port": "receiveDelivery"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
-                        "port": "receiveDelivery"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
-                        "port": "receiveDelivery"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
-                        "port": "receiveDelivery"
-                    }
-                }
-            ]
-        },
-        {
-            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
-            "name": "Retailer",
-            "code": "#RETAILER_CODE#",
-            "language": "python",
-            "ports": [
-                {
-                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
-                    "name": "receiveDelivery",
-                    "type": "in"
-                },
-                {
-                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
-                    "name": "dailyInventoryCost",
-                    "type": "out"
-                }
-            ],
-            "parameters": [
-                {
-                    "name": "retailer_id",
-                    "type": "int",
-                    "value": 1
-                },
-                {
-                    "name": "starting_inventory",
-                    "type": "float",
-                    "value": 70
-                },
-                {
-                    "name": "min_inventory",
-                    "type": "float",
-                    "value": 105
-                },
-                {
-                    "name": "max_inventory",
-                    "type": "float",
-                    "value": 0
-                },
-                {
-                    "name": "daily_consumption",
-                    "type": "float",
-                    "value": 35
-                },
-                {
-                    "name": "inventory_cost",
-                    "type": "float",
-                    "value": 0.03
-                },
-                {
-                    "name": "closing_hour",
-                    "type": "int",
-                    "value": 16
-                }
-            ],
-            "connections": []
-        },
-        {
-            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
-            "name": "Vehicle",
-            "code": "#VEHICLE_CODE#",
-            "language": "python",
-            "ports": [
-                {
-                    "id": "8adf1813-a157-4d84-a4ab-ee26f1a5f955",
-                    "name": "acceptDeliveryRoute",
-                    "type": "in"
-                },
-                {
-                    "id": "6d20f2cd-0c2a-49c5-96b9-328d76c931c1",
-                    "name": "dropDelivery",
-                    "type": "out"
-                },
-                {
-                    "id": "e9e0d037-9512-4f66-ae1c-80275ae01673",
-                    "name": "dailyDeliveryCost",
-                    "type": "out"
-                }
-            ],
-            "parameters": [
-                {
-                    "name": "vehicle_id",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "capacity",
-                    "type": "float",
-                    "value": 144
-                },
-                {
-                    "name": "cost_per_km",
-                    "type": "float",
-                    "value": 1
-                },
-                {
-                    "name": "speed_km_hr",
-                    "type": "float",
-                    "value": 150
-                },
-                {
-                    "name": "manufacturer_x",
-                    "type": "float",
-                    "value": 154
-                },
-                {
-                    "name": "manufacturer_y",
-                    "type": "float",
-                    "value": 417
-                },
-                {
-                    "name": "minutes_per_delivery",
-                    "type": "int",
-                    "value": 15
-                },
-                {
-                    "name": "closing_hour",
-                    "type": "int",
-                    "value": 16
-                }
-            ],
-            "connections": [
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c02acf6-866f-42d5-9e4c-4e7386459f37",
-                        "port": "receiveDelivery"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0db1d550-426f-4dc0-8d45-9af7319527f6",
-                        "port": "receiveDelivery"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
-                        "port": "receiveDelivery"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
-                        "port": "receiveDelivery"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
-                        "port": "dropDelivery"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
-                        "port": "receiveDelivery"
-                    }
-                }
-            ]
-        },
-        {
-            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
-            "name": "Manufacturer",
-            "code": "#MANUFACTURER_CODE#",
-            "language": "python",
-            "ports": [
-                {
-                    "id": "b7f8fef5-5622-42c8-a545-d4ce4da98613",
-                    "name": "acceptDeliverySchedule",
-                    "type": "in"
-                },
-                {
-                    "id": "06fa00ec-8022-48a8-89f8-772d361866fc",
-                    "name": "acceptDelivery",
-                    "type": "in"
-                },
-                {
-                    "id": "f0e5511d-7532-4d2f-9d2e-87ebb7b3adcb",
-                    "name": "postDeliveryRoute",
-                    "type": "out"
-                },
-                {
-                    "id": "fb4844a9-32ac-4167-ae00-9dfad0becf57",
-                    "name": "dailyInventoryCost",
-                    "type": "out"
-                }
-            ],
-            "parameters": [
-                {
-                    "name": "manufacturer_id",
-                    "type": "int",
-                    "value": 0
-                },
-                {
-                    "name": "starting_inventory",
-                    "type": "float",
-                    "value": 510
-                },
-                {
-                    "name": "daily_production",
-                    "type": "float",
-                    "value": 193
-                },
-                {
-                    "name": "inventory_cost",
-                    "type": "float",
-                    "value": 0.03
-                },
-                {
-                    "name": "opening_hour",
-                    "type": "int",
-                    "value": 6
-                },
-                {
-                    "name": "manufacturer_report_minute",
-                    "type": "int",
-                    "value": 1
-                }
-            ],
-            "connections": [
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
-                        "port": "postDeliveryRoute"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
-                        "port": "acceptDeliveryRoute"
-                    }
-                },
-                {
-                    "from": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
-                        "port": "postDeliveryRoute"
-                    },
-                    "to": {
-                        "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/15402c03-3dfd-47c3-8305-3112de075c76",
-                        "port": "acceptDeliveryRoute"
-                    }
-                }
-            ]
-        },
-        {
-            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
-            "name": "Retailer",
-            "code": "#RETAILER_CODE#",
-            "language": "python",
-            "ports": [
-                {
-                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
-                    "name": "receiveDelivery",
-                    "type": "in"
-                },
-                {
-                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
-                    "name": "dailyInventoryCost",
-                    "type": "out"
-                }
-            ],
-            "parameters": [
-                {
-                    "name": "retailer_id",
-                    "type": "int",
-                    "value": 2
-                },
-                {
-                    "name": "starting_inventory",
-                    "type": "float",
-                    "value": 58
-                },
-                {
-                    "name": "min_inventory",
-                    "type": "float",
-                    "value": 0
-                },
-                {
-                    "name": "max_inventory",
-                    "type": "float",
-                    "value": 116
-                },
-                {
-                    "name": "daily_consumption",
-                    "type": "float",
-                    "value": 58
-                },
-                {
-                    "name": "inventory_cost",
-                    "type": "float",
-                    "value": 0.03
-                },
-                {
-                    "name": "closing_hour",
-                    "type": "int",
-                    "value": 16
-                }
-            ],
-            "connections": []
-        },
-        {
-            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/a06b8588-67c6-42d6-9840-7acf7518fe3d",
-            "name": "Retailer",
-            "code": "#RETAILER_CODE#",
-            "language": "python",
-            "ports": [
-                {
-                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
-                    "name": "receiveDelivery",
-                    "type": "in"
-                },
-                {
-                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
-                    "name": "dailyInventoryCost",
-                    "type": "out"
-                }
-            ],
-            "parameters": [
-                {
-                    "name": "retailer_id",
-                    "type": "int",
-                    "value": 3
-                },
-                {
-                    "name": "starting_inventory",
-                    "type": "float",
-                    "value": 48
-                },
-                {
-                    "name": "min_inventory",
-                    "type": "float",
-                    "value": 0
-                },
-                {
-                    "name": "max_inventory",
-                    "type": "float",
-                    "value": 72
-                },
-                {
-                    "name": "daily_consumption",
-                    "type": "float",
-                    "value": 24
-                },
-                {
-                    "name": "inventory_cost",
-                    "type": "float",
-                    "value": 0.02
-                },
-                {
-                    "name": "closing_hour",
-                    "type": "int",
-                    "value": 16
-                }
-            ],
-            "connections": []
-        },
-        {
-            "id": "a4c1c8fe-5713-4e51-a53d-4192aac53c43/db617126-d2ff-46c5-af96-f7d196fbaef6",
-            "name": "Retailer",
-            "code": "#RETAILER_CODE#",
-            "language": "python",
-            "ports": [
-                {
-                    "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
-                    "name": "receiveDelivery",
-                    "type": "in"
-                },
-                {
-                    "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
-                    "name": "dailyInventoryCost",
-                    "type": "out"
-                }
-            ],
-            "parameters": [
-                {
-                    "name": "retailer_id",
-                    "type": "int",
-                    "value": 4
-                },
-                {
-                    "name": "starting_inventory",
-                    "type": "float",
-                    "value": 11
-                },
-                {
-                    "name": "min_inventory",
-                    "type": "float",
-                    "value": 0
-                },
-                {
-                    "name": "max_inventory",
-                    "type": "float",
-                    "value": 22
-                },
-                {
-                    "name": "daily_consumption",
-                    "type": "float",
-                    "value": 11
-                },
-                {
-                    "name": "inventory_cost",
-                    "type": "float",
-                    "value": 0.02
-                },
-                {
-                    "name": "closing_hour",
-                    "type": "int",
-                    "value": 16
-                }
-            ],
-            "connections": []
+          "id": "99618c33-1876-4d2b-8a7e-cbc2b6699ba2",
+          "name": "postDeliverySchedule",
+          "type": "out"
         }
-    ],
-    "count": 1,
-    "simulationId": "test-irp",
-    "maxTime": 2880.0
+      ],
+      "parameters": [
+        {
+          "name": "num_time_periods",
+          "type": "int",
+          "value": 3
+        },
+        {
+          "name": "num_vehicles",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "name": "vehicle_capacity",
+          "type": "float",
+          "value": 144
+        },
+        {
+          "name": "retailers",
+          "type": "object",
+          "value": [
+            {
+              "daily_consumption": 65,
+              "id": 0,
+              "x": 172,
+              "y": 334
+            },
+            {
+              "daily_consumption": 35,
+              "id": 1,
+              "x": 267,
+              "y": 87
+            },
+            {
+              "daily_consumption": 58,
+              "id": 2,
+              "x": 148,
+              "y": 433
+            },
+            {
+              "daily_consumption": 24,
+              "id": 3,
+              "x": 355,
+              "y": 444
+            },
+            {
+              "daily_consumption": 11,
+              "id": 4,
+              "x": 38,
+              "y": 152
+            }
+          ]
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/1b169311-a8d2-4af2-80f6-492f000a901c",
+            "port": "postDeliverySchedule"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "port": "acceptDeliverySchedule"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+      "name": "Retailer",
+      "code": "from __future__ import annotations\n\nfrom typing import Any\n\nfrom modeling import Atomic, RunnableModelCfg, RunnableModelPortCfg, new_atomic_from_cfg\n\nMINUTES_PER_DAY = 24 * 60\n\n\nclass RetailerIRP(Atomic):\n    def __init__(self, id: str, name: str, ports=None):\n        super().__init__(id=id, name=name, ports=ports)\n        self.parameters: dict[str, Any] = {}\n        self.current_time: int = 0\n        self.next_close_at: int = 16 * 60\n        self.current_inventory: float = 0.0\n        self.retailer_id: int = 0\n        self.min_inventory: float = 0.0\n        self.max_inventory: float = 0.0\n        self.daily_consumption: float = 0.0\n        self.inventory_cost: float = 0.0\n\n    def initialize(self) -> None:\n        self.current_time = 0\n        self.retailer_id = _as_int(self.parameters.get(\"retailer_id\"), 0)\n        self.current_inventory = _as_float(self.parameters.get(\"starting_inventory\"), 0.0)\n        self.min_inventory = _as_float(self.parameters.get(\"min_inventory\"), 0.0)\n        self.max_inventory = _as_float(self.parameters.get(\"max_inventory\"), 0.0)\n        self.daily_consumption = _as_float(self.parameters.get(\"daily_consumption\"), 0.0)\n        self.inventory_cost = _as_float(self.parameters.get(\"inventory_cost\"), 0.0)\n        closing_hour = _as_int(self.parameters.get(\"closing_hour\"), 16)\n        self.next_close_at = closing_hour * 60\n\n    def exit(self) -> None:\n        return\n\n    def ta(self) -> float:\n        return max(float(self.next_close_at - self.current_time), 0.0)\n\n    def delt_int(self) -> None:\n        self.current_time = self.next_close_at\n\n        if self.current_inventory > self.max_inventory:\n            print(\n                f\"Retailer {self.retailer_id} exceeded max inventory: \"\n                f\"current={self.current_inventory} max={self.max_inventory}\"\n            )\n\n        self.current_inventory -= self.daily_consumption\n\n        if self.current_inventory < self.min_inventory:\n            print(\n                f\"Retailer {self.retailer_id} below min inventory: \"\n                f\"current={self.current_inventory} min={self.min_inventory}\"\n            )\n\n        self.next_close_at += MINUTES_PER_DAY\n\n    def delt_ext(self, e: float) -> None:\n        self.current_time += int(round(e))\n\n        try:\n            in_port = self.get_port_by_name(\"receiveDelivery\")\n        except KeyError:\n            return\n\n        for value in list(in_port.get_values()):\n            if not isinstance(value, dict):\n                continue\n            delivery_retailer_id = _as_int(value.get(\"retailerId\"), -1)\n            if delivery_retailer_id != self.retailer_id:\n                continue\n            self.current_inventory += _as_float(value.get(\"productAmount\"), 0.0)\n\n        in_port.clear()\n\n    def delt_con(self, e: float) -> None:\n        self.delt_int()\n        self.delt_ext(0.0)\n\n    def lambda_(self) -> None:\n        predicted_inventory = self.current_inventory - self.daily_consumption\n        payload = {\n            \"day\": _day_from_minute(self.next_close_at),\n            \"retailerId\": self.retailer_id,\n            \"cost\": predicted_inventory * self.inventory_cost,\n        }\n\n        try:\n            out_port = self.get_port_by_name(\"dailyInventoryCost\")\n        except KeyError:\n            return\n        out_port.add_value(payload)\n\n\ndef NewModel(config: dict) -> Atomic:\n    raw_ports = config.get(\"ports\") or []\n    ports_cfg = [\n        RunnableModelPortCfg(\n            id=p[\"id\"],\n            name=p.get(\"name\", p[\"id\"]),\n            type=p[\"type\"],\n        )\n        for p in raw_ports\n    ]\n\n    cfg = RunnableModelCfg(\n        id=config[\"id\"],\n        name=config[\"name\"],\n        ports=ports_cfg,\n    )\n\n    model = new_atomic_from_cfg(cfg, RetailerIRP)\n    raw_parameters = config.get(\"parameters\") or []\n    model.parameters = {\n        p[\"name\"]: p.get(\"value\")\n        for p in raw_parameters\n        if isinstance(p, dict) and p.get(\"name\")\n    }\n    return model\n\n\ndef _as_int(value: Any, fallback: int = 0) -> int:\n    try:\n        return int(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _as_float(value: Any, fallback: float = 0.0) -> float:\n    try:\n        return float(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _day_from_minute(minute: int) -> int:\n    return minute // MINUTES_PER_DAY + 1\n",
+      "language": "python",
+      "ports": [
+        {
+          "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+          "name": "receiveDelivery",
+          "type": "in"
+        },
+        {
+          "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+          "name": "dailyInventoryCost",
+          "type": "out"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "retailer_id",
+          "type": "int",
+          "value": 0
+        },
+        {
+          "name": "starting_inventory",
+          "type": "float",
+          "value": 130
+        },
+        {
+          "name": "min_inventory",
+          "type": "float",
+          "value": 0
+        },
+        {
+          "name": "max_inventory",
+          "type": "float",
+          "value": 195
+        },
+        {
+          "name": "daily_consumption",
+          "type": "float",
+          "value": 65
+        },
+        {
+          "name": "inventory_cost",
+          "type": "float",
+          "value": 0.02
+        },
+        {
+          "name": "closing_hour",
+          "type": "int",
+          "value": 16
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "port": "dailyInventoryCost"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/f8537458-e594-4412-a892-1e439b25d9df",
+            "port": "aggregateInventoryCost"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+      "name": "Vehicle",
+      "code": "from __future__ import annotations\n\nimport math\nfrom typing import Any\n\nfrom modeling import Atomic, RunnableModelCfg, RunnableModelPortCfg, INFINITY, new_atomic_from_cfg\n\nMINUTES_PER_DAY = 24 * 60\n\n\nclass VehicleIRP(Atomic):\n    def __init__(self, id: str, name: str, ports=None):\n        super().__init__(id=id, name=name, ports=ports)\n        self.parameters: dict[str, Any] = {}\n        self.current_time: int = 0\n        self.vehicle_id: int = 0\n        self.capacity: float = 0.0\n        self.cost_per_km: float = 0.0\n        self.speed_km_hr: float = 1.0\n        self.minutes_per_delivery: int = 15\n        self.closing_hour: int = 16\n        self.manufacturer_location: dict[str, float] = {\"x\": 0.0, \"y\": 0.0}\n        self.location: dict[str, float] = {\"x\": 0.0, \"y\": 0.0}\n        self.daily_km_traveled: float = 0.0\n        self.route: list[dict[str, Any]] = []\n        self.next_event: dict[str, Any] | None = None\n        self.pending_immediate: list[dict[str, Any]] = []\n\n    def initialize(self) -> None:\n        self.current_time = 0\n        self.vehicle_id = _as_int(self.parameters.get(\"vehicle_id\"), 0)\n        self.capacity = _as_float(self.parameters.get(\"capacity\"), 0.0)\n        self.cost_per_km = _as_float(self.parameters.get(\"cost_per_km\"), 0.0)\n        self.speed_km_hr = _as_float(self.parameters.get(\"speed_km_hr\"), 1.0)\n        self.minutes_per_delivery = _as_int(self.parameters.get(\"minutes_per_delivery\"), 15)\n        self.closing_hour = _as_int(self.parameters.get(\"closing_hour\"), 16)\n\n        self.manufacturer_location = {\n            \"x\": _as_float(self.parameters.get(\"manufacturer_x\"), 0.0),\n            \"y\": _as_float(self.parameters.get(\"manufacturer_y\"), 0.0),\n        }\n        self.location = dict(self.manufacturer_location)\n\n        self.daily_km_traveled = 0.0\n        self.route = []\n        self.next_event = None\n        self.pending_immediate = []\n\n    def exit(self) -> None:\n        return\n\n    def ta(self) -> float:\n        if self.pending_immediate:\n            return 0.0\n        if self.next_event is None:\n            return INFINITY\n        return max(float(self.next_event[\"time\"] - self.current_time), 0.0)\n\n    def delt_int(self) -> None:\n        if self.pending_immediate:\n            self.pending_immediate = []\n            return\n\n        if self.next_event is None:\n            self.passivate()\n            return\n\n        event = self.next_event\n        self.current_time = _as_int(event.get(\"time\"), self.current_time)\n\n        if event.get(\"kind\") == \"delivery\":\n            delivery = event.get(\"delivery\")\n            if isinstance(delivery, dict):\n                destination = _delivery_location(delivery)\n                distance = _distance(self.location, destination)\n                self.daily_km_traveled += distance\n                self.location = destination\n            self._schedule_next_delivery()\n            return\n\n        if event.get(\"kind\") == \"return\":\n            distance = _distance(self.location, self.manufacturer_location)\n            self.daily_km_traveled += distance\n            self.location = dict(self.manufacturer_location)\n            self.daily_km_traveled = 0.0\n            self.next_event = None\n\n    def delt_ext(self, e: float) -> None:\n        self.current_time += int(round(e))\n\n        try:\n            in_port = self.get_port_by_name(\"acceptDeliveryRoute\")\n        except KeyError:\n            return\n\n        for value in list(in_port.get_values()):\n            self._handle_accept_delivery_route(value)\n\n        in_port.clear()\n\n    def delt_con(self, e: float) -> None:\n        self.delt_int()\n        self.delt_ext(0.0)\n\n    def lambda_(self) -> None:\n        if self.pending_immediate:\n            for payload in self.pending_immediate:\n                self._emit(\"dropDelivery\", payload)\n            return\n\n        if self.next_event is None:\n            return\n\n        if self.next_event.get(\"kind\") == \"delivery\":\n            delivery = self.next_event.get(\"delivery\")\n            if isinstance(delivery, dict):\n                self._emit(\"dropDelivery\", delivery)\n            return\n\n        if self.next_event.get(\"kind\") == \"return\":\n            distance = _distance(self.location, self.manufacturer_location)\n            payload = {\n                \"vehicleId\": self.vehicle_id,\n                \"day\": _day_from_minute(_as_int(self.next_event.get(\"time\"), self.current_time)),\n                \"cost\": (self.daily_km_traveled + distance) * self.cost_per_km,\n            }\n            self._emit(\"dailyDeliveryCost\", payload)\n\n    def _handle_accept_delivery_route(self, raw: Any) -> None:\n        if not isinstance(raw, dict):\n            return\n\n        incoming_vehicle_id = _as_int(raw.get(\"vehicleId\"), self.vehicle_id)\n        if incoming_vehicle_id != self.vehicle_id:\n            return\n\n        deliveries_raw = raw.get(\"deliveries\")\n        if not isinstance(deliveries_raw, list):\n            deliveries_raw = []\n\n        deliveries: list[dict[str, Any]] = []\n        total_quantity = 0.0\n\n        for item in deliveries_raw:\n            if not isinstance(item, dict):\n                continue\n            deliveries.append(item)\n            total_quantity += _as_float(item.get(\"productAmount\"), 0.0)\n\n        if total_quantity > self.capacity:\n            excess = total_quantity - self.capacity\n            self.pending_immediate.append(\n                {\n                    \"retailerId\": 0,\n                    \"retailerLocation\": dict(self.manufacturer_location),\n                    \"productAmount\": excess,\n                }\n            )\n            self.daily_km_traveled = 0.0\n\n        self.route = deliveries\n        self._schedule_next_delivery()\n\n    def _schedule_next_delivery(self) -> None:\n        if not self.route:\n            self._schedule_return_to_manufacturer(self.current_time)\n            return\n\n        next_delivery = self.route.pop(0)\n        destination = _delivery_location(next_delivery)\n        distance = _distance(self.location, destination)\n\n        speed = self.speed_km_hr if self.speed_km_hr > 0.0 else 1.0\n        travel_minutes = int(distance / (speed / 60.0))\n        arrival = self.current_time + self.minutes_per_delivery + travel_minutes\n\n        if _hour_part(arrival) < self.closing_hour:\n            self.next_event = {\n                \"time\": arrival,\n                \"kind\": \"delivery\",\n                \"delivery\": next_delivery,\n            }\n            return\n\n        self._schedule_return_to_manufacturer(self.current_time)\n\n    def _schedule_return_to_manufacturer(self, base_time: int) -> None:\n        distance = _distance(self.location, self.manufacturer_location)\n        speed = self.speed_km_hr if self.speed_km_hr > 0.0 else 1.0\n        travel_minutes = int(distance / (speed / 60.0))\n        arrival = base_time + self.minutes_per_delivery + travel_minutes\n        self.next_event = {\n            \"time\": arrival,\n            \"kind\": \"return\",\n        }\n\n    def _emit(self, port_name: str, payload: Any) -> None:\n        try:\n            out_port = self.get_port_by_name(port_name)\n        except KeyError:\n            return\n        out_port.add_value(payload)\n\n\ndef NewModel(config: dict) -> Atomic:\n    raw_ports = config.get(\"ports\") or []\n    ports_cfg = [\n        RunnableModelPortCfg(\n            id=p[\"id\"],\n            name=p.get(\"name\", p[\"id\"]),\n            type=p[\"type\"],\n        )\n        for p in raw_ports\n    ]\n\n    cfg = RunnableModelCfg(\n        id=config[\"id\"],\n        name=config[\"name\"],\n        ports=ports_cfg,\n    )\n\n    model = new_atomic_from_cfg(cfg, VehicleIRP)\n    raw_parameters = config.get(\"parameters\") or []\n    model.parameters = {\n        p[\"name\"]: p.get(\"value\")\n        for p in raw_parameters\n        if isinstance(p, dict) and p.get(\"name\")\n    }\n    return model\n\n\ndef _delivery_location(delivery: dict[str, Any]) -> dict[str, float]:\n    location = delivery.get(\"retailerLocation\")\n    if not isinstance(location, dict):\n        return {\"x\": 0.0, \"y\": 0.0}\n    return {\n        \"x\": _as_float(location.get(\"x\"), 0.0),\n        \"y\": _as_float(location.get(\"y\"), 0.0),\n    }\n\n\ndef _distance(c1: dict[str, float], c2: dict[str, float]) -> float:\n    dx = _as_float(c1.get(\"x\"), 0.0) - _as_float(c2.get(\"x\"), 0.0)\n    dy = _as_float(c1.get(\"y\"), 0.0) - _as_float(c2.get(\"y\"), 0.0)\n    return math.sqrt(dx * dx + dy * dy)\n\n\ndef _hour_part(minute: int) -> int:\n    if minute < 0:\n        return 0\n    return (minute // 60) % 24\n\n\ndef _day_from_minute(minute: int) -> int:\n    if minute < 0:\n        return 1\n    return minute // MINUTES_PER_DAY + 1\n\n\ndef _as_int(value: Any, fallback: int = 0) -> int:\n    try:\n        return int(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _as_float(value: Any, fallback: float = 0.0) -> float:\n    try:\n        return float(value)\n    except (TypeError, ValueError):\n        return fallback\n",
+      "language": "python",
+      "ports": [
+        {
+          "id": "8adf1813-a157-4d84-a4ab-ee26f1a5f955",
+          "name": "acceptDeliveryRoute",
+          "type": "in"
+        },
+        {
+          "id": "6d20f2cd-0c2a-49c5-96b9-328d76c931c1",
+          "name": "dropDelivery",
+          "type": "out"
+        },
+        {
+          "id": "e9e0d037-9512-4f66-ae1c-80275ae01673",
+          "name": "dailyDeliveryCost",
+          "type": "out"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "vehicle_id",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "name": "capacity",
+          "type": "float",
+          "value": 144
+        },
+        {
+          "name": "cost_per_km",
+          "type": "float",
+          "value": 1
+        },
+        {
+          "name": "speed_km_hr",
+          "type": "float",
+          "value": 150
+        },
+        {
+          "name": "manufacturer_x",
+          "type": "float",
+          "value": 154
+        },
+        {
+          "name": "manufacturer_y",
+          "type": "float",
+          "value": 417
+        },
+        {
+          "name": "minutes_per_delivery",
+          "type": "int",
+          "value": 15
+        },
+        {
+          "name": "closing_hour",
+          "type": "int",
+          "value": 16
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "port": "receiveDelivery"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "port": "receiveDelivery"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "port": "receiveDelivery"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "port": "receiveDelivery"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "port": "receiveDelivery"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0db1d550-426f-4dc0-8d45-9af7319527f6",
+      "name": "Retailer",
+      "code": "from __future__ import annotations\n\nfrom typing import Any\n\nfrom modeling import Atomic, RunnableModelCfg, RunnableModelPortCfg, new_atomic_from_cfg\n\nMINUTES_PER_DAY = 24 * 60\n\n\nclass RetailerIRP(Atomic):\n    def __init__(self, id: str, name: str, ports=None):\n        super().__init__(id=id, name=name, ports=ports)\n        self.parameters: dict[str, Any] = {}\n        self.current_time: int = 0\n        self.next_close_at: int = 16 * 60\n        self.current_inventory: float = 0.0\n        self.retailer_id: int = 0\n        self.min_inventory: float = 0.0\n        self.max_inventory: float = 0.0\n        self.daily_consumption: float = 0.0\n        self.inventory_cost: float = 0.0\n\n    def initialize(self) -> None:\n        self.current_time = 0\n        self.retailer_id = _as_int(self.parameters.get(\"retailer_id\"), 0)\n        self.current_inventory = _as_float(self.parameters.get(\"starting_inventory\"), 0.0)\n        self.min_inventory = _as_float(self.parameters.get(\"min_inventory\"), 0.0)\n        self.max_inventory = _as_float(self.parameters.get(\"max_inventory\"), 0.0)\n        self.daily_consumption = _as_float(self.parameters.get(\"daily_consumption\"), 0.0)\n        self.inventory_cost = _as_float(self.parameters.get(\"inventory_cost\"), 0.0)\n        closing_hour = _as_int(self.parameters.get(\"closing_hour\"), 16)\n        self.next_close_at = closing_hour * 60\n\n    def exit(self) -> None:\n        return\n\n    def ta(self) -> float:\n        return max(float(self.next_close_at - self.current_time), 0.0)\n\n    def delt_int(self) -> None:\n        self.current_time = self.next_close_at\n\n        if self.current_inventory > self.max_inventory:\n            print(\n                f\"Retailer {self.retailer_id} exceeded max inventory: \"\n                f\"current={self.current_inventory} max={self.max_inventory}\"\n            )\n\n        self.current_inventory -= self.daily_consumption\n\n        if self.current_inventory < self.min_inventory:\n            print(\n                f\"Retailer {self.retailer_id} below min inventory: \"\n                f\"current={self.current_inventory} min={self.min_inventory}\"\n            )\n\n        self.next_close_at += MINUTES_PER_DAY\n\n    def delt_ext(self, e: float) -> None:\n        self.current_time += int(round(e))\n\n        try:\n            in_port = self.get_port_by_name(\"receiveDelivery\")\n        except KeyError:\n            return\n\n        for value in list(in_port.get_values()):\n            if not isinstance(value, dict):\n                continue\n            delivery_retailer_id = _as_int(value.get(\"retailerId\"), -1)\n            if delivery_retailer_id != self.retailer_id:\n                continue\n            self.current_inventory += _as_float(value.get(\"productAmount\"), 0.0)\n\n        in_port.clear()\n\n    def delt_con(self, e: float) -> None:\n        self.delt_int()\n        self.delt_ext(0.0)\n\n    def lambda_(self) -> None:\n        predicted_inventory = self.current_inventory - self.daily_consumption\n        payload = {\n            \"day\": _day_from_minute(self.next_close_at),\n            \"retailerId\": self.retailer_id,\n            \"cost\": predicted_inventory * self.inventory_cost,\n        }\n\n        try:\n            out_port = self.get_port_by_name(\"dailyInventoryCost\")\n        except KeyError:\n            return\n        out_port.add_value(payload)\n\n\ndef NewModel(config: dict) -> Atomic:\n    raw_ports = config.get(\"ports\") or []\n    ports_cfg = [\n        RunnableModelPortCfg(\n            id=p[\"id\"],\n            name=p.get(\"name\", p[\"id\"]),\n            type=p[\"type\"],\n        )\n        for p in raw_ports\n    ]\n\n    cfg = RunnableModelCfg(\n        id=config[\"id\"],\n        name=config[\"name\"],\n        ports=ports_cfg,\n    )\n\n    model = new_atomic_from_cfg(cfg, RetailerIRP)\n    raw_parameters = config.get(\"parameters\") or []\n    model.parameters = {\n        p[\"name\"]: p.get(\"value\")\n        for p in raw_parameters\n        if isinstance(p, dict) and p.get(\"name\")\n    }\n    return model\n\n\ndef _as_int(value: Any, fallback: int = 0) -> int:\n    try:\n        return int(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _as_float(value: Any, fallback: float = 0.0) -> float:\n    try:\n        return float(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _day_from_minute(minute: int) -> int:\n    return minute // MINUTES_PER_DAY + 1\n",
+      "language": "python",
+      "ports": [
+        {
+          "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+          "name": "receiveDelivery",
+          "type": "in"
+        },
+        {
+          "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+          "name": "dailyInventoryCost",
+          "type": "out"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "retailer_id",
+          "type": "int",
+          "value": 1
+        },
+        {
+          "name": "starting_inventory",
+          "type": "float",
+          "value": 70
+        },
+        {
+          "name": "min_inventory",
+          "type": "float",
+          "value": 105
+        },
+        {
+          "name": "max_inventory",
+          "type": "float",
+          "value": 0
+        },
+        {
+          "name": "daily_consumption",
+          "type": "float",
+          "value": 35
+        },
+        {
+          "name": "inventory_cost",
+          "type": "float",
+          "value": 0.03
+        },
+        {
+          "name": "closing_hour",
+          "type": "int",
+          "value": 16
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "port": "dailyInventoryCost"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/f8537458-e594-4412-a892-1e439b25d9df",
+            "port": "aggregateInventoryCost"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/15402c03-3dfd-47c3-8305-3112de075c76",
+      "name": "Vehicle",
+      "code": "from __future__ import annotations\n\nimport math\nfrom typing import Any\n\nfrom modeling import Atomic, RunnableModelCfg, RunnableModelPortCfg, INFINITY, new_atomic_from_cfg\n\nMINUTES_PER_DAY = 24 * 60\n\n\nclass VehicleIRP(Atomic):\n    def __init__(self, id: str, name: str, ports=None):\n        super().__init__(id=id, name=name, ports=ports)\n        self.parameters: dict[str, Any] = {}\n        self.current_time: int = 0\n        self.vehicle_id: int = 0\n        self.capacity: float = 0.0\n        self.cost_per_km: float = 0.0\n        self.speed_km_hr: float = 1.0\n        self.minutes_per_delivery: int = 15\n        self.closing_hour: int = 16\n        self.manufacturer_location: dict[str, float] = {\"x\": 0.0, \"y\": 0.0}\n        self.location: dict[str, float] = {\"x\": 0.0, \"y\": 0.0}\n        self.daily_km_traveled: float = 0.0\n        self.route: list[dict[str, Any]] = []\n        self.next_event: dict[str, Any] | None = None\n        self.pending_immediate: list[dict[str, Any]] = []\n\n    def initialize(self) -> None:\n        self.current_time = 0\n        self.vehicle_id = _as_int(self.parameters.get(\"vehicle_id\"), 0)\n        self.capacity = _as_float(self.parameters.get(\"capacity\"), 0.0)\n        self.cost_per_km = _as_float(self.parameters.get(\"cost_per_km\"), 0.0)\n        self.speed_km_hr = _as_float(self.parameters.get(\"speed_km_hr\"), 1.0)\n        self.minutes_per_delivery = _as_int(self.parameters.get(\"minutes_per_delivery\"), 15)\n        self.closing_hour = _as_int(self.parameters.get(\"closing_hour\"), 16)\n\n        self.manufacturer_location = {\n            \"x\": _as_float(self.parameters.get(\"manufacturer_x\"), 0.0),\n            \"y\": _as_float(self.parameters.get(\"manufacturer_y\"), 0.0),\n        }\n        self.location = dict(self.manufacturer_location)\n\n        self.daily_km_traveled = 0.0\n        self.route = []\n        self.next_event = None\n        self.pending_immediate = []\n\n    def exit(self) -> None:\n        return\n\n    def ta(self) -> float:\n        if self.pending_immediate:\n            return 0.0\n        if self.next_event is None:\n            return INFINITY\n        return max(float(self.next_event[\"time\"] - self.current_time), 0.0)\n\n    def delt_int(self) -> None:\n        if self.pending_immediate:\n            self.pending_immediate = []\n            return\n\n        if self.next_event is None:\n            self.passivate()\n            return\n\n        event = self.next_event\n        self.current_time = _as_int(event.get(\"time\"), self.current_time)\n\n        if event.get(\"kind\") == \"delivery\":\n            delivery = event.get(\"delivery\")\n            if isinstance(delivery, dict):\n                destination = _delivery_location(delivery)\n                distance = _distance(self.location, destination)\n                self.daily_km_traveled += distance\n                self.location = destination\n            self._schedule_next_delivery()\n            return\n\n        if event.get(\"kind\") == \"return\":\n            distance = _distance(self.location, self.manufacturer_location)\n            self.daily_km_traveled += distance\n            self.location = dict(self.manufacturer_location)\n            self.daily_km_traveled = 0.0\n            self.next_event = None\n\n    def delt_ext(self, e: float) -> None:\n        self.current_time += int(round(e))\n\n        try:\n            in_port = self.get_port_by_name(\"acceptDeliveryRoute\")\n        except KeyError:\n            return\n\n        for value in list(in_port.get_values()):\n            self._handle_accept_delivery_route(value)\n\n        in_port.clear()\n\n    def delt_con(self, e: float) -> None:\n        self.delt_int()\n        self.delt_ext(0.0)\n\n    def lambda_(self) -> None:\n        if self.pending_immediate:\n            for payload in self.pending_immediate:\n                self._emit(\"dropDelivery\", payload)\n            return\n\n        if self.next_event is None:\n            return\n\n        if self.next_event.get(\"kind\") == \"delivery\":\n            delivery = self.next_event.get(\"delivery\")\n            if isinstance(delivery, dict):\n                self._emit(\"dropDelivery\", delivery)\n            return\n\n        if self.next_event.get(\"kind\") == \"return\":\n            distance = _distance(self.location, self.manufacturer_location)\n            payload = {\n                \"vehicleId\": self.vehicle_id,\n                \"day\": _day_from_minute(_as_int(self.next_event.get(\"time\"), self.current_time)),\n                \"cost\": (self.daily_km_traveled + distance) * self.cost_per_km,\n            }\n            self._emit(\"dailyDeliveryCost\", payload)\n\n    def _handle_accept_delivery_route(self, raw: Any) -> None:\n        if not isinstance(raw, dict):\n            return\n\n        incoming_vehicle_id = _as_int(raw.get(\"vehicleId\"), self.vehicle_id)\n        if incoming_vehicle_id != self.vehicle_id:\n            return\n\n        deliveries_raw = raw.get(\"deliveries\")\n        if not isinstance(deliveries_raw, list):\n            deliveries_raw = []\n\n        deliveries: list[dict[str, Any]] = []\n        total_quantity = 0.0\n\n        for item in deliveries_raw:\n            if not isinstance(item, dict):\n                continue\n            deliveries.append(item)\n            total_quantity += _as_float(item.get(\"productAmount\"), 0.0)\n\n        if total_quantity > self.capacity:\n            excess = total_quantity - self.capacity\n            self.pending_immediate.append(\n                {\n                    \"retailerId\": 0,\n                    \"retailerLocation\": dict(self.manufacturer_location),\n                    \"productAmount\": excess,\n                }\n            )\n            self.daily_km_traveled = 0.0\n\n        self.route = deliveries\n        self._schedule_next_delivery()\n\n    def _schedule_next_delivery(self) -> None:\n        if not self.route:\n            self._schedule_return_to_manufacturer(self.current_time)\n            return\n\n        next_delivery = self.route.pop(0)\n        destination = _delivery_location(next_delivery)\n        distance = _distance(self.location, destination)\n\n        speed = self.speed_km_hr if self.speed_km_hr > 0.0 else 1.0\n        travel_minutes = int(distance / (speed / 60.0))\n        arrival = self.current_time + self.minutes_per_delivery + travel_minutes\n\n        if _hour_part(arrival) < self.closing_hour:\n            self.next_event = {\n                \"time\": arrival,\n                \"kind\": \"delivery\",\n                \"delivery\": next_delivery,\n            }\n            return\n\n        self._schedule_return_to_manufacturer(self.current_time)\n\n    def _schedule_return_to_manufacturer(self, base_time: int) -> None:\n        distance = _distance(self.location, self.manufacturer_location)\n        speed = self.speed_km_hr if self.speed_km_hr > 0.0 else 1.0\n        travel_minutes = int(distance / (speed / 60.0))\n        arrival = base_time + self.minutes_per_delivery + travel_minutes\n        self.next_event = {\n            \"time\": arrival,\n            \"kind\": \"return\",\n        }\n\n    def _emit(self, port_name: str, payload: Any) -> None:\n        try:\n            out_port = self.get_port_by_name(port_name)\n        except KeyError:\n            return\n        out_port.add_value(payload)\n\n\ndef NewModel(config: dict) -> Atomic:\n    raw_ports = config.get(\"ports\") or []\n    ports_cfg = [\n        RunnableModelPortCfg(\n            id=p[\"id\"],\n            name=p.get(\"name\", p[\"id\"]),\n            type=p[\"type\"],\n        )\n        for p in raw_ports\n    ]\n\n    cfg = RunnableModelCfg(\n        id=config[\"id\"],\n        name=config[\"name\"],\n        ports=ports_cfg,\n    )\n\n    model = new_atomic_from_cfg(cfg, VehicleIRP)\n    raw_parameters = config.get(\"parameters\") or []\n    model.parameters = {\n        p[\"name\"]: p.get(\"value\")\n        for p in raw_parameters\n        if isinstance(p, dict) and p.get(\"name\")\n    }\n    return model\n\n\ndef _delivery_location(delivery: dict[str, Any]) -> dict[str, float]:\n    location = delivery.get(\"retailerLocation\")\n    if not isinstance(location, dict):\n        return {\"x\": 0.0, \"y\": 0.0}\n    return {\n        \"x\": _as_float(location.get(\"x\"), 0.0),\n        \"y\": _as_float(location.get(\"y\"), 0.0),\n    }\n\n\ndef _distance(c1: dict[str, float], c2: dict[str, float]) -> float:\n    dx = _as_float(c1.get(\"x\"), 0.0) - _as_float(c2.get(\"x\"), 0.0)\n    dy = _as_float(c1.get(\"y\"), 0.0) - _as_float(c2.get(\"y\"), 0.0)\n    return math.sqrt(dx * dx + dy * dy)\n\n\ndef _hour_part(minute: int) -> int:\n    if minute < 0:\n        return 0\n    return (minute // 60) % 24\n\n\ndef _day_from_minute(minute: int) -> int:\n    if minute < 0:\n        return 1\n    return minute // MINUTES_PER_DAY + 1\n\n\ndef _as_int(value: Any, fallback: int = 0) -> int:\n    try:\n        return int(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _as_float(value: Any, fallback: float = 0.0) -> float:\n    try:\n        return float(value)\n    except (TypeError, ValueError):\n        return fallback\n",
+      "language": "python",
+      "ports": [
+        {
+          "id": "8adf1813-a157-4d84-a4ab-ee26f1a5f955",
+          "name": "acceptDeliveryRoute",
+          "type": "in"
+        },
+        {
+          "id": "6d20f2cd-0c2a-49c5-96b9-328d76c931c1",
+          "name": "dropDelivery",
+          "type": "out"
+        },
+        {
+          "id": "e9e0d037-9512-4f66-ae1c-80275ae01673",
+          "name": "dailyDeliveryCost",
+          "type": "out"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "vehicle_id",
+          "type": "int",
+          "value": 0
+        },
+        {
+          "name": "capacity",
+          "type": "float",
+          "value": 144
+        },
+        {
+          "name": "cost_per_km",
+          "type": "float",
+          "value": 1
+        },
+        {
+          "name": "speed_km_hr",
+          "type": "float",
+          "value": 150
+        },
+        {
+          "name": "manufacturer_x",
+          "type": "float",
+          "value": 154
+        },
+        {
+          "name": "manufacturer_y",
+          "type": "float",
+          "value": 417
+        },
+        {
+          "name": "minutes_per_delivery",
+          "type": "int",
+          "value": 15
+        },
+        {
+          "name": "closing_hour",
+          "type": "int",
+          "value": 16
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/15402c03-3dfd-47c3-8305-3112de075c76",
+            "port": "dailyDeliveryCost"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/f8537458-e594-4412-a892-1e439b25d9df",
+            "port": "aggregateVehicleCost"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/15402c03-3dfd-47c3-8305-3112de075c76",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c02acf6-866f-42d5-9e4c-4e7386459f37",
+            "port": "receiveDelivery"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/15402c03-3dfd-47c3-8305-3112de075c76",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0db1d550-426f-4dc0-8d45-9af7319527f6",
+            "port": "receiveDelivery"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/15402c03-3dfd-47c3-8305-3112de075c76",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "port": "receiveDelivery"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/15402c03-3dfd-47c3-8305-3112de075c76",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "port": "receiveDelivery"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/15402c03-3dfd-47c3-8305-3112de075c76",
+            "port": "dropDelivery"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "port": "receiveDelivery"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+      "name": "Manufacturer",
+      "code": "from __future__ import annotations\n\nfrom typing import Any\n\nfrom modeling import Atomic, RunnableModelCfg, RunnableModelPortCfg, INFINITY, new_atomic_from_cfg\n\nMINUTES_PER_DAY = 24 * 60\n\n\nclass ManufacturerIRP(Atomic):\n    def __init__(self, id: str, name: str, ports=None):\n        super().__init__(id=id, name=name, ports=ports)\n        self.parameters: dict[str, Any] = {}\n        self.current_time: int = 0\n        self.current_inventory: float = 0.0\n        self.daily_production: float = 0.0\n        self.inventory_cost: float = 0.0\n        self.manufacturer_id: int = 0\n        self.opening_hour: int = 6\n        self.report_minute: int = 1439\n        self.next_report_at: int = 1439\n        self.route_events: dict[int, list[dict[str, Any]]] = {}\n\n    def initialize(self) -> None:\n        self.current_time = 0\n        self.current_inventory = _as_float(self.parameters.get(\"starting_inventory\"), 0.0)\n        self.daily_production = _as_float(self.parameters.get(\"daily_production\"), 0.0)\n        self.inventory_cost = _as_float(self.parameters.get(\"inventory_cost\"), 0.0)\n        self.manufacturer_id = _as_int(self.parameters.get(\"manufacturer_id\"), 0)\n        self.opening_hour = _as_int(self.parameters.get(\"opening_hour\"), 6)\n        self.report_minute = _as_int(self.parameters.get(\"manufacturer_report_minute\"), 1439)\n        if self.report_minute < 0:\n            self.report_minute = 1439\n        self.next_report_at = self.report_minute\n        self.route_events = {}\n\n    def exit(self) -> None:\n        return\n\n    def ta(self) -> float:\n        next_time = self._next_internal_time()\n        if next_time is None:\n            return INFINITY\n        return max(float(next_time - self.current_time), 0.0)\n\n    def delt_int(self) -> None:\n        next_time = self._next_internal_time()\n        if next_time is None:\n            self.passivate()\n            return\n\n        self.current_time = next_time\n\n        if self.next_report_at == next_time:\n            self.current_inventory += self.daily_production\n            self.next_report_at += MINUTES_PER_DAY\n\n        routes = self.route_events.pop(next_time, [])\n        for route in routes:\n            self.current_inventory -= _route_load(route)\n\n    def delt_ext(self, e: float) -> None:\n        self.current_time += int(round(e))\n\n        self._consume_input_port(\"acceptDeliverySchedule\", self._handle_accept_delivery_schedule)\n        self._consume_input_port(\"acceptDelivery\", self._handle_accept_delivery)\n\n    def delt_con(self, e: float) -> None:\n        self.delt_int()\n        self.delt_ext(0.0)\n\n    def lambda_(self) -> None:\n        next_time = self._next_internal_time()\n        if next_time is None:\n            return\n\n        if self.next_report_at == next_time:\n            predicted_inventory = self.current_inventory + self.daily_production\n            self._emit(\n                \"dailyInventoryCost\",\n                {\n                    \"day\": _day_from_minute(next_time),\n                    \"retailerId\": self.manufacturer_id,\n                    \"cost\": predicted_inventory * self.inventory_cost,\n                },\n            )\n\n        for route in self.route_events.get(next_time, []):\n            self._emit(\"postDeliveryRoute\", route)\n\n    def _consume_input_port(self, port_name: str, handler) -> None:\n        try:\n            port = self.get_port_by_name(port_name)\n        except KeyError:\n            return\n\n        for value in list(port.get_values()):\n            handler(value)\n        port.clear()\n\n    def _handle_accept_delivery_schedule(self, raw: Any) -> None:\n        payload = _as_dict(raw)\n        by_day = _as_dict(payload.get(\"deliveriesByDayByVehicle\"))\n\n        for day_key, routes_by_vehicle in by_day.items():\n            day = _as_int(day_key, -1)\n            if day < 1:\n                continue\n            load_time = (day - 1) * MINUTES_PER_DAY + self.opening_hour * 60\n            by_vehicle = _as_dict(routes_by_vehicle)\n            for route in by_vehicle.values():\n                route_map = _as_dict(route)\n                self.route_events.setdefault(load_time, []).append(route_map)\n\n    def _handle_accept_delivery(self, raw: Any) -> None:\n        delivery = _as_dict(raw)\n        self.current_inventory += _as_float(delivery.get(\"productAmount\"), 0.0)\n\n    def _next_internal_time(self) -> int | None:\n        next_time = self.next_report_at\n        if self.route_events:\n            route_time = min(self.route_events.keys())\n            next_time = min(next_time, route_time)\n        return max(next_time, self.current_time)\n\n    def _emit(self, port_name: str, payload: Any) -> None:\n        try:\n            out_port = self.get_port_by_name(port_name)\n        except KeyError:\n            return\n        out_port.add_value(payload)\n\n\ndef NewModel(config: dict) -> Atomic:\n    raw_ports = config.get(\"ports\") or []\n    ports_cfg = [\n        RunnableModelPortCfg(\n            id=p[\"id\"],\n            name=p.get(\"name\", p[\"id\"]),\n            type=p[\"type\"],\n        )\n        for p in raw_ports\n    ]\n\n    cfg = RunnableModelCfg(\n        id=config[\"id\"],\n        name=config[\"name\"],\n        ports=ports_cfg,\n    )\n\n    model = new_atomic_from_cfg(cfg, ManufacturerIRP)\n    raw_parameters = config.get(\"parameters\") or []\n    model.parameters = {\n        p[\"name\"]: p.get(\"value\")\n        for p in raw_parameters\n        if isinstance(p, dict) and p.get(\"name\")\n    }\n    return model\n\n\ndef _as_dict(value: Any) -> dict[str, Any]:\n    if isinstance(value, dict):\n        return value\n    return {}\n\n\ndef _as_int(value: Any, fallback: int = 0) -> int:\n    try:\n        return int(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _as_float(value: Any, fallback: float = 0.0) -> float:\n    try:\n        return float(value)\n    except (TypeError, ValueError):\n        return fallback\n\n\ndef _day_from_minute(minute: int) -> int:\n    return minute // MINUTES_PER_DAY + 1\n\n\ndef _route_load(route: dict[str, Any]) -> float:\n    deliveries = route.get(\"deliveries\")\n    if not isinstance(deliveries, list):\n        return 0.0\n    total = 0.0\n    for delivery in deliveries:\n        if isinstance(delivery, dict):\n            total += _as_float(delivery.get(\"productAmount\"), 0.0)\n    return total\n",
+      "language": "python",
+      "ports": [
+        {
+          "id": "b7f8fef5-5622-42c8-a545-d4ce4da98613",
+          "name": "acceptDeliverySchedule",
+          "type": "in"
+        },
+        {
+          "id": "06fa00ec-8022-48a8-89f8-772d361866fc",
+          "name": "acceptDelivery",
+          "type": "in"
+        },
+        {
+          "id": "f0e5511d-7532-4d2f-9d2e-87ebb7b3adcb",
+          "name": "postDeliveryRoute",
+          "type": "out"
+        },
+        {
+          "id": "fb4844a9-32ac-4167-ae00-9dfad0becf57",
+          "name": "dailyInventoryCost",
+          "type": "out"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "manufacturer_id",
+          "type": "int",
+          "value": 0
+        },
+        {
+          "name": "starting_inventory",
+          "type": "float",
+          "value": 510
+        },
+        {
+          "name": "daily_production",
+          "type": "float",
+          "value": 193
+        },
+        {
+          "name": "inventory_cost",
+          "type": "float",
+          "value": 0.03
+        },
+        {
+          "name": "opening_hour",
+          "type": "int",
+          "value": 6
+        },
+        {
+          "name": "manufacturer_report_minute",
+          "type": "int",
+          "value": 1
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "port": "dailyInventoryCost"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/f8537458-e594-4412-a892-1e439b25d9df",
+            "port": "aggregateInventoryCost"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "port": "postDeliveryRoute"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/0c8898cd-e6f8-4980-9e8f-0d904f1784e1",
+            "port": "acceptDeliveryRoute"
+          }
+        },
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/77a647c7-28d3-4f21-b7a7-a3a7569e388c",
+            "port": "postDeliveryRoute"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/15402c03-3dfd-47c3-8305-3112de075c76",
+            "port": "acceptDeliveryRoute"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+      "name": "Retailer",
+      "code": "",
+      "language": "python",
+      "ports": [
+        {
+          "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+          "name": "receiveDelivery",
+          "type": "in"
+        },
+        {
+          "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+          "name": "dailyInventoryCost",
+          "type": "out"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "retailer_id",
+          "type": "int",
+          "value": 2
+        },
+        {
+          "name": "starting_inventory",
+          "type": "float",
+          "value": 58
+        },
+        {
+          "name": "min_inventory",
+          "type": "float",
+          "value": 0
+        },
+        {
+          "name": "max_inventory",
+          "type": "float",
+          "value": 116
+        },
+        {
+          "name": "daily_consumption",
+          "type": "float",
+          "value": 58
+        },
+        {
+          "name": "inventory_cost",
+          "type": "float",
+          "value": 0.03
+        },
+        {
+          "name": "closing_hour",
+          "type": "int",
+          "value": 16
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/9b9c3b3f-8120-4c50-9d5e-6d37fc3ca94f",
+            "port": "dailyInventoryCost"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/f8537458-e594-4412-a892-1e439b25d9df",
+            "port": "aggregateInventoryCost"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+      "name": "Retailer",
+      "code": "",
+      "language": "python",
+      "ports": [
+        {
+          "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+          "name": "receiveDelivery",
+          "type": "in"
+        },
+        {
+          "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+          "name": "dailyInventoryCost",
+          "type": "out"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "retailer_id",
+          "type": "int",
+          "value": 3
+        },
+        {
+          "name": "starting_inventory",
+          "type": "float",
+          "value": 48
+        },
+        {
+          "name": "min_inventory",
+          "type": "float",
+          "value": 0
+        },
+        {
+          "name": "max_inventory",
+          "type": "float",
+          "value": 72
+        },
+        {
+          "name": "daily_consumption",
+          "type": "float",
+          "value": 24
+        },
+        {
+          "name": "inventory_cost",
+          "type": "float",
+          "value": 0.02
+        },
+        {
+          "name": "closing_hour",
+          "type": "int",
+          "value": 16
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/a06b8588-67c6-42d6-9840-7acf7518fe3d",
+            "port": "dailyInventoryCost"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/f8537458-e594-4412-a892-1e439b25d9df",
+            "port": "aggregateInventoryCost"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/db617126-d2ff-46c5-af96-f7d196fbaef6",
+      "name": "Retailer",
+      "code": "",
+      "language": "python",
+      "ports": [
+        {
+          "id": "c4949da2-30c4-4f6f-9abc-baf508af6e7a",
+          "name": "receiveDelivery",
+          "type": "in"
+        },
+        {
+          "id": "e8b5a6c0-76bc-4c36-beab-4827251d3d73",
+          "name": "dailyInventoryCost",
+          "type": "out"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "retailer_id",
+          "type": "int",
+          "value": 4
+        },
+        {
+          "name": "starting_inventory",
+          "type": "float",
+          "value": 11
+        },
+        {
+          "name": "min_inventory",
+          "type": "float",
+          "value": 0
+        },
+        {
+          "name": "max_inventory",
+          "type": "float",
+          "value": 22
+        },
+        {
+          "name": "daily_consumption",
+          "type": "float",
+          "value": 11
+        },
+        {
+          "name": "inventory_cost",
+          "type": "float",
+          "value": 0.02
+        },
+        {
+          "name": "closing_hour",
+          "type": "int",
+          "value": 16
+        }
+      ],
+      "connections": [
+        {
+          "from": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/580c5c9d-f085-4c63-b85e-57965fd68838/db617126-d2ff-46c5-af96-f7d196fbaef6",
+            "port": "dailyInventoryCost"
+          },
+          "to": {
+            "id": "604a54ad-bc31-4a94-917e-ebb49c488452/f8537458-e594-4412-a892-1e439b25d9df",
+            "port": "aggregateInventoryCost"
+          }
+        }
+      ]
+    },
+    {
+      "id": "604a54ad-bc31-4a94-917e-ebb49c488452/f8537458-e594-4412-a892-1e439b25d9df",
+      "name": "Transducer",
+      "code": "",
+      "language": "python",
+      "ports": [
+        {
+          "id": "3b7131e4-c559-45ac-a47c-853b2fa9deeb",
+          "name": "aggregateInventoryCost",
+          "type": "in"
+        },
+        {
+          "id": "6804cb3e-9bea-441e-b7dd-0523bdb7ae0d",
+          "name": "aggregateVehicleCost",
+          "type": "in"
+        }
+      ],
+      "parameters": [
+        {
+          "name": "last_day",
+          "type": "int",
+          "value": 3
+        }
+      ],
+      "connections": []
+    }
+  ],
+  "count": 1,
+  "simulationId": "test-irp"
 }

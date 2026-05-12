@@ -13,10 +13,10 @@ import (
 	"gotest.tools/v3/golden"
 )
 
-func TestIrp(t *testing.T) {
-	manifestPath := filepath.Join("testdata", "irp", "runnable_manifest.json")
+func TestIrpMulti(t *testing.T) {
+	manifestPath := filepath.Join("testdata", "irp_multi", "runnable_manifest.json")
 
-	manifest, err := loadManifestWithCodeIrp(manifestPath)
+	manifest, err := loadManifestWithCodeIrpMulti(manifestPath)
 	if err != nil {
 		t.Fatalf("Failed to load manifest: %v", err)
 	}
@@ -27,7 +27,7 @@ func TestIrp(t *testing.T) {
 	}
 	jsonStr := string(jsonBytes)
 
-	kafkaTopic := "test-irp"
+	kafkaTopic := "test-irp-multi"
 
 	if status, err := RunSimulation(types.SimulationParams{
 		Json:         &jsonStr,
@@ -47,7 +47,7 @@ func TestIrp(t *testing.T) {
 
 		normalized := testsutils.NormalizeParallel(data)
 
-		goldenPath := filepath.Join("irp", "simulation.golden.json")
+		goldenPath := filepath.Join("irp_multi", "simulation.golden.json")
 
 		if golden.FlagUpdate() {
 			golden.Assert(t, string(normalized), goldenPath)
@@ -66,7 +66,7 @@ func TestIrp(t *testing.T) {
 	}
 }
 
-func loadManifestWithCodeIrp(manifestPath string) (*shared.RunnableManifest, error) {
+func loadManifestWithCodeIrpMulti(manifestPath string) (*shared.RunnableManifest, error) {
 	data, err := os.ReadFile(manifestPath)
 	if err != nil {
 		return nil, err
@@ -83,11 +83,11 @@ func loadManifestWithCodeIrp(manifestPath string) (*shared.RunnableManifest, err
 		var codeFile string
 		switch model.Name {
 		case "Retailer":
-			codeFile = filepath.Join(baseDir, "retailer.py")
+			codeFile = filepath.Join(baseDir, "retailer.go")
 		case "Vehicle":
 			codeFile = filepath.Join(baseDir, "vehicle.py")
 		case "Manufacturer":
-			codeFile = filepath.Join(baseDir, "manufacturer.py")
+			codeFile = filepath.Join(baseDir, "manufacturer.java")
 		case "Transducer":
 			codeFile = filepath.Join(baseDir, "transducer.py")
 		case "DeliveryScheduleGenerator":

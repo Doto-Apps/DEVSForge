@@ -54,16 +54,16 @@ class ManufacturerIRP(Atomic):
         if self.next_report_at == next_time: 
             self.current_inventory += self.daily_production 
             self.next_report_at += MINUTES_PER_DAY 
-
+ 
         routes = self.route_events.pop(next_time, []) 
         for route in routes: 
             self.current_inventory -= _route_load(route) 
-
+ 
     def delt_ext(self, e: float) -> None: 
         self.current_time += int(round(e)) 
-
+ 
         self._consume_input_port("acceptDeliverySchedule", self._handle_accept_delivery_schedule) 
-        self._consume_input_port("acceptDelivery", self._handle_accept_delivery)
+        self._consume_input_port("acceptDelivery", self._handle_accept_delivery) 
  
     def delt_con(self, e: float) -> None: 
         self.delt_int() 
@@ -73,7 +73,7 @@ class ManufacturerIRP(Atomic):
         next_time = self._next_internal_time() 
         if next_time is None: 
             return 
-
+ 
         if self.next_report_at == next_time: 
             predicted_inventory = self.current_inventory + self.daily_production 
             self._emit( 
@@ -84,24 +84,24 @@ class ManufacturerIRP(Atomic):
                     "cost": predicted_inventory * self.inventory_cost, 
                 }, 
             ) 
-
+ 
         for route in self.route_events.get(next_time, []): 
             self._emit("postDeliveryRoute", route) 
-
+ 
     def _consume_input_port(self, port_name: str, handler) -> None: 
         try: 
             port = self.get_port_by_name(port_name) 
         except KeyError: 
             return 
-
+ 
         for value in list(port.get_values()): 
             handler(value) 
-        port.clear()
+        port.clear() 
  
     def _handle_accept_delivery_schedule(self, raw: Any) -> None: 
         payload = _as_dict(raw) 
         by_day = _as_dict(payload.get("deliveriesByDayByVehicle")) 
-
+ 
         for day_key, routes_by_vehicle in by_day.items(): 
             day = _as_int(day_key, -1) 
             if day < 1: 
@@ -111,10 +111,10 @@ class ManufacturerIRP(Atomic):
             for route in by_vehicle.values(): 
                 route_map = _as_dict(route) 
                 self.route_events.setdefault(load_time, []).append(route_map) 
-
+ 
     def _handle_accept_delivery(self, raw: Any) -> None: 
         delivery = _as_dict(raw) 
-        self.current_inventory += _as_float(delivery.get("productAmount"), 0.0)
+        self.current_inventory += _as_float(delivery.get("productAmount"), 0.0) 
  
     def _next_internal_time(self) -> int | None: 
         next_time = self.next_report_at 
@@ -141,13 +141,13 @@ def NewModel(config: dict) -> Atomic:
         ) 
         for p in raw_ports 
     ] 
-
+ 
     cfg = RunnableModelCfg( 
         id=config["id"], 
         name=config["name"], 
         ports=ports_cfg, 
     ) 
-
+ 
     model = new_atomic_from_cfg(cfg, ManufacturerIRP) 
     raw_parameters = config.get("parameters") or [] 
     model.parameters = { 
@@ -155,7 +155,7 @@ def NewModel(config: dict) -> Atomic:
         for p in raw_parameters 
         if isinstance(p, dict) and p.get("name") 
     } 
-    return model
+    return model 
  
  
 def _as_dict(value: Any) -> dict[str, Any]: 
@@ -180,8 +180,8 @@ def _as_float(value: Any, fallback: float = 0.0) -> float:
  
 def _day_from_minute(minute: int) -> int: 
     return minute // MINUTES_PER_DAY + 1 
-
-
+ 
+ 
 def _route_load(route: dict[str, Any]) -> float: 
     deliveries = route.get("deliveries") 
     if not isinstance(deliveries, list): 
@@ -190,5 +190,4 @@ def _route_load(route: dict[str, Any]) -> float:
     for delivery in deliveries: 
         if isinstance(delivery, dict): 
             total += _as_float(delivery.get("productAmount"), 0.0) 
-    return total
-
+    return total 
