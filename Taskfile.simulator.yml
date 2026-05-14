@@ -1,5 +1,26 @@
 version: "3"
 
+vars:
+  BASE_COORDINATOR_DOCKER_CMD: |
+    docker run --rm -t --init --network host \
+        -e PATHS_RUNNER_CMD=/tmp/devsforge-runner \
+        -e LOG_DIR=/tmp/logs \
+        -e PATHS_SIM_ROOT=/tmp/simulations \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -v ./build/devsforge-runner:/tmp/devsforge-runner \
+        -v ./simulator/wrappers:/opt/devsforge-wrappers \
+        -v ./tmp/unit-tests/simulation:/tmp/simulations \
+        -v ./tmp/unit-tests/logs:/tmp/logs \
+        -v $(pwd):/app \
+        -w /app \
+        devsforge-test-simulator:latest \
+  BASE_RUNNER_DOCKER_CMD: |
+    docker run --rm -t --init --network host \
+        -v /var/run/docker.sock:/var/run/docker.sock \
+        -e LOG_DIR=/tmp/sim-logs \
+        -v $(pwd):/app \
+        -w /app \
+        devsforge-test-runner:latest \
 tasks:
   format:
     desc: Format all simulator modules (coordinator, runner, shared)
@@ -22,24 +43,6 @@ tasks:
       - task: build:runner
       - task: build:shared
 
-  build:coordinator:
-    desc: Build simulator coordinator
-    dir: simulator/coordinator
-    cmds:
-      - go build -v ./...
-
-  build:runner:
-    desc: Build simulator runner
-    dir: simulator/runner
-    cmds:
-      - go build -v ./...
-
-  build:shared:
-    desc: Build simulator shared
-    dir: simulator/shared
-    cmds:
-      - go build -v ./...
-
   coordinator:sh:
     interactive: true
     desc: Run coordinator shell inside Docker
@@ -58,19 +61,7 @@ tasks:
         if: '{{eq .BUILD "Y"}}'
 
       - echo "Running shell in Docker..."
-      - |
-        docker run --rm -t --init --network host \
-        -e PATHS_RUNNER_CMD=/tmp/devsforge-runner \
-        -e LOG_DIR=/tmp/logs \
-        -e PATHS_SIM_ROOT=/tmp/simulations \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v ./build/devsforge-runner:/tmp/devsforge-runner \
-        -v ./simulator/wrappers:/opt/devsforge-wrappers \
-        -v ./tmp/unit-tests/simulation:/tmp/simulations \
-        -v ./tmp/unit-tests/logs:/tmp/logs \
-        -v $(pwd):/app \
-        -w /app \
-        devsforge-test-simulator:latest {{.CLI_ARGS}}
+      - "{{.BASE_COORDINATOR_DOCKER_CMD}} {{.CLI_ARGS}}"
 
   coordinator:test:
     interactive: true
@@ -80,55 +71,22 @@ tasks:
         - name: BUILD
           enum: [N, Y]
     cmds:
-      - cmd: |
-          echo "Building Docker coordinator image..."
-          docker build -f ./simulator/Dockerfile -t devsforge-test-simulator:latest ./
-        if: '{{eq .BUILD "Y"}}'
-      - cmd: |
-          echo "Building Docker runner binary..."
-          docker run --rm -v ./:/app -w /app golang:1.26.2 sh -c 'CGO_ENABLED=0 go build -ldflags="-s -w" -o ./build/devsforge-runner -v ./simulator/runner/main.go && chmod 777 ./build/devsforge-runner'
-        if: '{{eq .BUILD "Y"}}'
+      - task: coordinator:sh
+        vars:
+          CLI_ARGS: go test ./simulator/coordinator/... -timeout 30s {{.CLI_ARGS}}
 
-      - echo "Running tests in Docker with 30s as timeout for each test..."
-      - |
-        docker run --rm -t --init --network host \
-        -e PATHS_RUNNER_CMD=/tmp/devsforge-runner \
-        -e LOG_DIR=/tmp/logs \
-        -e PATHS_SIM_ROOT=/tmp/simulations \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v ./build/devsforge-runner:/tmp/devsforge-runner \
-        -v ./simulator/wrappers:/opt/devsforge-wrappers \
-        -v ./tmp/unit-tests/simulation:/tmp/simulations \
-        -v ./tmp/unit-tests/logs:/tmp/logs \
-        -v $(pwd):/app \
-        -w /app \
-        devsforge-test-simulator:latest go test ./simulator/coordinator/... -timeout 30s {{.CLI_ARGS}}
-
-  runner:test:
-    interactive: true
-    desc: Run runner tests inside Docker runner image
-    cmds:
-      - echo "Building Docker runner image..."
-      - docker build -f ./simulator/runner/Dockerfile -t devsforge-test-runner:latest ./
-      - echo "Running tests in Docker..."
-      - |
-        docker run --rm -t --init --network host \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -e LOG_DIR=/tmp/sim-logs \
-        -v $(pwd):/app \
-        -w /app \
-        devsforge-test-runner:latest go test ./simulator/runner/... {{.CLI_ARGS}}
-
-  sh:runner:
+  runner:sh:
     desc: Run shell command inside Docker runner image
     cmds:
       - echo "Building Docker runner image..."
       - docker build -f ./simulator/runner/Dockerfile -t devsforge-test-runner:latest ./
       - echo "Running tests in Docker..."
-      - |
-        docker run --rm -t --init --network host \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -e LOG_DIR=/tmp/sim-logs \
-        -v $(pwd):/app \
-        -w /app \
-        devsforge-test-runner:latest {{.CLI_ARGS}}
+      - "{{.BASE_RUNNER_DOCKER_CMD}} {{.CLI_ARGS}}"
+
+  runner:test:
+    interactive: true
+    desc: Run runner tests inside Docker runner image
+    cmds:
+      - task: runner:sh
+        vars:
+          CLI_ARGS: go test ./simulator/runner/... {{.CLI_ARGS}}

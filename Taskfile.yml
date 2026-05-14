@@ -9,7 +9,6 @@ includes:
     taskfile: Taskfile.simulator.yml
 
 vars:
-  LEFTHOOK_VERSION: v2.1.5
   GOLANGCI_VERSION: v2.11.4
   MIGRATE_VERSION: v4.19.1
   GOLANGCI_LINT_CACHE:
@@ -27,9 +26,12 @@ tasks:
   setup:
     desc: Install all tools required to dev
     cmds:
-      - go install github.com/evilmartians/lefthook/v2@{{.LEFTHOOK_VERSION}}
+      - git config set core.autocrlf false
+      - git config set hook.check-commit.command "task pre-commit"
+      - git config set --all hook.check-commit.event pre-commit
+      - git config set hook.verify-message.command "scripts/commit-msg.sh"
+      - git config set --all hook.verify-message.event commit-msg
       - cp .env.dist .env || true
-      - lefthook install
       - cd front && pnpm install
       - echo "✅ Project setup."
 
@@ -46,12 +48,6 @@ tasks:
       - task: front:check
       - task: back:lint
       - task: simulator:lint
-
-  build:
-    desc: Build all modules (back, simulator)
-    cmds:
-      - task: back:build
-      - task: simulator:build
 
   test:
     desc: Run all tests (back + simulator)
@@ -74,10 +70,8 @@ tasks:
     cmds:
       - rm -rf ./tmp
 
-  prod-docker-build:
-    desc: Test docker image creations for backend and simulator
+  pre-commit:
     cmds:
-      - defer: docker image rm devsforge-local-backend-test:latest > /dev/null || true
-      - defer: docker image rm devsforge-local-simulator-test:latest > /dev/null || true
-      - docker build -f ./back/Dockerfile -t devsforge-local-backend-test:latest ./
-      - docker build -f ./simulator/Dockerfile -t devsforge-local-simulator-test:latest ./
+      - task: format
+      - task: lint
+      - git diff --cached --name-only --diff-filter=ACM | xargs -r git add
