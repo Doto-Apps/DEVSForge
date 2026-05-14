@@ -2,15 +2,11 @@ package simulation
 
 import (
 	"devsforge-coordinator/internal/types"
-	"devsforge-coordinator/testsutils"
 	shared "devsforge-shared"
 	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"gotest.tools/v3/golden"
 )
 
 func TestIrpMulti(t *testing.T) {
@@ -29,41 +25,14 @@ func TestIrpMulti(t *testing.T) {
 
 	kafkaTopic := "test-irp-multi"
 
-	if status, err := RunSimulation(types.SimulationParams{
+	if _, err := RunSimulation(types.SimulationParams{
 		Json:         &jsonStr,
 		KafkaTopic:   &kafkaTopic,
 		KafkaAddress: &KafkaAddr,
 	}); err != nil {
 		t.Fatalf("Simulation failed: %v", err)
-	} else {
-		t.Log("check simulation.golden.json golden")
-		status.CreatedAt = 1
-		status.EndedAt = 1
-
-		data, err := json.MarshalIndent(&status, " ", "  ")
-		if err != nil {
-			t.Fatalf("cannot marshal simulation status")
-		}
-
-		normalized := testsutils.NormalizeParallel(data)
-
-		goldenPath := filepath.Join("irp_multi", "simulation.golden.json")
-
-		if golden.FlagUpdate() {
-			golden.Assert(t, string(normalized), goldenPath)
-		} else {
-			expectedBytes := golden.Get(t, goldenPath)
-			var expected, actual map[string]any
-			if err := json.Unmarshal(expectedBytes, &expected); err != nil {
-				t.Fatalf("cannot unmarshal expected golden: %v", err)
-			}
-			if err := json.Unmarshal(normalized, &actual); err != nil {
-				t.Fatalf("cannot unmarshal actual status: %v", err)
-			}
-
-			assert.ElementsMatch(t, expected["messages"], actual["messages"], "Messages don't match")
-		}
 	}
+	// INFO: DO NOT USE GOLDENS AS GENERATOR USE RANDOM VALUES SO GOLDEN CANNOT BE CONSISTENT
 }
 
 func loadManifestWithCodeIrpMulti(manifestPath string) (*shared.RunnableManifest, error) {

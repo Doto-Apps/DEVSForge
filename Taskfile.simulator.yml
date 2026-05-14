@@ -46,16 +46,16 @@ tasks:
     requires:
       vars:
         - name: BUILD
-          enum: [Y, N]
+          enum: [N, Y]
     cmds:
       - cmd: |
           echo "Building Docker coordinator image..."
           docker build -f ./simulator/Dockerfile -t devsforge-test-simulator:latest ./
-        if: '{{eq .BUILD "true"}}'
+        if: '{{eq .BUILD "Y"}}'
       - cmd: |
           echo "Building Docker runner binary..."
           docker run --rm -v ./:/app -w /app golang:1.26.2 sh -c 'CGO_ENABLED=0 go build -ldflags="-s -w" -o ./build/devsforge-runner -v ./simulator/runner/main.go && chmod 777 ./build/devsforge-runner'
-        if: '{{eq .BUILD "true"}}'
+        if: '{{eq .BUILD "Y"}}'
 
       - echo "Running shell in Docker..."
       - |
@@ -78,18 +78,18 @@ tasks:
     requires:
       vars:
         - name: BUILD
-          enum: [Y, N]
+          enum: [N, Y]
     cmds:
       - cmd: |
           echo "Building Docker coordinator image..."
           docker build -f ./simulator/Dockerfile -t devsforge-test-simulator:latest ./
-        if: '{{eq .BUILD "true"}}'
+        if: '{{eq .BUILD "Y"}}'
       - cmd: |
           echo "Building Docker runner binary..."
           docker run --rm -v ./:/app -w /app golang:1.26.2 sh -c 'CGO_ENABLED=0 go build -ldflags="-s -w" -o ./build/devsforge-runner -v ./simulator/runner/main.go && chmod 777 ./build/devsforge-runner'
-        if: '{{eq .BUILD "true"}}'
+        if: '{{eq .BUILD "Y"}}'
 
-      - echo "Running tests in Docker..."
+      - echo "Running tests in Docker with 30s as timeout for each test..."
       - |
         docker run --rm -t --init --network host \
         -e PATHS_RUNNER_CMD=/tmp/devsforge-runner \
@@ -102,7 +102,7 @@ tasks:
         -v ./tmp/unit-tests/logs:/tmp/logs \
         -v $(pwd):/app \
         -w /app \
-        devsforge-test-simulator:latest go test ./simulator/coordinator/... {{.CLI_ARGS}}
+        devsforge-test-simulator:latest go test ./simulator/coordinator/... -timeout 30s {{.CLI_ARGS}}
 
   runner:test:
     interactive: true

@@ -27,7 +27,7 @@
             },
             "messageType": "SimulationInit",
             "senderId": "Coordinator",
-            "sequence": 1
+            "sequence": 0
         },
         {
             "data": {
@@ -40,7 +40,7 @@
             },
             "messageType": "SimulationInit",
             "senderId": "Coordinator",
-            "sequence": 2
+            "sequence": 0
         },
         {
             "data": {
@@ -54,7 +54,7 @@
             },
             "messageType": "NextInternalTimeReport",
             "senderId": "python-adder",
-            "sequence": 3
+            "sequence": 0
         },
         {
             "data": {
@@ -68,7 +68,7 @@
             },
             "messageType": "NextInternalTimeReport",
             "senderId": "go-sender",
-            "sequence": 4
+            "sequence": 0
         },
         {
             "data": {
@@ -82,7 +82,7 @@
             },
             "messageType": "NextInternalTimeReport",
             "senderId": "java-collector",
-            "sequence": 5
+            "sequence": 0
         },
         {
             "data": {
@@ -95,7 +95,7 @@
             },
             "messageType": "RequestOutput",
             "senderId": "Coordinator",
-            "sequence": 6
+            "sequence": 0
         },
         {
             "data": {
@@ -120,7 +120,7 @@
             },
             "messageType": "OutputReport",
             "senderId": "go-sender",
-            "sequence": 7
+            "sequence": 0
         },
         {
             "data": {
@@ -136,7 +136,7 @@
             },
             "messageType": "ExecuteTransition",
             "senderId": "Coordinator",
-            "sequence": 8
+            "sequence": 0
         },
         {
             "data": {
@@ -159,7 +159,7 @@
             },
             "messageType": "ExecuteTransition",
             "senderId": "Coordinator",
-            "sequence": 9
+            "sequence": 0
         },
         {
             "data": {
@@ -173,7 +173,7 @@
             },
             "messageType": "TransitionComplete",
             "senderId": "go-sender",
-            "sequence": 10
+            "sequence": 0
         },
         {
             "data": {
@@ -187,7 +187,7 @@
             },
             "messageType": "TransitionComplete",
             "senderId": "python-adder",
-            "sequence": 11
+            "sequence": 0
         },
         {
             "data": {
@@ -200,7 +200,7 @@
             },
             "messageType": "RequestOutput",
             "senderId": "Coordinator",
-            "sequence": 12
+            "sequence": 0
         },
         {
             "data": {
@@ -225,7 +225,7 @@
             },
             "messageType": "OutputReport",
             "senderId": "python-adder",
-            "sequence": 13
+            "sequence": 0
         },
         {
             "data": {
@@ -241,7 +241,7 @@
             },
             "messageType": "ExecuteTransition",
             "senderId": "Coordinator",
-            "sequence": 14
+            "sequence": 0
         },
         {
             "data": {
@@ -264,7 +264,7 @@
             },
             "messageType": "ExecuteTransition",
             "senderId": "Coordinator",
-            "sequence": 15
+            "sequence": 0
         },
         {
             "data": {
@@ -278,7 +278,7 @@
             },
             "messageType": "TransitionComplete",
             "senderId": "python-adder",
-            "sequence": 16
+            "sequence": 0
         },
         {
             "data": {
@@ -292,7 +292,7 @@
             },
             "messageType": "TransitionComplete",
             "senderId": "java-collector",
-            "sequence": 17
+            "sequence": 0
         },
         {
             "data": {
@@ -305,7 +305,7 @@
             },
             "messageType": "RequestOutput",
             "senderId": "Coordinator",
-            "sequence": 18
+            "sequence": 0
         },
         {
             "data": {
@@ -330,7 +330,7 @@
             },
             "messageType": "OutputReport",
             "senderId": "java-collector",
-            "sequence": 19
+            "sequence": 0
         },
         {
             "data": {
@@ -346,7 +346,7 @@
             },
             "messageType": "ExecuteTransition",
             "senderId": "Coordinator",
-            "sequence": 20
+            "sequence": 0
         },
         {
             "data": {
@@ -360,7 +360,7 @@
             },
             "messageType": "TransitionComplete",
             "senderId": "java-collector",
-            "sequence": 21
+            "sequence": 0
         },
         {
             "data": {
@@ -376,7 +376,7 @@
             },
             "messageType": "SimulationTerminate",
             "senderId": "Coordinator",
-            "sequence": 22
+            "sequence": 0
         },
         {
             "data": {
@@ -392,7 +392,7 @@
             },
             "messageType": "SimulationTerminate",
             "senderId": "Coordinator",
-            "sequence": 23
+            "sequence": 0
         },
         {
             "data": {
@@ -408,7 +408,7 @@
             },
             "messageType": "SimulationTerminate",
             "senderId": "Coordinator",
-            "sequence": 24
+            "sequence": 0
         }
     ],
     "status": "completed"
