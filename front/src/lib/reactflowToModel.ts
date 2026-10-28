@@ -1,5 +1,6 @@
 import type { components } from "@/api/v1";
 import { DEFAULT_NODE_SIZE } from "@/constants";
+import { findHolderId } from "@/lib/findHolderId";
 import type { ReactFlowInput } from "@/types";
 
 const cleanHandleId = (str: string | undefined | null) =>
@@ -54,7 +55,9 @@ const getModelComponent = (
 				...(nodeInNodes.data.reactFlowModelGraphicalData
 					? { modelColors: nodeInNodes.data.reactFlowModelGraphicalData }
 					: {}),
-				parameters: nodeInNodes.data.parameters ?? undefined,
+				...(nodeInNodes.data.parameters !== undefined
+					? { parameters: nodeInNodes.data.parameters }
+					: {}),
 			},
 			modelId: nodeInNodes.data.id,
 		}));
@@ -80,8 +83,14 @@ const getModelConnection = (
 		return endpointId.split("/").pop() ?? "";
 	};
 
+	const isHeldByNode = (edge: ReactFlowInput["edges"][number]) => {
+		const storedHolderId = edge.data?.holderId;
+		const computedHolderId = findHolderId(edge.source, edge.target);
+		return storedHolderId === node.id || computedHolderId === node.id;
+	};
+
 	return nodesAndEdges.edges
-		.filter((edge) => edge.data?.holderId === node.id)
+		.filter(isHeldByNode)
 		.filter(
 			(edge) => isValidEndpoint(edge.source) && isValidEndpoint(edge.target),
 		)
@@ -172,7 +181,9 @@ const nodeToModel = (
 			...(node.data.reactFlowModelGraphicalData && !node.id.includes("/")
 				? { modelColors: node.data.reactFlowModelGraphicalData }
 				: {}),
-			parameters: node.data.parameters ?? undefined,
+			...(node.data.parameters !== undefined
+				? { parameters: node.data.parameters }
+				: {}),
 		},
 		name: node.data.label,
 		ports: getModelPorts(node),

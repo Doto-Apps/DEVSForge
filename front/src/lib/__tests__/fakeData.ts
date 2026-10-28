@@ -457,12 +457,12 @@ export const mockApiModelResponse: components["schemas"]["response.ModelResponse
 			ports: [
 				{
 					id: "e75ed355-7100-45b9-a4ba-4433332e090e",
-					name: "",
+					name: "e75ed355-7100-45b9-a4ba-4433332e090e",
 					type: "in",
 				},
 				{
 					id: "ad7c4558-a937-47b4-8503-6ba1a298c971",
-					name: "",
+					name: "ad7c4558-a937-47b4-8503-6ba1a298c971",
 					type: "out",
 				},
 			],
@@ -554,8 +554,16 @@ export const mockApiModelResponse: components["schemas"]["response.ModelResponse
 			},
 			name: "Alpha",
 			ports: [
-				{ id: "3027641e-bb51-4798-834f-a0daedb048a0", name: "", type: "in" },
-				{ id: "20eb3850-aaed-4450-8079-b010e92d7226", name: "", type: "out" },
+				{
+					id: "3027641e-bb51-4798-834f-a0daedb048a0",
+					name: "3027641e-bb51-4798-834f-a0daedb048a0",
+					type: "in",
+				},
+				{
+					id: "20eb3850-aaed-4450-8079-b010e92d7226",
+					name: "20eb3850-aaed-4450-8079-b010e92d7226",
+					type: "out",
+				},
 			],
 			type: "coupled",
 			userId: "",
@@ -581,8 +589,16 @@ export const mockApiModelResponse: components["schemas"]["response.ModelResponse
 			},
 			name: "Charlie",
 			ports: [
-				{ id: "291f2776-e585-479c-8c83-1b68bc72fad6", name: "", type: "in" },
-				{ id: "86af6923-c378-4b22-9436-f9eaa74b5f4b", name: "", type: "out" },
+				{
+					id: "291f2776-e585-479c-8c83-1b68bc72fad6",
+					name: "291f2776-e585-479c-8c83-1b68bc72fad6",
+					type: "in",
+				},
+				{
+					id: "86af6923-c378-4b22-9436-f9eaa74b5f4b",
+					name: "86af6923-c378-4b22-9436-f9eaa74b5f4b",
+					type: "out",
+				},
 			],
 			type: "atomic",
 			userId: expect.anything(),
@@ -610,7 +626,7 @@ export const mockApiModelResponse: components["schemas"]["response.ModelResponse
 			ports: [
 				{
 					id: "7b421cdf-e030-46db-8109-06dd509ac2e8",
-					name: "",
+					name: "7b421cdf-e030-46db-8109-06dd509ac2e8",
 					type: "in",
 				},
 			],

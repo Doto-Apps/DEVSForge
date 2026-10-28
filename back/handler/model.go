@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"errors"
 	"fmt"
 
 	"devsforge/database"
+	"devsforge/enum"
 	"devsforge/lib"
 	"devsforge/middleware"
 	"devsforge/model"
@@ -115,13 +117,39 @@ func createModel(c *fiber.Ctx) error {
 		return SendRequestError(c, fiber.StatusBadRequest, err)
 	}
 
+	if err := normalizeModelRequest(req); err != nil {
+		return SendRequestError(c, fiber.StatusBadRequest, err)
+	}
+
 	model := req.ToModel(c.Locals("user_id").(string))
 
-	db.Create(&model)
+	if err := db.Create(&model).Error; err != nil {
+		return SendRequestError(c, fiber.StatusInternalServerError, err)
+	}
 
 	res := response.CreateModelResponse(model)
 
 	return c.JSON(res)
+}
+
+func normalizeModelRequest(req *request.ModelRequest) error {
+	if req.Type != enum.Atomic && req.Type != enum.Coupled {
+		return errors.New("type must be 'atomic' or 'coupled'")
+	}
+
+	if req.Language == "" {
+		if req.Type == enum.Coupled {
+			req.Language = enum.ModelLanguagePython
+			return nil
+		}
+		return errors.New("language is required for atomic models")
+	}
+
+	if !req.Language.IsValid() {
+		return fmt.Errorf("language must be one of: go, python, java")
+	}
+
+	return nil
 }
 
 // deleteModel deletes a model by its ID

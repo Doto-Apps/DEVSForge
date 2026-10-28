@@ -38,7 +38,7 @@ import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetExperimentalFramesByModel } from "@/queries/model/useGetExperimentalFramesByModel";
 import { useGetModelById } from "@/queries/model/useGetModelById";
 import { useGetModels } from "@/queries/model/useGetModels";
-import type { GeneratedDiagram } from "@/types";
+import type { GeneratedDiagram, GeneratedModelLanguage } from "@/types";
 
 const DEFAULT_NODE_SIZE = 200;
 const EF_CODE_GENERATION_ROLES = [
@@ -319,19 +319,22 @@ export function ValidationModel() {
 		await handleGenerateWithAI();
 	};
 
-	const handleAICodeGenerated = useCallback((modelId: string, code: string) => {
-		setAiDiagram((previousDiagram) => {
-			if (!previousDiagram) return previousDiagram;
-			return {
-				...previousDiagram,
-				models: previousDiagram.models.map((model) =>
-					model.id === modelId
-						? { ...model, code, codeGenerated: true }
-						: model,
-				),
-			};
-		});
-	}, []);
+	const handleAICodeGenerated = useCallback(
+		(modelId: string, code: string, language?: GeneratedModelLanguage) => {
+			setAiDiagram((previousDiagram) => {
+				if (!previousDiagram) return previousDiagram;
+				return {
+					...previousDiagram,
+					models: previousDiagram.models.map((model) =>
+						model.id === modelId
+							? { ...model, code, codeGenerated: true, language }
+							: model,
+					),
+				};
+			});
+		},
+		[],
+	);
 
 	const handleAICodeChange = useCallback((modelId: string, code: string) => {
 		setAiDiagram((previousDiagram) => {

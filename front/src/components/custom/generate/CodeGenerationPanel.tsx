@@ -35,13 +35,24 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
-import type { CodeGenerationPanelProps, ReuseCandidate } from "@/types";
+import type {
+	CodeGenerationPanelProps,
+	GeneratedModelLanguage,
+	ReuseCandidate,
+} from "@/types";
+
+type GeneratableLanguage = Extract<GeneratedModelLanguage, "python" | "go">;
 
 const promptSchema = z.object({
 	prompt: z.string().min(5, {
 		message: "Prompt must be at least 5 characters.",
 	}),
 });
+
+const isGeneratableLanguage = (
+	language: GeneratedModelLanguage | undefined,
+): language is GeneratableLanguage =>
+	language === "python" || language === "go";
 
 export function CodeGenerationPanel({
 	diagram,
@@ -55,9 +66,8 @@ export function CodeGenerationPanel({
 	const { generateCode, isLoading, error } = useGenerateModelCode();
 	const { toast } = useToast();
 	const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
-	const [selectedLanguage, setSelectedLanguage] = useState<"python" | "go">(
-		"python",
-	);
+	const [selectedLanguage, setSelectedLanguage] =
+		useState<GeneratableLanguage>("python");
 	const [reuseCandidates, setReuseCandidates] = useState<ReuseCandidate[]>([]);
 	const [selectedReuse, setSelectedReuse] = useState<string>("__pending__");
 	const [awaitingReuseSelection, setAwaitingReuseSelection] =
@@ -84,8 +94,13 @@ export function CodeGenerationPanel({
 			setReuseCandidates([]);
 			setSelectedReuse("__pending__");
 			setAwaitingReuseSelection(false);
+			setSelectedLanguage(
+				isGeneratableLanguage(currentModel.language)
+					? currentModel.language
+					: "python",
+			);
 		}
-	}, [currentModel?.id]);
+	}, [currentModel?.id, currentModel?.language]);
 
 	// Get code from models that current model depends on
 	const getPreviousModelsCode = (): string => {
@@ -172,7 +187,7 @@ export function CodeGenerationPanel({
 			}
 
 			setAwaitingReuseSelection(false);
-			onCodeGenerated(currentModel.id, generated.code);
+			onCodeGenerated(currentModel.id, generated.code, selectedLanguage);
 
 			const reuseNote = generated.reuseUsed
 				? ` (reuse: ${generated.reuseUsed.name})`
@@ -367,7 +382,7 @@ export function CodeGenerationPanel({
 							<div className="mb-4">
 								<FormLabel>Language</FormLabel>
 								<Select
-									onValueChange={(value: "python" | "go") =>
+									onValueChange={(value: GeneratableLanguage) =>
 										setSelectedLanguage(value)
 									}
 									value={selectedLanguage}

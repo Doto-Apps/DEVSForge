@@ -121,7 +121,8 @@ func createAssistedExperimentalFrame(
 		return SendRequestError(c, fiber.StatusBadRequest, errors.New("libraryId is required for assisted EF save"))
 	}
 
-	if _, err := validateAssistedExperimentalFrameRequest(req, targetModel); err != nil {
+	modelByID, err := validateAssistedExperimentalFrameRequest(req, targetModel)
+	if err != nil {
 		return SendRequestError(c, fiber.StatusBadRequest, err)
 	}
 
@@ -201,7 +202,7 @@ func createAssistedExperimentalFrame(
 					return componentsErr
 				}
 
-				connections := buildCoupledConnections(spec, instanceByModelID, req.Connections)
+				connections := buildCoupledConnections(spec, modelByID, instanceByModelID, req.Connections)
 
 				createdModel, createErr := createAssistedModelFromSpec(
 					tx,
@@ -313,6 +314,8 @@ func validateAssistedExperimentalFrameRequest(
 		portDirectionByModelID[spec.ID] = portDirections
 	}
 
+	modelIDByAlias := buildAssistedModelAliasMap(modelByID, req.RootModelID)
+
 	rootModel, exists := modelByID[req.RootModelID]
 	if !exists {
 		return nil, errors.New("rootModelId must reference a known model")
@@ -367,19 +370,19 @@ func validateAssistedExperimentalFrameRequest(
 	}
 
 	for idx, conn := range req.Connections {
-		sourceModelID := strings.TrimSpace(conn.From.Model)
-		targetModelID := strings.TrimSpace(conn.To.Model)
+		sourceModelID, sourceModelExists := resolveAssistedModelID(conn.From.Model, modelIDByAlias)
+		targetModelID, targetModelExists := resolveAssistedModelID(conn.To.Model, modelIDByAlias)
 		sourcePort := strings.TrimSpace(conn.From.Port)
 		targetPort := strings.TrimSpace(conn.To.Port)
 		connectionLabel := fmt.Sprintf("connection #%d", idx+1)
 
 		sourcePorts, sourceExists := portDirectionByModelID[sourceModelID]
-		if !sourceExists {
-			return nil, fmt.Errorf("%s references unknown source model %s", connectionLabel, sourceModelID)
+		if !sourceModelExists || !sourceExists {
+			return nil, fmt.Errorf("%s references unknown source model %s", connectionLabel, strings.TrimSpace(conn.From.Model))
 		}
 		targetPorts, targetExists := portDirectionByModelID[targetModelID]
-		if !targetExists {
-			return nil, fmt.Errorf("%s references unknown target model %s", connectionLabel, targetModelID)
+		if !targetModelExists || !targetExists {
+			return nil, fmt.Errorf("%s references unknown target model %s", connectionLabel, strings.TrimSpace(conn.To.Model))
 		}
 
 		sourceDirection, sourcePortExists := sourcePorts[sourcePort]
@@ -393,6 +396,35 @@ func validateAssistedExperimentalFrameRequest(
 	}
 
 	return modelByID, nil
+}
+
+func buildAssistedModelAliasMap(
+	modelByID map[string]request.AssistedExperimentalFrameModel,
+	rootModelID string,
+) map[string]string {
+	aliases := make(map[string]string, len(modelByID)*2+1)
+	for modelID, spec := range modelByID {
+		aliases[strings.TrimSpace(modelID)] = modelID
+		if modelName := strings.TrimSpace(spec.Name); modelName != "" {
+			aliases[modelName] = modelID
+		}
+	}
+	if rootModelID != "" {
+		aliases["root"] = rootModelID
+	}
+	return aliases
+}
+
+func resolveAssistedModelID(
+	modelReference string,
+	modelIDByAlias map[string]string,
+) (string, bool) {
+	trimmedReference := strings.TrimSpace(modelReference)
+	if trimmedReference == "" {
+		return "", false
+	}
+	modelID, exists := modelIDByAlias[trimmedReference]
+	return modelID, exists
 }
 
 func createAssistedModelFromSpec(
@@ -497,9 +529,11 @@ func buildCoupledComponents(
 
 func buildCoupledConnections(
 	spec request.AssistedExperimentalFrameModel,
+	modelByID map[string]request.AssistedExperimentalFrameModel,
 	instanceByModelID map[string]string,
 	connections []request.AssistedExperimentalFrameConnection,
 ) []json.ModelConnection {
+	modelIDByAlias := buildAssistedModelAliasMap(modelByID, spec.ID)
 	scope := make(map[string]struct{}, len(spec.Components)+1)
 	scope[spec.ID] = struct{}{}
 	for _, componentID := range spec.Components {
@@ -508,21 +542,41 @@ func buildCoupledConnections(
 
 	result := make([]json.ModelConnection, 0)
 	for _, conn := range connections {
-		if _, inScope := scope[conn.From.Model]; !inScope {
+		fromModelID, fromModelExists := resolveAssistedModelID(conn.From.Model, modelIDByAlias)
+		if !fromModelExists {
 			continue
 		}
-		if _, inScope := scope[conn.To.Model]; !inScope {
+		toModelID, toModelExists := resolveAssistedModelID(conn.To.Model, modelIDByAlias)
+		if !toModelExists {
+			continue
+		}
+		if _, inScope := scope[fromModelID]; !inScope {
+			continue
+		}
+		if _, inScope := scope[toModelID]; !inScope {
 			continue
 		}
 
 		fromInstanceID := "root"
-		if conn.From.Model != spec.ID {
-			fromInstanceID = instanceByModelID[conn.From.Model]
+		if fromModelID != spec.ID {
+			var exists bool
+			fromInstanceID, exists = instanceByModelID[fromModelID]
+			if !exists {
+				continue
+			}
 		}
 
 		toInstanceID := "root"
-		if conn.To.Model != spec.ID {
-			toInstanceID = instanceByModelID[conn.To.Model]
+		if toModelID != spec.ID {
+			var exists bool
+			toInstanceID, exists = instanceByModelID[toModelID]
+			if !exists {
+				continue
+			}
+		}
+
+		if fromInstanceID == toInstanceID {
+			continue
 		}
 
 		result = append(result, json.ModelConnection{
