@@ -3,6 +3,9 @@
 import { assert, describe, it } from "vitest";
 import type { LLMDiagramResponse, ReactFlowInput } from "@/types";
 import {
+	createAtomicModelRequests,
+	createCoupledModelRequest,
+	createCoupledModelRequests,
 	generatedDiagramToReactFlow,
 	llmResponseToGeneratedDiagram,
 } from "./llmToReactFlow";
@@ -306,5 +309,193 @@ describe("llmToReactFlow", () => {
 			[...result.edges].sort((a, b) => a.id.localeCompare(b.id)),
 			[...expectedReactFlow.edges].sort((a, b) => a.id.localeCompare(b.id)),
 		);
+	});
+
+	it("should include language in generated model save requests", () => {
+		const diagram = {
+			connections: [
+				{
+					from: { model: "system", port: "tick" },
+					to: { model: "sensor", port: "tick" },
+				},
+				{
+					from: { model: "sensor", port: "value" },
+					to: { model: "system", port: "value" },
+				},
+			],
+			models: [
+				{
+					code: "package main",
+					codeGenerated: true,
+					components: [],
+					dependencies: [],
+					id: "sensor",
+					language: "go",
+					name: "Sensor",
+					ports: { in: ["tick"], out: ["value"] },
+					type: "atomic",
+				},
+				{
+					codeGenerated: false,
+					components: ["Sensor"],
+					dependencies: ["sensor"],
+					id: "system",
+					name: "System",
+					ports: { in: ["tick"], out: ["value"] },
+					type: "coupled",
+				},
+			],
+			name: "GoSystem",
+		};
+
+		const { requests: atomicRequests } = createAtomicModelRequests(
+			diagram,
+			"library-id",
+		);
+		assert.equal(atomicRequests[0].language, "go");
+		assert.equal(atomicRequests[0].ports[0].name, "tick");
+
+		const coupledRequests = createCoupledModelRequests(
+			diagram,
+			"library-id",
+			new Map([["Sensor", "db-sensor"]]),
+		);
+		assert.equal(coupledRequests[0].language, "go");
+		assert.equal(coupledRequests[0].ports[0].name, "tick");
+		assert.equal(coupledRequests[0].ports[1].name, "value");
+		assert.lengthOf(coupledRequests[0].connections, 2);
+
+		const sensorInstanceId = coupledRequests[0].components[0].instanceId;
+		assert.deepInclude(coupledRequests[0].connections, {
+			from: { instanceId: "root", port: "tick" },
+			to: { instanceId: sensorInstanceId, port: "tick" },
+		});
+		assert.deepInclude(coupledRequests[0].connections, {
+			from: { instanceId: sensorInstanceId, port: "value" },
+			to: { instanceId: "root", port: "value" },
+		});
+	});
+
+	it("should keep an empty coupled model as a root component when it has a database id", () => {
+		const diagram = {
+			connections: [
+				{
+					from: { model: "ScenarioGenerator", port: "entrance_out" },
+					to: { model: "CorridorControlSystem", port: "entrance_presence" },
+				},
+				{
+					from: { model: "ScenarioGenerator", port: "exit_out" },
+					to: { model: "CorridorControlSystem", port: "exit_presence" },
+				},
+				{
+					from: { model: "ScenarioGenerator", port: "control_out" },
+					to: { model: "CorridorAcceptor", port: "control_in" },
+				},
+				{
+					from: { model: "CorridorControlSystem", port: "routed_event" },
+					to: { model: "CorridorAcceptor", port: "event_in" },
+				},
+				{
+					from: { model: "CorridorControlSystem", port: "light_state" },
+					to: { model: "CorridorAcceptor", port: "light_in" },
+				},
+				{
+					from: { model: "CorridorControlSystem", port: "vent_state" },
+					to: { model: "CorridorAcceptor", port: "vent_in" },
+				},
+				{
+					from: { model: "CorridorAcceptor", port: "report_out" },
+					to: { model: "CorridorExperimentalFrame", port: "validation_report" },
+				},
+			],
+			models: [
+				{
+					codeGenerated: true,
+					components: [],
+					dependencies: [],
+					id: "scenario",
+					name: "ScenarioGenerator",
+					ports: { in: [], out: ["entrance_out", "exit_out", "control_out"] },
+					type: "atomic",
+				},
+				{
+					codeGenerated: false,
+					components: [],
+					dependencies: [],
+					id: "mut",
+					name: "CorridorControlSystem",
+					ports: {
+						in: ["entrance_presence", "exit_presence"],
+						out: ["routed_event", "light_state", "vent_state"],
+					},
+					type: "coupled",
+				},
+				{
+					codeGenerated: true,
+					components: [],
+					dependencies: [],
+					id: "acceptor",
+					name: "CorridorAcceptor",
+					ports: {
+						in: ["control_in", "event_in", "light_in", "vent_in"],
+						out: ["report_out"],
+					},
+					type: "atomic",
+				},
+				{
+					codeGenerated: false,
+					components: [
+						"ScenarioGenerator",
+						"CorridorControlSystem",
+						"CorridorAcceptor",
+					],
+					dependencies: [],
+					id: "ef",
+					name: "CorridorExperimentalFrame",
+					ports: { in: [], out: ["validation_report"] },
+					type: "coupled",
+				},
+			],
+			name: "CorridorExperimentalFrame",
+		};
+
+		const request = createCoupledModelRequest(
+			diagram,
+			"library-id",
+			new Map([
+				["ScenarioGenerator", "db-scenario"],
+				["CorridorControlSystem", "db-mut"],
+				["CorridorAcceptor", "db-acceptor"],
+			]),
+			diagram.models.find((model) => model.id === "ef"),
+		);
+
+		assert.lengthOf(request.components, 3);
+		assert.isDefined(
+			request.components.find((component) => component.modelId === "db-mut"),
+		);
+		assert.lengthOf(request.connections, 7);
+
+		const mutInstanceId = request.components.find(
+			(component) => component.modelId === "db-mut",
+		)?.instanceId;
+		assert.deepInclude(request.connections, {
+			from: { instanceId: mutInstanceId, port: "light_state" },
+			to: {
+				instanceId: request.components.find(
+					(component) => component.modelId === "db-acceptor",
+				)?.instanceId,
+				port: "light_in",
+			},
+		});
+		assert.deepInclude(request.connections, {
+			from: {
+				instanceId: request.components.find(
+					(component) => component.modelId === "db-acceptor",
+				)?.instanceId,
+				port: "report_out",
+			},
+			to: { instanceId: "root", port: "validation_report" },
+		});
 	});
 });

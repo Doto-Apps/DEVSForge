@@ -130,8 +130,6 @@ func generateDiagram(c *fiber.Ctx) error {
 	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
 		Messages:            openai.F(Messages),
 		MaxCompletionTokens: openai.Int(4000),
-		TopP:                openai.Float(0.7),
-		Temperature:         openai.Float(0.9),
 		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
 			openai.ResponseFormatJSONSchemaParam{
 				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
@@ -248,8 +246,6 @@ Please respond ONLY in JSON following the provided schema.
 	chat, err := client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
 		Messages:            openai.F(messages),
 		MaxCompletionTokens: openai.Int(4000),
-		TopP:                openai.Float(0.7),
-		Temperature:         openai.Float(0.9),
 		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
 			openai.ResponseFormatJSONSchemaParam{
 				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
@@ -416,8 +412,6 @@ Respond ONLY with the %s code in JSON as { "code": "your_code_here" }
 			openai.UserMessage(fullPrompt),
 		}),
 		MaxCompletionTokens: openai.Int(4000),
-		TopP:                openai.Float(0.7),
-		Temperature:         openai.Float(0.9),
 		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
 			openai.ResponseFormatJSONSchemaParam{
 				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),
@@ -548,8 +542,6 @@ Respond ONLY in JSON following the provided schema.
 			openai.UserMessage(fullPrompt),
 		}),
 		MaxCompletionTokens: openai.Int(1000),
-		TopP:                openai.Float(0.7),
-		Temperature:         openai.Float(0.7),
 		ResponseFormat: openai.F[openai.ChatCompletionNewParamsResponseFormatUnion](
 			openai.ResponseFormatJSONSchemaParam{
 				Type:       openai.F(openai.ResponseFormatJSONSchemaTypeJSONSchema),

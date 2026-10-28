@@ -23,9 +23,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useGenerateDiagram } from "@/hooks/useGenerateDiagram";
 import {
 	createAtomicModelRequests,
-	createCoupledModelRequests,
+	createCoupledModelRequest,
 } from "@/lib/llmToReactFlow";
-import type { GeneratedDiagram, GeneratorPhase } from "@/types";
+import type {
+	GeneratedDiagram,
+	GeneratedModelData,
+	GeneratedModelLanguage,
+	GeneratorPhase,
+} from "@/types";
 
 const phaseSteps = [
 	{ icon: FileText, id: "prompt", label: "Description" },
@@ -33,6 +38,38 @@ const phaseSteps = [
 	{ icon: Code2, id: "code", label: "Code" },
 	{ icon: CheckCircle2, id: "complete", label: "Complete" },
 ] as const;
+
+const extractApiErrorMessage = (apiError: unknown): string | null => {
+	if (!apiError || typeof apiError !== "object") return null;
+	const payload = apiError as Record<string, unknown>;
+
+	for (const key of ["error", "message", "detail"] as const) {
+		const value = payload[key];
+		if (typeof value === "string" && value.trim()) return value;
+	}
+
+	return null;
+};
+
+const resolveCreatedModelDatabaseID = (
+	diagram: GeneratedDiagram,
+	createdModelIDByName: Map<string, string>,
+	logicalModelID: string,
+): string | undefined => {
+	const trimmedLogicalID = logicalModelID.trim();
+	const directID = createdModelIDByName.get(trimmedLogicalID);
+	if (directID) return directID;
+
+	const generatedModel = diagram.models.find(
+		(model) => model.id === trimmedLogicalID || model.name === trimmedLogicalID,
+	);
+	if (!generatedModel) return undefined;
+
+	return (
+		createdModelIDByName.get(generatedModel.id) ??
+		createdModelIDByName.get(generatedModel.name)
+	);
+};
 
 export function GeneratorFlow() {
 	const navigate = useNavigate();
@@ -102,11 +139,11 @@ export function GeneratorFlow() {
 
 	// Phase 3: Code generation and validation (only for atomic models)
 	const handleCodeGenerated = useCallback(
-		(modelId: string, code: string) => {
+		(modelId: string, code: string, language?: GeneratedModelLanguage) => {
 			if (!diagram) return;
 
 			const updatedModels = diagram.models.map((m) =>
-				m.id === modelId ? { ...m, code, codeGenerated: true } : m,
+				m.id === modelId ? { ...m, code, codeGenerated: true, language } : m,
 			);
 
 			setDiagram({
@@ -164,8 +201,11 @@ export function GeneratorFlow() {
 				},
 			});
 
-			if (!libraryResponse.data?.id) {
-				throw new Error("Unable to create library");
+			if (libraryResponse.error || !libraryResponse.data?.id) {
+				throw new Error(
+					extractApiErrorMessage(libraryResponse.error) ??
+						"Unable to create library",
+				);
 			}
 
 			const libraryId = libraryResponse.data.id;
@@ -183,35 +223,85 @@ export function GeneratorFlow() {
 					body: modelRequest,
 				});
 
-				if (modelResponse.data?.id) {
-					// Store the DB-generated ID mapped to the model name
-					dbIdMap.set(modelRequest.name, modelResponse.data.id);
-				} else {
-					console.error(`Error creating atomic model ${modelRequest.name}`);
+				if (modelResponse.error || !modelResponse.data?.id) {
+					throw new Error(
+						extractApiErrorMessage(modelResponse.error) ??
+							`Error creating atomic model ${modelRequest.name}`,
+					);
+				}
+
+				// Store the DB-generated ID mapped to the generated model name.
+				dbIdMap.set(modelRequest.name, modelResponse.data.id);
+				const generatedModel = diagram.models.find(
+					(model) =>
+						model.type === "atomic" && model.name === modelRequest.name,
+				);
+				if (generatedModel) {
+					dbIdMap.set(generatedModel.id, modelResponse.data.id);
 				}
 			}
 
-			// Step 2: Create coupled models with references to atomic models (using DB IDs)
-			const coupledRequests = createCoupledModelRequests(
-				diagram,
-				libraryId,
-				dbIdMap,
+			// Step 2: Create coupled models once every component already has a DB ID.
+			const coupledModels = diagram.models.filter(
+				(model): model is GeneratedModelData & { type: "coupled" } =>
+					model.type === "coupled",
+			);
+			const remainingCoupledModels = new Map(
+				coupledModels.map((model) => [model.id, model]),
 			);
 
-			for (const modelRequest of coupledRequests) {
-				const modelResponse = await client.POST("/model", {
-					body: modelRequest,
-				});
+			while (remainingCoupledModels.size > 0) {
+				let progressed = false;
 
-				if (!modelResponse.data) {
-					console.error(`Error creating coupled model ${modelRequest.name}`);
+				for (const [modelId, model] of Array.from(remainingCoupledModels)) {
+					const missingComponents = (model.components ?? []).filter(
+						(componentID) =>
+							!resolveCreatedModelDatabaseID(diagram, dbIdMap, componentID),
+					);
+					if (missingComponents.length > 0) {
+						continue;
+					}
+
+					const modelRequest = createCoupledModelRequest(
+						diagram,
+						libraryId,
+						dbIdMap,
+						model,
+					);
+					const modelResponse = await client.POST("/model", {
+						body: modelRequest,
+					});
+
+					if (modelResponse.error || !modelResponse.data?.id) {
+						throw new Error(
+							extractApiErrorMessage(modelResponse.error) ??
+								`Error creating coupled model ${modelRequest.name}`,
+						);
+					}
+
+					dbIdMap.set(model.id, modelResponse.data.id);
+					dbIdMap.set(model.name, modelResponse.data.id);
+					remainingCoupledModels.delete(modelId);
+					progressed = true;
+				}
+
+				if (!progressed) {
+					const unresolved = Array.from(remainingCoupledModels.values())
+						.map(
+							(model) =>
+								`${model.name}: ${(model.components ?? []).join(", ")}`,
+						)
+						.join("; ");
+					throw new Error(
+						`Unable to resolve coupled model components: ${unresolved}`,
+					);
 				}
 			}
 
-			const totalModels = atomicRequests.length + coupledRequests.length;
+			const totalModels = atomicRequests.length + coupledModels.length;
 
 			toast({
-				description: `${totalModels} model(s) added to library "${libraryName}" (${atomicRequests.length} atomic, ${coupledRequests.length} coupled)`,
+				description: `${totalModels} model(s) added to library "${libraryName}" (${atomicRequests.length} atomic, ${coupledModels.length} coupled)`,
 				title: "Models saved",
 			});
 

@@ -10,6 +10,8 @@ export type LLMEndpoint = components["schemas"]["response.Endpoint"];
 export type LLMPortResponse = components["schemas"]["response.PortResponse"];
 export type ExperimentalFrameRole =
 	components["schemas"]["response.ExperimentalFrameRole"];
+export type GeneratedModelLanguage =
+	components["schemas"]["enum.ModelLanguage"];
 
 // Request types
 export type GenerateDiagramRequest =
@@ -46,6 +48,7 @@ export type GeneratedModelData = {
 	id: string;
 	name: string;
 	type: "atomic" | "coupled";
+	language?: GeneratedModelLanguage;
 	role?: ExperimentalFrameRole;
 	ports: {
 		in: string[];
@@ -97,7 +100,11 @@ export type StructureEditorProps = {
 export type CodeGenerationPanelProps = {
 	diagram: GeneratedDiagram;
 	currentModelIndex: number;
-	onCodeGenerated: (modelId: string, code: string) => void;
+	onCodeGenerated: (
+		modelId: string,
+		code: string,
+		language?: GeneratedModelLanguage,
+	) => void;
 	onModelValidated: () => void;
 	onCodeChange: (modelId: string, code: string) => void;
 	atomicModelFilter?: (model: GeneratedModelData) => boolean;

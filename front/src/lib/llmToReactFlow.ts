@@ -12,6 +12,7 @@ import type {
 	EdgeData,
 	GeneratedDiagram,
 	GeneratedModelData,
+	GeneratedModelLanguage,
 	LLMDiagramResponse,
 	ReactFlowInput,
 } from "@/types";
@@ -120,6 +121,86 @@ export const efStructureResponseToGeneratedDiagram = (
 
 const dedupeStrings = (values: string[]): string[] =>
 	Array.from(new Set(values.filter((value) => value.trim().length > 0)));
+
+const DEFAULT_MODEL_LANGUAGE: GeneratedModelLanguage = "python";
+
+const getModelRequestLanguage = (
+	model: GeneratedModelData,
+): GeneratedModelLanguage => model.language ?? DEFAULT_MODEL_LANGUAGE;
+
+const inferCoupledModelLanguage = (
+	diagram: GeneratedDiagram,
+): GeneratedModelLanguage => {
+	const atomicLanguages = diagram.models
+		.filter((model) => model.type === "atomic")
+		.map(getModelRequestLanguage);
+	const uniqueLanguages = Array.from(new Set(atomicLanguages));
+
+	if (uniqueLanguages.length === 1 && uniqueLanguages[0]) {
+		return uniqueLanguages[0];
+	}
+	return DEFAULT_MODEL_LANGUAGE;
+};
+
+const getGeneratedModelByLogicalID = (
+	diagram: GeneratedDiagram,
+	logicalModelID: string,
+): GeneratedModelData | undefined =>
+	diagram.models.find((model) => {
+		const trimmedLogicalID = logicalModelID.trim();
+		return model.id === trimmedLogicalID || model.name === trimmedLogicalID;
+	});
+
+const isRootModelReference = (
+	modelReference: string,
+	rootModel: GeneratedModelData,
+): boolean => {
+	const trimmedReference = modelReference.trim();
+	return (
+		trimmedReference.toLowerCase() === "root" ||
+		trimmedReference === rootModel.id ||
+		trimmedReference === rootModel.name
+	);
+};
+
+const getGeneratedModelIDFromReference = (
+	diagram: GeneratedDiagram,
+	modelReference: string,
+): string | undefined =>
+	getGeneratedModelByLogicalID(diagram, modelReference)?.id;
+
+const getCreatedModelDatabaseID = (
+	diagram: GeneratedDiagram,
+	createdModelIDByName: Map<string, string>,
+	logicalModelID: string,
+): string | undefined => {
+	const trimmedLogicalID = logicalModelID.trim();
+	const directID = createdModelIDByName.get(trimmedLogicalID);
+	if (directID) return directID;
+
+	const generatedModel = getGeneratedModelByLogicalID(
+		diagram,
+		trimmedLogicalID,
+	);
+	if (!generatedModel) return undefined;
+
+	return (
+		createdModelIDByName.get(generatedModel.name) ??
+		createdModelIDByName.get(generatedModel.id)
+	);
+};
+
+const getCoupledConnectionEndpointInstanceID = (
+	coupledModel: GeneratedModelData,
+	logicalModelID: string,
+	instanceIDByLogicalModelID: Map<string, string>,
+): string | undefined => {
+	const trimmedLogicalID = logicalModelID.trim();
+	if (isRootModelReference(trimmedLogicalID, coupledModel)) {
+		return "root";
+	}
+	return instanceIDByLogicalModelID.get(trimmedLogicalID);
+};
 
 const getTargetPortsByDirection = (
 	targetModel: components["schemas"]["response.ModelResponse"],
@@ -330,6 +411,7 @@ export const replaceGeneratedMutPlaceholder = (
 			components: targetScopedComponents,
 			dependencies: model.dependencies.map(remapModelID),
 			id: targetModelID,
+			language: targetModel.language,
 			name: targetModel.name ?? model.name,
 			ports: {
 				in: inPorts,
@@ -460,9 +542,19 @@ export const generatedDiagramToReactFlow = (
 	const rootModel =
 		diagram.models.find(
 			(m) =>
+				diagram.rootModelId &&
+				(m.id === diagram.rootModelId || m.name === diagram.rootModelId),
+		) ??
+		diagram.models.find(
+			(m) =>
 				m.type === "coupled" &&
-				!diagram.models.some((other) => other.components?.includes(m.id)),
-		) ?? diagram.models[0];
+				!diagram.models.some((other) =>
+					other.components?.some(
+						(component) => component === m.id || component === m.name,
+					),
+				),
+		) ??
+		diagram.models[0];
 
 	if (!rootModel) {
 		return { edges: [], nodes: [] };
@@ -514,14 +606,19 @@ export const generatedDiagramToReactFlow = (
 
 	// Créer les edges à partir des connexions
 	for (const conn of diagram.connections) {
-		const sourceIsRoot = conn.from.model === rootModel.id;
-		const targetIsRoot = conn.to.model === rootModel.id;
+		const sourceIsRoot = isRootModelReference(conn.from.model, rootModel);
+		const targetIsRoot = isRootModelReference(conn.to.model, rootModel);
+		const sourceModelID =
+			getGeneratedModelIDFromReference(diagram, conn.from.model) ??
+			conn.from.model;
+		const targetModelID =
+			getGeneratedModelIDFromReference(diagram, conn.to.model) ?? conn.to.model;
 		const sourceId = sourceIsRoot
 			? rootModel.id
-			: `${rootModel.id}/${conn.from.model}`;
+			: `${rootModel.id}/${sourceModelID}`;
 		const targetId = targetIsRoot
 			? rootModel.id
-			: `${rootModel.id}/${conn.to.model}`;
+			: `${rootModel.id}/${targetModelID}`;
 
 		const edge: Edge<EdgeData> = {
 			data: {
@@ -571,6 +668,7 @@ export const createAtomicModelRequests = (
 			connections: [],
 			description: `Generated atomic model for ${diagram.name}`,
 			id: modelId,
+			language: getModelRequestLanguage(model),
 			libId: libraryId,
 			metadata: {
 				position: DEFAULT_POSITION,
@@ -578,8 +676,12 @@ export const createAtomicModelRequests = (
 			},
 			name: model.name,
 			ports: [
-				...model.ports.in.map((p) => ({ id: p, type: "in" as const })),
-				...model.ports.out.map((p) => ({ id: p, type: "out" as const })),
+				...model.ports.in.map((p) => ({ id: p, name: p, type: "in" as const })),
+				...model.ports.out.map((p) => ({
+					id: p,
+					name: p,
+					type: "out" as const,
+				})),
 			],
 			type: model.type,
 		};
@@ -596,77 +698,107 @@ export const createAtomicModelRequests = (
 export const createCoupledModelRequests = (
 	diagram: GeneratedDiagram,
 	libraryId: string,
-	atomicIdMap: Map<string, string>, // Map from model name to database ID
+	createdModelIDByName: Map<string, string>, // Map from generated model id/name to database ID
 ): components["schemas"]["request.ModelRequest"][] => {
-	const requests: components["schemas"]["request.ModelRequest"][] = [];
-	const coupledModels = diagram.models.filter((m) => m.type === "coupled");
+	return diagram.models
+		.filter((model) => model.type === "coupled")
+		.map((model) =>
+			createCoupledModelRequest(
+				diagram,
+				libraryId,
+				createdModelIDByName,
+				model,
+			),
+		);
+};
 
-	for (const model of coupledModels) {
-		// Build components array with references to the created atomic models
-		// Also build a map from component name to instanceId for connection mapping
-		const modelComponents: components["schemas"]["json.ModelComponent"][] = [];
-		const nameToInstanceId = new Map<string, string>(); // Map component name to instanceId
+export const createCoupledModelRequest = (
+	diagram: GeneratedDiagram,
+	libraryId: string,
+	createdModelIDByName: Map<string, string>,
+	model: GeneratedModelData,
+): components["schemas"]["request.ModelRequest"] => {
+	const modelComponents: components["schemas"]["json.ModelComponent"][] = [];
+	const instanceIDByLogicalModelID = new Map<string, string>();
 
-		if (model.components) {
-			for (const componentName of model.components) {
-				const componentId = atomicIdMap.get(componentName);
-				if (componentId) {
-					const instanceId = uuid(); // Unique instance ID for this component
-					nameToInstanceId.set(componentName, instanceId);
-					modelComponents.push({
-						instanceId,
-						modelId: componentId, // Reference to the atomic model in database
-					});
+	if (model.components) {
+		for (const componentName of model.components) {
+			const componentId = getCreatedModelDatabaseID(
+				diagram,
+				createdModelIDByName,
+				componentName,
+			);
+			if (componentId) {
+				const instanceId = uuid();
+				instanceIDByLogicalModelID.set(componentName, instanceId);
+
+				const componentModel = getGeneratedModelByLogicalID(
+					diagram,
+					componentName,
+				);
+				if (componentModel) {
+					instanceIDByLogicalModelID.set(componentModel.id, instanceId);
+					instanceIDByLogicalModelID.set(componentModel.name, instanceId);
 				}
-			}
-		}
 
-		// Map connections from diagram to model connections format
-		// Filter connections that are relevant to this coupled model's components
-		const modelConnections: components["schemas"]["json.ModelConnection"][] =
-			[];
-
-		for (const conn of diagram.connections) {
-			const fromInstanceId = nameToInstanceId.get(conn.from.model);
-			const toInstanceId = nameToInstanceId.get(conn.to.model);
-
-			// Only include connections between components of this coupled model
-			if (fromInstanceId && toInstanceId) {
-				modelConnections.push({
-					from: {
-						instanceId: fromInstanceId,
-						port: conn.from.port,
-					},
-					to: {
-						instanceId: toInstanceId,
-						port: conn.to.port,
-					},
+				modelComponents.push({
+					instanceId,
+					modelId: componentId,
 				});
 			}
 		}
-
-		const request: components["schemas"]["request.ModelRequest"] = {
-			code: "", // Coupled models don't have code
-			components: modelComponents,
-			connections: modelConnections,
-			description: `Generated coupled model for ${diagram.name}`,
-			id: uuid(),
-			libId: libraryId,
-			metadata: {
-				position: DEFAULT_POSITION,
-				style: { height: DEFAULT_NODE_SIZE * 2, width: DEFAULT_NODE_SIZE * 2 }, // Larger for coupled
-			},
-			name: model.name,
-			ports: [
-				...model.ports.in.map((p) => ({ id: p, type: "in" as const })),
-				...model.ports.out.map((p) => ({ id: p, type: "out" as const })),
-			],
-			type: model.type,
-		};
-		requests.push(request);
 	}
 
-	return requests;
+	const modelConnections: components["schemas"]["json.ModelConnection"][] = [];
+	for (const conn of diagram.connections) {
+		const fromInstanceId = getCoupledConnectionEndpointInstanceID(
+			model,
+			conn.from.model,
+			instanceIDByLogicalModelID,
+		);
+		const toInstanceId = getCoupledConnectionEndpointInstanceID(
+			model,
+			conn.to.model,
+			instanceIDByLogicalModelID,
+		);
+
+		if (fromInstanceId && toInstanceId && fromInstanceId !== toInstanceId) {
+			modelConnections.push({
+				from: {
+					instanceId: fromInstanceId,
+					port: conn.from.port,
+				},
+				to: {
+					instanceId: toInstanceId,
+					port: conn.to.port,
+				},
+			});
+		}
+	}
+
+	return {
+		code: "",
+		components: modelComponents,
+		connections: modelConnections,
+		description: `Generated coupled model for ${diagram.name}`,
+		id: uuid(),
+		language: inferCoupledModelLanguage(diagram),
+		libId: libraryId,
+		metadata: {
+			position: DEFAULT_POSITION,
+			style: { height: DEFAULT_NODE_SIZE * 2, width: DEFAULT_NODE_SIZE * 2 },
+		},
+		name: model.name,
+		ports: [
+			...model.ports.in.map((p) => ({ id: p, name: p, type: "in" as const })),
+			...model.ports.out.map((p) => ({
+				id: p,
+				name: p,
+				type: "out" as const,
+			})),
+		],
+		type: model.type,
+	};
 };
 
 /**
