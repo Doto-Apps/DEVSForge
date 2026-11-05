@@ -28,8 +28,15 @@ const loginSchema = z.object({
 
 export const LoginForm = () => {
 	const { login } = useAuth();
+	const isDevelopment =
+		import.meta.env.DEV && import.meta.env.MODE === "development";
 	const form = useForm({
-		defaultValues: { email: "admin@gmail.com", password: "Admin123" },
+		defaultValues: {
+			email: isDevelopment ? (import.meta.env.VITE_DEV_LOGIN_EMAIL ?? "") : "",
+			password: isDevelopment
+				? (import.meta.env.VITE_DEV_LOGIN_PASSWORD ?? "")
+				: "",
+		},
 		resolver: zodResolver(loginSchema),
 	});
 

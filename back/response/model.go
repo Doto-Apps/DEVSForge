@@ -17,6 +17,7 @@ type ModelResponse struct {
 	LibID       *string                `json:"libId"`
 	Name        string                 `json:"name" validate:"required"`
 	Type        enum.ModelType         `json:"type" validate:"required"`
+	Language    enum.ModelLanguage     `json:"language"`
 	Description string                 `json:"description" validate:"required"`
 	Code        string                 `json:"code" validate:"required"`
 	Components  []json.ModelComponent  `json:"components" validate:"required"`
@@ -32,6 +33,7 @@ func CreateModelResponse(m model.Model) ModelResponse {
 		LibID:       m.LibID,
 		Name:        m.Name,
 		Type:        m.Type,
+		Language:    m.Language,
 		Description: m.Description,
 		Code:        m.Code,
 		Ports:       m.Ports,

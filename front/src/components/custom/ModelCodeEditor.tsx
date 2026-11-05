@@ -1,5 +1,6 @@
 import { Editor, useMonaco } from "@monaco-editor/react";
 import { useEffect } from "react";
+import type { components } from "@/api/v1";
 import { examplePythonCode } from "@/staticModel/examplePythonCode";
 import type { WorkerResponse } from "@/types";
 
@@ -7,17 +8,19 @@ type ModelCodeEditorProps = {
 	code: string;
 	onCodeChange: (newCode: string, modelID: string) => void;
 	modelId: string;
+	language?: components["schemas"]["enum.ModelLanguage"];
 };
 
 export const ModelCodeEditor = ({
 	code = examplePythonCode,
 	onCodeChange,
 	modelId,
+	language = "python",
 }: ModelCodeEditorProps) => {
 	const monaco = useMonaco();
 
 	useEffect(() => {
-		if (monaco) {
+		if (monaco && language === "python") {
 			const worker = new Worker(
 				new URL("../../lib/python/worker.ts", import.meta.url),
 			);
@@ -31,18 +34,27 @@ export const ModelCodeEditor = ({
 			};
 
 			const editor = monaco.editor.getEditors()[0];
-			editor?.onDidChangeModelContent(() => {
+			const subscription = editor?.onDidChangeModelContent(() => {
 				const code = editor.getValue();
 				worker.postMessage({ code });
 			});
+
+			return () => {
+				subscription?.dispose();
+				worker.terminate();
+				const model = editor?.getModel();
+				if (model) {
+					monaco.editor.setModelMarkers(model, "pyright", []);
+				}
+			};
 		}
-	}, [monaco]);
+	}, [monaco, language]);
 
 	return (
 		<div className="h-full min-h-0 overflow-hidden">
 			<Editor
 				height="100%"
-				language="python"
+				language={language}
 				onChange={(newCode) => {
 					if (newCode !== undefined) {
 						onCodeChange(newCode, modelId);

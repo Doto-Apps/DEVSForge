@@ -1,6 +1,7 @@
 import React from "react";
 import type { components } from "@/api/v1";
 import { ModeToggle } from "@/components/mode-toggle";
+import { Badge } from "@/components/ui/badge";
 import {
 	Breadcrumb,
 	BreadcrumbItem,
@@ -27,6 +28,7 @@ type NavHeaderProps = {
 	validateFunction?: () => Promise<void>;
 	deployFunction?: () => Promise<void>;
 	modelId?: components["schemas"]["model.Model"]["id"];
+	modelLanguage?: components["schemas"]["enum.ModelLanguage"];
 };
 
 const NavHeader: React.FC<NavHeaderProps> = ({
@@ -40,6 +42,7 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 	validateFunction,
 	deployFunction,
 	modelId,
+	modelLanguage,
 }) => {
 	const lastIndex = breadcrumbs.length - 1;
 
@@ -69,6 +72,11 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 					))}
 				</BreadcrumbList>
 			</Breadcrumb>
+			{modelLanguage && (
+				<Badge className="shrink-0" title="Model language" variant="secondary">
+					{{ go: "Go", java: "Java", python: "Python" }[modelLanguage]}
+				</Badge>
+			)}
 			<div className="ml-auto px-3 flex items-center gap-2">
 				{showNavActions ? (
 					<NavActions

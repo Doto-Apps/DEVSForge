@@ -214,6 +214,7 @@ export function EditModel() {
 	if (!data || !structure) return null;
 
 	const mainModel = structure.nodes.find((m) => m.id === modelId);
+	const modelLanguage = data.find((model) => model.id === modelId)?.language;
 
 	const selectedModel = structure.nodes.find(({ selected }) => selected);
 
@@ -233,6 +234,9 @@ export function EditModel() {
 				]}
 				deployFunction={deployWebApp}
 				modelId={modelId}
+				modelLanguage={
+					mainModel?.data.modelType === "atomic" ? modelLanguage : undefined
+				}
 				saveFunction={saveModelChange}
 				showModeToggle
 				showNavActions
@@ -245,6 +249,7 @@ export function EditModel() {
 					<ResizablePanel defaultSize={50} minSize={20}>
 						<ModelCodeEditor
 							code={mainModel.data.code}
+							language={modelLanguage}
 							modelId={mainModel.id}
 							onCodeChange={onChangeCode}
 						/>

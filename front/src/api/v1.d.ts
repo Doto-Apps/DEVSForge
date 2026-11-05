@@ -3344,6 +3344,7 @@ export interface components {
 			connections: components["schemas"]["json.ModelConnection"][];
 			description: string;
 			id: string;
+			language?: components["schemas"]["enum.ModelLanguage"];
 			libId?: string;
 			metadata: components["schemas"]["json.ModelMetadata"];
 			name: string;

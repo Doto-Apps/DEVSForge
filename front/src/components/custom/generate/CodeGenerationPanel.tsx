@@ -597,6 +597,7 @@ export function CodeGenerationPanel({
 					{isSelectedAtomic && selectedModel?.code ? (
 						<ModelCodeEditor
 							code={selectedModel.code}
+							language={selectedModel.language}
 							modelId={selectedModel.id}
 							onCodeChange={(newCode) =>
 								onCodeChange(selectedModel.id, newCode)

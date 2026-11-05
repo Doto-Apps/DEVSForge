@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { z } from "zod";
 
 import { client } from "@/api/client.ts";
@@ -49,6 +50,7 @@ export default function ModelForm({
 	onSubmitSuccess?: () => void;
 	libId: string;
 }) {
+	const navigate = useNavigate();
 	const { toast } = useToast();
 	const { data: languagesData } = useGetLanguages();
 
@@ -105,8 +107,8 @@ export default function ModelForm({
 				body: payload,
 			});
 
-			if (!response.data) {
-				throw new Error("No data received from API");
+			if (!response.data?.id) {
+				throw new Error("No model ID received from API");
 			}
 
 			toast({
@@ -116,8 +118,8 @@ export default function ModelForm({
 			await mutate();
 
 			onSubmitSuccess?.();
-			//todo : navigate to the diagram page
 			form.reset();
+			navigate(`/library/${libId}/model/${response.data.id}`);
 		} catch (error) {
 			toast({
 				description: (error as Error).message,

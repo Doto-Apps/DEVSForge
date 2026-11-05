@@ -3679,6 +3679,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "language": {
+                    "$ref": "#/definitions/enum.ModelLanguage"
+                },
                 "libId": {
                     "type": "string"
                 },

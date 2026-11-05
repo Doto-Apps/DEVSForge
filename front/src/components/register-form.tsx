@@ -38,11 +38,11 @@ export const RegisterForm = () => {
 	const { register } = useAuth();
 	const form = useForm({
 		defaultValues: {
-			confirmPassword: "Admin123",
-			email: "admin@gmail.com",
-			fullname: "John Doe",
-			password: "Admin123",
-			username: "Admin",
+			confirmPassword: "",
+			email: "",
+			fullname: "",
+			password: "",
+			username: "",
 		},
 		resolver: zodResolver(registerSchema),
 	});
