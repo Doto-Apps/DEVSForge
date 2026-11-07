@@ -445,10 +445,10 @@ func buildRunnableModel(node *flatNode, allConnections []flatConnection) (*share
 	}
 
 	return &shared.RunnableModel{
-		ID:          node.instanceID,
-		Name:        m.Name,
-		Code:        m.Code,
-		Language:    shared.CodeLanguage(m.Language),
+		ID:       node.instanceID,
+		Name:     m.Name,
+		Code:     m.Code,
+		Language: shared.CodeLanguage(m.Language), IntegrationID: stringValue(m.IntegrationID), IntegrationVersion: stringValue(m.IntegrationVersion),
 		Ports:       ports,
 		Parameters:  parameters,
 		Connections: connections,
@@ -671,4 +671,11 @@ func normalizePortIdentifier(m *model.Model, rawPort string) string {
 	}
 
 	return port
+}
+
+func stringValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }

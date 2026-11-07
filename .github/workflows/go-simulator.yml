@@ -5,11 +5,15 @@ on:
     branches: ["main"]
     paths:
       - "simulator/**"
+      - "go.work*"
+      - "scripts/generate-proto.sh"
       - ".github/workflows/go-simulator.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "simulator/**"
+      - "go.work*"
+      - "scripts/generate-proto.sh"
       - ".github/workflows/go-simulator.yml"
 
 env:
@@ -34,15 +38,19 @@ jobs:
               - 'simulator/coordinator/**'
               - 'simulator/shared/**'
               - 'simulator/Dockerfile'
-              - '.github/workflow/go-simulator.yml'
+              - 'go.work*'
+              - '.github/workflows/go-simulator.yml'
             runner:
               - 'simulator/runner/**'
               - 'simulator/shared/**'
               - 'simulator/Dockerfile'
-              - '.github/workflow/go-simulator.yml'
+              - 'go.work*'
+              - '.github/workflows/go-simulator.yml'
             shared:
               - 'simulator/shared/**'
-              - '.github/workflow/go-simulator.yml'
+              - 'simulator/runner/integrations/**'
+              - 'go.work*'
+              - '.github/workflows/go-simulator.yml'
 
   lint-coordinator:
     needs: changes
@@ -148,6 +156,7 @@ jobs:
         with:
           context: .
           file: ./simulator/Dockerfile
+          target: runner
           tags: devsforge-test-runner:latest
           load: true
           cache-from: type=gha
@@ -164,3 +173,22 @@ jobs:
             devsforge-test-runner:latest \
             go test -v ./simulator/runner/...
 
+
+  test-lsp:
+    needs: build-sim
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: simulator/Dockerfile
+          target: lsp
+          tags: devsforge-lsp-test:latest
+          load: true
+          cache-from: type=gha,scope=lsp
+          cache-to: type=gha,scope=lsp,mode=max
+      - name: Validate language servers
+        run: docker run --rm --init -e LSP_REAL_SERVERS=1 -e GOMODCACHE=/tmp/test-modules -e GOCACHE=/tmp/test-build -v ${{ github.workspace }}:/app:ro -w /app devsforge-lsp-test:latest go test ./simulator/runner/internal/lsp -v -timeout 10m

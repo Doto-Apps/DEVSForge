@@ -20,7 +20,7 @@ import {
 	useState,
 } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { useDebouncedCallback } from "use-debounce";
+
 import { client } from "@/api/client.ts";
 import type { components } from "@/api/v1.js";
 import BiDirectionalEdge from "@/components/custom/reactFlow/BiDirectionalEdge.tsx";
@@ -67,17 +67,13 @@ export function ModelViewEditor({
 	const { fitView, screenToFlowPosition, getInternalNode } = useReactFlow();
 	const [dragId] = useDnD();
 	const { toast } = useToast();
-	const needAutoFitView = useRef(true);
+	const needAutoFitView = useRef(!models.viewport);
 	const lastAutoLayoutSignal = useRef<number | undefined>(undefined);
 	const [internalStructure, setInternalStructure] = useState(models);
 
 	const [copyModelId, setCopyModelId] = useState<string | undefined>(undefined);
 	const { nodes, edges } = internalStructure;
 	const selectedModel = nodes.find(({ selected }) => selected);
-	const debouncedChange = useDebouncedCallback(
-		(params: ReactFlowInput) => onChange(params),
-		250,
-	);
 
 	useHotkeys(["ctrl+c", "meta+c"], (e) => {
 		e.preventDefault();
@@ -146,9 +142,9 @@ export function ModelViewEditor({
 			};
 
 			setInternalStructure(newState);
-			debouncedChange(newState);
+			onChange(newState);
 		},
-		[models, nodes, edges, debouncedChange],
+		[models, nodes, edges, onChange],
 	);
 
 	const onEdgesChange = useCallback(
@@ -200,6 +196,14 @@ export function ModelViewEditor({
 		metadata?: components["schemas"]["json.ModelMetadata"],
 	) => {
 		const parentNode = models.nodes.find((n) => n.id === modelIdToPut);
+		if (parentNode?.parentId && parentNode.deletable === false) {
+			toast({
+				title: "Protected reference",
+				description: "Add models to the parent of the model under test.",
+				variant: "destructive",
+			});
+			return;
+		}
 
 		const actualModels = reactflowToModel(models);
 
@@ -263,6 +267,14 @@ export function ModelViewEditor({
 
 		const targetId = FindParentNodeId(models?.nodes, position, getInternalNode);
 		const parentNode = models.nodes.find((n) => n.id === targetId);
+		if (parentNode?.parentId && parentNode.deletable === false) {
+			toast({
+				title: "Protected reference",
+				description: "Add models to the parent of the model under test.",
+				variant: "destructive",
+			});
+			return;
+		}
 
 		const actualModels = reactflowToModel(models);
 
@@ -292,6 +304,15 @@ export function ModelViewEditor({
 		if (!onChange || !models) return;
 
 		const holderId = findHolderId(connection.source, connection.target);
+		const holder = models.nodes.find((n) => n.id === holderId);
+		if (holder?.parentId && holder.deletable === false) {
+			toast({
+				title: "Protected reference",
+				description: "The internals of the model under test are read-only.",
+				variant: "destructive",
+			});
+			return;
+		}
 		if (holderId === null) {
 			toast({
 				description: "Only direct connection are allowed",
@@ -304,7 +325,7 @@ export function ModelViewEditor({
 			data: {
 				holderId: holderId,
 			},
-			id: `${connection.source}->${connection.target}`,
+			id: `${connection.source}:${connection.sourceHandle}->${connection.target}:${connection.targetHandle}`,
 			source: connection.source,
 			sourceHandle: connection.sourceHandle,
 			target: connection.target,
@@ -374,7 +395,9 @@ export function ModelViewEditor({
 				defaultEdgeOptions={defaultEdgeOptions}
 				edges={edges}
 				edgeTypes={edgeTypes}
-				fitView
+				fitView={!models.viewport}
+				defaultViewport={models.viewport}
+				onMoveEnd={(_, viewport) => onChange({ ...models, viewport })}
 				minZoom={0.1}
 				nodes={nodes}
 				nodeTypes={nodeTypes}
@@ -384,7 +407,7 @@ export function ModelViewEditor({
 				onEdgesChange={onEdgesChange}
 				onInit={(instance) => {
 					setTimeout(() => {
-						instance.fitView();
+						if (!models.viewport) instance.fitView();
 					});
 				}}
 				onNodesChange={onNodesChange}

@@ -3,7 +3,9 @@ package handler
 import (
 	"errors"
 	"fmt"
+	"strings"
 
+	"devsforge-shared/integrations"
 	"devsforge/database"
 	"devsforge/enum"
 	"devsforge/lib"
@@ -12,6 +14,7 @@ import (
 	"devsforge/request"
 	"devsforge/response"
 	"devsforge/services"
+	"encoding/json"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -121,6 +124,9 @@ func createModel(c *fiber.Ctx) error {
 		return SendRequestError(c, fiber.StatusBadRequest, err)
 	}
 
+	if strings.TrimSpace(req.Name) == "" {
+		return SendRequestError(c, 400, fmt.Errorf("model name is required"))
+	}
 	model := req.ToModel(c.Locals("user_id").(string))
 
 	if err := db.Create(&model).Error; err != nil {
@@ -137,17 +143,26 @@ func normalizeModelRequest(req *request.ModelRequest) error {
 		return errors.New("type must be 'atomic' or 'coupled'")
 	}
 
-	if req.Language == "" {
-		if req.Type == enum.Coupled {
-			req.Language = enum.ModelLanguagePython
-			return nil
-		}
-		return errors.New("language is required for atomic models")
+	if req.Type == enum.Coupled {
+		req.IntegrationID = nil
+		req.IntegrationVersion = nil
+		req.Language = ""
+		return nil
 	}
-
-	if !req.Language.IsValid() {
-		return fmt.Errorf("language must be one of: go, python, java")
+	id, version := "", ""
+	if req.IntegrationID != nil {
+		id = *req.IntegrationID
 	}
+	if req.IntegrationVersion != nil {
+		version = *req.IntegrationVersion
+	}
+	d, err := integrations.Resolve(id, version, req.Language)
+	if err != nil {
+		return err
+	}
+	req.IntegrationID = &d.ID
+	req.IntegrationVersion = &d.Version
+	req.Language = d.Language
 
 	return nil
 }
@@ -201,13 +216,35 @@ func patchModel(c *fiber.Ctx) error {
 		return SendRequestError(c, fiber.StatusBadRequest, err)
 	}
 
-	// Debug log
-	fmt.Printf("DEBUG - Received metadata.ModelRole: %v\n", req.Metadata.ModelRole)
-	fmt.Printf("DEBUG - Received metadata.Keyword: %v\n", req.Metadata.Keyword)
-
-	modelUpdate := req.ToModel(model.UserID)
-
-	db.Omit("LibID", "ID", "UserID").Model(&model).UpdateColumns(modelUpdate)
+	// Preserve omitted values, including the integration; accept explicit empty values.
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(c.Body(), &fields); err != nil {
+		return SendRequestError(c, 400, err)
+	}
+	merged := model
+	data, _ := json.Marshal(merged)
+	var existing map[string]json.RawMessage
+	_ = json.Unmarshal(data, &existing)
+	for key, value := range fields {
+		existing[key] = value
+	}
+	if _, ok := fields["language"]; !ok {
+		delete(existing, "language")
+	}
+	data, _ = json.Marshal(existing)
+	if err := json.Unmarshal(data, req); err != nil {
+		return SendRequestError(c, 400, err)
+	}
+	if err := normalizeModelRequest(req); err != nil {
+		return SendRequestError(c, 400, err)
+	}
+	if strings.TrimSpace(req.Name) == "" {
+		return SendRequestError(c, 400, fmt.Errorf("model name is required"))
+	}
+	updated := req.ToModel(model.UserID)
+	if err := db.Model(&model).Select("Name", "Type", "IntegrationID", "IntegrationVersion", "Description", "Code", "Components", "Ports", "Metadata", "Connections").Updates(updated).Error; err != nil {
+		return SendRequestError(c, 500, err)
+	}
 
 	if err := db.First(&model, "user_id = ? AND id = ?", c.Locals("user_id").(string), id).Error; err != nil {
 		return SendRequestError(c, fiber.StatusInternalServerError, err)

@@ -44,6 +44,9 @@ func ConnectDB() {
 	}
 
 	runMigrations(migrateDSN)
+	if err := SyncIntegrations(); err != nil {
+		panic(err)
+	}
 }
 
 // runMigrations run migration with golang-migrate if the project is going larger may be consider using `atlas`

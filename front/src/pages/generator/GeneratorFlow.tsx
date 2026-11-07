@@ -1,4 +1,9 @@
-"use client";
+import { useWorkbenchState } from "@/providers/WorkbenchProvider";
+import {
+	StructureConversation,
+	structureContext,
+} from "@/components/custom/generate/StructureConversation";
+("use client");
 
 import {
 	ArrowLeft,
@@ -24,6 +29,7 @@ import { useGenerateDiagram } from "@/hooks/useGenerateDiagram";
 import {
 	createAtomicModelRequests,
 	createCoupledModelRequest,
+	validateGeneratedStructure,
 } from "@/lib/llmToReactFlow";
 import type {
 	GeneratedDiagram,
@@ -74,28 +80,58 @@ const resolveCreatedModelDatabaseID = (
 export function GeneratorFlow() {
 	const navigate = useNavigate();
 	const { toast } = useToast();
-	const { generateDiagram, isLoading: isGeneratingDiagram } =
-		useGenerateDiagram();
+	const {
+		generateDiagram,
+		error: diagramError,
+		isLoading: isGeneratingDiagram,
+	} = useGenerateDiagram();
 
-	const [phase, setPhase] = useState<GeneratorPhase>("prompt");
-	const [diagramName, setDiagramName] = useState("");
-	const [userPrompt, setUserPrompt] = useState("");
-	const [diagram, setDiagram] = useState<GeneratedDiagram | null>(null);
-	const [currentModelIndex, setCurrentModelIndex] = useState(0);
+	const [phase, setPhase] = useWorkbenchState<GeneratorPhase>(
+		"generator:phase",
+		"prompt",
+	);
+	const [diagramName, setDiagramName] = useWorkbenchState(
+		"generator:diagramName",
+		"",
+	);
+	const [userPrompt, setUserPrompt] = useWorkbenchState(
+		"generator:userPrompt",
+		"",
+	);
+	const [diagram, setDiagram] = useWorkbenchState<GeneratedDiagram | null>(
+		"generator:diagram",
+		null,
+	);
+	const [currentModelIndex, setCurrentModelIndex] = useWorkbenchState(
+		"generator:currentModelIndex",
+		0,
+	);
 	const [isSaving, setIsSaving] = useState(false);
+	const [, setProposal] = useWorkbenchState<GeneratedDiagram | null>(
+		"generator:proposal",
+		null,
+	);
+	const [, setProposalBase] = useWorkbenchState("generator:base", "");
 
 	// Phase 1: Génération de la structure du diagram
 	const handleGenerateDiagram = async (name: string, prompt: string) => {
-		setDiagramName(name);
-		setUserPrompt(prompt);
+		if (!diagram) {
+			setDiagramName(name);
+			setUserPrompt(prompt);
+		}
 
 		const result = await generateDiagram({
 			diagramName: name,
-			userPrompt: prompt,
+			userPrompt: diagram
+				? `[INITIAL REQUEST]\n${userPrompt}\n[CURRENT STRUCTURE]\n${structureContext(diagram)}\n[REQUESTED CHANGE]\n${prompt}`
+				: prompt,
 		});
 
 		if (result) {
-			setDiagram(result);
+			if (diagram) {
+				setProposalBase(structureContext(diagram));
+				setProposal(result);
+			} else setDiagram(result);
 			setPhase("structure");
 			toast({
 				description: `${result.models.length} model(s) created`,
@@ -112,26 +148,17 @@ export function GeneratorFlow() {
 
 	// Phase 2: Validation de la structure
 	const handleValidateStructure = () => {
-		if (diagram) {
+		if (diagram && validateGeneratedStructure(diagram).length === 0) {
 			setPhase("code");
 			setCurrentModelIndex(0);
 		}
 	};
 
-	const handleRegenerateStructure = async () => {
-		const result = await generateDiagram({
-			diagramName,
-			userPrompt,
+	const handleRegenerateStructure = () =>
+		toast({
+			title: "Refine the structure",
+			description: "Use Discuss structure to request and review a correction.",
 		});
-
-		if (result) {
-			setDiagram(result);
-			toast({
-				description: `${result.models.length} model(s) created`,
-				title: "Structure regenerated",
-			});
-		}
-	};
 
 	const handleDiagramChange = (updatedDiagram: GeneratedDiagram) => {
 		setDiagram(updatedDiagram);
@@ -139,11 +166,27 @@ export function GeneratorFlow() {
 
 	// Phase 3: Code generation and validation (only for atomic models)
 	const handleCodeGenerated = useCallback(
-		(modelId: string, code: string, language?: GeneratedModelLanguage) => {
+		(
+			modelId: string,
+			code: string,
+			language?: GeneratedModelLanguage,
+			integrationId?: string,
+			integrationVersion?: string,
+		) => {
 			if (!diagram) return;
 
 			const updatedModels = diagram.models.map((m) =>
-				m.id === modelId ? { ...m, code, codeGenerated: true, language } : m,
+				m.id === modelId
+					? {
+							...m,
+							code,
+							codeGenerated: true,
+							needsRevalidation: false,
+							language,
+							integrationId,
+							integrationVersion,
+						}
+					: m,
 			);
 
 			setDiagram({
@@ -187,7 +230,19 @@ export function GeneratorFlow() {
 	// Phase 4: Save to library
 	const handleSaveToLibrary = async () => {
 		if (!diagram) return;
-
+		const issues = validateGeneratedStructure(diagram);
+		if (diagram.models.some((m) => m.needsRevalidation))
+			issues.push(
+				"Review the code of models whose interface changed before saving.",
+			);
+		if (issues.length) {
+			toast({
+				title: "Invalid structure",
+				description: issues.join("; "),
+				variant: "destructive",
+			});
+			return;
+		}
 		setIsSaving(true);
 
 		try {
@@ -408,6 +463,22 @@ export function GeneratorFlow() {
 
 				{phase === "structure" && diagram && (
 					<StructureEditor
+						conversation={
+							<StructureConversation
+								conversationKey="generator"
+								initialPrompt={userPrompt}
+								diagram={diagram}
+								onChange={setDiagram}
+								errorMessage={diagramError}
+								onGenerate={(prompt, pastMessages) =>
+									generateDiagram({
+										diagramName,
+										userPrompt: prompt,
+										pastMessages,
+									})
+								}
+							/>
+						}
 						diagram={diagram}
 						onDiagramChange={handleDiagramChange}
 						onRegenerate={handleRegenerateStructure}

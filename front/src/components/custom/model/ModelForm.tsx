@@ -16,13 +16,17 @@ import { Submit } from "@/components/form/Submit";
 import { TextareaField } from "@/components/form/TextareaField";
 import { SelectItem } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { fetchLanguageTemplate, useGetLanguages } from "@/hooks/useLanguages";
+import {
+	fetchIntegrationTemplate,
+	useIntegrations,
+	integrationKey,
+} from "@/hooks/useIntegrations";
 import { useGetModels } from "@/queries/model/useGetModels";
 
 const formSchema = z
 	.object({
 		description: z.string().optional(),
-		language: z.string().optional(),
+		integration: z.string().optional(),
 		name: z.string().min(3, {
 			message: "The name must be at least 3 characters long.",
 		}),
@@ -31,13 +35,13 @@ const formSchema = z
 	.refine(
 		(data) => {
 			if (data.type === "atomic") {
-				return data.language && data.language.length > 0;
+				return data.integration && data.integration.length > 0;
 			}
 			return true;
 		},
 		{
-			message: "Please select a language.",
-			path: ["language"],
+			message: "Please select an integration.",
+			path: ["integration"],
 		},
 	);
 
@@ -52,12 +56,12 @@ export default function ModelForm({
 }) {
 	const navigate = useNavigate();
 	const { toast } = useToast();
-	const { data: languagesData } = useGetLanguages();
+	const { data: integrations } = useIntegrations();
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		defaultValues: {
 			description: "",
-			language: "",
+			integration: "",
 			name: "",
 			type: "atomic",
 		},
@@ -72,8 +76,12 @@ export default function ModelForm({
 		try {
 			// Fetch the code template based on the selected language
 			let code = "";
-			if (values.type === "atomic" && values.language) {
-				code = await fetchLanguageTemplate(values.language, values.name);
+			if (values.type === "atomic" && values.integration) {
+				const selected = integrations.find(
+					(d) => integrationKey(d) === values.integration,
+				);
+				if (!selected) throw new Error("Select an integration");
+				code = await fetchIntegrationTemplate(selected, values.name);
 			}
 
 			const payload: components["schemas"]["request.ModelRequest"] = {
@@ -81,10 +89,16 @@ export default function ModelForm({
 				components: [],
 				connections: [],
 				description: values.description ?? "",
-				language:
-					values.type === "coupled"
-						? "python"
-						: ((values.language as (typeof payload)["language"]) ?? "python"),
+				integrationId:
+					values.type === "atomic"
+						? integrations.find((d) => integrationKey(d) === values.integration)
+								?.id
+						: undefined,
+				integrationVersion:
+					values.type === "atomic"
+						? integrations.find((d) => integrationKey(d) === values.integration)
+								?.version
+						: undefined,
 				libId: libId,
 				metadata: {
 					keyword: [],
@@ -161,16 +175,21 @@ export default function ModelForm({
 				{selectedType === "atomic" && (
 					<SelectField
 						control={form.control}
-						description="Choose the programming language for your model."
-						label="Language"
-						name="language"
-						placeholder="Select a language"
+						description="Choose the framework and language for your model."
+						label="Integration"
+						name="integration"
+						placeholder="Select an integration"
 					>
-						{languagesData?.languages?.map((lang) => (
-							<SelectItem key={lang.id} value={lang.id ?? ""}>
-								{lang.name} - {lang.description}
-							</SelectItem>
-						))}
+						{integrations
+							.filter((d) => d.capabilities?.template)
+							.map((lang) => (
+								<SelectItem
+									key={integrationKey(lang)}
+									value={integrationKey(lang)}
+								>
+									{lang.name} ({lang.version})
+								</SelectItem>
+							))}
 					</SelectField>
 				)}
 				<FormSubmitError />

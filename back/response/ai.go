@@ -2,8 +2,9 @@
 package response
 
 type DiagramResponse struct {
-	Models      []Model      `json:"models" jsonschema:"required"`
-	Connections []Connection `json:"connections" jsonschema:"required"`
+	ValidationErrors []string     `json:"validationErrors,omitempty"`
+	Models           []Model      `json:"models" jsonschema:"required"`
+	Connections      []Connection `json:"connections" jsonschema:"required"`
 }
 
 type ModelType string
@@ -34,8 +35,9 @@ type PortResponse struct {
 }
 
 type Connection struct {
-	From Endpoint `json:"from" jsonschema:"required"`
-	To   Endpoint `json:"to" jsonschema:"required"`
+	Owner string   `json:"owner" jsonschema:"required"`
+	From  Endpoint `json:"from" jsonschema:"required"`
+	To    Endpoint `json:"to" jsonschema:"required"`
 }
 
 type Endpoint struct {
@@ -63,6 +65,7 @@ type ExperimentalFrameModel struct {
 }
 
 type ExperimentalFrameStructureResponse struct {
+	ValidationErrors []string                 `json:"validationErrors,omitempty"`
 	RoomName         string                   `json:"roomName" jsonschema:"required"`
 	TargetModelID    string                   `json:"targetModelId" jsonschema:"required"`
 	RootModelID      string                   `json:"rootModelId" jsonschema:"required"`

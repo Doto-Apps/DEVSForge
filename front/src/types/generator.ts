@@ -10,8 +10,7 @@ export type LLMEndpoint = components["schemas"]["response.Endpoint"];
 export type LLMPortResponse = components["schemas"]["response.PortResponse"];
 export type ExperimentalFrameRole =
 	components["schemas"]["response.ExperimentalFrameRole"];
-export type GeneratedModelLanguage =
-	components["schemas"]["enum.ModelLanguage"];
+export type GeneratedModelLanguage = string;
 
 // Request types
 export type GenerateDiagramRequest =
@@ -49,6 +48,8 @@ export type GeneratedModelData = {
 	name: string;
 	type: "atomic" | "coupled";
 	language?: GeneratedModelLanguage;
+	integrationId?: string;
+	integrationVersion?: string;
 	role?: ExperimentalFrameRole;
 	ports: {
 		in: string[];
@@ -57,6 +58,8 @@ export type GeneratedModelData = {
 	components?: string[];
 	code?: string;
 	codeGenerated: boolean;
+	needsRevalidation?: boolean;
+	externalModelId?: string;
 	dependencies: string[]; // IDs of models this one depends on
 };
 
@@ -69,6 +72,7 @@ export type GeneratedDiagram = {
 	modelUnderTestId?: string;
 	targetModelId?: string;
 	reactFlowData?: ReactFlowInput;
+	validationErrors?: string[];
 };
 
 // État global du générateur
@@ -95,6 +99,7 @@ export type StructureEditorProps = {
 	onDiagramChange: (diagram: GeneratedDiagram) => void;
 	onValidate: () => void;
 	onRegenerate: () => void;
+	conversation?: React.ReactNode;
 };
 
 export type CodeGenerationPanelProps = {
@@ -104,6 +109,8 @@ export type CodeGenerationPanelProps = {
 		modelId: string,
 		code: string,
 		language?: GeneratedModelLanguage,
+		integrationId?: string,
+		integrationVersion?: string,
 	) => void;
 	onModelValidated: () => void;
 	onCodeChange: (modelId: string, code: string) => void;

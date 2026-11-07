@@ -1,76 +1,76 @@
 FROM golang:1.26.2 AS builder
-
 WORKDIR /app
-
 COPY go.work ./
 COPY back/go.mod back/go.sum ./back/
-COPY simulator/coordinator/go.mod simulator/coordinator/go.sum ./simulator/coordinator/
-COPY simulator/runner/go.mod simulator/runner/go.sum ./simulator/runner/
-COPY simulator/shared/go.mod simulator/shared/go.sum ./simulator/shared/
-COPY simulator/wrappers/go/go.mod simulator/wrappers/go/go.sum ./simulator/wrappers/go/
-
 COPY simulator ./simulator
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build \
+    mkdir bin && CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/devsforge-coordinator ./simulator/coordinator && \
+    CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/devsforge-runner ./simulator/runner
+FROM golang:1.26.2 AS go-tools
+RUN --mount=type=cache,target=/go/pkg/mod --mount=type=cache,target=/root/.cache/go-build GOBIN=/tools go install golang.org/x/tools/gopls@v0.23.0
 
-RUN --mount=type=cache,target=/go/pkg/mod \
-    --mount=type=cache,target=/root/.cache/go-build \
-    mkdir bin && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-coordinator -v ./simulator/coordinator && \
-    CGO_ENABLED=0 go build -ldflags="-s -w" -o ./bin/devsforge-runner -v ./simulator/runner
+FROM node:24-slim AS node-tools
+RUN npm install -g pyright@1.1.414
+FROM eclipse-temurin:25-jdk AS jdt-jdk
 
 FROM python:3.12-slim AS simulator
-
 WORKDIR /app
-RUN mkdir /opt/devsforge/
-
-ENV LOG_DIR="/tmp/sim-logs"
-ENV PATHS_SIM_ROOT="/tmp/simulations"
-ENV SIMULATOR_CMD="/opt/devsforge/devsforge-coordinator"
-ENV PATHS_RUNNER_CMD="/opt/devsforge/devsforge-runner"
-ENV PATHS_WRAPPERS_DIR="/opt/devsforge/wrappers"
-
-# Install Java 21 and Maven
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    openjdk-21-jdk-headless \
-    maven \
-    && rm -rf /var/lib/apt/lists/*
-# Set Java environment
-ENV JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
-ENV PATH="/usr/lib/jvm/java-21-openjdk-amd64/bin:${PATH}"
-
-# GO environment
+RUN apt-get update && apt-get install -y --no-install-recommends openjdk-21-jdk-headless maven curl ca-certificates && \
+    ln -s /usr/lib/jvm/java-21-openjdk-$(dpkg --print-architecture) /opt/java21 && rm -rf /var/lib/apt/lists/*
+ENV JAVA_HOME=/opt/java21
+ENV PATH="/opt/java21/bin:/usr/local/go/bin:/root/go/bin:${PATH}"
+ENV LOG_DIR=/tmp/sim-logs PATHS_SIM_ROOT=/tmp/simulations SIMULATOR_CMD=/opt/devsforge/devsforge-coordinator PATHS_RUNNER_CMD=/opt/devsforge/devsforge-runner
+ENV INTEGRATIONS_DIR=/opt/devsforge/integrations SHARED_GO_DIR=/opt/devsforge/shared
+ENV GOMODCACHE=/opt/go-cache/mod GOCACHE=/opt/go-cache/build PYTHONPYCACHEPREFIX=/opt/python-cache
 COPY --from=builder /usr/local/go /usr/local/go
-ENV PATH="/usr/local/go/bin:/root/go/bin:${PATH}"
-ENV GOMODCACHE=/opt/go-cache/mod
-ENV GOCACHE=/opt/go-cache/build
-RUN mkdir -p $GOMODCACHE $GOCACHE && chmod -R 777 /opt/go-cache
-
-
-# python deps install and cache
-COPY simulator/wrappers/python/requirements.txt /tmp/requirements.txt
+# Dependency layers depend on their declarations, not on model/library source edits.
+COPY simulator/runner/integrations/xdevs-python/wrapper/requirements.txt /tmp/requirements.txt
 RUN pip install --no-cache-dir -r /tmp/requirements.txt
-ENV PYTHONPYCACHEPREFIX=/opt/python-cache
-RUN mkdir -p /opt/python-cache && chmod -R 777 /opt/python-cache
-# Cache preexisting files
-COPY --from=builder /app/simulator/wrappers /opt/devsforge/wrappers
-RUN python3 -m compileall /opt/devsforge/wrappers/python
-
-# Cache deps and preexisiting files
-COPY --from=builder /app/simulator/wrappers/go /tmp/go-preheat-wrappers
-WORKDIR /tmp/go-preheat-wrappers
-RUN go build all || true && rm -rf /tmp/go-preheat-wrappers
-
-# Cache Java wrapper dependencies
-COPY --from=builder /app/simulator/wrappers/java /tmp/java-preheat-wrappers
-WORKDIR /tmp/java-preheat-wrappers
-RUN mvn dependency:resolve -q || true && rm -rf /tmp/java-preheat-wrappers
-
-COPY --from=builder /app/bin/devsforge-runner /opt/devsforge/devsforge-runner
-COPY --from=builder /app/bin/devsforge-coordinator /opt/devsforge/devsforge-coordinator
-
-RUN mkdir /opt/devsforge-wrappers/
-COPY ./simulator/wrappers /opt/devsforge/wrappers
-
-WORKDIR /app
+COPY simulator/runner/integrations/xdevs-go/wrapper/go.mod simulator/runner/integrations/xdevs-go/wrapper/go.sum /tmp/go-preheat/
+COPY simulator/shared/go.mod simulator/shared/go.sum /tmp/go-preheat/.shared/
+RUN cd /tmp/go-preheat && GOWORK=off go mod download && rm -rf /tmp/go-preheat
+COPY simulator/runner/integrations/xdevs-java/wrapper/pom.xml /tmp/java-preheat/pom.xml
+RUN mvn -f /tmp/java-preheat/pom.xml -Dmaven.repo.local=/opt/maven-cache dependency:resolve -q && rm -rf /tmp/java-preheat
+COPY --from=builder /app/bin/ /opt/devsforge/
+COPY simulator/runner/integrations /opt/devsforge/integrations
+COPY simulator/shared /opt/devsforge/shared
+# Compile framework dependencies once; analysis only loads user documents at runtime.
+RUN cp -a /opt/devsforge/integrations/xdevs-go/wrapper /tmp/go-analysis-preheat && \
+    cp -a /opt/devsforge/shared /tmp/go-analysis-preheat/.shared && \
+    cd /tmp/go-analysis-preheat && GOWORK=off go build -mod=mod ./modeling ./rpc && \
+    rm -rf /tmp/go-analysis-preheat && \
+    python3 -m compileall -q /opt/devsforge/integrations/xdevs-python/wrapper/modeling
+RUN mkdir -p /tmp/simulations /tmp/sim-logs
+ENV MAVEN_OPTS=-Dmaven.repo.local=/opt/maven-cache
 EXPOSE 8080
-VOLUME [ "/tmp/sim-logs", "/opt/devsforge/wrappers", "/tmp/simulations" ]
 CMD ["/opt/devsforge/devsforge-coordinator", "--daemon"]
+
+FROM simulator AS lsp
+COPY --from=node-tools /usr/local/bin/node /usr/local/bin/node
+COPY --from=node-tools /usr/local/lib/node_modules/pyright /opt/lsp/pyright
+COPY --from=go-tools /tools/gopls /usr/local/bin/gopls
+COPY --from=jdt-jdk /opt/java/openjdk /opt/lsp/jdk25
+RUN ln -s /opt/lsp/pyright/langserver.index.js /usr/local/bin/pyright-langserver && \
+    pip install --no-cache-dir ruff==0.17.3 && \
+    mkdir -p /opt/lsp/jdtls /opt/lsp/bin && \
+    curl -fsSL https://download.eclipse.org/jdtls/milestones/1.63.0/jdt-language-server-1.63.0-202610191322.tar.gz -o /tmp/jdtls.tar.gz && \
+    echo 'b1f2abe0b3cccb462cf64fb4a5587c7d09df60cf8be7748b152cbd89d018bdc4  /tmp/jdtls.tar.gz' | sha256sum -c - && \
+    tar -xzf /tmp/jdtls.tar.gz -C /opt/lsp/jdtls && rm /tmp/jdtls.tar.gz
+COPY simulator/runner/internal/lsp/jdtls.sh /opt/lsp/bin/jdtls
+RUN chmod +x /opt/lsp/bin/jdtls && mkdir -p /opt/python-cache /opt/go-cache/build && chmod -R a+rX /opt/devsforge /opt/go-cache && useradd --create-home --uid 10001 lsp && chown -R lsp:lsp /opt/go-cache/build /opt/python-cache
+RUN mkdir -p /home/lsp/.m2 && ln -s /opt/maven-cache /home/lsp/.m2/repository
+ENV MAVEN_OPTS=-Dmaven.repo.local=/opt/maven-cache
+ENV GOTOOLCHAIN=local
+USER lsp
+EXPOSE 8090
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 CMD python3 -c 'import os,urllib.request; urllib.request.urlopen(urllib.request.Request("http://127.0.0.1:8090/health",headers={"Authorization":"Bearer "+os.environ["LSP_INTERNAL_TOKEN"]}),timeout=3)'
+CMD ["/opt/devsforge/devsforge-runner", "--lsp-daemon"]
+
+FROM simulator AS development
+RUN go install github.com/air-verse/air@v1.64.5
+CMD ["air", "-c", ".air.toml", "--", "--daemon"]
+
+FROM simulator AS runner
+CMD ["/opt/devsforge/devsforge-runner"]
+
+FROM simulator AS production

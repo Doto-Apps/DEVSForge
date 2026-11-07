@@ -33,7 +33,6 @@ func (w *WrapperInfo) Cleanup() error {
 	if w.Cmd != nil && w.Cmd.Process != nil {
 		pid := w.Cmd.Process.Pid
 		slog.Info("Stopping model process", "pid", pid)
-		slog.Info("Toto", "pid", pid)
 
 		// Kill the process (it's a single binary now, not go run)
 		if err := w.Cmd.Process.Kill(); err != nil {

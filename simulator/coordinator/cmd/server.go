@@ -4,6 +4,7 @@ import (
 	"context"
 	"devsforge-coordinator/internal/config"
 	"devsforge-coordinator/internal/handlers"
+	"devsforge-shared/integrations"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -14,6 +15,9 @@ import (
 )
 
 func StartDaemonServer() error {
+	if _, err := integrations.List(); err != nil {
+		return err
+	}
 	port := config.Get().Simulator.Port
 
 	mux := http.NewServeMux()

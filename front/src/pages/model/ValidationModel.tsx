@@ -1,3 +1,8 @@
+import { useWorkbenchState } from "@/providers/WorkbenchProvider";
+import {
+	StructureConversation,
+	structureContext,
+} from "@/components/custom/generate/StructureConversation";
 import {
 	CheckCircle2,
 	GaugeCircle,
@@ -33,6 +38,7 @@ import { useGenerateEFStructure } from "@/hooks/useGenerateEFStructure";
 import {
 	replaceGeneratedMutPlaceholder,
 	validateGeneratedMutConnections,
+	validateGeneratedStructure,
 } from "@/lib/llmToReactFlow";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetExperimentalFramesByModel } from "@/queries/model/useGetExperimentalFramesByModel";
@@ -89,11 +95,28 @@ export function ValidationModel() {
 	const [isCreating, setIsCreating] = useState(false);
 	const [isSavingAssisted, setIsSavingAssisted] = useState(false);
 	const [newFrameName, setNewFrameName] = useState("");
-	const [aiRoomName, setAiRoomName] = useState("");
-	const [aiPrompt, setAiPrompt] = useState("");
-	const [aiMode, setAiMode] = useState<ValidationAIMode>("structure");
-	const [currentAICodeModelIndex, setCurrentAICodeModelIndex] = useState(0);
-	const [aiDiagram, setAiDiagram] = useState<GeneratedDiagram | null>(null);
+	const [aiRoomName, setAiRoomName] = useWorkbenchState(
+		`ef:${modelId}:aiRoomName`,
+		"",
+	);
+	const [aiPrompt, setAiPrompt] = useWorkbenchState(
+		`ef:${modelId}:aiPrompt`,
+		"",
+	);
+	const [initialAiPrompt, setInitialAiPrompt] = useWorkbenchState(
+		`ef:${modelId}:initialPrompt`,
+		"",
+	);
+	const [aiMode, setAiMode] = useWorkbenchState<ValidationAIMode>(
+		`ef:${modelId}:aiMode`,
+		"structure",
+	);
+	const [currentAICodeModelIndex, setCurrentAICodeModelIndex] =
+		useWorkbenchState(`ef:${modelId}:currentAICodeModelIndex`, 0);
+	const [aiDiagram, setAiDiagram] = useWorkbenchState<GeneratedDiagram | null>(
+		`ef:${modelId}:aiDiagram`,
+		null,
+	);
 	const [frameDetailsById, setFrameDetailsById] = useState<
 		Record<string, FrameModelDetails>
 	>({});
@@ -200,7 +223,6 @@ export function ValidationModel() {
 					],
 					connections: [],
 					description: `Experimental frame for model ${targetModel.name}`,
-					language: "python",
 					libId: targetModel.libId,
 					metadata: {
 						keyword: ["experimental-frame"],
@@ -248,15 +270,23 @@ export function ValidationModel() {
 		}
 	};
 
+	const [, setProposal] = useWorkbenchState<GeneratedDiagram | null>(
+		`ef:${modelId}:proposal`,
+		null,
+	);
+	const [, setProposalBase] = useWorkbenchState(`ef:${modelId}:base`, "");
 	const handleGenerateWithAI = async () => {
 		if (!modelId || !targetModel || !aiPrompt.trim()) return;
+		if (!aiDiagram) setInitialAiPrompt(aiPrompt.trim());
 
 		const result = await generateEFStructure({
 			roomName: aiRoomName.trim()
 				? `Room - ${aiRoomName.trim().replace(/^Room\s*-\s*/i, "")}`
 				: `Room - ${targetModel.name}`,
 			targetModelId: modelId,
-			userPrompt: aiPrompt.trim(),
+			userPrompt: aiDiagram
+				? `[CURRENT STRUCTURE]\n${structureContext(aiDiagram)}\n[REQUESTED CHANGE]\n${aiPrompt.trim()}`
+				: aiPrompt.trim(),
 		});
 
 		if (!result) {
@@ -272,16 +302,17 @@ export function ValidationModel() {
 
 		const { diagram: normalizedDiagram, errors: replacementErrors } =
 			replaceGeneratedMutPlaceholder(result, targetModel);
-		if (replacementErrors.length > 0) {
-			toast({
-				description: replacementErrors[0],
-				title: "Invalid EF structure",
-				variant: "destructive",
-			});
-			return;
-		}
-
-		setAiDiagram(normalizedDiagram);
+		const candidate = {
+			...normalizedDiagram,
+			validationErrors: [
+				...(result.validationErrors ?? []),
+				...replacementErrors,
+			],
+		};
+		if (aiDiagram) {
+			setProposalBase(structureContext(aiDiagram));
+			setProposal(candidate);
+		} else setAiDiagram(candidate);
 		setAiMode("structure");
 		setCurrentAICodeModelIndex(0);
 		toast({
@@ -293,10 +324,10 @@ export function ValidationModel() {
 	const handleValidateAIStructure = () => {
 		if (!aiDiagram || !targetModel) return;
 
-		const validationErrors = validateGeneratedMutConnections(
-			aiDiagram,
-			targetModel,
-		);
+		const validationErrors = [
+			...validateGeneratedMutConnections(aiDiagram, targetModel),
+			...validateGeneratedStructure(aiDiagram),
+		];
 		if (validationErrors.length > 0) {
 			toast({
 				description: validationErrors.slice(0, 2).join(" "),
@@ -314,20 +345,35 @@ export function ValidationModel() {
 		setCurrentAICodeModelIndex(0);
 	};
 
-	const handleRegenerateWithAI = async () => {
-		if (!modelId || !targetModel || !aiPrompt.trim()) return;
-		await handleGenerateWithAI();
-	};
+	const handleRegenerateWithAI = () =>
+		toast({
+			title: "Refine the structure",
+			description: "Use Discuss structure to review an AI correction.",
+		});
 
 	const handleAICodeGenerated = useCallback(
-		(modelId: string, code: string, language?: GeneratedModelLanguage) => {
+		(
+			modelId: string,
+			code: string,
+			language?: GeneratedModelLanguage,
+			integrationId?: string,
+			integrationVersion?: string,
+		) => {
 			setAiDiagram((previousDiagram) => {
 				if (!previousDiagram) return previousDiagram;
 				return {
 					...previousDiagram,
 					models: previousDiagram.models.map((model) =>
 						model.id === modelId
-							? { ...model, code, codeGenerated: true, language }
+							? {
+									...model,
+									code,
+									codeGenerated: true,
+									needsRevalidation: false,
+									language,
+									integrationId,
+									integrationVersion,
+								}
 							: model,
 					),
 				};
@@ -376,10 +422,14 @@ export function ValidationModel() {
 			return;
 		}
 
-		const validationErrors = validateGeneratedMutConnections(
-			aiDiagram,
-			targetModel,
-		);
+		const validationErrors = [
+			...validateGeneratedMutConnections(aiDiagram, targetModel),
+			...validateGeneratedStructure(aiDiagram),
+		];
+		if (aiDiagram.models.some((m) => m.needsRevalidation))
+			validationErrors.push(
+				"Review models whose interface changed before saving.",
+			);
 		if (validationErrors.length > 0) {
 			toast({
 				description: validationErrors.slice(0, 2).join(" "),
@@ -406,6 +456,7 @@ export function ValidationModel() {
 			const payload: components["schemas"]["request.ExperimentalFrameRequest"] =
 				{
 					connections: aiDiagram.connections.map((connection) => ({
+						owner: connection.owner,
 						from: {
 							model: connection.from?.model ?? "",
 							port: connection.from?.port ?? "",
@@ -582,6 +633,36 @@ export function ValidationModel() {
 						<CardContent className="h-[620px] p-0 overflow-hidden">
 							{aiMode === "structure" ? (
 								<StructureEditor
+									conversation={
+										<StructureConversation
+											conversationKey={`ef:${modelId}`}
+											initialPrompt={initialAiPrompt || aiPrompt}
+											diagram={aiDiagram}
+											onChange={setAiDiagram}
+											errorMessage={aiError}
+											onGenerate={async (userPrompt, pastMessages) => {
+												if (!modelId || !targetModel) return null;
+												const result = await generateEFStructure({
+													targetModelId: modelId,
+													roomName: aiDiagram.name,
+													userPrompt,
+													pastMessages,
+												});
+												if (!result) return null;
+												const normalized = replaceGeneratedMutPlaceholder(
+													result,
+													targetModel,
+												);
+												return {
+													...normalized.diagram,
+													validationErrors: [
+														...(result.validationErrors ?? []),
+														...normalized.errors,
+													],
+												};
+											}}
+										/>
+									}
 									diagram={aiDiagram}
 									onDiagramChange={setAiDiagram}
 									onRegenerate={handleRegenerateWithAI}

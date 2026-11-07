@@ -24,16 +24,125 @@ definitions:
     x-enum-varnames:
     - Atomic
     - Coupled
-  enum.ModelLanguage:
-    enum:
-    - go
-    - python
-    - java
-    type: string
-    x-enum-varnames:
-    - ModelLanguageGo
-    - ModelLanguagePython
-    - ModelLanguageJava
+  handler.LSPConnection:
+    properties:
+      allowedCommands:
+        items:
+          type: string
+        type: array
+      id:
+        type: string
+      ticket:
+        type: string
+      url:
+        type: string
+    type: object
+  handler.LSPSessionRequest:
+    properties:
+      code:
+        type: string
+      documentId:
+        type: string
+      integrationId:
+        type: string
+      integrationVersion:
+        type: string
+      modelId:
+        type: string
+      modelName:
+        type: string
+      workbenchId:
+        type: string
+    type: object
+  handler.LSPSessionResponse:
+    properties:
+      documentId:
+        type: string
+      documentUri:
+        type: string
+      id:
+        type: string
+      language:
+        type: string
+      servers:
+        items:
+          $ref: '#/definitions/handler.LSPConnection'
+        type: array
+      status:
+        type: string
+      workspaceUri:
+        type: string
+    type: object
+  integrations.Capabilities:
+    properties:
+      ai:
+        type: boolean
+      lsp:
+        type: boolean
+      simulation:
+        type: boolean
+      template:
+        type: boolean
+    type: object
+  integrations.Definition:
+    properties:
+      capabilities:
+        $ref: '#/definitions/integrations.Capabilities'
+      context:
+        items:
+          type: string
+        type: array
+      default:
+        type: boolean
+      digest:
+        type: string
+      extension:
+        type: string
+      framework:
+        type: string
+      id:
+        type: string
+      language:
+        type: string
+      legacyLanguage:
+        type: string
+      modelPath:
+        type: string
+      name:
+        type: string
+      preparation:
+        type: string
+      prompt:
+        type: string
+      servers:
+        items:
+          $ref: '#/definitions/integrations.Server'
+        type: array
+      template:
+        type: string
+      version:
+        type: string
+      wrapper:
+        type: string
+    type: object
+  integrations.Server:
+    properties:
+      allowedCommands:
+        items:
+          type: string
+        type: array
+      args:
+        items:
+          type: string
+        type: array
+      command:
+        type: string
+      id:
+        type: string
+      settings:
+        additionalProperties: {}
+        type: object
+    type: object
   json.ModelColors:
     properties:
       bodyBackgroundColor:
@@ -321,8 +430,12 @@ definitions:
         type: string
       id:
         type: string
+      integrationId:
+        type: string
+      integrationVersion:
+        type: string
       language:
-        $ref: '#/definitions/enum.ModelLanguage'
+        type: string
       libId:
         type: string
       metadata:
@@ -393,6 +506,8 @@ definitions:
     properties:
       from:
         $ref: '#/definitions/request.AssistedExperimentalFrameEndpoint'
+      owner:
+        type: string
       to:
         $ref: '#/definitions/request.AssistedExperimentalFrameEndpoint'
     required:
@@ -418,6 +533,10 @@ definitions:
           type: string
         type: array
       id:
+        type: string
+      integrationId:
+        type: string
+      integrationVersion:
         type: string
       name:
         type: string
@@ -543,10 +662,11 @@ definitions:
       forceScratch:
         example: false
         type: boolean
+      integrationId:
+        type: string
+      integrationVersion:
+        type: string
       language:
-        enum:
-        - python
-        - go
         example: python
         type: string
       modelName:
@@ -566,7 +686,6 @@ definitions:
         example: Generate a model based on the previous code
         type: string
     required:
-    - language
     - modelName
     - ports
     - previousModelsCode
@@ -636,8 +755,12 @@ definitions:
         type: string
       id:
         type: string
+      integrationId:
+        type: string
+      integrationVersion:
+        type: string
       language:
-        $ref: '#/definitions/enum.ModelLanguage'
+        type: string
       libId:
         type: string
       metadata:
@@ -780,6 +903,8 @@ definitions:
     properties:
       from:
         $ref: '#/definitions/response.Endpoint'
+      owner:
+        type: string
       to:
         $ref: '#/definitions/response.Endpoint'
     type: object
@@ -792,6 +917,10 @@ definitions:
       models:
         items:
           $ref: '#/definitions/response.Model'
+        type: array
+      validationErrors:
+        items:
+          type: string
         type: array
     type: object
   response.DocumentationRole:
@@ -877,6 +1006,10 @@ definitions:
         type: string
       targetModelId:
         type: string
+      validationErrors:
+        items:
+          type: string
+        type: array
     type: object
   response.GeneratedDocumentationResponse:
     properties:
@@ -985,8 +1118,12 @@ definitions:
         type: string
       id:
         type: string
+      integrationId:
+        type: string
+      integrationVersion:
+        type: string
       language:
-        $ref: '#/definitions/enum.ModelLanguage'
+        type: string
       libId:
         type: string
       metadata:
@@ -1184,9 +1321,6 @@ definitions:
     type: object
   shared.ParameterType:
     enum:
-    - go
-    - java
-    - python
     - int
     - float
     - bool
@@ -1194,9 +1328,6 @@ definitions:
     - object
     type: string
     x-enum-varnames:
-    - Go
-    - Java
-    - Python
     - ParameterTypeInt
     - ParameterTypeFloat
     - ParameterTypeBool
@@ -1226,6 +1357,10 @@ definitions:
         type: array
       id:
         type: string
+      integrationId:
+        type: string
+      integrationVersion:
+        type: string
       language:
         type: string
       name:
@@ -1242,7 +1377,6 @@ definitions:
     - code
     - connections
     - id
-    - language
     - name
     - ports
     type: object
@@ -1411,8 +1545,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Sends a prompt to OpenAI to generate a DEVS model code in Python
-        or Go.
+      description: Sends a prompt to OpenAI to generate a DEVS model code for the
+        selected integration.
       parameters:
       - description: Data required to generate a model
         in: body
@@ -1744,9 +1878,50 @@ paths:
       summary: API health check
       tags:
       - Health
+  /integrations:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/integrations.Definition'
+            type: array
+      summary: Get integrations
+      tags:
+      - Integrations
+  /integrations/{id}/versions/{version}/template:
+    get:
+      parameters:
+      - description: Integration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Integration version
+        in: path
+        name: version
+        required: true
+        type: string
+      - default: MyModel
+        description: Source identifier
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.LanguageTemplateResponse'
+      summary: Get integration template
+      tags:
+      - Integrations
   /languages:
     get:
-      description: Returns the list of programming languages available for DEVS models
       produces:
       - application/json
       responses:
@@ -1759,15 +1934,14 @@ paths:
       - Languages
   /languages/{lang}/template:
     get:
-      description: Returns the atomic model code template for the specified language
       parameters:
-      - description: Language ID (go, python, java)
+      - description: Legacy language
         in: path
         name: lang
         required: true
         type: string
       - default: MyModel
-        description: Model name to inject in template
+        description: Source identifier
         in: query
         name: name
         type: string
@@ -1778,16 +1952,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/response.LanguageTemplateResponse'
-        "400":
-          description: Bad Request
-          schema:
-            additionalProperties: true
-            type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
       summary: Get language template
       tags:
       - Languages
@@ -1929,6 +2093,115 @@ paths:
       summary: Update a library
       tags:
       - libraries
+  /lsp/sessions:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Unsaved editor document
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.LSPSessionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/handler.LSPSessionResponse'
+      summary: Create language server session
+      tags:
+      - LSP
+  /lsp/sessions/{id}:
+    delete:
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Close language server session
+      tags:
+      - LSP
+    get:
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Read language workspace status
+      tags:
+      - LSP
+  /lsp/sessions/{id}/documents/{document}:
+    delete:
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Document ID
+        in: path
+        name: document
+        required: true
+        type: string
+      responses:
+        "204":
+          description: No Content
+      summary: Detach language workspace document
+      tags:
+      - LSP
+  /lsp/sessions/{id}/file:
+    get:
+      parameters:
+      - description: Session ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Source URI
+        in: query
+        name: uri
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Read language server source
+      tags:
+      - LSP
+  /lsp/sessions/{id}/tickets:
+    post:
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.LSPSessionResponse'
+      summary: Renew language workspace connections
+      tags:
+      - LSP
   /model:
     get:
       description: Retrieve a list of all models

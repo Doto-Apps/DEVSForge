@@ -144,6 +144,13 @@ const createReactflowModel = (
 				? { reactFlowModelGraphicalData: resolvedModelColors }
 				: {}),
 			code: model.code,
+			...(model.integrationId
+				? {
+						integrationId: model.integrationId,
+						integrationVersion: model.integrationVersion,
+					}
+				: {}),
+			...(model.language ? { language: model.language } : {}),
 			parameters: resolvedParameters,
 		},
 		dragging: false,

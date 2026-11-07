@@ -27,7 +27,7 @@ export const useGenerateDiagram = (): UseGenerateDiagramResult => {
 			});
 
 			if (!response.data) {
-				throw new Error("No data received from API");
+				throw new Error((response.error as {error?:string})?.error??"No data received from API");
 			}
 
 			const generatedDiagram = llmResponseToGeneratedDiagram(

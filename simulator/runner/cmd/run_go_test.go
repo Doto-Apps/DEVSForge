@@ -29,7 +29,7 @@ func TestGoRunner(t *testing.T) {
 				ID:       runnerGoID,
 				Name:     "go-sender",
 				Code:     string(codeContent),
-				Language: shared.CodeLanguage(shared.Go),
+				Language: shared.CodeLanguage("go"),
 				Ports: []shared.RunnableModelPort{
 					{
 						ID:   "out",

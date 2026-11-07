@@ -5,13 +5,17 @@ on:
     branches: ["main"]
     paths:
       - "back/**"
+      - "go.work*"
       - "simulator/shared/**"
+      - "simulator/runner/integrations/**"
       - ".github/workflows/go-back.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "back/**"
+      - "go.work*"
       - "simulator/shared/**"
+      - "simulator/runner/integrations/**"
       - ".github/workflows/go-back.yml"
 
 env:

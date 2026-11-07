@@ -6,7 +6,11 @@ import { useEffect, useState } from "react";
 import { ModelViewEditor } from "@/components/custom/ModelViewEditor";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generatedDiagramToReactFlow } from "@/lib/llmToReactFlow";
+import {
+	generatedDiagramToReactFlow,
+	syncGeneratedStructure,
+	validateGeneratedStructure,
+} from "@/lib/llmToReactFlow";
 import type { ReactFlowInput, StructureEditorProps } from "@/types";
 
 export function StructureEditor({
@@ -14,6 +18,7 @@ export function StructureEditor({
 	onDiagramChange,
 	onValidate,
 	onRegenerate,
+	conversation,
 }: StructureEditorProps) {
 	const [reactFlowData, setReactFlowData] = useState<ReactFlowInput | null>(
 		null,
@@ -34,10 +39,7 @@ export function StructureEditor({
 	const handleReactFlowChange = (newData: ReactFlowInput) => {
 		setReactFlowData(newData);
 		// Sync with parent diagram if needed
-		onDiagramChange({
-			...diagram,
-			reactFlowData: newData,
-		});
+		onDiagramChange(syncGeneratedStructure(diagram, newData));
 	};
 
 	return (
@@ -57,13 +59,21 @@ export function StructureEditor({
 						<RefreshCw className="w-4 h-4 mr-2" />
 						Regenerate
 					</Button>
-					<Button onClick={onValidate}>
+					<Button
+						disabled={validateGeneratedStructure(diagram).length > 0}
+						onClick={onValidate}
+					>
 						<CheckCircle2 className="w-4 h-4 mr-2" />
 						Validate Structure
 					</Button>
 				</div>
 			</div>
 
+			{validateGeneratedStructure(diagram).length > 0 && (
+				<div role="alert" className="p-2 text-sm text-destructive">
+					{validateGeneratedStructure(diagram).join("; ")}
+				</div>
+			)}
 			{/* Main content */}
 			<div className="flex-1 flex overflow-hidden">
 				{/* Left panel: models list */}
@@ -150,6 +160,7 @@ export function StructureEditor({
 						</div>
 					)}
 				</div>
+				{conversation}
 			</div>
 
 			{/* Connections */}

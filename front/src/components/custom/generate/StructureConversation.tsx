@@ -1,0 +1,242 @@
+import { useState, useRef } from "react";
+import { useWorkbenchState } from "@/providers/WorkbenchProvider";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+	mergeStructureProposal,
+	validateGeneratedStructure,
+} from "@/lib/llmToReactFlow";
+import type { GeneratedDiagram } from "@/types";
+
+type Message = { role: "user" | "assistant"; content: string };
+export function structureContext(
+	diagram: GeneratedDiagram,
+	codeIds: string[] = [],
+) {
+	return JSON.stringify({
+		name: diagram.name,
+		rootModelId: diagram.rootModelId,
+		modelUnderTestId: diagram.modelUnderTestId,
+		models: diagram.models.map((m) => ({
+			id: m.id,
+			name: m.name,
+			type: m.type,
+			role: m.role,
+			components: m.components ?? [],
+			ports: [
+				...m.ports.in.map((name) => ({ id: name, name, type: "in" })),
+				...m.ports.out.map((name) => ({ id: name, name, type: "out" })),
+			],
+			...(codeIds.includes(m.id) ? { code: m.code } : {}),
+		})),
+		connections: diagram.connections,
+	});
+}
+export function StructureConversation({
+	conversationKey,
+	initialPrompt,
+	diagram,
+	onChange,
+	onGenerate,
+	errorMessage,
+}: {
+	conversationKey: string;
+	initialPrompt: string;
+	diagram: GeneratedDiagram;
+	onChange: (d: GeneratedDiagram) => void;
+	onGenerate: (
+		text: string,
+		past: Message[],
+	) => Promise<GeneratedDiagram | null>;
+	errorMessage?: string | null;
+}) {
+	const [history, setHistory] = useWorkbenchState<Message[]>(
+		`${conversationKey}:history`,
+		[],
+	);
+	const [proposal, setProposal] = useWorkbenchState<GeneratedDiagram | null>(
+		`${conversationKey}:proposal`,
+		null,
+	);
+	const [base, setBase] = useWorkbenchState(`${conversationKey}:base`, "");
+	const [text, setText] = useWorkbenchState(`${conversationKey}:input`, "");
+	const [codeIds, setCodeIds] = useState<string[]>([]);
+	const [busy, setBusy] = useState(false);
+	const [error, setError] = useState("");
+	const latest = useRef(diagram);
+	latest.current = diagram;
+	const issues = proposal
+		? [
+				...new Set([
+					...(proposal.validationErrors ?? []),
+					...validateGeneratedStructure(proposal),
+				]),
+			]
+		: [];
+	const changed = !!proposal && !!base && base !== structureContext(diagram);
+	const request = async () => {
+		if (!text.trim() || busy) return;
+		setBusy(true);
+		setError("");
+		const sent = structureContext(latest.current);
+		setBase(sent);
+		const question = text;
+		try {
+			const prompt = `[INITIAL REQUEST]\n${initialPrompt}\n[CURRENT STRUCTURE]\n${structureContext(latest.current, codeIds)}\n[REQUESTED CHANGE]\n${question}`;
+			const messages: Message[] = [
+				{ role: "user", content: initialPrompt },
+				...history.slice(-6),
+			];
+			if (
+				new Blob([
+					JSON.stringify({ userPrompt: prompt, pastMessages: messages }),
+				]).size >
+				250 * 1024
+			)
+				throw new Error(
+					"Conversation is too large. Remove attached code or start a new conversation. The current structure was kept.",
+				);
+			const result = await onGenerate(prompt, messages);
+			if (!result)
+				throw new Error(
+					"The AI could not return a proposal. Your current structure is unchanged.",
+				);
+			setProposal(result);
+			setHistory([
+				...history,
+				{ role: "user", content: question },
+				{ role: "assistant", content: structureContext(result) },
+			]);
+			setText("");
+		} catch (e) {
+			setError(e instanceof Error ? e.message : String(e));
+		} finally {
+			setBusy(false);
+		}
+	};
+	return (
+		<aside className="w-80 min-w-64 max-w-[45%] shrink-0 border-l flex flex-col min-h-0 bg-muted/20">
+			<div className="p-3 border-b">
+				<h3 className="font-semibold">Discuss structure</h3>
+				<p className="text-xs text-muted-foreground">
+					Corrections are proposed before they replace your diagram.
+				</p>
+			</div>
+			<div className="flex-1 overflow-auto p-3 space-y-3">
+				<div className="text-sm whitespace-pre-wrap">
+					<strong>Initial request</strong>
+					<p>{initialPrompt}</p>
+				</div>
+				{history.map((m, i) => (
+					// biome-ignore lint/suspicious/noArrayIndexKey: Conversation entries are append-only and never reordered.
+					<div key={`${i}-${m.role}`} className="rounded border p-2 text-sm">
+						{m.role === "user" ? (
+							<p className="whitespace-pre-wrap">{m.content}</p>
+						) : (
+							<details>
+								<summary>Structure proposal</summary>
+								<pre className="overflow-auto text-xs max-h-52">
+									{m.content}
+								</pre>
+							</details>
+						)}
+					</div>
+				))}
+				{proposal && (
+					<div className="border rounded p-2 space-y-2">
+						<p className="font-medium">
+							Pending proposal: {proposal.models.length} models
+						</p>
+						<details>
+							<summary className="text-sm cursor-pointer">
+								Inspect changes
+							</summary>
+							<pre className="text-xs overflow-auto max-h-64">
+								{JSON.stringify(
+									JSON.parse(structureContext(proposal)),
+									null,
+									2,
+								)}
+							</pre>
+						</details>
+						{issues.map((issue) => (
+							<p key={issue} role="alert" className="text-xs text-destructive">
+								{issue}
+							</p>
+						))}
+						{changed && (
+							<p role="alert" className="text-xs text-destructive">
+								Your structure changed after this request. Ask for an updated
+								proposal before applying it.
+							</p>
+						)}
+						<div className="flex gap-2">
+							<Button
+								size="sm"
+								disabled={busy || !!issues.length || changed}
+								onClick={() => {
+									onChange(mergeStructureProposal(latest.current, proposal));
+									setProposal(null);
+									setBase("");
+								}}
+							>
+								Accept
+							</Button>
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={() => setProposal(null)}
+							>
+								Reject
+							</Button>
+						</div>
+					</div>
+				)}
+				{(error || errorMessage) && (
+					<p role="alert" className="text-sm text-destructive">
+						{errorMessage ?? error}
+					</p>
+				)}
+			</div>
+			<div className="border-t p-3 space-y-2">
+				<details>
+					<summary className="text-xs cursor-pointer">
+						Attach model code
+					</summary>
+					{diagram.models
+						.filter((m) => m.code)
+						.map((m) => (
+							<label key={m.id} className="block text-xs">
+								<input
+									type="checkbox"
+									checked={codeIds.includes(m.id)}
+									onChange={(e) =>
+										setCodeIds(
+											e.target.checked
+												? [...codeIds, m.id]
+												: codeIds.filter((id) => id !== m.id),
+										)
+									}
+								/>{" "}
+								{m.name}
+							</label>
+						))}
+				</details>
+				<Textarea
+					aria-label="Structure correction"
+					value={text}
+					disabled={busy}
+					onChange={(e) => setText(e.target.value)}
+					placeholder="Describe the correction you want…"
+				/>
+				<Button
+					className="w-full"
+					disabled={busy || !text.trim()}
+					onClick={request}
+				>
+					{busy ? "Preparing proposal…" : "Send correction"}
+				</Button>
+			</div>
+		</aside>
+	);
+}

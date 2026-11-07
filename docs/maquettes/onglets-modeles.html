@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Proposition — header et onglets DEVSForge</title>
+  <style>
+    :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #e4e4e7; background: #0c0d10; }
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 32px; }
+    .intro { display: flex; justify-content: space-between; align-items: end; margin-bottom: 18px; }
+    h1 { margin: 0 0 6px; font-size: 19px; font-weight: 600; letter-spacing: -.4px; }
+    p { margin: 0; color: #9999a5; font-size: 13px; }
+    .preview { border: 1px solid #303037; border-radius: 9px; overflow: hidden; background: #161619; }
+    button { font: inherit; color: inherit; cursor: pointer; }
+    button:focus-visible { outline: 2px solid #a1a1aa; outline-offset: -3px; }
+    svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+    .header { height: 48px; padding: 0 16px; display: flex; align-items: center; gap: 14px; background: #101012; border-bottom: 1px solid #2b2b30; }
+    .icon-button { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; padding: 0; border-radius: 5px; border: 0; background: transparent; color: #aaaab4; }
+    .icon-button:hover { background: #27272b; color: white; }
+    .divider { height: 16px; width: 1px; background: #303036; }
+    .breadcrumbs { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+    .breadcrumbs span:first-child { color: #96969f; }
+    .breadcrumbs svg { width: 12px; color: #65656e; }
+    .badge { font-size: 10px; border: 1px solid #34343c; border-radius: 5px; padding: 3px 7px; color: #b6b6c0; }
+    .actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+    .action { display: flex; align-items: center; gap: 7px; font-size: 12px; height: 28px; border: 1px solid #36363e; border-radius: 5px; padding: 0 10px; background: #19191e; }
+    .action:hover { background: #292930; }
+    .action.primary { background: #e4e4e7; color: #18181b; border-color: #e4e4e7; }
+    .action svg { width: 13px; height: 13px; }
+    .tabbar { height: 34px; display: flex; align-items: stretch; background: #101013; border-bottom: 1px solid #2a2a31; overflow-x: auto; }
+    .tab { display: flex; align-items: center; position: relative; border-right: 1px solid #2b2b31; color: #9e9ea9; flex-shrink: 0; }
+    .tab.active { background: #1c1c22; color: #f1f1f4; }
+    .tab.active::after { content: ""; height: 2px; position: absolute; bottom: 0; left: 0; right: 0; background: #9e91ff; }
+    .tab:hover { background: #202026; }
+    .tab-select { display: flex; align-items: center; gap: 8px; background: transparent; border: none; height: 100%; padding: 0 10px 0 14px; font-size: 12px; }
+    .language-icon { font-family: monospace; font-weight: 700; font-size: 11px; color: #77b7e7; }
+    .coupled-icon { color: #b7a8ec; width: 14px; height: 14px; }
+    .dirty { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #b5b5c2; }
+    .close { width: 23px; height: 23px; margin-right: 6px; }
+    .close svg { width: 12px; height: 12px; }
+    .panels { height: 320px; display: grid; grid-template-columns: 53% 28% 19%; }
+    .code { overflow: hidden; padding: 18px 0; background: #18181d; }
+    .code pre { font: 12px/23px "SFMono-Regular", Consolas, monospace; margin: 0; counter-reset: line; }
+    .line { display: block; white-space: pre; counter-increment: line; }
+    .line::before { content: counter(line); display: inline-block; width: 43px; text-align: right; margin-right: 22px; color: #555563; user-select: none; }
+    .keyword { color: #c6a4e7; } .type { color: #78c9bd; } .string { color: #c7aa84; } .function { color: #a7c5ef; } .comment { color: #70747f; }
+    .diagram { border-left: 1px solid #34343d; position: relative; background-color: #151519; background-image: radial-gradient(#33333d .7px, transparent .7px); background-size: 16px 16px; }
+    .panel-caption { font-size: 10px; letter-spacing: 1px; color: #747480; padding: 14px 15px; }
+    .node { position: absolute; left: 50%; top: 48%; transform: translate(-50%, -50%); min-width: 122px; border: 1px solid #9d91e7; border-radius: 6px; padding: 17px; text-align: center; background: #24212e; box-shadow: 0 0 0 3px #a499ed0a; font-size: 13px; }
+    .node small { display: block; color: #a7a0b9; margin-top: 6px; font-size: 10px; }
+    .port { position: absolute; width: 8px; height: 8px; border: 1px solid #b1a2ec; border-radius: 50%; background: #2b243b; right: -5px; top: 31px; }
+    .properties { border-left: 1px solid #34343d; background: #141417; padding: 0 15px; }
+    .properties .panel-caption { padding-left: 0; }
+    label { display: block; color: #a9a9b4; font-size: 11px; margin: 12px 0 7px; }
+    .field { border: 1px solid #34343b; padding: 8px; border-radius: 5px; font-size: 12px; background: #1a1a20; }
+    .notes { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; margin-top: 20px; }
+    .notes strong { display: block; font-size: 12px; margin-bottom: 6px; font-weight: 500; }
+    .notes p { font-size: 12px; line-height: 1.6; }
+    .number { color: #b5aaff; margin-right: 6px; }
+    @media(max-width: 850px) { body { padding: 16px; } .badge, .action span { display: none; } .panels { grid-template-columns: 65% 35%; } .properties { display: none; } .notes { grid-template-columns: 1fr; gap: 12px; } }
+  </style>
+</head>
+<body>
+  <svg style="display:none" aria-hidden="true"><defs>
+    <symbol id="sidebar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/></symbol>
+    <symbol id="chevron" viewBox="0 0 24 24"><path d="m9 5 7 7-7 7"/></symbol>
+    <symbol id="save" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h12l4 4v12a2 2 0 0 1-2 2Z"/><path d="M7 3v6h10V3M7 21v-7h10v7"/></symbol>
+    <symbol id="play" viewBox="0 0 24 24"><path d="m8 4 12 8-12 8Z"/></symbol>
+    <symbol id="shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 4-5 8-8 9-3-1-8-5-8-9V6Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+    <symbol id="network" viewBox="0 0 24 24"><rect x="9" y="2" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="16" y="16" width="6" height="6" rx="1"/><path d="M12 8v4M5 16v-4h14v4"/></symbol>
+    <symbol id="more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+    <symbol id="sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1 1m12 12 1 1M5 19l1-1M18 6l1-1"/></symbol>
+  </defs></svg>
+  <div class="intro"><div><h1>Deux barres, deux usages.</h1><p>Proposition pour l’éditeur DEVSForge · onglets compacts, contenu immédiatement en dessous</p></div></div>
+  <main class="preview" aria-label="Maquette de l’éditeur">
+    <header class="header">
+      <button class="icon-button" aria-label="Navigation"><svg><use href="#sidebar"/></svg></button>
+      <span class="divider"></span>
+      <nav class="breadcrumbs" aria-label="Bibliothèque"><span>Libraries</span><svg><use href="#chevron"/></svg><span>manual_test</span></nav>
+      <span class="badge" id="integration">xDEVS Python</span>
+      <div class="actions">
+        <button class="action" title="Valider"><svg><use href="#shield"/></svg><span>Valider</span></button>
+        <button class="action" title="Simuler"><svg><use href="#play"/></svg><span>Simuler</span></button>
+        <button class="action primary" id="save-button" title="Maquette : marque l’onglet comme enregistré"><svg><use href="#save"/></svg><span>Enregistrer</span></button>
+        <button class="icon-button" aria-label="Autres actions"><svg><use href="#more"/></svg></button>
+        <span class="divider"></span>
+        <button class="icon-button" aria-label="Thème"><svg><use href="#sun"/></svg></button>
+      </div>
+    </header>
+    <div class="tabbar" role="tablist" aria-label="Modèles ouverts">
+      <div class="tab active" data-name="light" data-kind="atomic">
+        <button class="tab-select" role="tab" aria-selected="true"><span class="language-icon">Py</span>light.py<span class="dirty" title="Modifications non enregistrées"></span></button>
+        <button class="icon-button close" aria-label="Fermer light"><svg><use href="#close"/></svg></button>
+      </div>
+      <div class="tab" data-name="switch" data-kind="atomic">
+        <button class="tab-select" role="tab" aria-selected="false" tabindex="-1"><span class="language-icon">Py</span>switch.py</button>
+        <button class="icon-button close" aria-label="Fermer switch"><svg><use href="#close"/></svg></button>
+      </div>
+      <div class="tab" data-name="Room" data-kind="coupled">
+        <button class="tab-select" role="tab" aria-selected="false" tabindex="-1"><svg class="coupled-icon"><use href="#network"/></svg>Room</button>
+        <button class="icon-button close" aria-label="Fermer Room"><svg><use href="#close"/></svg></button>
+      </div>
+    </div>
+    <div class="panels">
+      <section class="code" aria-label="Aperçu du code"><pre><span class="line"><span class="keyword">from</span> modeling <span class="keyword">import</span> <span class="type">Atomic</span></span><span class="line"></span><span class="line"><span class="keyword">class</span> <span class="type" id="class-name">light</span>(<span class="type">Atomic</span>):</span><span class="line">    <span class="keyword">def</span> <span class="function">initialize</span>(self) -&gt; <span class="type">None</span>:</span><span class="line">        self.<span class="function">hold_in</span>(<span class="string">"OFF"</span>, 10.0)</span><span class="line"></span><span class="line">    <span class="keyword">def</span> <span class="function">lambda_</span>(self) -&gt; <span class="type">None</span>:</span><span class="line">        ports = self.<span class="function">get_ports</span>(<span class="string">"state"</span>)</span><span class="line">        <span class="keyword">if</span> ports:</span><span class="line">            ports[0].<span class="function">add_value</span>({</span><span class="line">                <span class="string">"state"</span>: self.<span class="function">get_phase</span>()</span><span class="line">            })</span></pre></section>
+      <section class="diagram" aria-label="Diagramme"><div class="panel-caption">DIAGRAMME</div><div class="node"><span id="node-name">light</span><small id="node-kind">Modèle atomique</small><span class="port"></span></div></section>
+      <aside class="properties"><div class="panel-caption">PROPRIÉTÉS</div><label>Nom du modèle</label><div class="field" id="model-name">light</div><label>Intégration</label><div class="field" id="model-integration">xDEVS Python</div><label>Ports de sortie</label><div class="field">state</div></aside>
+    </div>
+  </main>
+  <div class="notes">
+    <div><strong><span class="number">01</span> Header ShadCN · 48 px</strong><p>Chemin de la bibliothèque, intégration et actions du modèle actif.</p></div>
+    <div><strong><span class="number">02</span> Onglets façon VS Code · 34 px</strong><p>Libellés courts, onglet actif souligné, point de modification et fermeture.</p></div>
+    <div><strong><span class="number">03</span> Même espace de travail</strong><p>Les onglets restent ouverts. Les noms avec .py sont un affichage proposé, sans renommage des modèles.</p></div>
+  </div>
+  <script>
+    // Maquette autonome : aucune connexion à l’API, aucune sauvegarde réelle.
+    function activate(tab) {
+      document.querySelectorAll('.tab').forEach(item => {
+        const active = item === tab;
+        item.classList.toggle('active', active);
+        const button = item.querySelector('[role=tab]');
+        button.setAttribute('aria-selected', String(active));
+        button.tabIndex = active ? 0 : -1;
+      });
+      const coupled = tab.dataset.kind === 'coupled';
+      for (const id of ['class-name', 'node-name', 'model-name']) document.getElementById(id).textContent = tab.dataset.name;
+      document.getElementById('node-kind').textContent = coupled ? 'Modèle couplé' : 'Modèle atomique';
+      document.getElementById('integration').textContent = coupled ? 'Modèle couplé' : 'xDEVS Python';
+      document.getElementById('model-integration').textContent = coupled ? 'Intégrations des composants' : 'xDEVS Python';
+      document.querySelector('.code').style.visibility = coupled ? 'hidden' : 'visible';
+    }
+    document.querySelectorAll('.tab').forEach(tab => {
+      tab.querySelector('[role=tab]').addEventListener('click', () => activate(tab));
+      tab.querySelector('[role=tab]').addEventListener('keydown', event => {
+        if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
+        event.preventDefault();
+        const tabs = [...document.querySelectorAll('.tab')];
+        const index = event.key === 'Home' ? 0 : event.key === 'End' ? tabs.length - 1 : (tabs.indexOf(tab) + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+        activate(tabs[index]);
+        tabs[index].querySelector('[role=tab]').focus();
+      });
+      tab.querySelector('.close').addEventListener('click', () => {
+        if (document.querySelectorAll('.tab').length === 1) return;
+        if (tab.querySelector('.dirty') && !confirm('Maquette : abandonner les modifications de cet onglet ?')) return;
+        const next = tab.nextElementSibling || tab.previousElementSibling;
+        const active = tab.classList.contains('active');
+        tab.remove();
+        if (active) activate(next);
+      });
+    });
+    document.getElementById('save-button').addEventListener('click', () => document.querySelector('.tab.active .dirty')?.remove());
+  </script>
+</body>
+</html>

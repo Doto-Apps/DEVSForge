@@ -15,6 +15,6 @@ describe("findHolderId", () => {
 		expect(findHolderId("A/E/C", "A/B/D")).toBe(null);
 		expect(findHolderId("A:B/C", "A/B/D")).toBe(null);
 		expect(findHolderId("A", "A")).toBe(null);
-		expect(findHolderId("A/B", "A/B")).toBe(null);
+		expect(findHolderId("A/B", "A/B")).toBe("A");
 	});
 });

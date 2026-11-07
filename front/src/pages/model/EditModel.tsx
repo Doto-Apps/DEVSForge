@@ -3,8 +3,8 @@ import { Loader } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { type Options, useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams } from "react-router-dom";
-import useUndo from "use-undo";
-import { client } from "@/api/client.ts";
+import { useWorkbench } from "@/providers/WorkbenchProvider";
+
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
 import { ModelPropertyEditor } from "@/components/custom/ModelPropertyEditor";
 import { ModelViewEditor } from "@/components/custom/ModelViewEditor";
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/resizable";
 import { useToast } from "@/hooks/use-toast";
 import { modelToReactflow } from "@/lib/modelToReactflow";
-import { reactflowToModel } from "@/lib/reactflowToModel";
+
 import { updateCodeBasedOnProperties } from "@/lib/updateCodeBasedOnProperties";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelByIdRecursive } from "@/queries/model/useGetModelByIdRecursive";
@@ -28,7 +28,6 @@ const hotkeyOptions: Options = {
 	enableOnContentEditable: true,
 	enableOnFormTags: true,
 	keydown: true,
-	preventDefault: true,
 };
 
 export function EditModel() {
@@ -54,23 +53,22 @@ export function EditModel() {
 	);
 	const { mutate: mutateModels } = useGetModels();
 	const { toast } = useToast();
-	const [structureState, { set: setStructure, undo, redo }] = useUndo<
-		ReactFlowInput | undefined
-	>(undefined, { useCheckpoints: true });
-	const structure = structureState.present;
-
-	useHotkeys(
-		["ctrl+s", "meta+s"],
-		(e) => {
-			e.preventDefault();
-			saveModelChange();
+	const workbench = useWorkbench();
+	const tab = workbench.tabs.find((t) => t.id === modelId);
+	const structure = tab?.draft;
+	const setStructure = useCallback(
+		(value: ReactFlowInput, checkpoint = false) => {
+			if (modelId) workbench.update(modelId, value, checkpoint);
 		},
-		hotkeyOptions,
+		[modelId, workbench.update],
 	);
+	const undo = () => modelId && workbench.undo(modelId);
+	const redo = () => modelId && workbench.undo(modelId, true);
 
 	useHotkeys(
-		["ctrl+w", "meta+w", "ctrl+z", "meta+z"],
+		["ctrl+z", "meta+z"],
 		(e) => {
+			if ((e.target as HTMLElement)?.closest(".monaco-editor")) return;
 			e.preventDefault();
 			undo();
 		},
@@ -78,8 +76,9 @@ export function EditModel() {
 	);
 
 	useHotkeys(
-		["ctrl+shift+w", "meta+shift+w", "ctrl+shift+z", "meta+shift+z"],
+		["ctrl+shift+z", "meta+shift+z"],
 		(e) => {
+			if ((e.target as HTMLElement)?.closest(".monaco-editor")) return;
 			e.preventDefault();
 			redo();
 		},
@@ -90,9 +89,17 @@ export function EditModel() {
 		if (data && modelId) {
 			const tmp = modelToReactflow(data);
 			tmp.nodes.sort((a, b) => a.id.length - b.id.length);
-			setStructure(tmp);
+			workbench.open({
+				id: modelId,
+				libraryId: libraryId ?? "",
+				libraryName: dataLib?.title ?? "Library",
+				name: data.find((m) => m.id === modelId)?.name ?? "Model",
+				kind: data.find((m) => m.id === modelId)?.type ?? "atomic",
+				integration: data.find((m) => m.id === modelId)?.integrationId,
+				draft: tmp,
+			});
 		}
-	}, [data, modelId, setStructure]);
+	}, [data, modelId, libraryId, dataLib?.title, workbench.open]);
 
 	const handleStructureChange = useCallback(
 		(newStructure: ReactFlowInput) => {
@@ -101,43 +108,11 @@ export function EditModel() {
 		[setStructure],
 	);
 
-	const saveModelChange = async (): Promise<void> => {
+	const saveModelChange = useCallback(async (): Promise<void> => {
 		if (!structure || !modelId) return;
 
 		try {
-			const modelToSave = reactflowToModel(structure).find(
-				(model) => model.id === modelId,
-			);
-			if (!modelToSave) {
-				toast({
-					description: "Modèle non trouvé dans la structure",
-					title: "Erreur",
-					variant: "destructive",
-				});
-				return;
-			}
-
-			const response = await client.PATCH("/model/{id}", {
-				body: {
-					code: modelToSave.code,
-					components: modelToSave.components,
-					connections: modelToSave.connections,
-					description: modelToSave.description,
-					metadata: modelToSave.metadata,
-					name: modelToSave.name,
-					ports: modelToSave.ports,
-					type: modelToSave.type,
-				},
-				params: {
-					path: {
-						id: modelId,
-					},
-				},
-			});
-
-			if (!response.data) {
-				throw new Error("No data received from API");
-			}
+			await workbench.save(modelId);
 
 			toast({
 				title: "Modèle sauvegardé avec succès",
@@ -151,7 +126,28 @@ export function EditModel() {
 				variant: "destructive",
 			});
 		}
-	};
+	}, [structure, modelId, workbench.save, toast, mutate, mutateModels]);
+
+	useEffect(() => {
+		const onSaveKeyDown = (event: KeyboardEvent) => {
+			if (
+				!(event.metaKey || event.ctrlKey) ||
+				event.altKey ||
+				event.shiftKey ||
+				event.isComposing ||
+				event.key.toLowerCase() !== "s"
+			)
+				return;
+
+			event.preventDefault();
+			event.stopPropagation();
+			if (!event.repeat) void saveModelChange();
+		};
+
+		// Capture before Monaco handles the key or stops it reaching document hotkeys.
+		window.addEventListener("keydown", onSaveKeyDown, true);
+		return () => window.removeEventListener("keydown", onSaveKeyDown, true);
+	}, [saveModelChange]);
 
 	const simulateModel = async (): Promise<void> => {
 		if (!modelId || !libraryId) return;
@@ -214,7 +210,8 @@ export function EditModel() {
 	if (!data || !structure) return null;
 
 	const mainModel = structure.nodes.find((m) => m.id === modelId);
-	const modelLanguage = data.find((model) => model.id === modelId)?.language;
+	const profileModel = data.find((model) => model.id === modelId);
+	const modelLanguage = profileModel?.language;
 
 	const selectedModel = structure.nodes.find(({ selected }) => selected);
 
@@ -234,6 +231,8 @@ export function EditModel() {
 				]}
 				deployFunction={deployWebApp}
 				modelId={modelId}
+				integrationId={profileModel?.integrationId}
+				integrationVersion={profileModel?.integrationVersion}
 				modelLanguage={
 					mainModel?.data.modelType === "atomic" ? modelLanguage : undefined
 				}
@@ -250,14 +249,19 @@ export function EditModel() {
 						<ModelCodeEditor
 							code={mainModel.data.code}
 							language={modelLanguage}
+							integrationId={profileModel?.integrationId}
+							integrationVersion={profileModel?.integrationVersion}
+							modelName={mainModel.data.label}
 							modelId={mainModel.id}
 							onCodeChange={onChangeCode}
+							workbenchId={workbench.id}
 						/>
 					</ResizablePanel>
 
 					<ResizableHandle withHandle />
 					<ResizablePanel defaultSize={30} minSize={20}>
 						<ModelViewEditor
+							key={modelId}
 							models={structure}
 							onChange={handleStructureChange}
 						/>
@@ -279,6 +283,7 @@ export function EditModel() {
 				<ResizablePanelGroup direction="horizontal">
 					<ResizablePanel defaultSize={70} minSize={20}>
 						<ModelViewEditor
+							key={modelId}
 							models={structure}
 							onChange={handleStructureChange}
 						/>

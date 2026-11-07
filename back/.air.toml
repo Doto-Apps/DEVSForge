@@ -1,2 +1,3 @@
 [build]
     poll = true
+    full_bin = "INTEGRATIONS_ALLOW_CHANGES=true ./tmp/main"

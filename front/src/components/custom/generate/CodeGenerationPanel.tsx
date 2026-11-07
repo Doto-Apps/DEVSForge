@@ -35,24 +35,15 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
-import type {
-	CodeGenerationPanelProps,
-	GeneratedModelLanguage,
-	ReuseCandidate,
-} from "@/types";
+import type { CodeGenerationPanelProps, ReuseCandidate } from "@/types";
 
-type GeneratableLanguage = Extract<GeneratedModelLanguage, "python" | "go">;
+import { useIntegrations, integrationKey } from "@/hooks/useIntegrations";
 
 const promptSchema = z.object({
 	prompt: z.string().min(5, {
 		message: "Prompt must be at least 5 characters.",
 	}),
 });
-
-const isGeneratableLanguage = (
-	language: GeneratedModelLanguage | undefined,
-): language is GeneratableLanguage =>
-	language === "python" || language === "go";
 
 export function CodeGenerationPanel({
 	diagram,
@@ -64,10 +55,11 @@ export function CodeGenerationPanel({
 	excludeFromContextModelIds = [],
 }: CodeGenerationPanelProps) {
 	const { generateCode, isLoading, error } = useGenerateModelCode();
+	const { data: integrations } = useIntegrations();
+	const available = integrations.filter((d) => d.capabilities?.ai);
 	const { toast } = useToast();
 	const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
-	const [selectedLanguage, setSelectedLanguage] =
-		useState<GeneratableLanguage>("python");
+	const [selectedIntegration, setSelectedIntegration] = useState("");
 	const [reuseCandidates, setReuseCandidates] = useState<ReuseCandidate[]>([]);
 	const [selectedReuse, setSelectedReuse] = useState<string>("__pending__");
 	const [awaitingReuseSelection, setAwaitingReuseSelection] =
@@ -94,13 +86,20 @@ export function CodeGenerationPanel({
 			setReuseCandidates([]);
 			setSelectedReuse("__pending__");
 			setAwaitingReuseSelection(false);
-			setSelectedLanguage(
-				isGeneratableLanguage(currentModel.language)
-					? currentModel.language
-					: "python",
+			setSelectedIntegration(
+				currentModel.integrationId
+					? `${currentModel.integrationId}@${currentModel.integrationVersion}`
+					: integrationKey(
+							available.find((d) => d.default) ?? available[0] ?? {},
+						),
 			);
 		}
-	}, [currentModel?.id, currentModel?.language]);
+	}, [
+		currentModel?.id,
+		currentModel?.integrationId,
+		currentModel?.integrationVersion,
+		integrations,
+	]);
 
 	// Get code from models that current model depends on
 	const getPreviousModelsCode = (): string => {
@@ -155,7 +154,12 @@ export function CodeGenerationPanel({
 
 		const generated = await generateCode({
 			forceScratch,
-			language: selectedLanguage,
+			integrationId: integrations.find(
+				(d) => integrationKey(d) === selectedIntegration,
+			)?.id,
+			integrationVersion: integrations.find(
+				(d) => integrationKey(d) === selectedIntegration,
+			)?.version,
 			modelName: currentModel.name,
 			ports: convertPorts(currentModel),
 			previousModelsCode: getPreviousModelsCode(),
@@ -187,7 +191,16 @@ export function CodeGenerationPanel({
 			}
 
 			setAwaitingReuseSelection(false);
-			onCodeGenerated(currentModel.id, generated.code, selectedLanguage);
+			const selected = integrations.find(
+				(d) => integrationKey(d) === selectedIntegration,
+			);
+			onCodeGenerated(
+				currentModel.id,
+				generated.code,
+				selected?.language,
+				selected?.id,
+				selected?.version,
+			);
 
 			const reuseNote = generated.reuseUsed
 				? ` (reuse: ${generated.reuseUsed.name})`
@@ -207,6 +220,17 @@ export function CodeGenerationPanel({
 
 	const handleValidateModel = () => {
 		if (currentModel?.code) {
+			const profile = integrations.find(
+				(d) => integrationKey(d) === selectedIntegration,
+			);
+			if (currentModel.needsRevalidation)
+				onCodeGenerated(
+					currentModel.id,
+					currentModel.code,
+					currentModel.language ?? profile?.language,
+					currentModel.integrationId ?? profile?.id,
+					currentModel.integrationVersion ?? profile?.version,
+				);
 			onModelValidated();
 			toast({
 				description: `${currentModel.name} has been validated. Moving to next model.`,
@@ -220,7 +244,9 @@ export function CodeGenerationPanel({
 
 	const isCurrentModel = selectedModelId === currentModel?.id;
 	const isSelectedAtomic = selectedModel?.type === "atomic";
-	const canValidate = currentModel?.codeGenerated && currentModel?.code;
+	const canValidate =
+		!!currentModel?.code &&
+		(currentModel.codeGenerated || currentModel.needsRevalidation);
 	const isComplete = currentModelIndex >= atomicModels.length;
 	const progressPercent =
 		atomicModels.length === 0
@@ -380,19 +406,25 @@ export function CodeGenerationPanel({
 							onSubmit={form.handleSubmit(handleGenerateCode)}
 						>
 							<div className="mb-4">
-								<FormLabel>Language</FormLabel>
+								<FormLabel>Integration</FormLabel>
 								<Select
-									onValueChange={(value: GeneratableLanguage) =>
-										setSelectedLanguage(value)
+									onValueChange={(value: string) =>
+										setSelectedIntegration(value)
 									}
-									value={selectedLanguage}
+									value={selectedIntegration}
 								>
 									<SelectTrigger className="mt-1.5">
-										<SelectValue placeholder="Select language" />
+										<SelectValue placeholder="Select integration" />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="python">Python</SelectItem>
-										<SelectItem value="go">Go</SelectItem>
+										{available.map((d) => (
+											<SelectItem
+												key={integrationKey(d)}
+												value={integrationKey(d)}
+											>
+												{d.name}
+											</SelectItem>
+										))}
 									</SelectContent>
 								</Select>
 							</div>
@@ -513,6 +545,12 @@ export function CodeGenerationPanel({
 									)}
 								</Button>
 
+								{currentModel?.needsRevalidation && (
+									<p role="alert" className="text-sm text-amber-600">
+										The model interface changed. Review and adapt the existing
+										code before continuing.
+									</p>
+								)}
 								{canValidate && (
 									<Button
 										className="w-full"
@@ -521,7 +559,9 @@ export function CodeGenerationPanel({
 										variant="outline"
 									>
 										<CheckCircle2 className="w-4 h-4 mr-2" />
-										Validate & Continue
+										{currentModel?.needsRevalidation
+											? "Confirm interface review & continue"
+											: "Validate & Continue"}
 									</Button>
 								)}
 							</div>
@@ -596,8 +636,13 @@ export function CodeGenerationPanel({
 				<div className="flex-1 min-h-0">
 					{isSelectedAtomic && selectedModel?.code ? (
 						<ModelCodeEditor
+							draftKey={`${diagram.targetModelId ?? diagram.name}/${selectedModel?.id}`}
 							code={selectedModel.code}
 							language={selectedModel.language}
+							integrationId={selectedModel.integrationId}
+							integrationVersion={selectedModel.integrationVersion}
+							modelName={selectedModel.name}
+							draft
 							modelId={selectedModel.id}
 							onCodeChange={(newCode) =>
 								onCodeChange(selectedModel.id, newCode)

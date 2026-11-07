@@ -8,7 +8,7 @@ COPY simulator/shared ./simulator/shared
 
 COPY simulator/coordinator/go.mod simulator/coordinator/go.sum ./simulator/coordinator/
 COPY simulator/runner/go.mod simulator/runner/go.sum ./simulator/runner/
-COPY simulator/wrappers/go/go.mod simulator/wrappers/go/go.sum ./simulator/wrappers/go/
+COPY simulator/runner/integrations/xdevs-go/wrapper/go.mod simulator/runner/integrations/xdevs-go/wrapper/go.sum ./simulator/runner/integrations/xdevs-go/wrapper/
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
@@ -19,6 +19,9 @@ FROM alpine:3.23.3 AS backend
 WORKDIR /app
 COPY --from=builder /app/bin/devsforge-backend /app/devsforge-backend
 COPY --from=builder /app/back/database/migrations /app/database/migrations
+COPY simulator/runner/integrations /opt/devsforge/integrations
+ENV INTEGRATIONS_DIR=/opt/devsforge/integrations
+ENV LSP_ADDR=http://lsp:8090
 ENV DB_MIGRATIONS_PATH=/app/database/migrations
 ENV SIMULATOR_ADDR=simulator:8080
 EXPOSE 3000

@@ -1,25 +1,19 @@
-# Generate proto files for wrappers
+# Generate gRPC bindings
 
-# Prerequisite
+The source of truth is `simulator/proto/devs.proto`. `PortOutput.values_json` is a repeated JSON-string field, matching the three runtime adapters.
 
-- Ensure `protoc --version` returns `libprotoc 34.1` Or you will need to update all deps in all wrappers
-
-## Java
-
-- Using java-openjdk21
-- Plugin: protoc-gen-grpc-java-1.60.0-linux-x86_64.exe
+Generate one language at a time from the repository root:
 
 ```sh
-wget https://repo1.maven.org/maven2/io/grpc/protoc-gen-grpc-java/1.60.0/protoc-gen-grpc-java-1.60.0-linux-x86_64.exe
-chmod +x protoc-gen-grpc-java-1.60.0-linux-x86_64.exe
+task simulator:proto -- xdevs-go
+task simulator:proto -- xdevs-python
+task simulator:proto -- xdevs-java
 ```
 
-- Generate :
+Go uses `protoc`, `protoc-gen-go v1.36.11`, and `protoc-gen-go-grpc v1.5.1`, with output in `simulator/shared/proto`. The checked-in Go files were generated with protoc 29.3. Install the plugins with `go install ...@version` and add their directory to PATH.
 
-```sh
-protoc --proto_path=simulator/proto/ \
---java_out=./simulator/wrappers/java/src/main/generated/ \
---grpc-java_out=./simulator/wrappers/java/src/main/generated/ \
---plugin=protoc-gen-grpc-java=./protoc-gen-grpc-java-1.60.0-linux-x86_64.exe \
-simulator/proto/devs.proto
-```
+Python requires `grpcio-tools` from its wrapper requirements in an isolated Python environment. Its script fixes the generated package-relative import. Java requires `protoc` 34.1 (matching protobuf-java 4.34.1; set `PROTOC_JAVA` when it is not the default compiler) and `GRPC_JAVA_PLUGIN` pointing at protoc-gen-grpc-java 1.60.0 for your OS/architecture; Java output stays in its wrapper.
+
+Compiler versions can differ between languages; preserve field numbers, message shapes, and service names. Changing only an integration, without changing the protocol, does not require regenerating every language. Whenever the protocol changes, regenerate all affected bindings and run mixed-language simulation tests before release.
+
+See [integration development](integrations.md) for the full extension and deployment workflow.

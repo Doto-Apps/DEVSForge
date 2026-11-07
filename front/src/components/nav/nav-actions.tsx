@@ -45,11 +45,7 @@ const data = [
 		menu: [
 			{
 				icon: Settings2,
-				label: "Customize Page",
-			},
-			{
-				icon: FileText,
-				label: "Turn into wiki",
+				label: "More action coming up !",
 			},
 		],
 	},
@@ -58,57 +54,7 @@ const data = [
 		menu: [
 			{
 				icon: Link,
-				label: "Copy Link",
-			},
-			{
-				icon: Copy,
-				label: "Duplicate",
-			},
-			{
-				icon: CornerUpRight,
-				label: "Move to",
-			},
-			{
-				icon: Trash2,
-				label: "Move to Trash",
-			},
-		],
-	},
-	{
-		id: "second",
-		menu: [
-			{
-				icon: CornerUpLeft,
-				label: "Undo",
-			},
-			{
-				icon: LineChart,
-				label: "View analytics",
-			},
-			{
-				icon: GalleryVerticalEnd,
-				label: "Version History",
-			},
-			{
-				icon: Trash,
-				label: "Show delete pages",
-			},
-			{
-				icon: Bell,
-				label: "Notifications",
-			},
-		],
-	},
-	{
-		id: "third",
-		menu: [
-			{
-				icon: ArrowUp,
-				label: "Import",
-			},
-			{
-				icon: ArrowDown,
-				label: "Export",
+				label: "Other actions",
 			},
 		],
 	},
@@ -158,32 +104,59 @@ export function NavActions({
 	return (
 		<div className="flex items-center gap-2 text-sm">
 			{validateFunction && (
-				<Button className="size-7" onClick={validateFunction} size="icon">
+				<Button
+					className="size-7 xl:w-auto xl:px-2"
+					onClick={validateFunction}
+					size="icon"
+					aria-label="Validate"
+					title="Validate"
+				>
 					<ShieldCheck />
+					<span className="hidden xl:inline">Validate</span>
 				</Button>
 			)}
 			{deployFunction && (
-				<Button className="size-7" onClick={deployFunction} size="icon">
+				<Button
+					className="size-7 xl:w-auto xl:px-2"
+					onClick={deployFunction}
+					size="icon"
+					aria-label="Deploy"
+					title="Deploy"
+				>
 					<MonitorPlay />
+					<span className="hidden xl:inline">Deploy</span>
 				</Button>
 			)}
 			{simulateFunction && (
-				<Button className="size-7" onClick={simulateFunction} size="icon">
+				<Button
+					className="size-7 xl:w-auto xl:px-2"
+					onClick={simulateFunction}
+					size="icon"
+					aria-label="Simulate"
+					title="Simulate"
+				>
 					<Play />
+					<span className="hidden xl:inline">Simulate</span>
 				</Button>
 			)}
 			{saveFunction && (
-				<Button className="size-7" onClick={saveFunction} size="icon">
+				<Button
+					className="size-7 xl:w-auto xl:px-2"
+					onClick={saveFunction}
+					size="icon"
+					aria-label="Save"
+					title="Save"
+				>
 					<Save />
+					<span className="hidden xl:inline">Save</span>
 				</Button>
 			)}
 
-			<div className="hidden font-medium text-muted-foreground md:inline-block">
-				Edit Oct 08
-			</div>
 			<Popover onOpenChange={setIsOpen} open={isOpen}>
 				<PopoverTrigger asChild>
 					<Button
+						aria-label="More actions"
+						title="More actions"
 						className="size-7 data-[state=open]:bg-accent"
 						size="icon"
 						variant="ghost"

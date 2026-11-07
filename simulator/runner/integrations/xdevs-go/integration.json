@@ -1,0 +1,30 @@
+{
+  "id": "xdevs-go",
+  "version": "1.0.0",
+  "name": "xDEVS Go",
+  "language": "go",
+  "framework": "xDEVS",
+  "extension": ".go",
+  "legacyLanguage": "go",
+  "default": false,
+  "preparation": "xdevs-go",
+  "wrapper": "wrapper",
+  "modelPath": "model.go",
+  "template": "templates/atomic.tmpl",
+  "prompt": "ai/model.md",
+  "context": [
+    "wrapper/modeling"
+  ],
+  "servers": [
+    {
+      "id": "gopls",
+      "command": "gopls",
+      "args": [
+        "serve"
+      ],
+      "allowedCommands": [
+        "gopls.apply_fix"
+      ]
+    }
+  ]
+}

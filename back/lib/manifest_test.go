@@ -362,7 +362,7 @@ func buildAtomicModel(modelID string, parameters []json.ModelParameter) model.Mo
 		ID:       modelID,
 		Name:     modelID,
 		Type:     enum.Atomic,
-		Language: enum.ModelLanguagePython,
+		Language: "python",
 		Code:     "print('atomic')",
 		Ports: []json.ModelPort{
 			{ID: "in1", Name: "in1", Type: enum.ModelPortDirectionIn},
@@ -383,7 +383,7 @@ func buildCoupledRoot(rootID string, childModelID string, overrideParams []json.
 		ID:       rootID,
 		Name:     rootID,
 		Type:     enum.Coupled,
-		Language: enum.ModelLanguagePython,
+		Language: "python",
 		Code:     "print('coupled')",
 		Components: []json.ModelComponent{
 			{
@@ -416,7 +416,7 @@ func buildCoupledRootWithConnections(
 		ID:          rootID,
 		Name:        rootID,
 		Type:        enum.Coupled,
-		Language:    enum.ModelLanguagePython,
+		Language:    "python",
 		Code:        "print('coupled')",
 		Components:  components,
 		Connections: connections,
