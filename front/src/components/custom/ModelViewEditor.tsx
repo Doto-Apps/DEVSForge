@@ -43,8 +43,8 @@ const nodeTypes: NonNullable<ComponentProps<typeof ReactFlow>["nodeTypes"]> = {
 };
 
 const edgeTypes = {
-	custom: StepEdge, // Compatibility with previously recovered generator drafts.
 	bidirectional: BiDirectionalEdge,
+	custom: StepEdge, // Compatibility with previously recovered generator drafts.
 };
 
 const defaultEdgeOptions = {
@@ -216,8 +216,8 @@ export function ModelViewEditor({
 		const parentNode = models.nodes.find((n) => n.id === modelIdToPut);
 		if (parentNode?.parentId && parentNode.deletable === false) {
 			toast({
-				title: "Protected reference",
 				description: "Add models to the parent of the model under test.",
+				title: "Protected reference",
 				variant: "destructive",
 			});
 			return;
@@ -287,8 +287,8 @@ export function ModelViewEditor({
 		const parentNode = models.nodes.find((n) => n.id === targetId);
 		if (parentNode?.parentId && parentNode.deletable === false) {
 			toast({
-				title: "Protected reference",
 				description: "Add models to the parent of the model under test.",
+				title: "Protected reference",
 				variant: "destructive",
 			});
 			return;
@@ -325,8 +325,8 @@ export function ModelViewEditor({
 		const holder = models.nodes.find((n) => n.id === holderId);
 		if (holder?.parentId && holder.deletable === false) {
 			toast({
-				title: "Protected reference",
 				description: "The internals of the model under test are read-only.",
+				title: "Protected reference",
 				variant: "destructive",
 			});
 			return;
@@ -406,11 +406,10 @@ export function ModelViewEditor({
 			<ReactFlow
 				connectionMode={ConnectionMode.Loose}
 				defaultEdgeOptions={defaultEdgeOptions}
+				defaultViewport={models.viewport}
 				edges={edges}
 				edgeTypes={edgeTypes}
 				fitView={!models.viewport}
-				defaultViewport={models.viewport}
-				onMoveEnd={(_, viewport) => onChange({ ...models, viewport })}
 				minZoom={0.1}
 				nodes={nodes}
 				nodeTypes={nodeTypes}
@@ -423,6 +422,7 @@ export function ModelViewEditor({
 						if (!models.viewport) instance.fitView();
 					});
 				}}
+				onMoveEnd={(_, viewport) => onChange({ ...models, viewport })}
 				onNodesChange={onNodesChange}
 			>
 				<MiniMap pannable zoomable />

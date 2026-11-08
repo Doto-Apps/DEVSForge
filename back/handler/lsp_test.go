@@ -20,7 +20,7 @@ func TestLSPGatewayPropagatesServerClosure(t *testing.T) {
 		if err != nil {
 			return
 		}
-		defer conn.Close()
+		defer func() { _ = conn.Close() }()
 		close(opened)
 		<-closeServer
 	}))
@@ -34,7 +34,7 @@ func TestLSPGatewayPropagatesServerClosure(t *testing.T) {
 		t.Fatal(err)
 	}
 	go func() { _ = app.Listener(listener) }()
-	defer app.Shutdown()
+	defer func() { _ = app.Shutdown() }()
 	lspTickets.Lock()
 	lspTickets.values["closure-test"] = proxyTicket{User: "user", Session: "session", Engine: "pyright", Expires: time.Now().Add(30 * time.Second)}
 	lspTickets.Unlock()
@@ -42,7 +42,7 @@ func TestLSPGatewayPropagatesServerClosure(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer conn.Close()
+	defer func() { _ = conn.Close() }()
 	<-opened
 	close(closeServer)
 	_ = conn.SetReadDeadline(time.Now().Add(3 * time.Second))

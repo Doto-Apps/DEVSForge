@@ -32,18 +32,18 @@ export function RoadmapContact({ compact = false }: { compact?: boolean }) {
 	return (
 		<div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
 			<a
-				href={`${projectLinks.github}/issues/new`}
-				target="_blank"
-				rel="noreferrer"
 				className="inline-flex items-center gap-1.5 hover:text-foreground"
+				href={`${projectLinks.github}/issues/new`}
+				rel="noreferrer"
+				target="_blank"
 			>
 				<Github size={13} />
 				{compact ? "Report / suggest" : "Report a problem or suggest an idea"}
 				<ExternalLink size={11} />
 			</a>
 			<a
-				href={`mailto:${projectLinks.email}`}
 				className="inline-flex items-center gap-1.5 hover:text-foreground"
+				href={`mailto:${projectLinks.email}`}
 			>
 				<Mail size={13} />
 				{compact ? "Contact" : projectLinks.email}
@@ -64,13 +64,13 @@ export function RoadmapPreview() {
 		.slice(0, 3);
 	return (
 		<section
-			className="mb-7 border-b pb-5"
 			aria-labelledby="roadmap-preview-title"
+			className="mb-7 border-b pb-5"
 		>
 			<div className="mb-3 flex flex-wrap items-center justify-between gap-2">
 				<h2
-					id="roadmap-preview-title"
 					className="flex items-center gap-2 text-sm font-medium"
+					id="roadmap-preview-title"
 				>
 					<MapIcon size={15} />
 					On the roadmap
@@ -79,8 +79,8 @@ export function RoadmapPreview() {
 					</span>
 				</h2>
 				<Link
-					to="/roadmap"
 					className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+					to="/roadmap"
 				>
 					View all
 					<ArrowRight size={13} />
@@ -89,7 +89,7 @@ export function RoadmapPreview() {
 			<ul className="grid gap-x-6 gap-y-3 md:grid-cols-3">
 				{next.map((item) => (
 					<li key={item.id}>
-						<Link to={`/roadmap#${item.id}`} className="group block">
+						<Link className="group block" to={`/roadmap#${item.id}`}>
 							<p className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">
 								{item.category} ·{" "}
 								{
@@ -136,10 +136,10 @@ export function Roadmap() {
 		roadmap.filter((item) => item.status === id).length;
 	return (
 		<Sheet
-			open={!!selected}
 			onOpenChange={(open) => {
 				if (!open) void navigate({ hash: "" }, { replace: true });
 			}}
+			open={!!selected}
 		>
 			<div className="flex h-screen min-w-0 w-full flex-col">
 				<NavHeader
@@ -155,9 +155,9 @@ export function Roadmap() {
 						<div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
 							<div>
 								<h1
+									className="text-3xl font-semibold tracking-tight"
 									ref={heading}
 									tabIndex={-1}
-									className="text-3xl font-semibold tracking-tight"
 								>
 									What’s next
 								</h1>
@@ -172,16 +172,16 @@ export function Roadmap() {
 					</header>
 					<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
 						<fieldset
-							className="flex flex-wrap gap-1"
 							aria-label="Filter by roadmap status"
+							className="flex flex-wrap gap-1"
 						>
 							{[{ id: "all", label: "All" }, ...roadmapStatuses].map((item) => (
 								<Button
-									key={item.id}
-									variant={status === item.id ? "secondary" : "ghost"}
-									size="sm"
 									aria-pressed={status === item.id}
+									key={item.id}
 									onClick={() => setStatus(item.id)}
+									size="sm"
+									variant={status === item.id ? "secondary" : "ghost"}
 								>
 									{item.label}
 									<span className="ml-1 text-xs tabular-nums text-muted-foreground">
@@ -190,10 +190,10 @@ export function Roadmap() {
 								</Button>
 							))}
 						</fieldset>
-						<Select value={category} onValueChange={setCategory}>
+						<Select onValueChange={setCategory} value={category}>
 							<SelectTrigger
-								className="h-8 w-full sm:w-52"
 								aria-label="Filter roadmap by topic"
+								className="h-8 w-full sm:w-52"
 							>
 								<SelectValue />
 							</SelectTrigger>
@@ -209,8 +209,8 @@ export function Roadmap() {
 					</div>
 					{!filtered.length && (
 						<p
-							role="status"
 							className="py-12 text-center text-sm text-muted-foreground"
+							role="status"
 						>
 							No items in this selection yet.
 						</p>
@@ -226,9 +226,9 @@ export function Roadmap() {
 								);
 								return (
 									<section
-										key={topic}
 										aria-label={topic}
 										className="min-w-0 overflow-hidden rounded-lg border bg-card"
+										key={topic}
 									>
 										<header className="flex items-center justify-between gap-3 border-b bg-muted/20 px-3 py-2.5">
 											<h2 className="text-xs font-medium">{topic}</h2>
@@ -241,10 +241,9 @@ export function Roadmap() {
 											{items.map((item) => (
 												<li key={item.id}>
 													<button
-														type="button"
 														aria-haspopup="dialog"
-														data-roadmap-id={item.id}
 														className="group flex w-full items-start gap-2.5 px-3 py-3 text-left transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+														data-roadmap-id={item.id}
 														onClick={(event) => {
 															lastTrigger.current = event.currentTarget;
 															void navigate(
@@ -252,6 +251,7 @@ export function Roadmap() {
 																{ replace: true },
 															);
 														}}
+														type="button"
 													>
 														<span className="mt-0.5 shrink-0 text-muted-foreground">
 															{item.status === "done" ? (
@@ -276,8 +276,8 @@ export function Roadmap() {
 															</span>
 														</span>
 														<ChevronRight
-															size={13}
 															className="mt-1 shrink-0 text-muted-foreground group-hover:text-foreground"
+															size={13}
 														/>
 													</button>
 												</li>
@@ -295,7 +295,6 @@ export function Roadmap() {
 			</div>
 			{selected && (
 				<SheetContent
-					side="right"
 					className="flex w-full flex-col gap-6 overflow-y-auto sm:max-w-lg"
 					onCloseAutoFocus={(event) => {
 						event.preventDefault();
@@ -306,6 +305,7 @@ export function Roadmap() {
 							lastTrigger.current.focus();
 						else heading.current?.focus();
 					}}
+					side="right"
 				>
 					<SheetHeader className="pr-6 text-left">
 						<p className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -329,14 +329,14 @@ export function Roadmap() {
 						<ul className="space-y-4">
 							{selected.tasks.map((task) => (
 								<li
-									key={task.text}
 									className="flex items-start gap-2.5 text-sm leading-6"
+									key={task.text}
 								>
 									<span className="mt-1 shrink-0 text-muted-foreground">
 										{task.done ? (
-											<Check size={14} aria-label="Completed" />
+											<Check aria-label="Completed" size={14} />
 										) : (
-											<Circle size={14} aria-label="Not completed" />
+											<Circle aria-label="Not completed" size={14} />
 										)}
 									</span>
 									<span>{task.text}</span>
@@ -346,20 +346,20 @@ export function Roadmap() {
 					</div>
 					<div className="flex flex-wrap gap-x-5 gap-y-3 border-t pt-4 text-xs text-muted-foreground">
 						<a
-							href={`${projectLinks.github}/issues/new?title=${encodeURIComponent(`[Roadmap] ${selected.title}`)}&body=${encodeURIComponent(`Roadmap item: ${selected.title}\n\nMy suggestion or feedback:\n`)}`}
-							target="_blank"
-							rel="noreferrer"
 							className="inline-flex items-center gap-1 hover:text-foreground"
+							href={`${projectLinks.github}/issues/new?title=${encodeURIComponent(`[Roadmap] ${selected.title}`)}&body=${encodeURIComponent(`Roadmap item: ${selected.title}\n\nMy suggestion or feedback:\n`)}`}
+							rel="noreferrer"
+							target="_blank"
 						>
 							Discuss on GitHub
 							<ExternalLink size={11} />
 						</a>
 						{"reference" in selected && (
 							<a
-								href={selected.reference.url}
-								target="_blank"
-								rel="noreferrer"
 								className="inline-flex items-center gap-1 hover:text-foreground"
+								href={selected.reference.url}
+								rel="noreferrer"
+								target="_blank"
 							>
 								{selected.reference.label}
 								<ExternalLink size={11} />

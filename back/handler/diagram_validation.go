@@ -69,7 +69,7 @@ func validateDiagram(models []response.Model, connections []response.Connection,
 			}
 			from := m.ID == source.ID || containsString(m.Components, source.ID)
 			to := m.ID == target.ID || containsString(m.Components, target.ID)
-			if from && to && !(m.ID == source.ID && m.ID == target.ID) {
+			if from && to && (m.ID != source.ID || m.ID != target.ID) {
 				candidates = append(candidates, m.ID)
 			}
 		}

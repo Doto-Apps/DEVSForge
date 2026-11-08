@@ -15,8 +15,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
       - name: Prepare env files for compose validation
-        run: cp .env.dist .env
+        run: |
+          cp .env.dist .env
+          python3 scripts/ensure-lsp-env.py
       - name: Validate aio release compose
-        run: docker compose -f docker-compose.yml config
+        run: docker compose -f docker-compose.yml config --quiet
       - name: Validate islands release compose
-        run: docker compose -f docker-compose.dev-go.yml config
+        run: docker compose -f docker-compose.dev-go.yml config --quiet
+      - name: Validate local compose
+        run: docker compose -f docker-compose.local.yml config --quiet

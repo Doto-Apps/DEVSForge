@@ -296,8 +296,30 @@ describe("llmToReactFlow", () => {
 		const result = generatedDiagramToReactFlow(diagram);
 
 		assert.deepEqual(
-			[...result.nodes].sort((a, b) => a.id.localeCompare(b.id)).map(({id,parentId,data})=>({id,parentId,idModel:data.id,label:data.label,modelType:data.modelType,inputPorts:data.inputPorts,outputPorts:data.outputPorts,code:data.code})),
-			[...expectedReactFlow.nodes].sort((a, b) => a.id.localeCompare(b.id)).map(({id,parentId,data})=>({id,parentId,idModel:data.id,label:data.label,modelType:data.modelType,inputPorts:data.inputPorts,outputPorts:data.outputPorts,code:data.code})),
+			[...result.nodes]
+				.sort((a, b) => a.id.localeCompare(b.id))
+				.map(({ id, parentId, data }) => ({
+					code: data.code,
+					id,
+					idModel: data.id,
+					inputPorts: data.inputPorts,
+					label: data.label,
+					modelType: data.modelType,
+					outputPorts: data.outputPorts,
+					parentId,
+				})),
+			[...expectedReactFlow.nodes]
+				.sort((a, b) => a.id.localeCompare(b.id))
+				.map(({ id, parentId, data }) => ({
+					code: data.code,
+					id,
+					idModel: data.id,
+					inputPorts: data.inputPorts,
+					label: data.label,
+					modelType: data.modelType,
+					outputPorts: data.outputPorts,
+					parentId,
+				})),
 		);
 	});
 
@@ -306,8 +328,22 @@ describe("llmToReactFlow", () => {
 		const result = generatedDiagramToReactFlow(diagram);
 
 		assert.deepEqual(
-			[...result.edges].map(({source,target,sourceHandle,targetHandle})=>({source,target,sourceHandle,targetHandle})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))),
-			[...expectedReactFlow.edges].map(({source,target,sourceHandle,targetHandle})=>({source,target,sourceHandle,targetHandle})).sort((a,b)=>JSON.stringify(a).localeCompare(JSON.stringify(b))),
+			[...result.edges]
+				.map(({ source, target, sourceHandle, targetHandle }) => ({
+					source,
+					sourceHandle,
+					target,
+					targetHandle,
+				}))
+				.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
+			[...expectedReactFlow.edges]
+				.map(({ source, target, sourceHandle, targetHandle }) => ({
+					source,
+					sourceHandle,
+					target,
+					targetHandle,
+				}))
+				.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b))),
 		);
 	});
 
@@ -330,9 +366,9 @@ describe("llmToReactFlow", () => {
 					components: [],
 					dependencies: [],
 					id: "sensor",
-					language: "go",
 					integrationId: "xdevs-go",
 					integrationVersion: "1.0.0",
+					language: "go",
 					name: "Sensor",
 					ports: { in: ["tick"], out: ["value"] },
 					type: "atomic",

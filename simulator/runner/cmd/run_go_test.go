@@ -90,10 +90,13 @@ func TestGoRunner(t *testing.T) {
 			if m.Payload.Outputs[0].PortName != "out" {
 				t.Fatalf("Bad port name wanted out go %s", m.Payload.Outputs[0].PortName)
 			}
-			if value, ok := m.Payload.Outputs[0].Value.(float64); !ok {
-				t.Fatalf("Bad value wanted a float64, got %s", m.Payload.Outputs[0].Value)
-			} else {
-				t.Logf("Value is %f", value)
+			// GoSender emits a JSON object, which must survive the gRPC/Kafka round trip.
+			payload, ok := m.Payload.Outputs[0].Value.(map[string]any)
+			if !ok {
+				return fmt.Errorf("expected an output object, got %T: %v", m.Payload.Outputs[0].Value, m.Payload.Outputs[0].Value)
+			}
+			if value, ok := payload["value"].(float64); !ok || value != 5 {
+				return fmt.Errorf("expected output value 5, got %v", payload["value"])
 			}
 			t.Log("send simulation terminate")
 			simulationDoneMsg := baseMessage.NewKafkaMessageSimulationTerminate(kafka.KafkaMessageSimulationTerminateParams{

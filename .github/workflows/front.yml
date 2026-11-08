@@ -5,10 +5,12 @@ on:
     branches: ["main"]
     paths:
       - "front/**"
+      - ".github/workflows/front.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "front/**"
+      - ".github/workflows/front.yml"
 
 env:
   PNPM_VERSION: "10.6.5"
@@ -42,3 +44,9 @@ jobs:
       - name: Biome check
         working-directory: ./front
         run: pnpm biome check --diagnostic-level=error
+      - name: Tests
+        working-directory: ./front
+        run: pnpm test
+      - name: Production build
+        working-directory: ./front
+        run: pnpm run build

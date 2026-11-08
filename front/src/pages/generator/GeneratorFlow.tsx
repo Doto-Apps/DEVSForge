@@ -1,5 +1,6 @@
-import { useWorkbench, useWorkbenchState } from "@/providers/WorkbenchProvider";
 import { StructureConversation } from "@/components/custom/generate/StructureConversation";
+import { useWorkbench, useWorkbenchState } from "@/providers/WorkbenchProvider";
+
 ("use client");
 
 import {
@@ -8,8 +9,8 @@ import {
 	Code2,
 	FileText,
 	Loader2,
-	Save,
 	Network,
+	Save,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
@@ -155,8 +156,8 @@ export function GeneratorFlow() {
 
 	const handleRegenerateStructure = () =>
 		toast({
-			title: "Refine the structure",
 			description: "Use Discuss structure to request and review a correction.",
+			title: "Refine the structure",
 		});
 
 	const handleDiagramChange = (updatedDiagram: GeneratedDiagram) => {
@@ -180,10 +181,10 @@ export function GeneratorFlow() {
 							...m,
 							code,
 							codeGenerated: true,
-							needsRevalidation: false,
-							language,
 							integrationId,
 							integrationVersion,
+							language,
+							needsRevalidation: false,
 						}
 					: m,
 			);
@@ -236,8 +237,8 @@ export function GeneratorFlow() {
 			);
 		if (issues.length) {
 			toast({
-				title: "Invalid structure",
 				description: issues.join("; "),
+				title: "Invalid structure",
 				variant: "destructive",
 			});
 			return;
@@ -404,10 +405,10 @@ export function GeneratorFlow() {
 			<div className="flex shrink-0 items-center gap-4 overflow-x-auto border-b px-4 py-3 lg:px-6">
 				{phase !== "prompt" && (
 					<Button
+						className="h-7 shrink-0 px-2"
 						onClick={handleGoBack}
 						size="sm"
 						variant="ghost"
-						className="h-7 shrink-0 px-2"
 					>
 						<ArrowLeft className="size-3.5" />
 						Back
@@ -419,9 +420,9 @@ export function GeneratorFlow() {
 				>
 					{phaseSteps.map((step, index) => (
 						<li
-							key={step.id}
 							aria-current={index === currentPhaseIndex ? "step" : undefined}
 							className={`flex shrink-0 items-center gap-2 ${index === currentPhaseIndex ? "font-medium text-foreground" : "text-muted-foreground"}`}
+							key={step.id}
 						>
 							<span className="font-mono text-[10px]">
 								{index < currentPhaseIndex ? (
@@ -437,12 +438,12 @@ export function GeneratorFlow() {
 				{diagram && (
 					<Button
 						className="ml-auto h-7 shrink-0"
-						size="sm"
-						variant="outline"
 						disabled={isGeneratingDiagram || isSaving}
 						onClick={() =>
 							setPhase(phase === "prompt" ? "structure" : "prompt")
 						}
+						size="sm"
+						variant="outline"
 					>
 						{phase === "prompt" ? "Resume structure" : "New generation"}
 					</Button>
@@ -476,15 +477,15 @@ export function GeneratorFlow() {
 						conversation={
 							<StructureConversation
 								conversationKey="generator"
-								initialPrompt={userPrompt}
 								diagram={diagram}
-								onChange={setDiagram}
 								errorMessage={diagramError}
+								initialPrompt={userPrompt}
+								onChange={setDiagram}
 								onGenerate={(prompt, pastMessages) =>
 									generateDiagram({
 										diagramName,
-										userPrompt: prompt,
 										pastMessages,
+										userPrompt: prompt,
 									})
 								}
 							/>

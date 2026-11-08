@@ -95,10 +95,10 @@ export function NavActions({
 		<div className="flex items-center gap-2 text-sm">
 			{validateFunction && (
 				<Button
+					aria-label="Validate"
 					className="size-7 xl:w-auto xl:px-2"
 					onClick={validateFunction}
 					size="icon"
-					aria-label="Validate"
 					title="Validate"
 				>
 					<ShieldCheck />
@@ -107,10 +107,10 @@ export function NavActions({
 			)}
 			{deployFunction && (
 				<Button
+					aria-label="Deploy"
 					className="size-7 xl:w-auto xl:px-2"
 					onClick={deployFunction}
 					size="icon"
-					aria-label="Deploy"
 					title="Deploy"
 				>
 					<MonitorPlay />
@@ -119,10 +119,10 @@ export function NavActions({
 			)}
 			{simulateFunction && (
 				<Button
+					aria-label="Simulate"
 					className="size-7 xl:w-auto xl:px-2"
 					onClick={simulateFunction}
 					size="icon"
-					aria-label="Simulate"
 					title="Simulate"
 				>
 					<Play />
@@ -131,10 +131,10 @@ export function NavActions({
 			)}
 			{saveFunction && (
 				<Button
+					aria-label="Save"
 					className="size-7 xl:w-auto xl:px-2"
 					onClick={saveFunction}
 					size="icon"
-					aria-label="Save"
 					title="Save"
 				>
 					<Save />
@@ -146,9 +146,9 @@ export function NavActions({
 				<PopoverTrigger asChild>
 					<Button
 						aria-label="More actions"
-						title="More actions"
 						className="size-7 data-[state=open]:bg-accent"
 						size="icon"
+						title="More actions"
 						variant="ghost"
 					>
 						<MoreHorizontal />

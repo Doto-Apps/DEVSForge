@@ -1,16 +1,16 @@
 import {
 	createContext,
+	type ReactNode,
 	useCallback,
 	useContext,
 	useEffect,
 	useRef,
 	useState,
-	type ReactNode,
 } from "react";
 import { v4 as uuid } from "uuid";
 import { client } from "@/api/client";
-import { useAuth } from "@/providers/AuthProvider";
 import { reactflowToModel } from "@/lib/reactflowToModel";
+import { useAuth } from "@/providers/AuthProvider";
 import type { ReactFlowInput } from "@/types";
 
 type Tab = {
@@ -45,8 +45,8 @@ const Context = createContext<Workbench | undefined>(undefined);
 const signature = (graph: ReactFlowInput) =>
 	JSON.stringify({
 		...graph,
-		viewport: undefined,
 		nodes: graph.nodes.map(({ selected, dragging, ...node }) => node),
+		viewport: undefined,
 	});
 // Nested models are read-only references. Refresh their colors without replacing
 // the tab's draft, layout, selection or undo history with the server snapshot.
@@ -124,7 +124,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 	const account = user?.email ?? "";
 	const [id] = useState(() => uuid());
 	const [ready, setReady] = useState(false);
-	const [snapshot, setSnapshot] = useState<Snapshot>({ tabs: [], drafts: {} });
+	const [snapshot, setSnapshot] = useState<Snapshot>({ drafts: {}, tabs: [] });
 	const state = useRef(snapshot);
 	state.current = snapshot;
 	const [storageError, setStorageError] = useState<string>();
@@ -138,7 +138,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 		const pointer = `devsforge-workbench:${account}`;
 		const previous = sessionStorage.getItem(pointer);
 		setReady(false);
-		setSnapshot({ tabs: [], drafts: {} });
+		setSnapshot({ drafts: {}, tabs: [] });
 		(async () => {
 			// Let StrictMode finish its rehearsal before publishing the recovery pointer.
 			await Promise.resolve();
@@ -196,8 +196,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		if (!ready || !account) return;
 		const persisted = {
-			tabs: snapshot.tabs.map((t) => ({ ...t, past: [], future: [] })),
 			drafts: snapshot.drafts,
+			tabs: snapshot.tabs.map((t) => ({ ...t, future: [], past: [] })),
 		};
 		void write(key, persisted).catch(() =>
 			setStorageError(
@@ -240,8 +240,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 								{
 									...tab,
 									baseline: signature(tab.draft),
-									past: [],
 									future: [],
+									past: [],
 								},
 							],
 						},
@@ -261,14 +261,14 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 						? t
 						: {
 								...t,
+								draft: graph,
+								future: signature(graph) === signature(t.draft) ? t.future : [],
 								name:
 									graph.nodes.find((n) => n.id === tabId)?.data.label ?? t.name,
-								draft: graph,
 								past:
 									signature(graph) !== signature(t.draft) && push
 										? [...t.past, t.draft].slice(-100)
 										: t.past,
-								future: signature(graph) === signature(t.draft) ? t.future : [],
 							},
 				),
 			}));
@@ -287,8 +287,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 					return {
 						...t,
 						draft: next,
-						past: redo ? [...t.past, t.draft] : t.past.slice(0, -1),
 						future: redo ? t.future.slice(0, -1) : [...t.future, t.draft],
+						past: redo ? [...t.past, t.draft] : t.past.slice(0, -1),
 					};
 				}),
 			})),
@@ -302,8 +302,8 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 			const body = reactflowToModel(sent).find((m) => m.id === tabId);
 			if (!body) throw new Error("Model not found in diagram");
 			const { data, error } = await client.PATCH("/model/{id}", {
-				params: { path: { id: tabId } },
 				body,
+				params: { path: { id: tabId } },
 			});
 			if (error || !data)
 				throw new Error(
@@ -377,19 +377,19 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 	return (
 		<Context.Provider
 			value={{
-				id,
-				ready,
-				tabs: snapshot.tabs,
-				open,
-				update,
-				undo,
-				save,
-				remove,
-				reorder,
 				dirty: (t) => signature(t.draft) !== t.baseline,
 				drafts: snapshot.drafts,
+				id,
+				open,
+				ready,
+				remove,
+				reorder,
+				save,
 				setDraft,
 				storageError,
+				tabs: snapshot.tabs,
+				undo,
+				update,
 			}}
 		>
 			{children}

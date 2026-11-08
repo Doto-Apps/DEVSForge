@@ -4,14 +4,7 @@ import { defineConfig } from "vite";
 
 export default defineConfig({
 	envDir: path.resolve(__dirname, ".."),
-	plugins: [react()],
-	worker: { format: "es" },
 	optimizeDeps: {
-		include: [
-			"vscode-languageclient/browser.js",
-			"vscode-jsonrpc",
-			"vscode-ws-jsonrpc",
-		],
 		exclude: [
 			"monaco-languageclient",
 			"@codingame",
@@ -21,14 +14,21 @@ export default defineConfig({
 			"vscode",
 			"monaco-editor",
 		],
+		include: [
+			"vscode-languageclient/browser.js",
+			"vscode-jsonrpc",
+			"vscode-ws-jsonrpc",
+		],
 	},
+	plugins: [react()],
 	resolve: {
 		alias: {
+			"@": path.resolve(__dirname, "./src"),
 			"@codingame/monaco-vscode-api/vscode": path.resolve(
 				__dirname,
 				"node_modules/@codingame/monaco-vscode-api/vscode/src",
 			),
-			"@": path.resolve(__dirname, "./src"),
 		},
 	},
+	worker: { format: "es" },
 });

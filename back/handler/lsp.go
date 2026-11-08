@@ -113,7 +113,7 @@ func createLSPSession(c *fiber.Ctx) error {
 	if err != nil {
 		return SendRequestError(c, 503, fmt.Errorf("language service unavailable"))
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode != 201 {
 		data, _ := io.ReadAll(io.LimitReader(res.Body, 4096))
 		return c.Status(res.StatusCode).JSON(fiber.Map{"error": strings.TrimSpace(string(data))})
@@ -153,7 +153,7 @@ func deleteLSPSession(c *fiber.Ctx) error {
 	if err != nil {
 		return SendRequestError(c, 503, err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode == http.StatusNotFound {
 		return c.SendStatus(fiber.StatusNoContent)
 	}
@@ -173,7 +173,7 @@ func getLSPFile(c *fiber.Ctx) error {
 	if err != nil {
 		return SendRequestError(c, 503, err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	body, err := io.ReadAll(io.LimitReader(res.Body, 2*1024*1024))
 	if err != nil {
 		return SendRequestError(c, 502, err)
@@ -215,7 +215,7 @@ func renewLSPConnections(c *fiber.Ctx) error {
 	if err != nil {
 		return SendRequestError(c, 503, err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	if res.StatusCode != 200 {
 		return c.SendStatus(res.StatusCode)
 	}
@@ -231,7 +231,7 @@ func proxyLSPWorkspace(c *fiber.Ctx, method, path string) error {
 	if err != nil {
 		return SendRequestError(c, 503, err)
 	}
-	defer res.Body.Close()
+	defer func() { _ = res.Body.Close() }()
 	data, err := io.ReadAll(io.LimitReader(res.Body, 4096))
 	if err != nil {
 		return SendRequestError(c, 502, err)
@@ -279,8 +279,8 @@ func SetupLSPRoutes(app *fiber.App) {
 			return
 		}
 		downstream := client.Conn
-		defer upstream.Close()
-		defer downstream.Close()
+		defer func() { _ = upstream.Close() }()
+		defer func() { _ = downstream.Close() }()
 		downstream.SetReadLimit(2 * 1024 * 1024)
 		upstream.SetReadLimit(4 * 1024 * 1024)
 		done := make(chan struct{})

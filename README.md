@@ -37,6 +37,7 @@ Prepare release env:
 
 ```bash
 cp .env.dist .env
+python3 scripts/ensure-lsp-env.py
 ```
 
 Pull and run:
@@ -63,6 +64,9 @@ docker compose down
 Use this mode when actively developing frontend/backend.
 
 Install `task` command: <https://taskfile.dev/docs/installation#install-script>
+
+Local Go tools must use Go **1.26.2 or newer**, as required by `go.work` and the module files. Docker and CI already use Go 1.26.2.
+If VS Code reports `go.work requires go >= 1.26.2` while the terminal works, select the matching SDK with **Go: Choose Go Environment**, then run **Go: Restart Language Server**. The editor may still be using an older Go installation despite the terminal's automatic toolchain selection.
 
 Run `task setup` to install git hooks
 

@@ -100,15 +100,26 @@ jobs:
           version: ${{ env.GOLANGCI_LINT_VERSION }}
           working-directory: ./simulator/shared
 
+  test-shared:
+    needs: changes
+    if: needs.changes.outputs.shared == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache: true
+      - run: go test ./simulator/shared/...
+
   build-sim:
     name: build simulator
-    needs: [lint-coordinator, lint-runner]
+    needs: [lint-coordinator, lint-runner, lint-shared]
     if: |
-      always() && (
+      !cancelled() && !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && (
         needs.lint-coordinator.result == 'success' ||
         needs.lint-runner.result == 'success' ||
-        needs.lint-coordinator.result == 'skipped' ||
-        needs.lint-runner.result == 'skipped'
+        needs.lint-shared.result == 'success'
       )
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -132,6 +143,7 @@ jobs:
 
   test:
     needs: build-sim
+    if: ${{ !cancelled() && needs.build-sim.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -165,17 +177,18 @@ jobs:
       - name: Run Tests
         # This docker in docker is needed because runner need different languages
         run: |
-          docker run --rm \
+          docker run --rm --init \
             --network host \
             -v /var/run/docker.sock:/var/run/docker.sock \
             -v ${{ github.workspace }}:/app \
             -w /app \
             devsforge-test-runner:latest \
-            go test -v ./simulator/runner/...
+            go test -v ./simulator/runner/... ./simulator/coordinator/... -timeout 10m
 
 
   test-lsp:
     needs: build-sim
+    if: ${{ !cancelled() && needs.build-sim.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

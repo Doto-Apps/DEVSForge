@@ -4,6 +4,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"sync"
 	"testing"
 )
 
@@ -56,32 +57,24 @@ func TestInitLogger(t *testing.T) {
 }
 
 func TestDefaultConfig(t *testing.T) {
-	// Save original LOG_DIR
-	originalLogDir := os.Getenv("LOG_DIR")
-	defer func() {
-		if err := os.Setenv("LOG_DIR", originalLogDir); err != nil {
-			t.Error("Cannot set LOG_DIR env", err)
-		}
-	}()
-
-	// Test with default
-	if err := os.Unsetenv("LOG_DIR"); err != nil {
-		t.Error("Cannot unset LOG_DIR env", err)
-	}
-
-	cfg := DefaultConfig("test-sim")
-	if cfg.LogDir != "logs" {
-		t.Errorf("Expected LogDir to be 'logs', got: %s", cfg.LogDir)
-	}
-
-	// Test with custom LOG_DIR
-	if err := os.Setenv("LOG_DIR", "/custom/logs"); err != nil {
-		t.Error("Cannot set LOG_DIR env", err)
-	}
-
-	cfg = DefaultConfig("test-sim")
-	if cfg.LogDir != "/custom/logs" {
-		t.Errorf("Expected LogDir to be '/custom/logs', got: %s", cfg.LogDir)
+	for _, tt := range []struct{ name, dir, want string }{
+		{"default", "", "/tmp/devsforge-logs/"},
+		{"custom", "/custom/logs", "/custom/logs"},
+	} {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Setenv("LOG_DIR", tt.dir)
+			// Configuration is loaded once per process. Isolate each startup case.
+			once, instance = sync.Once{}, nil
+			t.Cleanup(func() { once, instance = sync.Once{}, nil })
+			cfg := DefaultConfig("test-sim")
+			if cfg.LogDir != tt.want {
+				t.Errorf("Expected LogDir %q, got %q", tt.want, cfg.LogDir)
+			}
+			t.Setenv("LOG_DIR", "/changed/after/startup")
+			if DefaultConfig("test-sim").LogDir != tt.want {
+				t.Error("configuration changed after initialization")
+			}
+		})
 	}
 }
 

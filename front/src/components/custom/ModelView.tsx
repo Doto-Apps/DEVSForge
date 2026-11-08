@@ -2,8 +2,8 @@ import {
 	Background,
 	ConnectionMode,
 	ReactFlow,
-	StepEdge,
 	ReactFlowProvider,
+	StepEdge,
 	useNodesInitialized,
 	useReactFlow,
 } from "@xyflow/react";
@@ -59,8 +59,8 @@ function PreviewNode(props: ComponentProps<typeof ModelNode>) {
 const nodeTypes = { resizer: PreviewNode };
 
 const edgeTypes = {
-	custom: StepEdge, // Compatibility with previously recovered generator drafts.
 	bidirectional: BiDirectionalEdge,
+	custom: StepEdge, // Compatibility with previously recovered generator drafts.
 };
 
 const defaultEdgeOptions = {
@@ -81,12 +81,12 @@ function PreviewViewport({ focusId }: { focusId?: string }) {
 	useEffect(() => {
 		if (!ready) return;
 		void fitView({
-			nodes: focusId ? [{ id: focusId }] : undefined,
-			maxZoom: 0.9,
-			padding: 0.12,
 			duration: window.matchMedia("(prefers-reduced-motion: reduce)").matches
 				? 0
 				: 200,
+			maxZoom: 0.9,
+			nodes: focusId ? [{ id: focusId }] : undefined,
+			padding: 0.12,
 		});
 	}, [ready, focusId, fitView]);
 	return null;
@@ -100,22 +100,22 @@ export function ModelView({ models, onInspect, focusId }: Props) {
 		<div className="h-full w-full flex flex-col">
 			<ReactFlowProvider>
 				<ReactFlow
-					nodesDraggable={false}
-					elementsSelectable={false}
-					nodesConnectable={false}
-					deleteKeyCode={null}
-					zoomOnScroll={false}
-					preventScrolling={false}
-					onNodeClick={(_, node) => onInspect?.(node.data.id)}
 					connectionMode={ConnectionMode.Loose}
 					defaultEdgeOptions={defaultEdgeOptions}
+					deleteKeyCode={null}
 					edges={edges}
 					edgeTypes={edgeTypes}
+					elementsSelectable={false}
 					fitView
 					fitViewOptions={{ maxZoom: 0.9, padding: 0.12 }}
 					minZoom={0.1}
 					nodes={nodes}
+					nodesConnectable={false}
+					nodesDraggable={false}
 					nodeTypes={nodeTypes}
+					onNodeClick={(_, node) => onInspect?.(node.data.id)}
+					preventScrolling={false}
+					zoomOnScroll={false}
 				>
 					<PreviewViewport focusId={focusId} />
 					<Background />

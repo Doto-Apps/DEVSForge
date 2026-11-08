@@ -1,7 +1,7 @@
-import { useOptionalWorkbench } from "@/providers/WorkbenchProvider";
-import { useEffect, useRef, useState } from "react";
 import type * as Monaco from "monaco-editor";
+import { useEffect, useRef, useState } from "react";
 import type { EditorSession } from "@/lib/lsp/client";
+import { useOptionalWorkbench } from "@/providers/WorkbenchProvider";
 
 const viewStates = new Map<string, Monaco.editor.ICodeEditorViewState>();
 
@@ -71,13 +71,13 @@ export const ModelCodeEditor = ({
 			try {
 				connection = await runtime.connectEditor(
 					{
-						modelId: draft ? undefined : modelId,
-						workbenchId: scope,
+						code: main.current?.getValue() ?? current.current.code,
 						documentId: draft ? `draft:${draftKey ?? modelId}` : modelId,
 						integrationId,
 						integrationVersion,
+						modelId: draft ? undefined : modelId,
 						modelName: modelName ?? "MyModel",
-						code: main.current?.getValue() ?? current.current.code,
+						workbenchId: scope,
 					},
 					async (model) => {
 						const active = editor.current;
@@ -157,10 +157,10 @@ export const ModelCodeEditor = ({
 				);
 
 				editor.current = module.monaco.editor.create(host.current, {
-					model: main.current,
 					automaticLayout: true,
 					fontSize: 14,
 					minimap: { enabled: false },
+					model: main.current,
 					scrollBeyondLastLine: false,
 					theme: "vs-dark",
 				});
@@ -219,12 +219,12 @@ export const ModelCodeEditor = ({
 	return (
 		<div className="h-full min-h-0 flex flex-col overflow-hidden">
 			{status && (
-				<div role="status" className="text-xs text-muted-foreground px-2 py-1">
+				<div className="text-xs text-muted-foreground px-2 py-1" role="status">
 					{status}{" "}
 					<button
-						type="button"
 						className="underline"
 						onClick={() => setAttempt((v) => v + 1)}
+						type="button"
 					>
 						Retry
 					</button>
@@ -232,7 +232,6 @@ export const ModelCodeEditor = ({
 			)}
 			{source && (
 				<button
-					type="button"
 					className="text-xs text-left px-2 py-1"
 					onClick={() => {
 						if (editor.current && main.current) {
@@ -241,6 +240,7 @@ export const ModelCodeEditor = ({
 							setSource(false);
 						}
 					}}
+					type="button"
 				>
 					← Return to model (library source is read-only)
 				</button>

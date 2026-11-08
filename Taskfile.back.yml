@@ -26,6 +26,7 @@ tasks:
       - go run github.com/swaggo/swag/cmd/swag@v1.16.6 init --parseDependency
       - npx swagger2openapi -o ./docs/openapi.json ./docs/swagger.json
       - npx openapi-typescript ./docs/openapi.json -o ../front/src/api/v1.d.ts
+      - pnpm --dir ../front exec biome check --write src/api/v1.d.ts --diagnostic-level=error
 
   dev:
     desc: Start with Docker Compose back + simulator

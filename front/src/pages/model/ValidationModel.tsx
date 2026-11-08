@@ -1,8 +1,3 @@
-import { useWorkbenchState } from "@/providers/WorkbenchProvider";
-import {
-	StructureConversation,
-	structureContext,
-} from "@/components/custom/generate/StructureConversation";
 import {
 	CheckCircle2,
 	GaugeCircle,
@@ -16,12 +11,16 @@ import { useCallback, useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
+import { Dictation } from "@/components/custom/Dictation";
 import {
 	CodeGenerationPanel,
 	StructureEditor,
 } from "@/components/custom/generate";
+import {
+	StructureConversation,
+	structureContext,
+} from "@/components/custom/generate/StructureConversation";
 import NavHeader from "@/components/nav/nav-header";
-import { Dictation } from "@/components/custom/Dictation";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -41,6 +40,7 @@ import {
 	validateGeneratedMutConnections,
 	validateGeneratedStructure,
 } from "@/lib/llmToReactFlow";
+import { useWorkbenchState } from "@/providers/WorkbenchProvider";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetExperimentalFramesByModel } from "@/queries/model/useGetExperimentalFramesByModel";
 import { useGetModelById } from "@/queries/model/useGetModelById";
@@ -348,8 +348,8 @@ export function ValidationModel() {
 
 	const handleRegenerateWithAI = () =>
 		toast({
-			title: "Refine the structure",
 			description: "Use Discuss structure to review an AI correction.",
+			title: "Refine the structure",
 		});
 
 	const handleAICodeGenerated = useCallback(
@@ -370,10 +370,10 @@ export function ValidationModel() {
 									...model,
 									code,
 									codeGenerated: true,
-									needsRevalidation: false,
-									language,
 									integrationId,
 									integrationVersion,
+									language,
+									needsRevalidation: false,
 								}
 							: model,
 					),
@@ -460,11 +460,11 @@ export function ValidationModel() {
 			const payload: components["schemas"]["request.ExperimentalFrameRequest"] =
 				{
 					connections: aiDiagram.connections.map((connection) => ({
-						owner: connection.owner,
 						from: {
 							model: connection.from?.model ?? "",
 							port: connection.from?.port ?? "",
 						},
+						owner: connection.owner,
 						to: {
 							model: connection.to?.model ?? "",
 							port: connection.to?.port ?? "",
@@ -596,10 +596,10 @@ export function ValidationModel() {
 							value={aiPrompt}
 						/>
 						<Dictation
-							key={modelId}
-							value={aiPrompt}
-							onChange={setAiPrompt}
 							disabled={isGeneratingAIStructure}
+							key={modelId}
+							onChange={setAiPrompt}
+							value={aiPrompt}
 						/>
 						{aiError && (
 							<Alert variant="destructive">AI error: {aiError}</Alert>
@@ -646,17 +646,17 @@ export function ValidationModel() {
 									conversation={
 										<StructureConversation
 											conversationKey={`ef:${modelId}`}
-											initialPrompt={initialAiPrompt || aiPrompt}
 											diagram={aiDiagram}
-											onChange={setAiDiagram}
 											errorMessage={aiError}
+											initialPrompt={initialAiPrompt || aiPrompt}
+											onChange={setAiDiagram}
 											onGenerate={async (userPrompt, pastMessages) => {
 												if (!modelId || !targetModel) return null;
 												const result = await generateEFStructure({
-													targetModelId: modelId,
-													roomName: aiDiagram.name,
-													userPrompt,
 													pastMessages,
+													roomName: aiDiagram.name,
+													targetModelId: modelId,
+													userPrompt,
 												});
 												if (!result) return null;
 												const normalized = replaceGeneratedMutPlaceholder(

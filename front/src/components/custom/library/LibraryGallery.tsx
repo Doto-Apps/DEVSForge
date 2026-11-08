@@ -44,7 +44,7 @@ function LibrarySheet({
 	);
 	const graph = useMemo(
 		() =>
-			visible ? libraryPreview(displayed, allModels) : { nodes: [], edges: [] },
+			visible ? libraryPreview(displayed, allModels) : { edges: [], nodes: [] },
 		[displayed, allModels, visible],
 	);
 	const selected =
@@ -59,11 +59,11 @@ function LibrarySheet({
 	}, []);
 	return (
 		<section
-			className="min-w-0 overflow-hidden rounded-lg border bg-background"
 			aria-label={`${title} library`}
+			className="min-w-0 overflow-hidden rounded-lg border bg-background"
 		>
 			<header className="flex items-center gap-3 px-4 py-3">
-				<Folder size={17} className="shrink-0 text-muted-foreground" />
+				<Folder className="shrink-0 text-muted-foreground" size={17} />
 				<div className="min-w-0 flex-1">
 					<Link
 						className="block truncate font-medium hover:underline"
@@ -75,16 +75,16 @@ function LibrarySheet({
 						{description || `${models.length} model definitions`}
 					</p>
 				</div>
-				<Button asChild size="icon" variant="ghost" className="size-8">
+				<Button asChild className="size-8" size="icon" variant="ghost">
 					<Link
-						to={`/library/${id}/model/new`}
 						aria-label={`Add model to ${title}`}
+						to={`/library/${id}/model/new`}
 					>
 						<Plus size={16} />
 					</Link>
 				</Button>
 			</header>
-			<div ref={container} className="relative h-72 bg-muted/20 sm:h-80">
+			<div className="relative h-72 bg-muted/20 sm:h-80" ref={container}>
 				{graph.nodes.some((node) =>
 					node.data.description.startsWith("Some components are unavailable"),
 				) && (
@@ -95,10 +95,10 @@ function LibrarySheet({
 				)}
 				{focusId && (
 					<Button
-						variant="secondary"
-						size="sm"
 						className="absolute right-2 top-2 z-10 h-7 text-xs"
 						onClick={() => setFocusId(undefined)}
+						size="sm"
+						variant="secondary"
 					>
 						Show all
 					</Button>
@@ -106,10 +106,10 @@ function LibrarySheet({
 				{models.length ? (
 					visible ? (
 						<ModelView
+							focusId={focusId}
 							key={displayed.map((m) => m.id).join(":")}
 							models={graph}
 							onInspect={setSelectedId}
-							focusId={focusId}
 						/>
 					) : (
 						<Skeleton className="h-full w-full" />
@@ -117,7 +117,7 @@ function LibrarySheet({
 				) : (
 					<div className="flex h-full flex-col items-center justify-center gap-3 text-sm text-muted-foreground">
 						<p>This library is an empty canvas.</p>
-						<Button asChild variant="outline" size="sm">
+						<Button asChild size="sm" variant="outline">
 							<Link to={`/library/${id}/model/new`}>Add your first model</Link>
 						</Button>
 					</div>
@@ -127,13 +127,10 @@ function LibrarySheet({
 				<div className="flex min-w-0 flex-1 flex-wrap gap-1">
 					{displayed.map((model) => (
 						<button
-							type="button"
+							aria-pressed={selected?.id === model.id}
+							className={`max-w-36 truncate rounded px-2 py-1 text-xs transition-colors ${selected?.id === model.id ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
 							key={model.id}
 							onClick={() => {
-								setSelectedId(model.id);
-								setFocusId(`${model.id}::${model.id}`);
-							}}
-							onMouseEnter={() => {
 								setSelectedId(model.id);
 								setFocusId(`${model.id}::${model.id}`);
 							}}
@@ -141,8 +138,11 @@ function LibrarySheet({
 								setSelectedId(model.id);
 								setFocusId(`${model.id}::${model.id}`);
 							}}
-							className={`max-w-36 truncate rounded px-2 py-1 text-xs transition-colors ${selected?.id === model.id ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
-							aria-pressed={selected?.id === model.id}
+							onMouseEnter={() => {
+								setSelectedId(model.id);
+								setFocusId(`${model.id}::${model.id}`);
+							}}
+							type="button"
 						>
 							{model.name}
 						</button>
@@ -151,8 +151,7 @@ function LibrarySheet({
 				{pageCount > 1 && (
 					<div className="flex shrink-0 items-center gap-1">
 						<Button
-							variant="ghost"
-							size="icon"
+							aria-label={`Previous models in ${title}`}
 							className="size-7"
 							disabled={currentPage === 0}
 							onClick={() => {
@@ -160,7 +159,8 @@ function LibrarySheet({
 								setSelectedId(undefined);
 								setFocusId(undefined);
 							}}
-							aria-label={`Previous models in ${title}`}
+							size="icon"
+							variant="ghost"
 						>
 							<ChevronLeft size={14} />
 						</Button>
@@ -168,8 +168,7 @@ function LibrarySheet({
 							{currentPage + 1}/{pageCount}
 						</span>
 						<Button
-							variant="ghost"
-							size="icon"
+							aria-label={`Next models in ${title}`}
 							className="size-7"
 							disabled={currentPage === pageCount - 1}
 							onClick={() => {
@@ -177,7 +176,8 @@ function LibrarySheet({
 								setSelectedId(undefined);
 								setFocusId(undefined);
 							}}
-							aria-label={`Next models in ${title}`}
+							size="icon"
+							variant="ghost"
 						>
 							<ChevronRight size={14} />
 						</Button>
@@ -239,26 +239,26 @@ export function LibraryGallery({ libraryId }: { libraryId?: string }) {
 					</p>
 				</div>
 				<Input
-					className="h-8 w-full sm:w-56"
 					aria-label="Find a library or model"
-					placeholder="Find a library or model…"
-					value={search}
+					className="h-8 w-full sm:w-56"
 					onChange={(e) => {
 						setSearch(e.target.value);
 						setPage(0);
 					}}
+					placeholder="Find a library or model…"
+					value={search}
 				/>
 			</div>
 			{librariesQuery.error || modelsQuery.error ? (
-				<div role="alert" className="py-12 text-sm">
+				<div className="py-12 text-sm" role="alert">
 					Collections could not be loaded.{" "}
 					<Button
-						variant="outline"
-						size="sm"
 						onClick={() => {
 							void librariesQuery.mutate();
 							void modelsQuery.mutate();
 						}}
+						size="sm"
+						variant="outline"
 					>
 						Retry
 					</Button>
@@ -275,12 +275,12 @@ export function LibraryGallery({ libraryId }: { libraryId?: string }) {
 						.filter((library) => library.id)
 						.map((library) => (
 							<LibrarySheet
-								key={library.id}
-								id={library.id!}
-								title={library.title ?? "Untitled library"}
-								description={library.description}
-								models={models.filter((model) => model.libId === library.id)}
 								allModels={models}
+								description={library.description}
+								id={library.id!}
+								key={library.id}
+								models={models.filter((model) => model.libId === library.id)}
+								title={library.title ?? "Untitled library"}
 							/>
 						))}
 				</div>
@@ -303,19 +303,19 @@ export function LibraryGallery({ libraryId }: { libraryId?: string }) {
 			{count > 1 && (
 				<div className="flex items-center justify-end gap-3 text-xs">
 					<Button
-						size="sm"
-						variant="outline"
 						disabled={currentPage === 0}
 						onClick={() => setPage(currentPage - 1)}
+						size="sm"
+						variant="outline"
 					>
 						Previous libraries
 					</Button>
 					{currentPage + 1} / {count}
 					<Button
-						size="sm"
-						variant="outline"
 						disabled={currentPage === count - 1}
 						onClick={() => setPage(currentPage + 1)}
+						size="sm"
+						variant="outline"
 					>
 						Next libraries
 					</Button>

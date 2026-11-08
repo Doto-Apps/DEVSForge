@@ -1,29 +1,29 @@
-import * as monaco from "monaco-editor";
 import {
 	createModelReference,
 	deleteFile,
 } from "@codingame/monaco-vscode-api/monaco";
-import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
-import { initServices } from "monaco-languageclient/vscode/services";
-import getFilesServiceOverride from "@codingame/monaco-vscode-files-service-override";
 import getEditorServiceOverride from "@codingame/monaco-vscode-editor-service-override";
+import getFilesServiceOverride from "@codingame/monaco-vscode-files-service-override";
+import * as monaco from "monaco-editor";
+import EditorWorker from "monaco-editor/esm/vs/editor/editor.worker?worker";
 import { MonacoLanguageClient } from "monaco-languageclient";
+import { initServices } from "monaco-languageclient/vscode/services";
+// @ts-expect-error Monaco grammar modules ship without declarations.
+import * as go from "monaco-languages/esm/vs/basic-languages/go/go.js";
+// @ts-expect-error Monaco grammar modules ship without declarations.
+import * as java from "monaco-languages/esm/vs/basic-languages/java/java.js";
+// These imports load only Monarch grammars, not another editor runtime.
+// @ts-expect-error Monaco grammar modules ship without declarations.
+import * as python from "monaco-languages/esm/vs/basic-languages/python/python.js";
+import type { WorkspaceEdit } from "vscode";
 import { CloseAction, ErrorAction } from "vscode-languageclient/browser.js";
 import {
 	toSocket,
 	WebSocketMessageReader,
 	WebSocketMessageWriter,
 } from "vscode-ws-jsonrpc";
-import type { WorkspaceEdit } from "vscode";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
-// These imports load only Monarch grammars, not another editor runtime.
-// @ts-expect-error Monaco grammar modules ship without declarations.
-import * as python from "monaco-languages/esm/vs/basic-languages/python/python.js";
-// @ts-expect-error Monaco grammar modules ship without declarations.
-import * as java from "monaco-languages/esm/vs/basic-languages/java/java.js";
-// @ts-expect-error Monaco grammar modules ship without declarations.
-import * as go from "monaco-languages/esm/vs/basic-languages/go/go.js";
 
 type Session = components["schemas"]["handler.LSPSessionResponse"] & {
 	documentId?: string;
@@ -62,7 +62,7 @@ export function initializeEditor() {
 			},
 		},
 	).then(() => {
-		for (const [id, grammar] of Object.entries({ python, java, go })) {
+		for (const [id, grammar] of Object.entries({ go, java, python })) {
 			monaco.languages.register({ id });
 			monaco.languages.setMonarchTokensProvider(id, grammar.language);
 			monaco.languages.setLanguageConfiguration(id, grammar.conf);
@@ -176,18 +176,18 @@ async function startPool(
 	req: SessionRequest,
 	signal: AbortSignal,
 ): Promise<Pool> {
-	let session = await requestDocument(req, signal);
+	const session = await requestDocument(req, signal);
 	pendingSessions.set(poolKey(req), session);
 	const connections: MonacoLanguageClient[] = [];
 	const engines = new Map<string, MonacoLanguageClient>();
 	const sockets: WebSocket[] = [];
 	const loaded = new Map<string, string>();
 	const pool: Pool = {
-		scope: req.workbenchId ?? "legacy",
-		session,
 		closed: false,
 		models: new Map(),
 		observers: new Set(),
+		scope: req.workbenchId ?? "legacy",
+		session,
 		stop: () => stop(),
 	};
 	archived.add(pool);
@@ -227,10 +227,10 @@ async function startPool(
 	}
 	monaco.editor.setModelLanguage(document, session.language ?? "plaintext");
 	pool.models.set(req.documentId ?? req.modelId ?? "draft", {
-		model: document,
-		reference,
 		documentId: session.documentId ?? "",
+		model: document,
 		modelId: req.modelId ?? req.documentId ?? "",
+		reference,
 	});
 	const disposeDocument = () => {
 		reference.dispose();
@@ -279,9 +279,9 @@ async function startPool(
 			}
 			const name = monaco.Uri.parse(uri).path.split("/").pop() ?? "Source";
 			const alias = monaco.Uri.from({
-				scheme: "inmemory",
 				authority: "devsforge-sources",
 				path: `/${session.id}/${loaded.size}/${name}`,
+				scheme: "inmemory",
 			});
 			const model = monaco.editor.createModel(text, session.language, alias);
 			loaded.set(uri, alias.toString());
@@ -384,30 +384,41 @@ async function startPool(
 			});
 			const transport = toSocket(socket);
 			const languageClient = new MonacoLanguageClient({
-				id: `${session.id}-${engine.id}`,
-				name: `${engine.id} language assistance`,
-				messageTransports: {
-					reader: new WebSocketMessageReader(transport),
-					writer: new WebSocketMessageWriter(transport),
-				},
 				clientOptions: {
-					errorHandler: {
-						error: () => ({ action: ErrorAction.Continue }),
-						closed: () => ({ action: CloseAction.DoNotRestart }),
-					},
 					documentSelector: [
 						{
 							language: session.language,
-							scheme: "file",
 							pattern: `${monaco.Uri.parse(session.workspaceUri ?? "").path}/**`,
+							scheme: "file",
 						},
 					],
-					workspaceFolder: {
-						uri: monaco.Uri.parse(session.workspaceUri ?? ""),
-						name: req.modelName ?? "Model",
-						index: 0,
+					errorHandler: {
+						closed: () => ({ action: CloseAction.DoNotRestart }),
+						error: () => ({ action: ErrorAction.Continue }),
 					},
 					middleware: {
+						provideCodeActions: async (
+							document,
+							range,
+							context,
+							token,
+							next,
+						) => {
+							const actions = await next(document, range, context, token);
+							return actions?.filter((action) => {
+								const command =
+									"command" in action
+										? typeof action.command === "string"
+											? action.command
+											: action.command?.command
+										: undefined;
+								return (
+									(!command ||
+										(engine.allowedCommands ?? []).includes(command)) &&
+									(!("edit" in action) || writable(action.edit))
+								);
+							});
+						},
 						provideDefinition: async (document, position, token, next) => {
 							const result = await next(document, position, token);
 							await loadLocations(result);
@@ -434,30 +445,19 @@ async function startPool(
 							const edit = await next(document, position, name, token);
 							return writable(edit) ? edit : null;
 						},
-						provideCodeActions: async (
-							document,
-							range,
-							context,
-							token,
-							next,
-						) => {
-							const actions = await next(document, range, context, token);
-							return actions?.filter((action) => {
-								const command =
-									"command" in action
-										? typeof action.command === "string"
-											? action.command
-											: action.command?.command
-										: undefined;
-								return (
-									(!command ||
-										(engine.allowedCommands ?? []).includes(command)) &&
-									(!("edit" in action) || writable(action.edit))
-								);
-							});
-						},
+					},
+					workspaceFolder: {
+						index: 0,
+						name: req.modelName ?? "Model",
+						uri: monaco.Uri.parse(session.workspaceUri ?? ""),
 					},
 				},
+				id: `${session.id}-${engine.id}`,
+				messageTransports: {
+					reader: new WebSocketMessageReader(transport),
+					writer: new WebSocketMessageWriter(transport),
+				},
+				name: `${engine.id} language assistance`,
 			});
 			connections.push(languageClient);
 			engines.set(engine.id ?? "", languageClient);
@@ -547,10 +547,10 @@ export async function connectEditor(
 		}
 		monaco.editor.setModelLanguage(model, session.language ?? "plaintext");
 		doc = {
-			model,
-			reference,
 			documentId: session.documentId ?? "",
+			model,
 			modelId: req.modelId ?? req.documentId ?? "",
+			reference,
 		};
 		pool.models.set(docKey, doc);
 	}
@@ -579,11 +579,11 @@ export async function connectEditor(
 		{ once: true },
 	);
 	return {
-		session: pool.session,
-		model: doc.model,
 		disposeDocument: () => {},
-		touch: () => pool.touch?.(),
+		model: doc.model,
+		session: pool.session,
 		stop,
+		touch: () => pool.touch?.(),
 	};
 }
 async function detachEditorDocument(workbenchId: string, modelId: string) {
@@ -605,10 +605,10 @@ async function detachEditorDocument(workbenchId: string, modelId: string) {
 			await fetch(
 				apiURL(`/lsp/sessions/${pool.session.id}/documents/${doc.documentId}`),
 				{
-					method: "DELETE",
 					headers: {
 						Authorization: `Bearer ${localStorage.getItem("accessToken") ?? ""}`,
 					},
+					method: "DELETE",
 				},
 			);
 			doc.reference.dispose();

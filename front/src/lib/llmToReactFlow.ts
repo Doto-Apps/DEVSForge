@@ -61,8 +61,8 @@ export const llmResponseToGeneratedDiagram = (
 		connections: response.connections,
 		models: sortedModels,
 		name: diagramName,
-		validationErrors: response.validationErrors,
 		reactFlowData: undefined,
+		validationErrors: response.validationErrors,
 	};
 };
 
@@ -114,10 +114,10 @@ export const efStructureResponseToGeneratedDiagram = (
 		models: topologicalSort(models),
 		modelUnderTestId: response.modelUnderTestId ?? undefined,
 		name: response.roomName ?? "Room - EF",
-		validationErrors: response.validationErrors,
 		reactFlowData: undefined,
 		rootModelId: response.rootModelId ?? undefined,
 		targetModelId: response.targetModelId ?? undefined,
+		validationErrors: response.validationErrors,
 	};
 };
 
@@ -391,12 +391,12 @@ export const replaceGeneratedMutPlaceholder = (
 			code: targetModel.code ?? "",
 			codeGenerated: Boolean(targetModel.code),
 			components: targetScopedComponents,
-			externalModelId: targetModelID,
 			dependencies: model.dependencies.map(remapModelID),
+			externalModelId: targetModelID,
 			id: targetModelID,
-			language: targetModel.language,
 			integrationId: targetModel.integrationId,
 			integrationVersion: targetModel.integrationVersion,
+			language: targetModel.language,
 			name: targetModel.name ?? model.name,
 			ports: {
 				in: inPorts,
@@ -410,7 +410,6 @@ export const replaceGeneratedMutPlaceholder = (
 	const remappedConnections: components["schemas"]["response.Connection"][] =
 		diagram.connections.map((connection) => ({
 			...connection,
-			owner: connection.owner ? remapModelID(connection.owner) : undefined,
 			from: connection.from
 				? {
 						...connection.from,
@@ -419,6 +418,7 @@ export const replaceGeneratedMutPlaceholder = (
 							: connection.from.model,
 					}
 				: connection.from,
+			owner: connection.owner ? remapModelID(connection.owner) : undefined,
 			to: connection.to
 				? {
 						...connection.to,
@@ -643,7 +643,7 @@ export const generatedDiagramToReactFlow = (
 		index: number,
 		ancestors: Set<string>,
 	): { width: number; height: number } => {
-		if (ancestors.has(model.id)) return { width: 200, height: 200 };
+		if (ancestors.has(model.id)) return { height: 200, width: 200 };
 		const seen = new Set([...ancestors, model.id]);
 		const position = diagram.reactFlowData?.nodes.find((n) => n.id === path)
 			?.position ?? {
@@ -651,32 +651,32 @@ export const generatedDiagramToReactFlow = (
 			y: parentId ? 70 + Math.floor(index / 3) * 280 : 0,
 		};
 		const node = {
-			id: path,
-			type: "resizer",
-			deletable: !model.externalModelId,
-			position,
 			data: {
-				id: model.id,
-				label: model.name,
-				modelType: model.type,
 				code: model.code ?? "",
+				description: "",
+				id: model.id,
+				inputPorts: model.ports.in.map((p) => ({ id: p, name: p })),
 				integrationId: model.integrationId,
 				integrationVersion: model.integrationVersion,
+				keyword: [],
+				label: model.name,
 				language: model.language,
-				inputPorts: model.ports.in.map((p) => ({ id: p, name: p })),
+				modelRole: model.role ?? "",
+				modelType: model.type,
 				outputPorts: model.ports.out.map((p) => ({ id: p, name: p })),
 				parameters: [],
-				description: "",
-				modelRole: model.role ?? "",
-				keyword: [],
 			},
-			selected: false,
+			deletable: !model.externalModelId,
 			dragging: false,
-			width: 200,
 			height: 200,
-			measured: { width: 200, height: 200 },
+			id: path,
+			measured: { height: 200, width: 200 },
+			position,
+			selected: false,
+			type: "resizer",
+			width: 200,
 			...(parentId
-				? { parentId, extent: "parent" as const }
+				? { extent: "parent" as const, parentId }
 				: { deletable: false }),
 		};
 		if (model.externalModelId) node.deletable = false;
@@ -705,7 +705,7 @@ export const generatedDiagramToReactFlow = (
 		}
 		node.width = width;
 		node.height = height;
-		node.measured = { width, height };
+		node.measured = { height, width };
 		for (const [i, c] of diagram.connections.entries()) {
 			if (c.owner !== model.id || !c.from || !c.to) continue;
 			const source =
@@ -717,20 +717,20 @@ export const generatedDiagramToReactFlow = (
 					? path
 					: `${path}/${resolve(c.to.model ?? "")?.id}`;
 			edges.push({
+				data: { holderId: path },
 				id: `${path}:connection:${i}`,
 				source,
-				target,
 				sourceHandle: `${source === path ? INTERNAL_PREFIX : ""}${source}:${c.from.port}`,
+				target,
 				targetHandle: `${target === path ? INTERNAL_PREFIX : ""}${target}:${c.to.port}`,
-				data: { holderId: path },
 				type: "step",
 			});
 		}
-		return { width, height };
+		return { height, width };
 	};
 	for (const [i, root] of roots.entries())
 		expand(root, root.id, undefined, i, new Set());
-	return { nodes, edges };
+	return { edges, nodes };
 };
 
 export const syncGeneratedStructure = (
@@ -749,35 +749,35 @@ export const syncGeneratedStructure = (
 			if (!node) return m;
 			return {
 				...m,
+				components: graph.nodes
+					.filter((n) => n.parentId === node.id)
+					.map((n) => n.data.id),
 				name: node.data.label,
 				ports: {
 					in: (node.data.inputPorts ?? []).map((p) => p.name || p.id),
 					out: (node.data.outputPorts ?? []).map((p) => p.name || p.id),
 				},
-				components: graph.nodes
-					.filter((n) => n.parentId === node.id)
-					.map((n) => n.data.id),
 			};
 		});
 	for (const node of graph.nodes) {
 		if (models.some((m) => m.id === node.data.id)) continue;
 		models.push({
+			code: node.data.code,
+			codeGenerated: !!node.data.code,
+			components: graph.nodes
+				.filter((n) => n.parentId === node.id)
+				.map((n) => n.data.id),
+			dependencies: [],
 			id: node.data.id,
+			integrationId: node.data.integrationId,
+			integrationVersion: node.data.integrationVersion,
+			language: node.data.language,
 			name: node.data.label,
-			type: node.data.modelType,
 			ports: {
 				in: (node.data.inputPorts ?? []).map((p) => p.name || p.id),
 				out: (node.data.outputPorts ?? []).map((p) => p.name || p.id),
 			},
-			components: graph.nodes
-				.filter((n) => n.parentId === node.id)
-				.map((n) => n.data.id),
-			code: node.data.code,
-			codeGenerated: !!node.data.code,
-			dependencies: [],
-			language: node.data.language,
-			integrationId: node.data.integrationId,
-			integrationVersion: node.data.integrationVersion,
+			type: node.data.modelType,
 		});
 	}
 	const connections = [];
@@ -809,11 +809,11 @@ export const syncGeneratedStructure = (
 			return ports?.find((p) => p.id === id)?.name ?? id;
 		};
 		const c = {
-			owner: owner.data.id,
 			from: {
 				model: source.data.id,
 				port: port(source, edge.sourceHandle, source.id === owner.id, "source"),
 			},
+			owner: owner.data.id,
 			to: {
 				model: target.data.id,
 				port: port(target, edge.targetHandle, target.id === owner.id, "target"),
@@ -827,8 +827,8 @@ export const syncGeneratedStructure = (
 	}
 	return {
 		...diagram,
-		models,
 		connections,
+		models,
 		reactFlowData: graph,
 		validationErrors: [],
 	};
@@ -848,10 +848,10 @@ export const mergeStructureProposal = (
 		return {
 			...model,
 			code: previous.code,
-			language: previous.language,
+			codeGenerated: changed ? false : previous.codeGenerated,
 			integrationId: previous.integrationId,
 			integrationVersion: previous.integrationVersion,
-			codeGenerated: changed ? false : previous.codeGenerated,
+			language: previous.language,
 			needsRevalidation: changed || previous.needsRevalidation,
 		};
 	}),
@@ -974,13 +974,13 @@ export const createCoupledModelRequest = (
 								instanceMetadata: {
 									position: occurrence.position,
 									style: {
-										width:
-											occurrence.measured?.width ??
-											occurrence.width ??
-											DEFAULT_NODE_SIZE,
 										height:
 											occurrence.measured?.height ??
 											occurrence.height ??
+											DEFAULT_NODE_SIZE,
+										width:
+											occurrence.measured?.width ??
+											occurrence.width ??
 											DEFAULT_NODE_SIZE,
 									},
 								},

@@ -72,7 +72,7 @@ export function DiagramPromptForm({
 								<FormItem>
 									<FormLabel>System name</FormLabel>
 									<FormControl>
-										<Input placeholder="Home" disabled={isLoading} {...field} />
+										<Input disabled={isLoading} placeholder="Home" {...field} />
 									</FormControl>
 									<FormMessage />
 								</FormItem>
@@ -87,13 +87,12 @@ export function DiagramPromptForm({
 									<FormControl>
 										<Textarea
 											className="min-h-[240px] resize-y text-sm leading-7"
-											placeholder="Which models are atomic or coupled? What belongs inside each coupled model, and which ports are connected?"
 											disabled={isLoading}
+											placeholder="Which models are atomic or coupled? What belongs inside each coupled model, and which ports are connected?"
 											{...field}
 										/>
 									</FormControl>
 									<Dictation
-										value={field.value}
 										disabled={isLoading}
 										onChange={(value) =>
 											form.setValue("prompt", value, {
@@ -101,6 +100,7 @@ export function DiagramPromptForm({
 												shouldValidate: true,
 											})
 										}
+										value={field.value}
 									/>
 									<FormMessage />
 								</FormItem>
@@ -111,7 +111,7 @@ export function DiagramPromptForm({
 								Structure first. Integration and code are reviewed in the next
 								steps.
 							</p>
-							<Button type="submit" disabled={isLoading}>
+							<Button disabled={isLoading} type="submit">
 								{isLoading ? (
 									<Loader2 className="animate-spin" />
 								) : (
@@ -121,7 +121,7 @@ export function DiagramPromptForm({
 							</Button>
 						</div>
 						{isLoading && (
-							<p role="status" className="text-sm text-muted-foreground">
+							<p className="text-sm text-muted-foreground" role="status">
 								Generating components, ports and connections. Your description
 								is kept here while you wait.
 							</p>
@@ -163,9 +163,6 @@ export function DiagramPromptForm({
 							A general switch connects to both lights through the room inputs.
 						</p>
 						<Button
-							type="button"
-							size="sm"
-							variant="outline"
 							disabled={isLoading}
 							onClick={() => {
 								form.setValue("diagramName", "Home", {
@@ -177,13 +174,16 @@ export function DiagramPromptForm({
 									shouldValidate: true,
 								});
 							}}
+							size="sm"
+							type="button"
+							variant="outline"
 						>
 							Use this description
 						</Button>
 					</div>
 					<p className="text-xs leading-6 text-muted-foreground">
 						Generation uses the provider configured in{" "}
-						<Link to="/settings" className="underline underline-offset-4">
+						<Link className="underline underline-offset-4" to="/settings">
 							Settings
 						</Link>
 						. Review each result before saving it to your library.

@@ -30,9 +30,8 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useGenerateModelCode } from "@/hooks/useGenerateModelCode";
+import { integrationKey, useIntegrations } from "@/hooks/useIntegrations";
 import type { CodeGenerationPanelProps, ReuseCandidate } from "@/types";
-
-import { useIntegrations, integrationKey } from "@/hooks/useIntegrations";
 
 const promptSchema = z.object({
 	prompt: z.string().min(5, {
@@ -441,15 +440,15 @@ export function CodeGenerationPanel({
 											/>
 										</FormControl>
 										<Dictation
-											key={selectedModel?.id}
-											value={field.value}
 											disabled={isLoading}
+											key={selectedModel?.id}
 											onChange={(value) =>
 												form.setValue("prompt", value, {
 													shouldDirty: true,
 													shouldValidate: true,
 												})
 											}
+											value={field.value}
 										/>
 										<FormMessage />
 									</FormItem>
@@ -574,7 +573,7 @@ export function CodeGenerationPanel({
 								</Button>
 
 								{currentModel?.needsRevalidation && (
-									<p role="alert" className="text-sm text-amber-600">
+									<p className="text-sm text-amber-600" role="alert">
 										The model interface changed. Review and adapt the existing
 										code before continuing.
 									</p>
@@ -646,14 +645,14 @@ export function CodeGenerationPanel({
 				<div className="flex-1 min-h-0">
 					{isSelectedAtomic && selectedModel?.code ? (
 						<ModelCodeEditor
-							draftKey={`${diagram.targetModelId ?? diagram.name}/${selectedModel?.id}`}
 							code={selectedModel.code}
-							language={selectedModel.language}
+							draft
+							draftKey={`${diagram.targetModelId ?? diagram.name}/${selectedModel?.id}`}
 							integrationId={selectedModel.integrationId}
 							integrationVersion={selectedModel.integrationVersion}
-							modelName={selectedModel.name}
-							draft
+							language={selectedModel.language}
 							modelId={selectedModel.id}
+							modelName={selectedModel.name}
 							onCodeChange={(newCode) =>
 								onCodeChange(selectedModel.id, newCode)
 							}

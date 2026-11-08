@@ -3,8 +3,8 @@ import { Link } from "react-router-dom";
 import {
 	CopyCode,
 	EventWalkthrough,
-	ExecutionMap,
 	ExampleDiagram,
+	ExecutionMap,
 	InterfaceLab,
 	SimulationFigure,
 } from "../LearningExamples";
@@ -24,7 +24,7 @@ function Table({ heads, rows }: { heads: string[]; rows: string[][] }) {
 				<thead>
 					<tr>
 						{heads.map((head) => (
-							<th key={head} className="border-b px-3 py-2 font-medium">
+							<th className="border-b px-3 py-2 font-medium" key={head}>
 								{head}
 							</th>
 						))}
@@ -35,8 +35,8 @@ function Table({ heads, rows }: { heads: string[]; rows: string[][] }) {
 						<tr key={row[0]}>
 							{row.map((cell, i) => (
 								<td
-									key={heads[i]}
 									className="border-b px-3 py-3 align-top text-muted-foreground"
+									key={heads[i]}
 								>
 									{cell}
 								</td>
@@ -53,8 +53,8 @@ function Flow({ steps }: { steps: [string, string][] }) {
 		<ol className="my-6 grid gap-3 sm:grid-cols-2">
 			{steps.map(([title, detail], index) => (
 				<li
-					key={title}
 					className="relative border-l-2 border-foreground/30 bg-muted/20 px-4 py-3"
+					key={title}
 				>
 					<span className="mb-2 block font-mono text-[10px] text-muted-foreground">
 						0{index + 1}
@@ -83,15 +83,10 @@ const docLink = (id: string, text: string) => (
 
 export const chapters: Chapter[] = [
 	{
-		id: "overview",
 		group: "Start here",
-		title: "A model is only the beginning.",
-		summary:
-			"Build behaviors, compose systems, run experiments and inspect the messages that connect them.",
+		id: "overview",
 		sections: [
 			{
-				id: "journey",
-				title: "From a definition to an experiment",
 				content: (
 					<>
 						<p>
@@ -130,10 +125,10 @@ export const chapters: Chapter[] = [
 						/>
 					</>
 				),
+				id: "journey",
+				title: "From a definition to an experiment",
 			},
 			{
-				id: "choose",
-				title: "Find the part you need",
 				content: (
 					<div className="divide-y">
 						{[
@@ -156,9 +151,9 @@ export const chapters: Chapter[] = [
 							],
 						].map(([id, title]) => (
 							<Link
+								className="flex justify-between gap-4 py-3 text-sm hover:text-muted-foreground"
 								key={id}
 								to={`/documentation/${id}`}
-								className="flex justify-between gap-4 py-3 text-sm hover:text-muted-foreground"
 							>
 								{title}
 								<span aria-hidden="true">→</span>
@@ -166,18 +161,18 @@ export const chapters: Chapter[] = [
 						))}
 					</div>
 				),
+				id: "choose",
+				title: "Find the part you need",
 			},
 			{
-				id: "first",
-				title: "Learn by doing",
 				content: (
 					<>
 						<p>
 							The{" "}
 							{
 								<Link
-									to="/getting-started"
 									className="underline underline-offset-4"
+									to="/getting-started"
 								>
 									Getting Started tutorial
 								</Link>
@@ -193,19 +188,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "first",
+				title: "Learn by doing",
 			},
 		],
+		summary:
+			"Build behaviors, compose systems, run experiments and inspect the messages that connect them.",
+		title: "A model is only the beginning.",
 	},
 	{
-		id: "models",
 		group: "Modeling",
-		title: "Atomic models & libraries",
-		summary:
-			"What a definition contains, what your code must implement, and how it becomes reusable.",
+		id: "models",
 		sections: [
 			{
-				id: "definition",
-				title: "The definition is the reusable unit",
 				content: (
 					<>
 						<p>
@@ -245,10 +240,10 @@ export const chapters: Chapter[] = [
 						/>
 					</>
 				),
+				id: "definition",
+				title: "The definition is the reusable unit",
 			},
 			{
-				id: "functions",
-				title: "The atomic lifecycle",
 				content: (
 					<>
 						<Table
@@ -291,10 +286,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "functions",
+				title: "The atomic lifecycle",
 			},
 			{
-				id: "interface",
-				title: "The diagram and the code share an interface",
 				content: (
 					<>
 						<p>
@@ -311,19 +306,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "interface",
+				title: "The diagram and the code share an interface",
 			},
 		],
+		summary:
+			"What a definition contains, what your code must implement, and how it becomes reusable.",
+		title: "Atomic models & libraries",
 	},
 	{
-		id: "composition",
 		group: "Modeling",
-		title: "Composition & hierarchy",
-		summary:
-			"Connect components at the right level, then reuse the whole composition as another component.",
+		id: "composition",
 		sections: [
 			{
-				id: "levels",
-				title: "Every coupled model owns one level",
 				content: (
 					<>
 						<p>
@@ -341,10 +336,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "levels",
+				title: "Every coupled model owns one level",
 			},
 			{
-				id: "connections",
-				title: "Three legal coupling patterns",
 				content: (
 					<>
 						<Table
@@ -380,10 +375,10 @@ export const chapters: Chapter[] = [
 						</Note>
 					</>
 				),
+				id: "connections",
+				title: "Three legal coupling patterns",
 			},
 			{
-				id: "cycles",
-				title: "Feedback is not recursive containment",
 				content: (
 					<>
 						<p>
@@ -405,19 +400,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "cycles",
+				title: "Feedback is not recursive containment",
 			},
 		],
+		summary:
+			"Connect components at the right level, then reuse the whole composition as another component.",
+		title: "Composition & hierarchy",
 	},
 	{
-		id: "instances",
 		group: "Modeling",
-		title: "Definitions, instances & identity",
-		summary:
-			"Reuse the same source without sharing the state of two simulated occurrences.",
+		id: "instances",
 		sections: [
 			{
-				id: "identity",
-				title: "Three identities with different jobs",
 				content: (
 					<>
 						<Table
@@ -448,17 +443,17 @@ export const chapters: Chapter[] = [
 							distinct runtime participants.
 						</p>
 						<CopyCode
-							label="Two occurrences, one definition"
 							code={
 								"Room\n├── switch-left  → Switch definition · period = 1\n└── switch-right → Switch definition · period = 5"
 							}
+							label="Two occurrences, one definition"
 						/>
 					</>
 				),
+				id: "identity",
+				title: "Three identities with different jobs",
 			},
 			{
-				id: "edits",
-				title: "What changes when you edit a definition?",
 				content: (
 					<>
 						<p>
@@ -476,10 +471,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "edits",
+				title: "What changes when you edit a definition?",
 			},
 			{
-				id: "names",
-				title: "Names help humans; paths disambiguate machines",
 				content: (
 					<>
 						<p>
@@ -496,19 +491,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "names",
+				title: "Names help humans; paths disambiguate machines",
 			},
 		],
+		summary:
+			"Reuse the same source without sharing the state of two simulated occurrences.",
+		title: "Definitions, instances & identity",
 	},
 	{
-		id: "parameters",
 		group: "Modeling",
-		title: "Parameters & overrides",
-		summary:
-			"Change a default, an occurrence or a single experiment—with three different scopes.",
+		id: "parameters",
 		sections: [
 			{
-				id: "precedence",
-				title: "The most specific value wins",
 				content: (
 					<>
 						<Flow
@@ -538,10 +533,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "precedence",
+				title: "The most specific value wins",
 			},
 			{
-				id: "editing",
-				title: "Where to edit each scope",
 				content: (
 					<>
 						<Table
@@ -571,17 +566,17 @@ export const chapters: Chapter[] = [
 							code must read it and pass it to the appropriate timing operation.
 						</p>
 						<CopyCode
-							label="Python · read a declared parameter"
 							code={
 								'period = float(self.parameters.get("period", 1.0))\nself.hold_in("ON", period)'
 							}
+							label="Python · read a declared parameter"
 						/>
 					</>
 				),
+				id: "editing",
+				title: "Where to edit each scope",
 			},
 			{
-				id: "experiment",
-				title: "Use overrides to compare experiments",
 				content: (
 					<>
 						<p>
@@ -601,19 +596,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "experiment",
+				title: "Use overrides to compare experiments",
 			},
 		],
+		summary:
+			"Change a default, an occurrence or a single experiment—with three different scopes.",
+		title: "Parameters & overrides",
 	},
 	{
-		id: "parallel-devs",
 		group: "Execution",
-		title: "Parallel DEVS & logical time",
-		summary:
-			"Why outputs happen before transitions, and what happens when several events share a timestamp.",
+		id: "parallel-devs",
 		sections: [
 			{
-				id: "clock",
-				title: "A discrete-event clock",
 				content: (
 					<>
 						<p>
@@ -632,10 +627,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "clock",
+				title: "A discrete-event clock",
 			},
 			{
-				id: "confluence",
-				title: "Simultaneous events are part of the semantics",
 				content: (
 					<>
 						<Table
@@ -661,10 +656,10 @@ export const chapters: Chapter[] = [
 						</Note>
 					</>
 				),
+				id: "confluence",
+				title: "Simultaneous events are part of the semantics",
 			},
 			{
-				id: "termination",
-				title: "Horizon and passivation",
 				content: (
 					<>
 						<p>
@@ -677,10 +672,10 @@ export const chapters: Chapter[] = [
 						<p>
 							A reference for the formalism is the{" "}
 							<a
-								href="https://simulation.tudelft.nl/SEN9110/lectures/04%20VanTendelooVangheluwe_SpringSim2017_DEVSTutorial.pdf"
-								target="_blank"
-								rel="noreferrer"
 								className="underline"
+								href="https://simulation.tudelft.nl/SEN9110/lectures/04%20VanTendelooVangheluwe_SpringSim2017_DEVSTutorial.pdf"
+								rel="noreferrer"
+								target="_blank"
 							>
 								Parallel DEVS tutorial by Van Tendeloo and Vangheluwe
 							</a>
@@ -689,19 +684,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "termination",
+				title: "Horizon and passivation",
 			},
 		],
+		summary:
+			"Why outputs happen before transitions, and what happens when several events share a timestamp.",
+		title: "Parallel DEVS & logical time",
 	},
 	{
-		id: "languages",
 		group: "Execution",
-		title: "One simulation, several languages",
-		summary:
-			"Python, Go and Java keep their own code. A shared execution contract connects them.",
+		id: "languages",
 		sections: [
 			{
-				id: "integration",
-				title: "An integration is more than a language",
 				content: (
 					<>
 						<p>
@@ -721,10 +716,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "integration",
+				title: "An integration is more than a language",
 			},
 			{
-				id: "bridge",
-				title: "The two communication boundaries",
 				content: (
 					<>
 						<ExecutionMap />
@@ -763,10 +758,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "bridge",
+				title: "The two communication boundaries",
 			},
 			{
-				id: "preparation",
-				title: "What happens before the first event",
 				content: (
 					<>
 						<p>
@@ -791,19 +786,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "preparation",
+				title: "What happens before the first event",
 			},
 		],
+		summary:
+			"Python, Go and Java keep their own code. A shared execution contract connects them.",
+		title: "One simulation, several languages",
 	},
 	{
-		id: "protocol",
 		group: "Execution",
-		title: "Messages, Kafka & ISO 21175",
-		summary:
-			"The explicit contract behind distributed simulation—and the limits of transport-level interoperability.",
+		id: "protocol",
 		sections: [
 			{
-				id: "envelope",
-				title: "Identify the run, sender, receiver and time",
 				content: (
 					<>
 						<p>
@@ -814,24 +809,24 @@ export const chapters: Chapter[] = [
 							port.
 						</p>
 						<CopyCode
-							label="Illustrative OutputReport · current application schema"
 							code={JSON.stringify(
 								{
-									messageType: "OutputReport",
-									messageId: "message-42",
-									simulationRunId: "run-1",
-									senderId: "room/switch-1",
-									receiverId: "Coordinator",
 									eventTime: 1,
+									messageId: "message-42",
+									messageType: "OutputReport",
 									nextInternalTime: 2,
 									payload: {
-										outputs: [{ portName: "state", value: { state: "ON" } }],
 										additionalFields: {},
+										outputs: [{ portName: "state", value: { state: "ON" } }],
 									},
+									receiverId: "Coordinator",
+									senderId: "room/switch-1",
+									simulationRunId: "run-1",
 								},
 								null,
 								2,
 							)}
+							label="Illustrative OutputReport · current application schema"
 						/>
 						<p>
 							The recipient is the coordinator in this report. It determines
@@ -840,10 +835,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "envelope",
+				title: "Identify the run, sender, receiver and time",
 			},
 			{
-				id: "lifecycle",
-				title: "A conversation with explicit phases",
 				content: (
 					<Table
 						heads={["Phase", "Messages", "Purpose"]}
@@ -876,18 +871,18 @@ export const chapters: Chapter[] = [
 						]}
 					/>
 				),
+				id: "lifecycle",
+				title: "A conversation with explicit phases",
 			},
 			{
-				id: "standard",
-				title: "How ISO 21175 relates to this project",
 				content: (
 					<>
 						<p>
 							<a
 								className="underline"
-								target="_blank"
-								rel="noreferrer"
 								href="https://www.iso.org/standard/86670.html"
+								rel="noreferrer"
+								target="_blank"
 							>
 								ISO 21175-1:2026
 							</a>{" "}
@@ -920,19 +915,19 @@ export const chapters: Chapter[] = [
 						</Note>
 					</>
 				),
+				id: "standard",
+				title: "How ISO 21175 relates to this project",
 			},
 		],
+		summary:
+			"The explicit contract behind distributed simulation—and the limits of transport-level interoperability.",
+		title: "Messages, Kafka & ISO 21175",
 	},
 	{
-		id: "simulation",
 		group: "Experiments",
-		title: "Configure & run a simulation",
-		summary:
-			"Prepare the saved system, choose a horizon and inspect the first run.",
+		id: "simulation",
 		sections: [
 			{
-				id: "prepare",
-				title: "Before pressing Start",
 				content: (
 					<>
 						<ol className="list-decimal space-y-2 pl-5">
@@ -958,10 +953,10 @@ export const chapters: Chapter[] = [
 						<SimulationFigure />
 					</>
 				),
+				id: "prepare",
+				title: "Before pressing Start",
 			},
 			{
-				id: "manifest",
-				title: "What is prepared from the diagram",
 				content: (
 					<>
 						<p>
@@ -980,10 +975,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "manifest",
+				title: "What is prepared from the diagram",
 			},
 			{
-				id: "control",
-				title: "Know what the controls do",
 				content: (
 					<>
 						<Table
@@ -1013,19 +1008,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "control",
+				title: "Know what the controls do",
 			},
 		],
+		summary:
+			"Prepare the saved system, choose a horizon and inspect the first run.",
+		title: "Configure & run a simulation",
 	},
 	{
-		id: "results",
 		group: "Experiments",
-		title: "Results, JSON export & Grafana",
-		summary:
-			"Read a trace, follow a value across ports, and take the run into your own analysis tools.",
+		id: "results",
 		sections: [
 			{
-				id: "read",
-				title: "Read the trace at the right level",
 				content: (
 					<>
 						<p>
@@ -1063,10 +1058,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "read",
+				title: "Read the trace at the right level",
 			},
 			{
-				id: "export",
-				title: "Preserve the events before clearing the view",
 				content: (
 					<>
 						<p>
@@ -1077,32 +1072,32 @@ export const chapters: Chapter[] = [
 							left visible by your search filter.
 						</p>
 						<CopyCode
-							label="Export shape · current panel"
 							code={JSON.stringify(
 								{
-									modelName: "Switch",
-									simulationStatus: "completed",
 									eventCount: 1,
 									events: [
 										{
-											simulationId: "run-1",
 											createdAt: "2026-01-01T00:00:00Z",
 											message: {
-												messageType: "OutputReport",
-												senderId: "room/switch-1",
 												eventTime: 1,
+												messageType: "OutputReport",
 												payload: {
 													outputs: [
 														{ portName: "state", value: { state: "ON" } },
 													],
 												},
+												senderId: "room/switch-1",
 											},
+											simulationId: "run-1",
 										},
 									],
+									modelName: "Switch",
+									simulationStatus: "completed",
 								},
 								null,
 								2,
 							)}
+							label="Export shape · current panel"
 						/>
 						<p>
 							Keep the source/configuration used for a comparison alongside the
@@ -1111,20 +1106,20 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "export",
+				title: "Preserve the events before clearing the view",
 			},
 			{
-				id: "grafana",
-				title: "Use the export in Grafana",
 				content: (
 					<>
 						<ol className="list-decimal space-y-2 pl-5">
 							<li>
 								Install the{" "}
 								<a
-									href="https://grafana.com/docs/plugins/yesoreyeram-infinity-datasource/latest/"
 									className="underline"
-									target="_blank"
+									href="https://grafana.com/docs/plugins/yesoreyeram-infinity-datasource/latest/"
 									rel="noreferrer"
+									target="_blank"
 								>
 									Grafana Infinity data source
 								</a>{" "}
@@ -1158,9 +1153,9 @@ export const chapters: Chapter[] = [
 							automatically provision Grafana or push a live stream into it. The{" "}
 							<a
 								className="underline"
-								target="_blank"
-								rel="noreferrer"
 								href="https://grafana.com/docs/plugins/yesoreyeram-infinity-datasource/latest/query/"
+								rel="noreferrer"
+								target="_blank"
 							>
 								Infinity query editor documentation
 							</a>{" "}
@@ -1170,19 +1165,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "grafana",
+				title: "Use the export in Grafana",
 			},
 		],
+		summary:
+			"Read a trace, follow a value across ports, and take the run into your own analysis tools.",
+		title: "Results, JSON export & Grafana",
 	},
 	{
-		id: "experimental-frames",
 		group: "Experiments",
-		title: "Experimental frames",
-		summary:
-			"Make the conditions, observations and acceptance criteria part of an explicit test system.",
+		id: "experimental-frames",
 		sections: [
 			{
-				id: "roles",
-				title: "A frame around the model under test",
 				content: (
 					<>
 						<Flow
@@ -1207,10 +1202,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "roles",
+				title: "A frame around the model under test",
 			},
 			{
-				id: "workflow",
-				title: "Build and review the frame",
 				content: (
 					<>
 						<p>
@@ -1232,10 +1227,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "workflow",
+				title: "Build and review the frame",
 			},
 			{
-				id: "evidence",
-				title: "Separate structural validity from a scientific conclusion",
 				content: (
 					<>
 						<p>
@@ -1252,19 +1247,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "evidence",
+				title: "Separate structural validity from a scientific conclusion",
 			},
 		],
+		summary:
+			"Make the conditions, observations and acceptance criteria part of an explicit test system.",
+		title: "Experimental frames",
 	},
 	{
-		id: "generation",
 		group: "Tools",
-		title: "Generate, discuss & reuse",
-		summary:
-			"Move from a description to a reviewed hierarchy, then implement the atomic behaviors.",
+		id: "generation",
 		sections: [
 			{
-				id: "description",
-				title: "Describe a system that can be checked",
 				content: (
 					<>
 						<p>
@@ -1274,10 +1269,10 @@ export const chapters: Chapter[] = [
 							each level.
 						</p>
 						<CopyCode
-							label="Example request"
 							code={
 								'Create a Room containing a Switch and a Light.\nSwitch starts ON and alternates ON/OFF every 10 time units.\nIts output port state emits {"state": "ON"} or {"state": "OFF"}.\nConnect it to Light.state (input).\nLight stores the received state; it must not schedule periodic outputs.\nKeep both components inside Room. No cross-level connections.'
 							}
+							label="Example request"
 						/>
 						<p>
 							Configure your own provider and key in Settings before requesting
@@ -1287,10 +1282,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "description",
+				title: "Describe a system that can be checked",
 			},
 			{
-				id: "proposals",
-				title: "Structure is a separate decision from code",
 				content: (
 					<>
 						<p>
@@ -1312,10 +1307,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "proposals",
+				title: "Structure is a separate decision from code",
 			},
 			{
-				id: "reuse",
-				title: "Choose the integration before generating behavior",
 				content: (
 					<>
 						<p>
@@ -1338,19 +1333,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "reuse",
+				title: "Choose the integration before generating behavior",
 			},
 		],
+		summary:
+			"Move from a description to a reviewed hierarchy, then implement the atomic behaviors.",
+		title: "Generate, discuss & reuse",
 	},
 	{
-		id: "webapps",
 		group: "Tools",
-		title: "Deploy a model as a WebApp",
-		summary:
-			"Give a saved model a focused interface for parameters, simulation and outputs.",
+		id: "webapps",
 		sections: [
 			{
-				id: "contract",
-				title: "The contract comes from the model",
 				content: (
 					<>
 						<p>
@@ -1368,10 +1363,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "contract",
+				title: "The contract comes from the model",
 			},
 			{
-				id: "publish",
-				title: "Prepare a usable interface",
 				content: (
 					<>
 						<ol className="list-decimal space-y-2 pl-5">
@@ -1393,10 +1388,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "publish",
+				title: "Prepare a usable interface",
 			},
 			{
-				id: "access",
-				title: "Keep source, deployment and access distinct",
 				content: (
 					<>
 						<p>
@@ -1413,19 +1408,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "access",
+				title: "Keep source, deployment and access distinct",
 			},
 		],
+		summary:
+			"Give a saved model a focused interface for parameters, simulation and outputs.",
+		title: "Deploy a model as a WebApp",
 	},
 	{
-		id: "editing",
 		group: "Tools",
-		title: "Editor, tabs & recovery",
-		summary:
-			"Keep work in progress while switching models, and know when it reaches the server.",
+		id: "editing",
 		sections: [
 			{
-				id: "tabs",
-				title: "One workspace, several model tabs",
 				content: (
 					<>
 						<p>
@@ -1442,10 +1437,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "tabs",
+				title: "One workspace, several model tabs",
 			},
 			{
-				id: "recovery",
-				title: "Local recovery has a specific scope",
 				content: (
 					<>
 						<p>
@@ -1462,10 +1457,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "recovery",
+				title: "Local recovery has a specific scope",
 			},
 			{
-				id: "assistance",
-				title: "Language help uses the actual modeling library",
 				content: (
 					<>
 						<p>
@@ -1484,19 +1479,19 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "assistance",
+				title: "Language help uses the actual modeling library",
 			},
 		],
+		summary:
+			"Keep work in progress while switching models, and know when it reaches the server.",
+		title: "Editor, tabs & recovery",
 	},
 	{
-		id: "architecture",
 		group: "Reference",
-		title: "Services & deployment architecture",
-		summary:
-			"Where editing, preparation, coordination, execution and observation happen.",
+		id: "architecture",
 		sections: [
 			{
-				id: "services",
-				title: "Separate responsibilities",
 				content: (
 					<>
 						<ExecutionMap />
@@ -1541,10 +1536,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "services",
+				title: "Separate responsibilities",
 			},
 			{
-				id: "layouts",
-				title: "Packaging is not simulation semantics",
 				content: (
 					<>
 						<p>
@@ -1569,10 +1564,10 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "layouts",
+				title: "Packaging is not simulation semantics",
 			},
 			{
-				id: "resources",
-				title: "Sources and maintenance",
 				content: (
 					<>
 						<Table
@@ -1613,7 +1608,12 @@ export const chapters: Chapter[] = [
 						</p>
 					</>
 				),
+				id: "resources",
+				title: "Sources and maintenance",
 			},
 		],
+		summary:
+			"Where editing, preparation, coordination, execution and observation happen.",
+		title: "Services & deployment architecture",
 	},
 ];

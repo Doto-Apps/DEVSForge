@@ -1,272 +1,272 @@
 // Public roadmap content. Reorder items here; mark a task done only after delivery.
 // This list does not schedule work or call the API.
 export const projectLinks = {
-	github: "https://github.com/Doto-Apps/DEVSForge",
 	email: "dominici.antoine.p@gmail.com",
+	github: "https://github.com/Doto-Apps/DEVSForge",
 };
 
 export const roadmap = [
 	{
-		id: "state-snapshots",
 		category: "Simulation",
-		title: "Inspect every model at a simulation instant",
 		description:
 			"Capture model state through the runner and wrapper at each transition, then inspect the state of the whole system at a selected logical time. Make the same evidence usable by people and AI debugging tools.",
+		id: "state-snapshots",
 		status: "planned",
 		tasks: [
-			{ text: "Capture state snapshots at model transitions.", done: false },
+			{ done: false, text: "Capture state snapshots at model transitions." },
 			{
-				text: "Index snapshots by simulation time and model instance.",
 				done: false,
+				text: "Index snapshots by simulation time and model instance.",
 			},
 			{
-				text: "Provide a timeline for inspecting the system at an instant.",
 				done: false,
+				text: "Provide a timeline for inspecting the system at an instant.",
 			},
 		],
+		title: "Inspect every model at a simulation instant",
 	},
 	{
-		id: "simulation-visualization",
 		category: "Simulation",
-		title: "Explore simulation results inside DEVSForge",
 		description:
 			"Improve built-in views of simulation data so users can understand runs without setting up an external Grafana instance.",
+		id: "simulation-visualization",
 		status: "planned",
 		tasks: [
 			{
-				text: "Add built-in views for model outputs and their evolution over time.",
 				done: false,
+				text: "Add built-in views for model outputs and their evolution over time.",
 			},
 			{
-				text: "Connect the visualizations to model instances and the debugging timeline.",
 				done: false,
+				text: "Connect the visualizations to model instances and the debugging timeline.",
 			},
 		],
+		title: "Explore simulation results inside DEVSForge",
 	},
 	{
-		id: "multiple-files",
 		category: "Modeling",
-		title: "Give a model more than one source file",
 		description:
 			"Support languages that require several files, such as C++ source/header pairs, and let engineers organize helper classes and utilities alongside a model in any integration.",
+		id: "multiple-files",
 		status: "planned",
 		tasks: [
 			{
+				done: false,
 				text: "Store and edit a model’s source files and folders.",
-				done: false,
 			},
 			{
+				done: false,
 				text: "Include those files in execution preparation and language assistance.",
-				done: false,
 			},
 			{
-				text: "Support required file pairs as well as optional helper files.",
 				done: false,
+				text: "Support required file pairs as well as optional helper files.",
 			},
 		],
+		title: "Give a model more than one source file",
 	},
 	{
-		id: "document-context",
 		category: "AI generation",
-		title: "Use documents as generation context",
 		description:
 			"Attach documentation, PDF documents and text files to model generation so requirements and reference material can inform the generated system.",
+		id: "document-context",
 		status: "planned",
 		tasks: [
 			{
-				text: "Import PDF and text documents as generation context.",
 				done: false,
+				text: "Import PDF and text documents as generation context.",
 			},
 			{
-				text: "Let users select which documents accompany a generation request.",
 				done: false,
+				text: "Let users select which documents accompany a generation request.",
 			},
 		],
+		title: "Use documents as generation context",
 	},
 	{
-		id: "research-generation",
 		category: "AI generation",
-		title: "Build a more capable, research-informed generator",
 		description:
 			"Develop the generation approach described in the project author’s research, with better reuse of definitions, explicit instances and stronger interface context.",
+		id: "research-generation",
 		status: "planned",
 		tasks: [
 			{
+				done: false,
 				text: "Implement the generation workflow from the author’s paper.",
-				done: false,
 			},
 			{
+				done: false,
 				text: "Create several instances of one definition instead of generating duplicate models.",
-				done: false,
 			},
 			{
-				text: "Describe and strongly type output payloads to improve the context available to AI.",
 				done: false,
+				text: "Describe and strongly type output payloads to improve the context available to AI.",
 			},
 		],
+		title: "Build a more capable, research-informed generator",
 	},
 	{
-		id: "ms4me",
 		category: "Frameworks & import",
-		title: "Integrate MS4 Me",
 		description:
 			"Add the wrapper and preparation needed to execute models from this additional DEVS framework.",
-		status: "planned",
+		id: "ms4me",
 		reference: { label: "MS4 Me · RTSync", url: "https://rtsync.com/ms4me/" },
+		status: "planned",
 		tasks: [
-			{ text: "Prepare the framework integration and wrapper.", done: false },
+			{ done: false, text: "Prepare the framework integration and wrapper." },
 			{
-				text: "Validate execution and communication with the existing integrations.",
 				done: false,
+				text: "Validate execution and communication with the existing integrations.",
 			},
 		],
+		title: "Integrate MS4 Me",
 	},
 	{
-		id: "devsimpy",
 		category: "Frameworks & import",
-		title: "Integrate DEVSimPy",
 		description:
 			"Extend the available frameworks with a DEVSimPy integration and its execution requirements.",
-		status: "planned",
+		id: "devsimpy",
 		reference: {
 			label: "DEVSimPy project",
 			url: "https://github.com/capocchi/DEVSimPy",
 		},
+		status: "planned",
 		tasks: [
 			{
-				text: "Implement the framework-specific preparation and wrapper.",
 				done: false,
+				text: "Implement the framework-specific preparation and wrapper.",
 			},
 			{
-				text: "Verify representative models in DEVSForge simulations.",
 				done: false,
+				text: "Verify representative models in DEVSForge simulations.",
 			},
 		],
+		title: "Integrate DEVSimPy",
 	},
 	{
-		id: "model-import",
 		category: "Frameworks & import",
-		title: "Import existing models from other frameworks",
 		description:
 			"Bring existing work into DEVSForge from a folder, ZIP archive or individual file. Explore an AI agent for flexible import, alongside static adapters where useful; the approach remains to be decided.",
+		id: "model-import",
 		status: "planned",
 		tasks: [
 			{
+				done: false,
 				text: "Accept model sources as folders, archives and individual files.",
-				done: false,
 			},
 			{
+				done: false,
 				text: "Identify the framework, model structure and dependencies.",
-				done: false,
 			},
 			{
-				text: "Review an import proposal before creating the resulting models.",
 				done: false,
+				text: "Review an import proposal before creating the resulting models.",
 			},
 		],
+		title: "Import existing models from other frameworks",
 	},
 	{
-		id: "public-and-fork",
 		category: "Sharing",
-		title: "Publish models and libraries, with forks",
 		description:
 			"Let users make a model or library public so other users can view it, simulate it and fork it into their own workspace.",
+		id: "public-and-fork",
 		status: "planned",
 		tasks: [
-			{ text: "Add public visibility to models and libraries.", done: false },
+			{ done: false, text: "Add public visibility to models and libraries." },
 			{
-				text: "Allow other users to view and simulate public content.",
 				done: false,
+				text: "Allow other users to view and simulate public content.",
 			},
-			{ text: "Create independent copies through a fork action.", done: false },
+			{ done: false, text: "Create independent copies through a fork action." },
 		],
+		title: "Publish models and libraries, with forks",
 	},
 	{
-		id: "private-sharing",
 		category: "Sharing",
-		title: "Share privately with view or edit access",
 		description:
 			"Share a private model or library with another account by email, granting either viewing or editing rights to the original content.",
+		id: "private-sharing",
 		status: "planned",
 		tasks: [
 			{
+				done: false,
 				text: "Share with an existing account using its email address.",
-				done: false,
 			},
-			{ text: "Enforce separate view and edit permissions.", done: false },
+			{ done: false, text: "Enforce separate view and edit permissions." },
 			{
-				text: "Apply access management to both models and libraries.",
 				done: false,
+				text: "Apply access management to both models and libraries.",
 			},
 		],
+		title: "Share privately with view or edit access",
 	},
 	{
-		id: "iso-models",
 		category: "Interoperability",
-		title: "Continue ISO 21175 Part 3 model representation",
 		description:
 			"Continue aligning model representation with the work on ISO 21175 Part 3, including model identity, interfaces and information needed for exchange.",
+		id: "iso-models",
 		status: "planned",
 		tasks: [
 			{
-				text: "Map DEVSForge model data to the evolving model representation.",
 				done: false,
+				text: "Map DEVSForge model data to the evolving model representation.",
 			},
 			{
-				text: "Prepare exchangeable model descriptions for the public API.",
 				done: false,
+				text: "Prepare exchangeable model descriptions for the public API.",
 			},
 		],
+		title: "Continue ISO 21175 Part 3 model representation",
 	},
 	{
-		id: "public-api",
 		category: "Interoperability",
-		title: "Create a separate public model API",
 		description:
 			"Develop an API service separate from DEVSForge, following the work on ISO 21175 Part 4, to make selected user models available to other tools and users.",
+		id: "public-api",
 		status: "planned",
 		tasks: [
 			{
-				text: "Define the service and its model exposure contract.",
 				done: false,
+				text: "Define the service and its model exposure contract.",
 			},
 			{
-				text: "Implement the API alongside the model representation.",
 				done: false,
+				text: "Implement the API alongside the model representation.",
 			},
 		],
+		title: "Create a separate public model API",
 	},
 	{
-		id: "api-publishing",
 		category: "Interoperability",
-		title: "Publish from DEVSForge to the public API",
 		description:
 			"Add export actions and publication controls in DEVSForge so users can choose which models to expose through the separate API.",
+		id: "api-publishing",
 		status: "planned",
 		tasks: [
 			{
-				text: "Add model export and publication actions in the interface.",
 				done: false,
+				text: "Add model export and publication actions in the interface.",
 			},
 			{
-				text: "Connect selected model publication to the separate public API.",
 				done: false,
+				text: "Connect selected model publication to the separate public API.",
 			},
 		],
+		title: "Publish from DEVSForge to the public API",
 	},
 	{
-		id: "private-workspaces",
 		category: "Sharing",
-		title: "Private models and libraries",
 		description:
 			"The existing default: each account keeps its own models and libraries. Public visibility and sharing permissions will extend this foundation.",
+		id: "private-workspaces",
 		status: "done",
 		tasks: [
 			{
-				text: "Keep models and libraries scoped to their owner’s account.",
 				done: true,
+				text: "Keep models and libraries scoped to their owner’s account.",
 			},
 		],
+		title: "Private models and libraries",
 	},
 ] as const;
 

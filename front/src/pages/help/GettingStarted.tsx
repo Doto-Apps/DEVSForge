@@ -23,9 +23,6 @@ const code = `    def initialize(self) -> None:
         port.add_value({"state": self.get_phase()})`;
 const steps = [
 	{
-		title: "Make a place for it",
-		short: "Library",
-		detail: "Create a library and an atomic definition.",
 		content: (
 			<>
 				<p>
@@ -42,7 +39,7 @@ const steps = [
 						["Type", "Atomic"],
 						["Integration", "xDEVS Python"],
 					].map(([label, value]) => (
-						<div key={label} className="py-4 sm:px-3">
+						<div className="py-4 sm:px-3" key={label}>
 							<p className="text-[10px] uppercase tracking-widest text-muted-foreground">
 								{label}
 							</p>
@@ -60,7 +57,7 @@ const steps = [
 					Where we are going: a switch that sends a state to a light. First,
 					build Switch alone. Room and Light come later.
 				</p>
-				<Button asChild variant="outline" className="mt-4">
+				<Button asChild className="mt-4" variant="outline">
 					<Link to="/library/new">
 						Create your library
 						<ArrowRight size={14} />
@@ -68,11 +65,11 @@ const steps = [
 				</Button>
 			</>
 		),
+		detail: "Create a library and an atomic definition.",
+		short: "Library",
+		title: "Make a place for it",
 	},
 	{
-		title: "Give the model an output",
-		short: "Interface",
-		detail: "Try the real property controls before editing your model.",
 		content: (
 			<>
 				<p>
@@ -98,11 +95,11 @@ const steps = [
 				</p>
 			</>
 		),
+		detail: "Try the real property controls before editing your model.",
+		short: "Interface",
+		title: "Give the model an output",
 	},
 	{
-		title: "Write one small behavior",
-		short: "Behavior",
-		detail: "Emit the current state, then alternate ON and OFF.",
 		content: (
 			<>
 				<p>
@@ -133,11 +130,11 @@ const steps = [
 				</p>
 			</>
 		),
+		detail: "Emit the current state, then alternate ON and OFF.",
+		short: "Behavior",
+		title: "Write one small behavior",
 	},
 	{
-		title: "Follow the first event",
-		short: "Simulate",
-		detail: "Run the saved model, then inspect what happened.",
 		content: (
 			<>
 				<p>
@@ -168,11 +165,11 @@ const steps = [
 				</p>
 			</>
 		),
+		detail: "Run the saved model, then inspect what happened.",
+		short: "Simulate",
+		title: "Follow the first event",
 	},
 	{
-		title: "Keep the evidence",
-		short: "Export",
-		detail: "Download the run and analyze it outside the editor.",
 		content: (
 			<>
 				<p>
@@ -215,11 +212,11 @@ const steps = [
 				</p>
 			</>
 		),
+		detail: "Download the run and analyze it outside the editor.",
+		short: "Export",
+		title: "Keep the evidence",
 	},
 	{
-		title: "Turn a behavior into a system",
-		short: "Compose",
-		detail: "Reuse Switch as a component, then go further.",
 		content: (
 			<>
 				<p>
@@ -258,9 +255,9 @@ const steps = [
 						],
 					].map(([to, title, detail]) => (
 						<Link
+							className="flex items-center justify-between gap-3 py-4"
 							key={to}
 							to={to}
-							className="flex items-center justify-between gap-3 py-4"
 						>
 							<span>
 								<strong className="block text-sm font-medium">{title}</strong>
@@ -272,6 +269,9 @@ const steps = [
 				</div>
 			</>
 		),
+		detail: "Reuse Switch as a component, then go further.",
+		short: "Compose",
+		title: "Turn a behavior into a system",
 	},
 ];
 export function GettingStarted() {
@@ -292,7 +292,7 @@ export function GettingStarted() {
 				showModeToggle
 				showNavActions={false}
 			/>
-			<main ref={scroller} className="flex-1 overflow-y-auto p-4 lg:p-6">
+			<main className="flex-1 overflow-y-auto p-4 lg:p-6" ref={scroller}>
 				<header className="mb-6 flex flex-wrap items-end justify-between gap-4 border-b pb-6">
 					<div>
 						<p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
@@ -319,10 +319,10 @@ export function GettingStarted() {
 							{steps.map((item, index) => (
 								<li key={item.short}>
 									<button
-										type="button"
 										aria-current={index === step ? "step" : undefined}
-										onClick={() => setParams({ step: String(index + 1) })}
 										className={`flex w-full items-center gap-3 whitespace-nowrap rounded px-3 py-3 text-left text-sm ${index === step ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted"}`}
+										onClick={() => setParams({ step: String(index + 1) })}
+										type="button"
 									>
 										<span className="flex size-5 shrink-0 items-center justify-center font-mono text-xs">
 											{index < step ? (
@@ -350,16 +350,16 @@ export function GettingStarted() {
 							</p>
 						</div>
 						<div
-							key={step}
 							className="space-y-4 text-sm leading-7 [&_code]:text-xs"
+							key={step}
 						>
 							{current.content}
 						</div>
 						<footer className="mt-8 flex justify-between gap-3 border-t pt-5">
 							<Button
-								variant="ghost"
 								disabled={step === 0}
 								onClick={() => setParams({ step: String(step) })}
+								variant="ghost"
 							>
 								<ArrowLeft size={14} />
 								Back

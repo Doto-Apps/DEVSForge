@@ -39,7 +39,7 @@ export function WebAppDeployments() {
 							simulate.
 						</p>
 					</div>
-					<Button asChild variant="outline" size="sm">
+					<Button asChild size="sm" variant="outline">
 						<Link to="/library">
 							<MonitorPlay />
 							Choose a model to deploy
@@ -48,11 +48,11 @@ export function WebAppDeployments() {
 				</header>
 				{error ? (
 					<div
-						role="alert"
 						className="flex items-center gap-3 py-6 text-sm text-destructive"
+						role="alert"
 					>
 						Deployments could not be loaded.
-						<Button variant="outline" size="sm" onClick={() => void mutate()}>
+						<Button onClick={() => void mutate()} size="sm" variant="outline">
 							Retry
 						</Button>
 					</div>
@@ -78,8 +78,8 @@ export function WebAppDeployments() {
 							</Link>
 						</Button>
 						<Link
-							to="/how-it-works#webapps"
 							className="mt-3 text-xs text-muted-foreground hover:underline"
+							to="/how-it-works#webapps"
 						>
 							How WebApps use your model →
 						</Link>
@@ -94,10 +94,10 @@ export function WebAppDeployments() {
 								<Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
 								<Input
 									aria-label="Search deployments"
-									value={search}
+									className="h-9 pl-9"
 									onChange={(event) => setSearch(event.target.value)}
 									placeholder="Search deployments…"
-									className="h-9 pl-9"
+									value={search}
 								/>
 							</div>
 						</div>
@@ -106,33 +106,33 @@ export function WebAppDeployments() {
 								<caption className="sr-only">Saved WebApp deployments</caption>
 								<thead className="border-b text-xs text-muted-foreground">
 									<tr>
-										<th scope="col" className="pb-3 pr-4 font-medium">
+										<th className="pb-3 pr-4 font-medium" scope="col">
 											Deployment
 										</th>
-										<th scope="col" className="pb-3 pr-4 font-medium">
+										<th className="pb-3 pr-4 font-medium" scope="col">
 											Model
 										</th>
-										<th scope="col" className="pb-3 pr-4 font-medium">
+										<th className="pb-3 pr-4 font-medium" scope="col">
 											Visibility
 										</th>
-										<th scope="col" className="pb-3 pr-4 font-medium">
+										<th className="pb-3 pr-4 font-medium" scope="col">
 											Interface
 										</th>
-										<th scope="col" className="pb-3 text-right font-medium">
+										<th className="pb-3 text-right font-medium" scope="col">
 											Runtime
 										</th>
 									</tr>
 								</thead>
 								<tbody className="divide-y">
 									{filtered.map((deployment) => (
-										<tr key={deployment.id} className="hover:bg-muted/25">
+										<tr className="hover:bg-muted/25" key={deployment.id}>
 											<th
-												scope="row"
 												className="max-w-64 py-4 pr-4 font-normal"
+												scope="row"
 											>
 												<Link
-													to={`/webapps/${deployment.id}`}
 													className="block truncate font-medium hover:underline"
+													to={`/webapps/${deployment.id}`}
 												>
 													{deployment.name || "Unnamed deployment"}
 												</Link>
@@ -147,8 +147,8 @@ export function WebAppDeployments() {
 											</td>
 											<td className="py-4 pr-4">
 												<Badge
-													variant="secondary"
 													className="gap-1.5 font-normal"
+													variant="secondary"
 												>
 													{deployment.isPublic ? (
 														<Globe size={12} />
@@ -167,7 +167,7 @@ export function WebAppDeployments() {
 												ports
 											</td>
 											<td className="py-4 text-right">
-												<Button asChild variant="ghost" size="sm">
+												<Button asChild size="sm" variant="ghost">
 													<Link to={`/webapps/${deployment.id}`}>
 														Open
 														<ArrowRight size={14} />
@@ -181,8 +181,8 @@ export function WebAppDeployments() {
 						</div>
 						{!filtered.length && (
 							<p
-								role="status"
 								className="py-10 text-center text-sm text-muted-foreground"
+								role="status"
 							>
 								No deployments match “{search}”.
 							</p>

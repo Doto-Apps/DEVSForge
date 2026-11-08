@@ -41,7 +41,7 @@ export function HowItWorks() {
 		<div className="flex h-screen min-w-0 w-full flex-col">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Documentation", href: "/documentation" },
+					{ href: "/documentation", label: "Documentation" },
 					...(chapter && topic !== "overview"
 						? [{ label: chapter.title }]
 						: []),
@@ -53,8 +53,8 @@ export function HowItWorks() {
 				<aside className="shrink-0 border-b lg:w-56 lg:overflow-y-auto lg:border-b-0 lg:border-r xl:w-60">
 					<div className="px-4 pb-3 pt-5">
 						<Link
-							to="/documentation"
 							className="mb-4 hidden items-center gap-2 text-sm font-semibold lg:flex"
+							to="/documentation"
 						>
 							<BookOpenText size={16} />
 							Field guide
@@ -63,10 +63,10 @@ export function HowItWorks() {
 							<Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
 							<Input
 								aria-label="Find a documentation topic"
+								className="h-8 pl-8 text-xs"
+								onChange={(e) => setQuery(e.target.value)}
 								placeholder="Find a topic…"
 								value={query}
-								onChange={(e) => setQuery(e.target.value)}
-								className="h-8 pl-8 text-xs"
 							/>
 						</div>
 					</div>
@@ -75,7 +75,7 @@ export function HowItWorks() {
 						className="flex gap-1 overflow-x-auto px-3 pb-3 lg:block"
 					>
 						{[...new Set(chapters.map((item) => item.group))].map((group) => (
-							<div key={group} className="flex shrink-0 gap-1 lg:block">
+							<div className="flex shrink-0 gap-1 lg:block" key={group}>
 								<p className="mb-2 mt-4 hidden px-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground lg:block">
 									{matches.some((item) => item.group === group) ? group : ""}
 								</p>
@@ -83,10 +83,10 @@ export function HowItWorks() {
 									.filter((item) => item.group === group)
 									.map((item) => (
 										<Link
-											key={item.id}
-											to={`/documentation/${item.id}`}
 											aria-current={topic === item.id ? "page" : undefined}
 											className={`block whitespace-nowrap rounded px-2 py-2 text-xs lg:whitespace-normal ${topic === item.id ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+											key={item.id}
+											to={`/documentation/${item.id}`}
 										>
 											{item.id === "overview" ? "Overview" : item.title}
 										</Link>
@@ -101,12 +101,12 @@ export function HowItWorks() {
 					</nav>
 				</aside>
 				<div
-					ref={scroller}
 					className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:py-9"
+					ref={scroller}
 				>
 					{chapter ? (
 						<div className="grid items-start gap-8 2xl:grid-cols-[minmax(0,1fr)_180px]">
-							<article key={topic} className="min-w-0 max-w-4xl">
+							<article className="min-w-0 max-w-4xl" key={topic}>
 								<header className="mb-8 border-b pb-6">
 									<p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
 										{chapter.group} / {String(index + 1).padStart(2, "0")}
@@ -121,9 +121,9 @@ export function HowItWorks() {
 								<div className="space-y-10">
 									{chapter.sections.map((section) => (
 										<section
-											key={section.id}
-											id={section.id}
 											className="scroll-mt-6"
+											id={section.id}
+											key={section.id}
 										>
 											<h2 className="mb-4 text-lg font-semibold tracking-tight">
 												<a className="hover:underline" href={`#${section.id}`}>
@@ -166,15 +166,15 @@ export function HowItWorks() {
 								</footer>
 							</article>
 							<nav
-								className="order-first flex flex-wrap gap-3 text-xs 2xl:sticky 2xl:top-0 2xl:order-last 2xl:block 2xl:space-y-3"
 								aria-label="On this page"
+								className="order-first flex flex-wrap gap-3 text-xs 2xl:sticky 2xl:top-0 2xl:order-last 2xl:block 2xl:space-y-3"
 							>
 								<p className="hidden font-medium 2xl:block">On this page</p>
 								{chapter.sections.map((section) => (
 									<a
-										key={section.id}
-										href={`#${section.id}`}
 										className="block text-muted-foreground hover:text-foreground"
+										href={`#${section.id}`}
+										key={section.id}
 									>
 										{section.title}
 									</a>

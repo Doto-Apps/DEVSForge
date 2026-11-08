@@ -1,16 +1,16 @@
-import { type PointerEvent, useEffect, useId, useRef, useState } from "react";
 import { FileCode, Network, X } from "lucide-react";
+import { type PointerEvent, useEffect, useId, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useOptionalWorkbench } from "@/providers/WorkbenchProvider";
 import { Button } from "@/components/ui/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogHeader,
-	DialogTitle,
 	DialogDescription,
 	DialogFooter,
+	DialogHeader,
+	DialogTitle,
 } from "@/components/ui/dialog";
+import { useOptionalWorkbench } from "@/providers/WorkbenchProvider";
 export function ModelTabs() {
 	const workbench = useOptionalWorkbench();
 	const navigate = useNavigate();
@@ -70,24 +70,30 @@ export function ModelTabs() {
 	return (
 		<>
 			<div
+				aria-describedby={helpId}
+				aria-label="Open models"
+				className="flex h-[34px] min-w-0 overflow-x-auto border-b bg-background [scrollbar-width:thin]"
 				ref={list}
 				role="tablist"
-				aria-label="Open models"
-				aria-describedby={helpId}
-				className="flex h-[34px] min-w-0 overflow-x-auto border-b bg-background [scrollbar-width:thin]"
 			>
 				{workbench.tabs.map((tab) => (
 					<div
-						key={tab.id}
-						data-model-tab={tab.id}
 						className={`relative flex h-full shrink-0 items-center border-r px-1 ${modelId === tab.id ? "bg-muted text-foreground after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-primary" : "text-muted-foreground hover:bg-muted/50"} ${draggedId === tab.id ? "opacity-50" : ""}`}
+						data-model-tab={tab.id}
+						key={tab.id}
 						title={`${tab.libraryName}/${tab.name}${tab.integration ? ` · ${tab.integration}` : ""}`}
 					>
 						<button
-							type="button"
-							role="tab"
 							aria-selected={tab.id === modelId}
-							tabIndex={tab.id === modelId ? 0 : -1}
+							className="flex h-full touch-pan-y select-none items-center gap-2 px-2 text-xs cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+							onClick={(e) => {
+								if (suppressClick.current) {
+									suppressClick.current = false;
+									e.preventDefault();
+									return;
+								}
+								navigate(`/library/${tab.libraryId}/model/${tab.id}`);
+							}}
 							onKeyDown={(e) => {
 								suppressClick.current = false;
 								if (e.altKey && ["ArrowLeft", "ArrowRight"].includes(e.key)) {
@@ -123,16 +129,17 @@ export function ModelTabs() {
 										?.focus(),
 								);
 							}}
-							className="flex h-full touch-pan-y select-none items-center gap-2 px-2 text-xs cursor-grab active:cursor-grabbing focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+							onLostPointerCapture={(e) => finishDrag(e, true)}
+							onPointerCancel={(e) => finishDrag(e, true)}
 							onPointerDown={(e) => {
 								if (e.button !== 0 || e.altKey || e.ctrlKey || e.metaKey)
 									return;
 								suppressClick.current = false;
 								drag.current = {
+									active: false,
 									id: tab.id,
 									pointerId: e.pointerId,
 									x: e.clientX,
-									active: false,
 								};
 								e.currentTarget.setPointerCapture(e.pointerId);
 							}}
@@ -154,7 +161,7 @@ export function ModelTabs() {
 									id !== current.id &&
 									bounds &&
 									list.current?.contains(target)
-										? { id, after: e.clientX > bounds.left + bounds.width / 2 }
+										? { after: e.clientX > bounds.left + bounds.width / 2, id }
 										: undefined;
 								setDropTarget(current.target);
 								const viewport = list.current?.getBoundingClientRect();
@@ -166,16 +173,9 @@ export function ModelTabs() {
 								}
 							}}
 							onPointerUp={(e) => finishDrag(e)}
-							onPointerCancel={(e) => finishDrag(e, true)}
-							onLostPointerCapture={(e) => finishDrag(e, true)}
-							onClick={(e) => {
-								if (suppressClick.current) {
-									suppressClick.current = false;
-									e.preventDefault();
-									return;
-								}
-								navigate(`/library/${tab.libraryId}/model/${tab.id}`);
-							}}
+							role="tab"
+							tabIndex={tab.id === modelId ? 0 : -1}
+							type="button"
 						>
 							{tab.integration && (
 								<span
@@ -200,19 +200,19 @@ export function ModelTabs() {
 							)}
 							{workbench.dirty(tab) && (
 								<span
-									role="img"
 									aria-label="Unsaved changes"
 									className="size-1.5 shrink-0 rounded-full bg-current"
+									role="img"
 								/>
 							)}
 						</button>
 						<button
-							type="button"
 							aria-label={`Close ${tab.name}`}
 							className="rounded p-1 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 							onClick={() =>
 								workbench.dirty(tab) ? setClosing(tab.id) : close(tab.id)
 							}
+							type="button"
 						>
 							<X size={13} />
 						</button>
@@ -225,15 +225,15 @@ export function ModelTabs() {
 					</div>
 				))}
 			</div>
-			<p id={helpId} className="sr-only">
+			<p className="sr-only" id={helpId}>
 				Drag tabs to reorder, or use Alt and the left or right arrow key. Use
 				the arrow keys to switch models.
 			</p>
 			<Dialog
-				open={!!closing}
 				onOpenChange={(open) => {
 					if (!open && !saving) setClosing(undefined);
 				}}
+				open={!!closing}
 			>
 				<DialogContent>
 					<DialogHeader>
@@ -246,15 +246,15 @@ export function ModelTabs() {
 					<DialogFooter>
 						<Button
 							disabled={saving}
-							variant="outline"
 							onClick={() => setClosing(undefined)}
+							variant="outline"
 						>
 							Cancel
 						</Button>
 						<Button
-							variant="destructive"
 							disabled={saving}
 							onClick={() => closing && close(closing)}
+							variant="destructive"
 						>
 							Discard
 						</Button>

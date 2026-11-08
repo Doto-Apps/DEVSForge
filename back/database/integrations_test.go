@@ -41,13 +41,21 @@ func TestIntegrationMigrationPreservesExistingModels(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer db.Close()
+	defer func() {
+		if err := db.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	snapshot := func() map[string]string {
 		rows, err := db.Query("SELECT id,md5((to_jsonb(m)-'language'-'integration_id'-'integration_version')::text) FROM models m")
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer rows.Close()
+		defer func() {
+			if err := rows.Close(); err != nil {
+				t.Error(err)
+			}
+		}()
 		result := map[string]string{}
 		for rows.Next() {
 			var id, hash string
@@ -55,6 +63,9 @@ func TestIntegrationMigrationPreservesExistingModels(t *testing.T) {
 				t.Fatal(err)
 			}
 			result[id] = hash
+		}
+		if err := rows.Err(); err != nil {
+			t.Fatal(err)
 		}
 		return result
 	}

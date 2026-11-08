@@ -18,8 +18,8 @@ import { SelectItem } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import {
 	fetchIntegrationTemplate,
-	useIntegrations,
 	integrationKey,
+	useIntegrations,
 } from "@/hooks/useIntegrations";
 import { useGetModels } from "@/queries/model/useGetModels";
 

@@ -56,7 +56,7 @@ func ValidName(name string) bool {
 		return false
 	}
 	for i, r := range name {
-		if r != '_' && !unicode.IsLetter(r) && !(i > 0 && unicode.IsDigit(r)) {
+		if r != '_' && !unicode.IsLetter(r) && (i <= 0 || !unicode.IsDigit(r)) {
 			return false
 		}
 	}

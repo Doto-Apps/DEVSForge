@@ -9,12 +9,12 @@ if (!api || !front)
 	let token;
 	async function req(method, path, body) {
 		const r = await fetch(api + path, {
-			method,
+			body: body === undefined ? undefined : JSON.stringify(body),
 			headers: {
 				"Content-Type": "application/json",
 				...(token ? { Authorization: "Bearer " + token } : {}),
 			},
-			body: body === undefined ? undefined : JSON.stringify(body),
+			method,
 		});
 		const t = await r.text();
 		if (!r.ok) throw Error(path + " " + r.status + " " + t);
@@ -23,33 +23,33 @@ if (!api || !front)
 	const email = `wb-${Date.now()}@example.test`,
 		password = "Workbench-check-42";
 	await req("POST", "/auth/register", {
-		username: email.split("@")[0],
 		email,
 		password,
+		username: email.split("@")[0],
 	});
 	const login = await req("POST", "/auth/login", { identity: email, password });
 	token = login.accessToken;
 	const lib = await req("POST", "/library", {
-		title: "Workbench tests",
 		description: "Isolated tests",
+		title: "Workbench tests",
 	});
 	const otherLib = await req("POST", "/library", {
-		title: "Other library",
 		description: "Homonyms",
+		title: "Other library",
 	});
 	const code =
 		"from modeling import Atomic\nimport math\nclass Example(Atomic):\n    def test(self):\n        return self.get_phase()\n";
 	async function model(name, libId = lib.id) {
 		return req("POST", "/model", {
-			libId,
-			name,
-			type: "atomic",
 			code,
-			integrationId: "xdevs-python",
-			integrationVersion: "1.0.0",
-			ports: [],
 			components: [],
 			connections: [],
+			integrationId: "xdevs-python",
+			integrationVersion: "1.0.0",
+			libId,
+			name,
+			ports: [],
+			type: "atomic",
 		});
 	}
 	const a = await model("light "),
@@ -62,14 +62,14 @@ if (!api || !front)
 		headless: true,
 	});
 	const context = await browser.newContext({
-		viewport: { width: 1660, height: 940 },
+		viewport: { height: 940, width: 1660 },
 	});
 	await context.addInitScript(
 		({ token, refresh }) => {
 			localStorage.setItem("accessToken", token);
 			localStorage.setItem("refreshToken", refresh);
 		},
-		{ token, refresh: login.refreshToken },
+		{ refresh: login.refreshToken, token },
 	);
 	const page = await context.newPage();
 	const errors = [];
@@ -91,7 +91,7 @@ if (!api || !front)
 			url(m).replace(front, ""),
 		);
 		await page
-			.getByRole("tab", { name: m.name.trim(), exact: false })
+			.getByRole("tab", { exact: false, name: m.name.trim() })
 			.first()
 			.waitFor({ timeout: 20000 });
 	}
@@ -151,9 +151,9 @@ if (!api || !front)
 		await page.waitForTimeout(120);
 	}
 	if (sockets.length !== 2) throw Error("switching restarted engines");
-	await page.getByRole("button", { name: "Close light ", exact: true }).click();
+	await page.getByRole("button", { exact: true, name: "Close light " }).click();
 	await page.getByRole("dialog").waitFor();
-	await page.getByRole("button", { name: "Cancel", exact: true }).click();
+	await page.getByRole("button", { exact: true, name: "Cancel" }).click();
 	await page.getByRole("dialog").waitFor({ state: "hidden" });
 	if (!(await page.getByRole("tab", { name: /light/ }).count()))
 		throw Error("cancel closed tab");
@@ -221,10 +221,10 @@ if (!api || !front)
 	);
 	if (!isolated) throw Error("diagnostics leaked");
 	console.log("DIAGNOSTICS_ISOLATED");
-	await page.getByRole("button", { name: "Close light ", exact: true }).click();
+	await page.getByRole("button", { exact: true, name: "Close light " }).click();
 	await page
 		.getByRole("dialog")
-		.getByRole("button", { name: "Save", exact: true })
+		.getByRole("button", { exact: true, name: "Save" })
 		.click();
 	await page.getByRole("dialog").waitFor({ state: "hidden" });
 	if (!(await req("GET", `/model/${a.id}`)).code.includes("unsaved light"))
@@ -233,11 +233,11 @@ if (!api || !front)
 	await page.getByRole("tab", { name: /Other library/ }).click();
 	await page
 		.locator(`[data-model-tab="${c.id}"]`)
-		.getByRole("button", { name: "Close switch", exact: true })
+		.getByRole("button", { exact: true, name: "Close switch" })
 		.click();
 	await page
 		.getByRole("dialog")
-		.getByRole("button", { name: "Discard", exact: true })
+		.getByRole("button", { exact: true, name: "Discard" })
 		.click();
 	console.log("CLOSE_DISCARD");
 	if (sockets.length !== 4)

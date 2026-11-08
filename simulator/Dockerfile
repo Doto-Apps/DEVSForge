@@ -30,7 +30,10 @@ COPY simulator/runner/integrations/xdevs-go/wrapper/go.mod simulator/runner/inte
 COPY simulator/shared/go.mod simulator/shared/go.sum /tmp/go-preheat/.shared/
 RUN cd /tmp/go-preheat && GOWORK=off go mod download && rm -rf /tmp/go-preheat
 COPY simulator/runner/integrations/xdevs-java/wrapper/pom.xml /tmp/java-preheat/pom.xml
-RUN mvn -f /tmp/java-preheat/pom.xml -Dmaven.repo.local=/opt/maven-cache dependency:resolve -q && rm -rf /tmp/java-preheat
+COPY simulator/runner/integrations/xdevs-java/wrapper/mvnw /tmp/java-preheat/mvnw
+COPY simulator/runner/integrations/xdevs-java/wrapper/.mvn /tmp/java-preheat/.mvn
+# Cache the same Maven distribution used when a model is compiled at runtime.
+RUN cd /tmp/java-preheat && ./mvnw -Dmaven.repo.local=/opt/maven-cache dependency:go-offline -q && rm -rf /tmp/java-preheat
 COPY --from=builder /app/bin/ /opt/devsforge/
 COPY simulator/runner/integrations /opt/devsforge/integrations
 COPY simulator/shared /opt/devsforge/shared
@@ -58,7 +61,8 @@ RUN ln -s /opt/lsp/pyright/langserver.index.js /usr/local/bin/pyright-langserver
     tar -xzf /tmp/jdtls.tar.gz -C /opt/lsp/jdtls && rm /tmp/jdtls.tar.gz
 COPY simulator/runner/internal/lsp/jdtls.sh /opt/lsp/bin/jdtls
 RUN chmod +x /opt/lsp/bin/jdtls && mkdir -p /opt/python-cache /opt/go-cache/build && chmod -R a+rX /opt/devsforge /opt/go-cache && useradd --create-home --uid 10001 lsp && chown -R lsp:lsp /opt/go-cache/build /opt/python-cache
-RUN mkdir -p /home/lsp/.m2 && ln -s /opt/maven-cache /home/lsp/.m2/repository
+RUN mkdir -p /home/lsp/.m2 && ln -s /opt/maven-cache /home/lsp/.m2/repository && \
+    chown -R lsp:lsp /home/lsp/.m2 /opt/maven-cache
 ENV MAVEN_OPTS=-Dmaven.repo.local=/opt/maven-cache
 ENV GOTOOLCHAIN=local
 USER lsp

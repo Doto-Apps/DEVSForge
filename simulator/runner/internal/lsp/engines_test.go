@@ -50,7 +50,7 @@ func TestRealLanguageServers(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			defer socket.Close()
+			defer func() { _ = socket.Close() }()
 			_ = socket.SetReadDeadline(time.Now().Add(180 * time.Second))
 			send := func(id any, method string, params any) {
 				msg := map[string]any{"jsonrpc": "2.0", "method": method, "params": params}
@@ -73,6 +73,9 @@ func TestRealLanguageServers(t *testing.T) {
 					if err := socket.ReadJSON(&msg); err != nil {
 						t.Fatal(err)
 					}
+					if msg.Method == "language/eventNotification" || msg.Method == "language/status" {
+						t.Logf("%s: %s", msg.Method, msg.Params)
+					}
 					if msg.Method != "" && len(msg.ID) > 0 {
 						if err := socket.WriteJSON(map[string]any{"jsonrpc": "2.0", "id": msg.ID, "result": nil}); err != nil {
 							t.Fatal(err)
@@ -87,7 +90,7 @@ func TestRealLanguageServers(t *testing.T) {
 					}
 				}
 			}
-			send(1, "initialize", map[string]any{"processId": nil, "rootUri": result.WorkspaceURI, "capabilities": map[string]any{"textDocument": map[string]any{"completion": map[string]any{"completionItem": map[string]any{"snippetSupport": true}}}}})
+			send(1, "initialize", map[string]any{"processId": nil, "rootUri": result.WorkspaceURI, "capabilities": map[string]any{"workspace": map[string]any{"workspaceFolders": true}, "textDocument": map[string]any{"completion": map[string]any{"completionItem": map[string]any{"snippetSupport": true}}}}})
 			if len(receive(1)) == 0 {
 				t.Fatal("initialize failed")
 			}
@@ -145,15 +148,25 @@ func TestRealLanguageServers(t *testing.T) {
 			}
 			send(nil, "textDocument/didClose", map[string]any{"textDocument": map[string]any{"uri": result.DocumentURI}})
 			found = false
+			var lastCompletion json.RawMessage
 			for attempt := 0; attempt < 30; attempt++ {
 				send(400+attempt, "textDocument/completion", map[string]any{"textDocument": map[string]any{"uri": second.DocumentURI}, "position": map[string]int{"line": tt.line, "character": tt.column}})
-				if strings.Contains(string(receive(400+attempt)), tt.want) {
+				lastCompletion = receive(400 + attempt)
+				if strings.Contains(string(lastCompletion), tt.want) {
 					found = true
 					break
 				}
 				time.Sleep(300 * time.Millisecond)
 			}
 			if !found {
+				if tt.engine == "jdtls" {
+					data, _ := os.ReadFile(m.sessions[result.ID].root + "/jdtls/.metadata/.log")
+					if len(data) > 14000 {
+						data = append(data[:10000], data[len(data)-4000:]...)
+					}
+					t.Logf("Java log: %s", data)
+				}
+				t.Logf("last completion after detach: %s", lastCompletion)
 				t.Fatal("detaching first document disrupted shared engine")
 			}
 

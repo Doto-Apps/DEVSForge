@@ -1,22 +1,38 @@
 import { describe, expect, it } from "vitest";
 import type { GeneratedDiagram, GeneratedModelData } from "@/types";
-import { generatedDiagramToReactFlow } from "./llmToReactFlow";
 import { getLayoutedElements } from "./getLayoutedElements";
+import { generatedDiagramToReactFlow } from "./llmToReactFlow";
 
 const model = (id: string, children?: string[]): GeneratedModelData => ({
+	codeGenerated: false,
+	components: children,
+	dependencies: [],
 	id,
 	name: id,
-	type: children ? "coupled" : "atomic",
-	components: children,
 	ports: { in: ["general", "local"], out: ["state"] },
-	dependencies: [],
-	codeGenerated: false,
+	type: children ? "coupled" : "atomic",
 });
 
 describe("nested automatic layout", () => {
 	it("reserves the header and a margin at every coupled level, including boundary couplings", async () => {
 		const diagram: GeneratedDiagram = {
-			name: "Home",
+			connections: ["1", "2"].flatMap((room) => [
+				{
+					from: { model: "GeneralSwitch", port: "state" },
+					owner: "Home",
+					to: { model: `Room${room}`, port: "general" },
+				},
+				{
+					from: { model: `Room${room}`, port: "general" },
+					owner: `Room${room}`,
+					to: { model: `Light${room}`, port: "general" },
+				},
+				{
+					from: { model: `Switch${room}`, port: "state" },
+					owner: `Room${room}`,
+					to: { model: `Light${room}`, port: "local" },
+				},
+			]),
 			models: [
 				model("Home", ["Room1", "Room2", "GeneralSwitch"]),
 				model("Room1", ["Switch1", "Light1"]),
@@ -27,23 +43,7 @@ describe("nested automatic layout", () => {
 				model("Switch2"),
 				model("Light2"),
 			],
-			connections: ["1", "2"].flatMap((room) => [
-				{
-					owner: "Home",
-					from: { model: "GeneralSwitch", port: "state" },
-					to: { model: `Room${room}`, port: "general" },
-				},
-				{
-					owner: `Room${room}`,
-					from: { model: `Room${room}`, port: "general" },
-					to: { model: `Light${room}`, port: "general" },
-				},
-				{
-					owner: `Room${room}`,
-					from: { model: `Switch${room}`, port: "state" },
-					to: { model: `Light${room}`, port: "local" },
-				},
-			]),
+			name: "Home",
 		};
 		const graph = generatedDiagramToReactFlow(diagram);
 		const before = JSON.stringify(graph);

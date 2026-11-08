@@ -1,7 +1,4 @@
-import { ModelTabs } from "./model-tabs";
-import { useOptionalWorkbench } from "@/providers/WorkbenchProvider";
 import React from "react";
-import { useIntegrations } from "@/hooks/useIntegrations";
 import type { components } from "@/api/v1";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +11,10 @@ import {
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
+import { useIntegrations } from "@/hooks/useIntegrations";
+import { useOptionalWorkbench } from "@/providers/WorkbenchProvider";
 import { SidebarTrigger } from "../ui/sidebar";
+import { ModelTabs } from "./model-tabs";
 import { NavActions } from "./nav-actions";
 
 type NavHeaderProps = {
@@ -67,8 +67,8 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 				<SidebarTrigger className="-ml-1" />
 				{workbench?.storageError && (
 					<span
-						role="alert"
 						className="text-xs text-destructive"
+						role="alert"
 						title={workbench.storageError}
 					>
 						Local recovery unavailable

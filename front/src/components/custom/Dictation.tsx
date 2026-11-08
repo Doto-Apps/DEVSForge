@@ -1,4 +1,4 @@
-import { Loader2, Mic, Square, Trash2, RefreshCw } from "lucide-react";
+import { Loader2, Mic, RefreshCw, Square, Trash2 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { client } from "@/api/client";
@@ -33,8 +33,8 @@ export function Dictation({
 	const request = useRef<AbortController>();
 	const alive = useRef(false);
 	const epoch = useRef(0);
-	const latest = useRef({ value, onChange });
-	latest.current = { value, onChange };
+	const latest = useRef({ onChange, value });
+	latest.current = { onChange, value };
 	const preview = useRef("");
 	const stopTracks = () => {
 		stream.current?.getTracks().forEach((track) => {
@@ -229,19 +229,19 @@ export function Dictation({
 			<div className="flex flex-wrap items-center gap-2">
 				{phase === "idle" && (
 					<Button
-						type="button"
-						size="sm"
-						variant="ghost"
 						className="h-7 px-2 text-xs"
 						disabled={disabled}
 						onClick={start}
+						size="sm"
+						type="button"
+						variant="ghost"
 					>
 						<Mic size={13} />
 						Dictate
 					</Button>
 				)}
 				{phase === "permission" && (
-					<Button type="button" variant="ghost" size="sm" onClick={discard}>
+					<Button onClick={discard} size="sm" type="button" variant="ghost">
 						<Loader2 className="animate-spin" size={13} />
 						Cancel microphone request
 					</Button>
@@ -249,17 +249,17 @@ export function Dictation({
 				{phase === "recording" && (
 					<>
 						<Button
-							type="button"
-							size="sm"
-							variant="secondary"
 							onClick={() => recorder.current?.stop()}
+							size="sm"
+							type="button"
+							variant="secondary"
 						>
 							<Square size={13} />
 							Stop recording
 						</Button>
 						<span
-							role="status"
 							className="text-xs tabular-nums text-muted-foreground"
+							role="status"
 						>
 							{seconds}s / {MAX_SECONDS}s
 						</span>
@@ -267,11 +267,11 @@ export function Dictation({
 				)}
 				{phase === "recorded" && (
 					<Button
-						type="button"
-						size="sm"
-						variant="secondary"
 						disabled={disabled}
 						onClick={transcribe}
+						size="sm"
+						type="button"
+						variant="secondary"
 					>
 						<RefreshCw size={13} />
 						Retry transcription
@@ -279,10 +279,10 @@ export function Dictation({
 				)}
 				{phase === "transcribing" && (
 					<Button
-						type="button"
-						size="sm"
-						variant="ghost"
 						onClick={() => request.current?.abort()}
+						size="sm"
+						type="button"
+						variant="ghost"
 					>
 						<Loader2 className="animate-spin" size={13} />
 						Cancel transcription
@@ -290,18 +290,18 @@ export function Dictation({
 				)}
 				{(phase === "recorded" || phase === "recording") && (
 					<Button
-						type="button"
-						size="sm"
-						variant="ghost"
-						onClick={discard}
 						aria-label="Discard recording"
+						onClick={discard}
+						size="sm"
+						type="button"
+						variant="ghost"
 					>
 						<Trash2 size={13} />
 					</Button>
 				)}
 			</div>
 			{audioURL && phase === "recorded" && (
-				<audio controls src={audioURL} className="h-8 w-full max-w-sm">
+				<audio className="h-8 w-full max-w-sm" controls src={audioURL}>
 					<track kind="captions" />
 				</audio>
 			)}
@@ -312,7 +312,7 @@ export function Dictation({
 				</p>
 			)}
 			{error && (
-				<p role="alert" className="text-xs leading-5 text-destructive">
+				<p className="text-xs leading-5 text-destructive" role="alert">
 					{error}{" "}
 					<Link className="underline" to="/settings">
 						Voice settings
@@ -320,7 +320,7 @@ export function Dictation({
 				</p>
 			)}
 			{notice && (
-				<p role="status" className="text-xs text-muted-foreground">
+				<p className="text-xs text-muted-foreground" role="status">
 					{notice}
 				</p>
 			)}

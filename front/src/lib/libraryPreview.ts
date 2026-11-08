@@ -33,10 +33,20 @@ export function libraryPreview(
 		);
 		const prefix = `${root.id}::`;
 		return {
+			edges: graph.edges.map((edge) => ({
+				...edge,
+				id: prefix + edge.id,
+				source: prefix + edge.source,
+				sourceHandle: edge.sourceHandle?.startsWith("internal-")
+					? edge.sourceHandle.replace("internal-", `internal-${prefix}`)
+					: prefix + edge.sourceHandle,
+				target: prefix + edge.target,
+				targetHandle: edge.targetHandle?.startsWith("internal-")
+					? edge.targetHandle.replace("internal-", `internal-${prefix}`)
+					: prefix + edge.targetHandle,
+			})),
 			nodes: graph.nodes.map((node) => ({
 				...node,
-				id: prefix + node.id,
-				parentId: node.parentId ? prefix + node.parentId : undefined,
 				data: {
 					...node.data,
 					description:
@@ -44,18 +54,8 @@ export function libraryPreview(
 							? "Some components are unavailable in this overview. Open the model to inspect it."
 							: node.data.description,
 				},
-			})),
-			edges: graph.edges.map((edge) => ({
-				...edge,
-				id: prefix + edge.id,
-				source: prefix + edge.source,
-				target: prefix + edge.target,
-				sourceHandle: edge.sourceHandle?.startsWith("internal-")
-					? edge.sourceHandle.replace("internal-", `internal-${prefix}`)
-					: prefix + edge.sourceHandle,
-				targetHandle: edge.targetHandle?.startsWith("internal-")
-					? edge.targetHandle.replace("internal-", `internal-${prefix}`)
-					: prefix + edge.targetHandle,
+				id: prefix + node.id,
+				parentId: node.parentId ? prefix + node.parentId : undefined,
 			})),
 		};
 	});
@@ -72,6 +72,7 @@ export function libraryPreview(
 		),
 	);
 	return {
+		edges: graphs.flatMap((graph) => graph.edges),
 		nodes: graphs
 			.flatMap((graph, i) =>
 				graph.nodes.map((node) =>
@@ -87,6 +88,5 @@ export function libraryPreview(
 				),
 			)
 			.sort((a, b) => a.id.split("/").length - b.id.split("/").length),
-		edges: graphs.flatMap((graph) => graph.edges),
 	};
 }

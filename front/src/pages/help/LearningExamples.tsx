@@ -12,43 +12,36 @@ const metadata: Model["metadata"] = {
 	keyword: [],
 	modelRole: "",
 	position: { x: 0, y: 0 },
-	style: { width: 200, height: 160 },
+	style: { height: 160, width: 200 },
 };
 const base: Model = {
-	id: "switch",
-	name: "Switch",
-	type: "atomic",
-	userId: "tutorial",
 	code: "",
-	description: "",
 	components: [],
 	connections: [],
-	ports: [],
-	metadata,
-	language: "python",
+	description: "",
+	id: "switch",
 	integrationId: "xdevs-python",
 	integrationVersion: "1.0.0",
+	language: "python",
+	metadata,
+	name: "Switch",
+	ports: [],
+	type: "atomic",
+	userId: "tutorial",
 };
 export const tutorialModels: Model[] = [
 	{
 		...base,
-		id: "room",
-		name: "Room",
-		type: "coupled",
-		language: undefined,
-		integrationId: undefined,
-		integrationVersion: undefined,
-		metadata: { ...metadata, style: { width: 640, height: 300 } },
 		components: [
 			{
 				instanceId: "switch-1",
-				modelId: "switch",
 				instanceMetadata: { ...metadata, position: { x: 45, y: 85 } },
+				modelId: "switch",
 			},
 			{
 				instanceId: "light-1",
-				modelId: "light",
 				instanceMetadata: { ...metadata, position: { x: 390, y: 85 } },
+				modelId: "light",
 			},
 		],
 		connections: [
@@ -57,14 +50,21 @@ export const tutorialModels: Model[] = [
 				to: { instanceId: "light-1", port: "state" },
 			},
 		],
+		id: "room",
+		integrationId: undefined,
+		integrationVersion: undefined,
+		language: undefined,
+		metadata: { ...metadata, style: { height: 300, width: 640 } },
+		name: "Room",
+		type: "coupled",
 	},
 	{ ...base, ports: [{ id: "state-out", name: "state", type: "out" }] },
 	{
 		...base,
 		id: "light",
-		name: "Light",
-		language: "java",
 		integrationId: "xdevs-java",
+		language: "java",
+		name: "Light",
 		ports: [{ id: "state-in", name: "state", type: "in" }],
 	},
 ];
@@ -90,10 +90,10 @@ export function InterfaceLab() {
 		NonNullable<Model["metadata"]["parameters"]>
 	>([
 		{
+			description: "Time between two internal events.",
 			name: "period",
 			type: "float",
 			value: 1,
-			description: "Time between two internal events.",
 		},
 	]);
 	const graph = useMemo(
@@ -101,8 +101,8 @@ export function InterfaceLab() {
 			modelToReactflow([
 				{
 					...base,
-					ports: ports.map((port) => ({ ...port, type: "out" as const })),
 					metadata: { ...metadata, parameters },
+					ports: ports.map((port) => ({ ...port, type: "out" as const })),
 				},
 			]),
 		[ports, parameters],
@@ -118,16 +118,16 @@ export function InterfaceLab() {
 			<div className="grid lg:grid-cols-2">
 				<div className="space-y-6 p-5">
 					<PortEditor
-						label="Output ports"
-						ports={ports}
-						onChange={setPorts}
-						disabled={false}
 						defaultPrefix="out"
+						disabled={false}
+						label="Output ports"
+						onChange={setPorts}
+						ports={ports}
 					/>
 					<ModelParameterEditor
-						parameters={parameters}
-						onParametersChange={setParameters}
 						disabled={false}
+						onParametersChange={setParameters}
+						parameters={parameters}
 					/>
 				</div>
 				<div className="min-h-64 border-t lg:border-l lg:border-t-0">
@@ -173,17 +173,17 @@ export function EventWalkthrough() {
 				<span className="text-xs font-medium">One event, step by step</span>
 				<div className="flex gap-1">
 					<Button
+						aria-label="Reset event walkthrough"
+						onClick={() => setStep(0)}
 						size="sm"
 						variant="ghost"
-						onClick={() => setStep(0)}
-						aria-label="Reset event walkthrough"
 					>
 						<RotateCcw size={14} />
 					</Button>
 					<Button
+						onClick={() => setStep((step + 1) % descriptions.length)}
 						size="sm"
 						variant="secondary"
-						onClick={() => setStep((step + 1) % descriptions.length)}
 					>
 						<StepForward size={14} />
 						Next event
@@ -191,16 +191,16 @@ export function EventWalkthrough() {
 				</div>
 			</div>
 			<ol
-				className="grid grid-cols-5 gap-1 px-4 pt-5"
 				aria-label="Event phases"
+				className="grid grid-cols-5 gap-1 px-4 pt-5"
 			>
 				{descriptions.map(([title], index) => (
 					<li key={title}>
 						<button
-							type="button"
+							aria-current={index === step ? "step" : undefined}
 							className={`w-full border-t-2 pt-2 text-left text-[10px] sm:text-xs ${index === step ? "border-primary font-semibold" : "border-border text-muted-foreground"}`}
 							onClick={() => setStep(index)}
-							aria-current={index === step ? "step" : undefined}
+							type="button"
 						>
 							{index + 1}
 							<span className="mt-1 block truncate">{title}</span>
@@ -208,7 +208,7 @@ export function EventWalkthrough() {
 					</li>
 				))}
 			</ol>
-			<div className="min-h-28 px-4 py-5" aria-live="polite">
+			<div aria-live="polite" className="min-h-28 px-4 py-5">
 				<h3 className="font-medium">{descriptions[step][0]}</h3>
 				<p className="mt-2 text-sm leading-relaxed text-muted-foreground">
 					{descriptions[step][1]}
@@ -234,8 +234,6 @@ export function CopyCode({
 			<div className="flex items-center justify-between gap-2 border-b px-4 py-2 text-xs">
 				<span className="font-mono text-muted-foreground">{label}</span>
 				<Button
-					variant="ghost"
-					size="sm"
 					className="h-7"
 					onClick={async () => {
 						try {
@@ -245,6 +243,8 @@ export function CopyCode({
 							setStatus("Select the code to copy it.");
 						}
 					}}
+					size="sm"
+					variant="ghost"
 				>
 					{status === "Copied" ? <Check size={13} /> : <Copy size={13} />}Copy
 				</Button>
@@ -253,7 +253,7 @@ export function CopyCode({
 				<code>{code}</code>
 			</pre>
 			{status && (
-				<p role="status" className="px-4 pb-2 text-xs text-muted-foreground">
+				<p className="px-4 pb-2 text-xs text-muted-foreground" role="status">
 					{status}
 				</p>
 			)}
@@ -265,27 +265,27 @@ export function SimulationFigure() {
 	return (
 		<figure className="my-5">
 			<a
-				href="/guide/simulation-light.png"
-				target="_blank"
-				rel="noreferrer"
-				className="block overflow-hidden rounded-md border"
 				aria-label="Enlarge simulation panel screenshot"
+				className="block overflow-hidden rounded-md border"
+				href="/guide/simulation-light.png"
+				rel="noreferrer"
+				target="_blank"
 			>
 				<img
-					className="w-full dark:hidden"
-					src="/guide/simulation-light.png"
 					alt="Simulation panel showing Max simulation time, Start, Export JSON, runtime parameter overrides and event filters."
-					loading="lazy"
-					width="1100"
+					className="w-full dark:hidden"
 					height="800"
+					loading="lazy"
+					src="/guide/simulation-light.png"
+					width="1100"
 				/>
 				<img
-					className="hidden w-full dark:block"
-					src="/guide/simulation-dark.png"
 					alt="Simulation panel showing Max simulation time, Start, Export JSON, runtime parameter overrides and event filters."
-					loading="lazy"
-					width="1100"
+					className="hidden w-full dark:block"
 					height="800"
+					loading="lazy"
+					src="/guide/simulation-dark.png"
+					width="1100"
 				/>
 			</a>
 			<figcaption className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
@@ -314,30 +314,30 @@ export function ExecutionMap() {
 		<figure className="my-6 overflow-hidden rounded-md border">
 			<div className="overflow-x-auto bg-muted/10 p-3">
 				<svg
-					className="min-w-[600px] w-full text-foreground"
-					viewBox="0 0 740 385"
-					role="img"
 					aria-label="Browser calls backend; backend stores models in PostgreSQL and starts the coordinator. Coordinator and runner communicate through Kafka. Runner invokes Python, Go and Java wrappers through gRPC."
+					className="min-w-[600px] w-full text-foreground"
+					role="img"
+					viewBox="0 0 740 385"
 				>
 					<defs>
 						<marker
 							id={marker}
-							viewBox="0 0 10 10"
+							markerHeight="5"
+							markerWidth="5"
+							orient="auto-start-reverse"
 							refX="9"
 							refY="5"
-							markerWidth="5"
-							markerHeight="5"
-							orient="auto-start-reverse"
+							viewBox="0 0 10 10"
 						>
 							<path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
 						</marker>
 					</defs>
 					<g
 						fill="none"
+						markerEnd={`url(#${marker})`}
 						stroke="currentColor"
 						strokeOpacity="0.4"
 						strokeWidth="1.5"
-						markerEnd={`url(#${marker})`}
 					>
 						<path d="M220 53 H270" />
 						<path d="M470 53 H520" />
@@ -351,8 +351,8 @@ export function ExecutionMap() {
 					<g
 						fill="currentColor"
 						fillOpacity="0.6"
-						fontSize="10"
 						fontFamily="monospace"
+						fontSize="10"
 					>
 						<text x="230" y="42">
 							HTTP
@@ -370,30 +370,30 @@ export function ExecutionMap() {
 					{boxes.map(([x, y, title, detail]) => (
 						<g key={title}>
 							<rect
-								x={x}
-								y={y}
-								width="200"
+								fill="hsl(var(--background))"
 								height="66"
 								rx="4"
-								fill="hsl(var(--background))"
 								stroke="currentColor"
 								strokeOpacity="0.3"
+								width="200"
+								x={x}
+								y={y}
 							/>
 							<text
+								fill="currentColor"
+								fontSize="14"
+								fontWeight="500"
 								x={x + 14}
 								y={y + 27}
-								fontSize="14"
-								fill="currentColor"
-								fontWeight="500"
 							>
 								{title}
 							</text>
 							<text
-								x={x + 14}
-								y={y + 46}
-								fontSize="10"
 								fill="currentColor"
 								fillOpacity="0.6"
+								fontSize="10"
+								x={x + 14}
+								y={y + 46}
 							>
 								{detail}
 							</text>

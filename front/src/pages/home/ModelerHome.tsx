@@ -31,7 +31,7 @@ export function ModelerHome() {
 						</p>
 					</div>
 					<div className="flex flex-wrap gap-2">
-						<Button asChild variant="outline" size="sm">
+						<Button asChild size="sm" variant="outline">
 							<Link to="/devs-generator">
 								<Network />
 								Generate a system
@@ -51,7 +51,7 @@ export function ModelerHome() {
 							On your desk
 						</span>
 						{workbench.tabs.map((tab) => (
-							<Button key={tab.id} asChild variant="secondary" size="sm">
+							<Button asChild key={tab.id} size="sm" variant="secondary">
 								<Link to={`/library/${tab.libraryId}/model/${tab.id}`}>
 									{tab.name}
 									<ArrowRight size={13} />
@@ -63,7 +63,7 @@ export function ModelerHome() {
 				<RoadmapPreview />
 				<LibraryGallery />
 				<footer className="mt-8 grid gap-6 border-t py-5 sm:grid-cols-2">
-					<Link to="/getting-started" className="group flex items-start gap-3">
+					<Link className="group flex items-start gap-3" to="/getting-started">
 						<BookOpenText className="mt-1 size-5 text-muted-foreground" />
 						<div>
 							<h2 className="text-sm font-medium group-hover:underline">
@@ -75,7 +75,7 @@ export function ModelerHome() {
 							</p>
 						</div>
 					</Link>
-					<Link to="/documentation" className="group">
+					<Link className="group" to="/documentation">
 						<h2 className="text-sm font-medium group-hover:underline">
 							Inside DEVSForge <span aria-hidden="true">↗</span>
 						</h2>

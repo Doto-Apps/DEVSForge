@@ -49,11 +49,11 @@ export function StructureEditor({
 					</p>
 				</div>
 				<div className="flex gap-2">
-					<Button size="sm" onClick={onRegenerate} variant="ghost">
+					<Button onClick={onRegenerate} size="sm" variant="ghost">
 						<RefreshCw size={14} />
 						Regenerate
 					</Button>
-					<Button size="sm" disabled={issues.length > 0} onClick={onValidate}>
+					<Button disabled={issues.length > 0} onClick={onValidate} size="sm">
 						Continue to code
 						<ArrowRight size={14} />
 					</Button>
@@ -61,8 +61,8 @@ export function StructureEditor({
 			</div>
 			{issues.length > 0 && (
 				<div
-					role="alert"
 					className="shrink-0 px-4 py-2 text-xs text-destructive"
+					role="alert"
 				>
 					{issues.join("; ")}
 				</div>
@@ -80,17 +80,17 @@ export function StructureEditor({
 					</div>
 					<ul className="divide-y px-4">
 						{diagram.models.map((model) => (
-							<li key={model.id} className="py-3">
+							<li className="py-3" key={model.id}>
 								<div className="flex items-center gap-2 text-xs font-medium">
 									{model.type === "coupled" ? (
 										<Network
-											size={14}
 											className="shrink-0 text-muted-foreground"
+											size={14}
 										/>
 									) : (
 										<FileCode2
-											size={14}
 											className="shrink-0 text-muted-foreground"
+											size={14}
 										/>
 									)}
 									<span className="truncate">{model.name}</span>

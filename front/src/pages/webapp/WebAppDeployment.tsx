@@ -195,8 +195,8 @@ export function WebAppDeployment() {
 		if (section.kind === "parameters") {
 			return (
 				<Card
-					key={section.id}
 					className="rounded-none border-0 bg-transparent shadow-none"
+					key={section.id}
 				>
 					<CardHeader className="px-0 pb-3 pt-0">
 						<CardTitle className="text-base">
@@ -243,8 +243,8 @@ export function WebAppDeployment() {
 		if (section.kind === "inputs") {
 			return (
 				<Card
-					key={section.id}
 					className="rounded-none border-0 bg-transparent shadow-none"
+					key={section.id}
 				>
 					<CardHeader className="px-0 pb-3 pt-0">
 						<CardTitle className="text-base">
@@ -264,8 +264,8 @@ export function WebAppDeployment() {
 		if (section.kind === "outputs") {
 			return (
 				<Card
-					key={section.id}
 					className="rounded-none border-0 bg-transparent shadow-none"
+					key={section.id}
 				>
 					<CardHeader className="px-0 pb-3 pt-0">
 						<CardTitle className="text-base">
@@ -310,8 +310,8 @@ export function WebAppDeployment() {
 
 		return (
 			<Card
-				key={section.id}
 				className="rounded-none border-0 bg-transparent shadow-none"
+				key={section.id}
 			>
 				<CardHeader className="px-0 pb-3 pt-0">
 					<CardTitle className="text-base">
@@ -347,9 +347,9 @@ export function WebAppDeployment() {
 					<header>
 						<Button
 							asChild
-							variant="ghost"
-							size="sm"
 							className="mb-4 -ml-2 h-7 px-2"
+							size="sm"
+							variant="ghost"
 						>
 							<Link to="/webapps">
 								<ArrowLeft size={13} />

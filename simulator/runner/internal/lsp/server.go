@@ -316,7 +316,7 @@ func writeJSON(w http.ResponseWriter, status int, value any) {
 }
 func (m *Manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if subtle.ConstantTimeCompare([]byte(r.Header.Get("Authorization")), []byte("Bearer "+m.token)) != 1 {
-		http.Error(w, "unauthorized", 401)
+		http.Error(w, "unauthorized", http.StatusUnauthorized)
 		return
 	}
 	if r.URL.Path == "/health" {
@@ -329,7 +329,7 @@ func (m *Manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/sessions" && r.Method == http.MethodPost {
 		var req Request
 		if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 2*1024*1024)).Decode(&req); err != nil {
-			http.Error(w, "invalid JSON", 400)
+			http.Error(w, "invalid JSON", http.StatusBadRequest)
 			return
 		}
 		res, err := m.Create(req)
@@ -372,7 +372,7 @@ func (m *Manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 		if len(s.documents) == 0 {
 			s.mu.Unlock()
-			http.Error(w, "workspace has no attached document", 409)
+			http.Error(w, "workspace has no attached document", http.StatusConflict)
 			return
 		}
 		for _, doc := range s.documents {
@@ -384,7 +384,7 @@ func (m *Manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if len(parts) == 4 && parts[2] == "documents" && r.Method == http.MethodDelete {
 		if err := s.detach(parts[3]); err != nil {
-			http.Error(w, err.Error(), 500)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 		w.WriteHeader(204)
@@ -398,7 +398,7 @@ func (m *Manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if len(parts) == 3 && parts[2] == "file" && r.Method == http.MethodGet {
 		path, err := s.readablePath(r.URL.Query().Get("uri"))
 		if err != nil {
-			http.Error(w, "forbidden", 403)
+			http.Error(w, "forbidden", http.StatusForbidden)
 			return
 		}
 		f, err := os.Open(path)
@@ -406,7 +406,7 @@ func (m *Manager) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 			return
 		}
-		defer f.Close()
+		defer func() { _ = f.Close() }()
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		_, _ = io.Copy(w, io.LimitReader(f, 2*1024*1024))
 		return
@@ -447,7 +447,7 @@ func (m *Manager) connect(w http.ResponseWriter, r *http.Request, s *session, en
 	t := s.tickets[engine]
 	if t == nil || t.Used || time.Now().After(t.Expires) || subtle.ConstantTimeCompare([]byte(t.Value), []byte(r.URL.Query().Get("ticket"))) != 1 {
 		s.mu.Unlock()
-		http.Error(w, "expired ticket", 401)
+		http.Error(w, "expired ticket", http.StatusUnauthorized)
 		return
 	}
 	t.Used = true

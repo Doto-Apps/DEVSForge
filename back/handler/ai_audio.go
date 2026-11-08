@@ -86,7 +86,7 @@ func listCurrentUserAIModels(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(502).JSON(fiber.Map{"error": "Provider could not be reached. Check its URL and network access."})
 	}
-	defer upstream.Body.Close()
+	defer func() { _ = upstream.Body.Close() }()
 	if upstream.StatusCode < 200 || upstream.StatusCode >= 300 {
 		return providerFailure(c, upstream.StatusCode)
 	}
@@ -190,7 +190,7 @@ func transcribeCurrentUserAudio(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(400).JSON(fiber.Map{"error": "Could not read the recording"})
 	}
-	defer input.Close()
+	defer func() { _ = input.Close() }()
 	var body bytes.Buffer
 	writer := multipart.NewWriter(&body)
 	part, err := writer.CreateFormFile("file", "dictation"+ext)
@@ -223,7 +223,7 @@ func transcribeCurrentUserAudio(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(502).JSON(fiber.Map{"error": "Transcription failed or timed out. Check your provider connection."})
 	}
-	defer upstream.Body.Close()
+	defer func() { _ = upstream.Body.Close() }()
 	if upstream.StatusCode < 200 || upstream.StatusCode >= 300 {
 		return providerFailure(c, upstream.StatusCode)
 	}

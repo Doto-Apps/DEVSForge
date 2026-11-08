@@ -1,5 +1,4 @@
-import { useState, useRef } from "react";
-import { useWorkbenchState } from "@/providers/WorkbenchProvider";
+import { useRef, useState } from "react";
 import { Dictation } from "@/components/custom/Dictation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -7,6 +6,7 @@ import {
 	mergeStructureProposal,
 	validateGeneratedStructure,
 } from "@/lib/llmToReactFlow";
+import { useWorkbenchState } from "@/providers/WorkbenchProvider";
 import type { GeneratedDiagram } from "@/types";
 
 type Message = { role: "user" | "assistant"; content: string };
@@ -15,22 +15,22 @@ export function structureContext(
 	codeIds: string[] = [],
 ) {
 	return JSON.stringify({
-		name: diagram.name,
-		rootModelId: diagram.rootModelId,
-		modelUnderTestId: diagram.modelUnderTestId,
+		connections: diagram.connections,
 		models: diagram.models.map((m) => ({
+			components: m.components ?? [],
 			id: m.id,
 			name: m.name,
-			type: m.type,
-			role: m.role,
-			components: m.components ?? [],
 			ports: [
 				...m.ports.in.map((name) => ({ id: name, name, type: "in" })),
 				...m.ports.out.map((name) => ({ id: name, name, type: "out" })),
 			],
+			role: m.role,
+			type: m.type,
 			...(codeIds.includes(m.id) ? { code: m.code } : {}),
 		})),
-		connections: diagram.connections,
+		modelUnderTestId: diagram.modelUnderTestId,
+		name: diagram.name,
+		rootModelId: diagram.rootModelId,
 	});
 }
 export function StructureConversation({
@@ -85,12 +85,12 @@ export function StructureConversation({
 		try {
 			const prompt = `[INITIAL REQUEST]\n${initialPrompt}\n[CURRENT STRUCTURE]\n${structureContext(latest.current, codeIds)}\n[REQUESTED CHANGE]\n${question}`;
 			const messages: Message[] = [
-				{ role: "user", content: initialPrompt },
+				{ content: initialPrompt, role: "user" },
 				...history.slice(-6),
 			];
 			if (
 				new Blob([
-					JSON.stringify({ userPrompt: prompt, pastMessages: messages }),
+					JSON.stringify({ pastMessages: messages, userPrompt: prompt }),
 				]).size >
 				250 * 1024
 			)
@@ -105,8 +105,8 @@ export function StructureConversation({
 			setProposal(result);
 			setHistory([
 				...history,
-				{ role: "user", content: question },
-				{ role: "assistant", content: structureContext(result) },
+				{ content: question, role: "user" },
+				{ content: structureContext(result), role: "assistant" },
 			]);
 			setText("");
 		} catch (e) {
@@ -130,7 +130,7 @@ export function StructureConversation({
 				</div>
 				{history.map((m, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: Conversation entries are append-only and never reordered.
-					<div key={i} className="rounded bg-muted/30 p-2 text-sm">
+					<div className="rounded bg-muted/30 p-2 text-sm" key={i}>
 						{m.role === "user" ? (
 							<p className="whitespace-pre-wrap">{m.content}</p>
 						) : (
@@ -161,32 +161,32 @@ export function StructureConversation({
 							</pre>
 						</details>
 						{issues.map((issue) => (
-							<p key={issue} role="alert" className="text-xs text-destructive">
+							<p className="text-xs text-destructive" key={issue} role="alert">
 								{issue}
 							</p>
 						))}
 						{changed && (
-							<p role="alert" className="text-xs text-destructive">
+							<p className="text-xs text-destructive" role="alert">
 								Your structure changed after this request. Ask for an updated
 								proposal before applying it.
 							</p>
 						)}
 						<div className="flex gap-2">
 							<Button
-								size="sm"
 								disabled={busy || !!issues.length || changed}
 								onClick={() => {
 									onChange(mergeStructureProposal(latest.current, proposal));
 									setProposal(null);
 									setBase("");
 								}}
+								size="sm"
 							>
 								Accept
 							</Button>
 							<Button
+								onClick={() => setProposal(null)}
 								size="sm"
 								variant="outline"
-								onClick={() => setProposal(null)}
 							>
 								Reject
 							</Button>
@@ -194,7 +194,7 @@ export function StructureConversation({
 					</div>
 				)}
 				{(error || errorMessage) && (
-					<p role="alert" className="text-sm text-destructive">
+					<p className="text-sm text-destructive" role="alert">
 						{errorMessage ?? error}
 					</p>
 				)}
@@ -207,9 +207,8 @@ export function StructureConversation({
 					{diagram.models
 						.filter((m) => m.code)
 						.map((m) => (
-							<label key={m.id} className="block text-xs">
+							<label className="block text-xs" key={m.id}>
 								<input
-									type="checkbox"
 									checked={codeIds.includes(m.id)}
 									onChange={(e) =>
 										setCodeIds(
@@ -218,6 +217,7 @@ export function StructureConversation({
 												: codeIds.filter((id) => id !== m.id),
 										)
 									}
+									type="checkbox"
 								/>{" "}
 								{m.name}
 							</label>
@@ -225,16 +225,16 @@ export function StructureConversation({
 				</details>
 				<Textarea
 					aria-label="Structure correction"
-					value={text}
 					disabled={busy}
 					onChange={(e) => setText(e.target.value)}
 					placeholder="Describe the correction you want…"
+					value={text}
 				/>
 				<Dictation
-					key={conversationKey}
-					value={text}
-					onChange={setText}
 					disabled={busy}
+					key={conversationKey}
+					onChange={setText}
+					value={text}
 				/>
 				<Button
 					className="w-full"

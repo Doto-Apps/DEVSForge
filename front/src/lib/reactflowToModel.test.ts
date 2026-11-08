@@ -104,47 +104,47 @@ describe("reactflowToModel", () => {
 	});
 	it("resolves boundary port IDs using the coupled input/output direction", () => {
 		const flow = {
-			nodes: [
+			edges: [
 				{
-					id: "root",
-					position: { x: 0, y: 0 },
-					data: {
-						id: "root",
-						label: "Root",
-						modelType: "coupled",
-						inputPorts: [{ id: "root-in", name: "request" }],
-						outputPorts: [{ id: "root-out", name: "reply" }],
-					},
+					data: { holderId: "root" },
+					id: "in",
+					source: "root",
+					sourceHandle: "in-internal-root:root-in",
+					target: "root/child",
+					targetHandle: "root/child:child-in",
 				},
 				{
+					data: { holderId: "root" },
+					id: "out",
+					source: "root/child",
+					sourceHandle: "root/child:child-out",
+					target: "root",
+					targetHandle: "out-internal-root:root-out",
+				},
+			],
+			nodes: [
+				{
+					data: {
+						id: "root",
+						inputPorts: [{ id: "root-in", name: "request" }],
+						label: "Root",
+						modelType: "coupled",
+						outputPorts: [{ id: "root-out", name: "reply" }],
+					},
+					id: "root",
+					position: { x: 0, y: 0 },
+				},
+				{
+					data: {
+						id: "child",
+						inputPorts: [{ id: "child-in", name: "accept" }],
+						label: "Child",
+						modelType: "atomic",
+						outputPorts: [{ id: "child-out", name: "answer" }],
+					},
 					id: "root/child",
 					parentId: "root",
 					position: { x: 20, y: 30 },
-					data: {
-						id: "child",
-						label: "Child",
-						modelType: "atomic",
-						inputPorts: [{ id: "child-in", name: "accept" }],
-						outputPorts: [{ id: "child-out", name: "answer" }],
-					},
-				},
-			],
-			edges: [
-				{
-					id: "in",
-					source: "root",
-					target: "root/child",
-					sourceHandle: "in-internal-root:root-in",
-					targetHandle: "root/child:child-in",
-					data: { holderId: "root" },
-				},
-				{
-					id: "out",
-					source: "root/child",
-					target: "root",
-					sourceHandle: "root/child:child-out",
-					targetHandle: "out-internal-root:root-out",
-					data: { holderId: "root" },
 				},
 			],
 		} as ReactFlowInput;

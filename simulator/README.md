@@ -93,11 +93,12 @@ The backend generates a runnable manifest and flattens coupled model hierarchies
 From repository root:
 
 ```bash
-go test -v ./simulator/runner/tests/...
-go test -v ./simulator/coordinator/tests/...
+task simulator:build
+task simulator:test
+task simulator:lsp:test
 ```
 
-Tests spin up Kafka using testcontainers + `simulator/tests/docker-compose.yml`.
+`simulator:test` builds the runner image and runs the coordinator, runner and shared-module tests inside it, with the Go, Python and Java toolchains installed. Integration tests start their own Kafka container through Testcontainers; Docker must be running. `simulator:lsp:test` also checks completion with the real language servers.
 
 ## Manual Invocation (Advanced)
 

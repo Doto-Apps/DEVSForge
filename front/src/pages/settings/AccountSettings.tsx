@@ -29,7 +29,7 @@ type Connection = {
 	key: string;
 	clearKey: boolean;
 };
-const empty: Connection = { url: "", model: "", key: "", clearKey: false };
+const empty: Connection = { clearKey: false, key: "", model: "", url: "" };
 
 function ProviderFields({
 	purpose,
@@ -71,8 +71,8 @@ function ProviderFields({
 				"/user/settings/ai/models",
 				{
 					body: {
-						purpose,
 						apiUrl: value.url.trim(),
+						purpose,
 						...(value.clearKey
 							? { apiKey: "" }
 							: value.key.trim()
@@ -102,29 +102,29 @@ function ProviderFields({
 			<div className="space-y-2">
 				<Label htmlFor={`${prefix}-api-url`}>API URL</Label>
 				<Input
-					id={`${prefix}-api-url`}
 					disabled={disabled || loading}
+					id={`${prefix}-api-url`}
+					onChange={(e) => onChange({ ...value, url: e.target.value })}
 					placeholder="https://your-provider.example/v1"
 					value={value.url}
-					onChange={(e) => onChange({ ...value, url: e.target.value })}
 				/>
 			</div>
 			<div className="space-y-2">
 				<Label htmlFor={`${prefix}-api-key`}>API key</Label>
 				<Input
-					id={`${prefix}-api-key`}
-					type="password"
 					autoComplete="new-password"
 					disabled={disabled || loading}
+					id={`${prefix}-api-key`}
+					onChange={(e) =>
+						onChange({ ...value, clearKey: false, key: e.target.value })
+					}
 					placeholder={
 						hasKey
 							? "Leave blank to keep the stored key"
 							: "Enter your provider key (if required)"
 					}
+					type="password"
 					value={value.key}
-					onChange={(e) =>
-						onChange({ ...value, key: e.target.value, clearKey: false })
-					}
 				/>
 				<div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
 					<span>
@@ -136,12 +136,12 @@ function ProviderFields({
 					</span>
 					{hasKey && (
 						<button
-							type="button"
-							disabled={disabled || loading}
 							className="underline underline-offset-2"
+							disabled={disabled || loading}
 							onClick={() =>
-								onChange({ ...value, key: "", clearKey: !value.clearKey })
+								onChange({ ...value, clearKey: !value.clearKey, key: "" })
 							}
+							type="button"
 						>
 							{value.clearKey ? "Keep stored key" : "Remove stored key"}
 						</button>
@@ -159,11 +159,11 @@ function ProviderFields({
 			</div>
 			<div className="flex flex-wrap items-center gap-3">
 				<Button
-					type="button"
-					size="sm"
-					variant="outline"
 					disabled={disabled || loading || !value.url.trim()}
 					onClick={load}
+					size="sm"
+					type="button"
+					variant="outline"
 				>
 					{loading ? (
 						<Loader2 className="animate-spin" size={14} />
@@ -177,22 +177,22 @@ function ProviderFields({
 				</span>
 			</div>
 			{error && (
-				<p role="alert" className="text-xs leading-5 text-destructive">
+				<p className="text-xs leading-5 text-destructive" role="alert">
 					{error}
 				</p>
 			)}
 			{loaded &&
 				discoveredFor === credentialIdentity &&
 				!currentModels.length && (
-					<p role="status" className="text-xs text-muted-foreground">
+					<p className="text-xs text-muted-foreground" role="status">
 						No model IDs returned. Enter an ID manually below.
 					</p>
 				)}
 			{currentModels.length > 0 && (
 				<Select
-					value={currentModels.includes(value.model) ? value.model : undefined}
-					onValueChange={(model) => onChange({ ...value, model })}
 					disabled={disabled || loading}
+					onValueChange={(model) => onChange({ ...value, model })}
+					value={currentModels.includes(value.model) ? value.model : undefined}
 				>
 					<SelectTrigger aria-label={`Choose a ${purpose} model`}>
 						<SelectValue placeholder="Select a discovered model" />
@@ -209,11 +209,11 @@ function ProviderFields({
 			<div className="space-y-2">
 				<Label htmlFor={`${prefix}-api-model`}>Model ID</Label>
 				<Input
-					id={`${prefix}-api-model`}
 					disabled={disabled || loading}
-					value={value.model}
-					placeholder="Select above or enter an exact model ID"
+					id={`${prefix}-api-model`}
 					onChange={(e) => onChange({ ...value, model: e.target.value })}
+					placeholder="Select above or enter an exact model ID"
+					value={value.model}
 				/>
 				<p className="text-xs leading-5 text-muted-foreground">
 					The provider’s list may contain models for other uses. Choose one that
@@ -240,13 +240,13 @@ export function AccountSettings() {
 		setSettings(data);
 		setGeneration({
 			...empty,
-			url: data.apiUrl ?? "",
 			model: data.apiModel ?? "",
+			url: data.apiUrl ?? "",
 		});
 		setTranscription({
 			...empty,
-			url: data.transcriptionApiUrl ?? "",
 			model: data.transcriptionApiModel ?? "",
+			url: data.transcriptionApiUrl ?? "",
 		});
 	}, []);
 	const load = useCallback(async () => {
@@ -270,10 +270,10 @@ export function AccountSettings() {
 		try {
 			const body: components["schemas"]["request.UpdateUserAISettingsRequest"] =
 				{
-					apiUrl: generation.url.trim(),
 					apiModel: generation.model.trim(),
-					transcriptionApiUrl: transcription.url.trim(),
+					apiUrl: generation.url.trim(),
 					transcriptionApiModel: transcription.model.trim(),
+					transcriptionApiUrl: transcription.url.trim(),
 					...(generation.clearKey
 						? { apiKey: "" }
 						: generation.key.trim()
@@ -292,13 +292,13 @@ export function AccountSettings() {
 				);
 			apply(data);
 			toast({
-				title: "Settings saved",
 				description: "Generation and dictation connections updated.",
+				title: "Settings saved",
 			});
 		} catch (e) {
 			toast({
-				title: "Could not save settings",
 				description: e instanceof Error ? e.message : "Please try again.",
+				title: "Could not save settings",
 				variant: "destructive",
 			});
 		} finally {
@@ -324,14 +324,14 @@ export function AccountSettings() {
 							API endpoints.
 						</p>
 					</div>
-					<Button onClick={save} disabled={disabled}>
+					<Button disabled={disabled} onClick={save}>
 						{saving && <Loader2 className="animate-spin" />}Save settings
 					</Button>
 				</header>
 				{loadError && (
-					<p role="alert" className="mb-4 text-sm text-destructive">
+					<p className="mb-4 text-sm text-destructive" role="alert">
 						{loadError}{" "}
-						<Button variant="outline" size="sm" onClick={load}>
+						<Button onClick={load} size="sm" variant="outline">
 							Retry
 						</Button>
 					</p>
@@ -347,13 +347,13 @@ export function AccountSettings() {
 						</CardHeader>
 						<CardContent>
 							<ProviderFields
-								purpose="generation"
-								value={generation}
-								onChange={setGeneration}
+								disabled={disabled}
 								hasKey={settings?.hasApiKey}
 								masked={settings?.apiKeyMasked}
+								onChange={setGeneration}
+								purpose="generation"
 								savedURL={settings?.apiUrl}
-								disabled={disabled}
+								value={generation}
 							/>
 						</CardContent>
 					</Card>
@@ -368,13 +368,13 @@ export function AccountSettings() {
 						</CardHeader>
 						<CardContent>
 							<ProviderFields
-								purpose="transcription"
-								value={transcription}
-								onChange={setTranscription}
+								disabled={disabled}
 								hasKey={settings?.hasTranscriptionApiKey}
 								masked={settings?.transcriptionApiKeyMasked}
+								onChange={setTranscription}
+								purpose="transcription"
 								savedURL={settings?.transcriptionApiUrl}
-								disabled={disabled}
+								value={transcription}
 							/>
 							<p className="mt-4 text-xs leading-5 text-muted-foreground">
 								Use the API base URL (including its version prefix, if

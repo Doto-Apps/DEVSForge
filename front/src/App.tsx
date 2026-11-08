@@ -18,7 +18,6 @@ import { Register } from "@/pages/register/register";
 import { AuthProvider, useAuth } from "@/providers/AuthProvider";
 
 import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
-import { Roadmap } from "./pages/roadmap/Roadmap";
 import { GettingStarted } from "./pages/help/GettingStarted";
 import { HowItWorks, LegacyDocumentation } from "./pages/help/HowItWorks";
 import { ModelerHome } from "./pages/home/ModelerHome";
@@ -29,6 +28,7 @@ import { EditModel } from "./pages/model/EditModel";
 import { SimulateModel } from "./pages/model/SimulateModel";
 import { TestModel } from "./pages/model/TestModel";
 import { ValidationModel } from "./pages/model/ValidationModel";
+import { Roadmap } from "./pages/roadmap/Roadmap";
 import { AccountSettings } from "./pages/settings/AccountSettings";
 import { WebAppBuilder } from "./pages/webapp/WebAppBuilder";
 import { WebAppDeployment } from "./pages/webapp/WebAppDeployment";

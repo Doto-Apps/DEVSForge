@@ -3,8 +3,6 @@ import { Loader } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { type Options, useHotkeys } from "react-hotkeys-hook";
 import { useNavigate, useParams } from "react-router-dom";
-import { useWorkbench } from "@/providers/WorkbenchProvider";
-
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
 import { ModelPropertyEditor } from "@/components/custom/ModelPropertyEditor";
 import { ModelViewEditor } from "@/components/custom/ModelViewEditor";
@@ -16,8 +14,8 @@ import {
 } from "@/components/ui/resizable";
 import { useToast } from "@/hooks/use-toast";
 import { modelToReactflow } from "@/lib/modelToReactflow";
-
 import { updateCodeBasedOnProperties } from "@/lib/updateCodeBasedOnProperties";
+import { useWorkbench } from "@/providers/WorkbenchProvider";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelByIdRecursive } from "@/queries/model/useGetModelByIdRecursive";
 import { useGetModels } from "@/queries/model/useGetModels";
@@ -90,13 +88,13 @@ export function EditModel() {
 			const tmp = modelToReactflow(data);
 			tmp.nodes.sort((a, b) => a.id.length - b.id.length);
 			workbench.open({
+				draft: tmp,
 				id: modelId,
+				integration: data.find((m) => m.id === modelId)?.integrationId,
+				kind: data.find((m) => m.id === modelId)?.type ?? "atomic",
 				libraryId: libraryId ?? "",
 				libraryName: dataLib?.title ?? "Library",
 				name: data.find((m) => m.id === modelId)?.name ?? "Model",
-				kind: data.find((m) => m.id === modelId)?.type ?? "atomic",
-				integration: data.find((m) => m.id === modelId)?.integrationId,
-				draft: tmp,
 			});
 		}
 	}, [data, modelId, libraryId, dataLib?.title, workbench.open]);
@@ -230,9 +228,9 @@ export function EditModel() {
 					{ label: mainModel?.data.label ?? "Edit Model" },
 				]}
 				deployFunction={deployWebApp}
-				modelId={modelId}
 				integrationId={profileModel?.integrationId}
 				integrationVersion={profileModel?.integrationVersion}
+				modelId={modelId}
 				modelLanguage={
 					mainModel?.data.modelType === "atomic" ? modelLanguage : undefined
 				}
@@ -248,11 +246,11 @@ export function EditModel() {
 					<ResizablePanel defaultSize={50} minSize={20}>
 						<ModelCodeEditor
 							code={mainModel.data.code}
-							language={modelLanguage}
 							integrationId={profileModel?.integrationId}
 							integrationVersion={profileModel?.integrationVersion}
-							modelName={mainModel.data.label}
+							language={modelLanguage}
 							modelId={mainModel.id}
+							modelName={mainModel.data.label}
 							onCodeChange={onChangeCode}
 							workbenchId={workbench.id}
 						/>

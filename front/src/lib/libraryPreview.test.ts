@@ -4,27 +4,24 @@ import { libraryPreview } from "./libraryPreview";
 
 type Model = components["schemas"]["response.ModelResponse"];
 const atomic: Model = {
-	id: "a",
-	name: "Same name",
-	type: "atomic",
-	userId: "owner",
 	code: "",
-	description: "",
 	components: [],
 	connections: [],
-	ports: [{ id: "out", name: "state", type: "out" }],
+	description: "",
+	id: "a",
 	metadata: {
 		keyword: [],
 		modelRole: "",
 		position: { x: 0, y: 0 },
-		style: { width: 200, height: 200 },
+		style: { height: 200, width: 200 },
 	},
+	name: "Same name",
+	ports: [{ id: "out", name: "state", type: "out" }],
+	type: "atomic",
+	userId: "owner",
 };
 const parent: Model = {
 	...atomic,
-	id: "parent",
-	type: "coupled",
-	ports: [{ id: "external", name: "state", type: "out" }],
 	components: [
 		{ instanceId: "left", modelId: "a" },
 		{ instanceId: "right", modelId: "a" },
@@ -35,6 +32,9 @@ const parent: Model = {
 			to: { instanceId: "root", port: "state" },
 		},
 	],
+	id: "parent",
+	ports: [{ id: "external", name: "state", type: "out" }],
+	type: "coupled",
 };
 
 describe("library previews", () => {

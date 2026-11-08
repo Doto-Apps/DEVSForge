@@ -62,7 +62,11 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer container.Terminate(ctx)
+	defer func() {
+		if err := container.Terminate(ctx); err != nil {
+			t.Error(err)
+		}
+	}()
 	dsn, err := container.ConnectionString(ctx, "sslmode=disable")
 	if err != nil {
 		t.Fatal(err)
@@ -75,7 +79,11 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer migration.Close()
+	defer func() {
+		if sourceErr, dbErr := migration.Close(); sourceErr != nil || dbErr != nil {
+			t.Errorf("close migration: source=%v database=%v", sourceErr, dbErr)
+		}
+	}()
 	// Exercise upgrading an existing database, rather than just creating the new columns.
 	if err = migration.Migrate(10); err != nil {
 		t.Fatal(err)
@@ -87,8 +95,15 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 	previous := database.DB
 	database.DB = db
 	defer func() { database.DB = previous }()
-	sqlDB, _ := db.DB()
-	defer sqlDB.Close()
+	sqlDB, err := db.DB()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() {
+		if err := sqlDB.Close(); err != nil {
+			t.Error(err)
+		}
+	}()
 	user := model.User{Username: "dictation", Email: "dictation@example.test", Password: "test-password"}
 	other := model.User{Username: "other-user", Email: "other@example.test", Password: "test-password"}
 	if err = db.Create(&user).Error; err != nil {
@@ -116,7 +131,9 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 			if r.Header.Get("Authorization") != "Bearer generation-secret" && r.Header.Get("Authorization") != "Bearer voice-secret" {
 				t.Error("wrong discovery key")
 			}
-			io.WriteString(w, `{"data":[{"id":"chat-id"},{"id":"voice-id"}]}`)
+			if _, err := io.WriteString(w, `{"data":[{"id":"chat-id"},{"id":"voice-id"}]}`); err != nil {
+				t.Error(err)
+			}
 		case "/v1/audio/transcriptions":
 			if r.Header.Get("Authorization") != "Bearer voice-secret" {
 				t.Error("generation key used for dictation")
@@ -135,12 +152,22 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 				w.WriteHeader(400)
 				return
 			}
-			defer file.Close()
-			audio, _ := io.ReadAll(file)
+			defer func() {
+				if err := file.Close(); err != nil {
+					t.Error(err)
+				}
+			}()
+			audio, err := io.ReadAll(file)
+			if err != nil {
+				t.Error(err)
+				return
+			}
 			if string(audio) != "test-audio" || header.Filename != "dictation.webm" {
 				t.Error("recording changed")
 			}
-			io.WriteString(w, `{"text":"Créer une maison avec deux pièces."}`)
+			if _, err := io.WriteString(w, `{"text":"Créer une maison avec deux pièces."}`); err != nil {
+				t.Error(err)
+			}
 		default:
 			w.WriteHeader(404)
 		}
@@ -169,7 +196,7 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer res.Body.Close()
+		defer func() { _ = res.Body.Close() }()
 		body, _ := io.ReadAll(res.Body)
 		return res.StatusCode, body
 	}
@@ -202,10 +229,19 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 	}
 	var recording bytes.Buffer
 	writer := multipart.NewWriter(&recording)
-	part, _ := writer.CreateFormFile("file", "recorded.webm")
-	part.Write([]byte("test-audio"))
-	writer.WriteField("language", "fr")
-	writer.Close()
+	part, err := writer.CreateFormFile("file", "recorded.webm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = part.Write([]byte("test-audio")); err != nil {
+		t.Fatal(err)
+	}
+	if err = writer.WriteField("language", "fr"); err != nil {
+		t.Fatal(err)
+	}
+	if err = writer.Close(); err != nil {
+		t.Fatal(err)
+	}
 	transcribe := func(id string) (int, []byte) {
 		req := httptest.NewRequest("POST", "/transcribe", bytes.NewReader(recording.Bytes()))
 		req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -214,7 +250,7 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		defer res.Body.Close()
+		defer func() { _ = res.Body.Close() }()
 		body, _ := io.ReadAll(res.Body)
 		return res.StatusCode, body
 	}
@@ -240,9 +276,16 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 	// File bounds are checked before dispatch.
 	var large bytes.Buffer
 	largeWriter := multipart.NewWriter(&large)
-	largePart, _ := largeWriter.CreateFormFile("file", "recorded.webm")
-	largePart.Write(bytes.Repeat([]byte{0}, maxDictationBytes+1))
-	largeWriter.Close()
+	largePart, err := largeWriter.CreateFormFile("file", "recorded.webm")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = largePart.Write(bytes.Repeat([]byte{0}, maxDictationBytes+1)); err != nil {
+		t.Fatal(err)
+	}
+	if err = largeWriter.Close(); err != nil {
+		t.Fatal(err)
+	}
 	largeReq := httptest.NewRequest("POST", "/transcribe", &large)
 	largeReq.Header.Set("Content-Type", largeWriter.FormDataContentType())
 	largeReq.Header.Set("X-Test-User", user.ID)
@@ -250,12 +293,19 @@ func TestAIProviderSettingsAndDictation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	largeRes.Body.Close()
+	if err := largeRes.Body.Close(); err != nil {
+		t.Fatal(err)
+	}
 	if largeRes.StatusCode != 413 || providerCalls != calls {
 		t.Fatal("oversized recording reached the provider")
 	}
 	// Provider 401s must not log users out of DEVSForge or leak response bodies.
-	unauthorized := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(401); fmt.Fprint(w, "voice-secret") }))
+	unauthorized := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(401)
+		if _, err := fmt.Fprint(w, "voice-secret"); err != nil {
+			t.Error(err)
+		}
+	}))
 	defer unauthorized.Close()
 	do("PATCH", "/settings", map[string]any{"transcriptionApiUrl": unauthorized.URL, "transcriptionApiKey": "voice-secret"}, user.ID)
 	status, body = transcribe(user.ID)

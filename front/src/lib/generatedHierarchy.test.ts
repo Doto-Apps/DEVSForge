@@ -1,23 +1,45 @@
-import { describe, it, expect } from "vitest";
+import { describe, expect, it } from "vitest";
+import type { GeneratedDiagram, GeneratedModelData } from "@/types";
 import {
+	createCoupledModelRequest,
 	generatedDiagramToReactFlow,
+	mergeStructureProposal,
 	syncGeneratedStructure,
 	validateGeneratedStructure,
-	mergeStructureProposal,
-	createCoupledModelRequest,
 } from "./llmToReactFlow";
-import type { GeneratedDiagram, GeneratedModelData } from "@/types";
+
 const model = (id: string, components?: string[]): GeneratedModelData => ({
+	codeGenerated: false,
+	components,
+	dependencies: [],
 	id,
 	name: id,
-	type: components ? "coupled" : "atomic",
-	components,
 	ports: { in: ["in"], out: ["out"] },
-	dependencies: [],
-	codeGenerated: false,
+	type: components ? "coupled" : "atomic",
 });
 const fixture = (): GeneratedDiagram => ({
-	name: "nested",
+	connections: [
+		{
+			from: { model: "sub", port: "out" },
+			owner: "root",
+			to: { model: "sink", port: "in" },
+		},
+		{
+			from: { model: "inner", port: "out" },
+			owner: "sub",
+			to: { model: "sub", port: "out" },
+		},
+		{
+			from: { model: "leaf", port: "out" },
+			owner: "inner",
+			to: { model: "inner", port: "out" },
+		},
+		{
+			from: { model: "inner", port: "in" },
+			owner: "inner",
+			to: { model: "leaf", port: "in" },
+		},
+	],
 	models: [
 		model("root", ["sub", "sink"]),
 		model("sub", ["inner"]),
@@ -25,28 +47,7 @@ const fixture = (): GeneratedDiagram => ({
 		model("leaf"),
 		model("sink"),
 	],
-	connections: [
-		{
-			owner: "root",
-			from: { model: "sub", port: "out" },
-			to: { model: "sink", port: "in" },
-		},
-		{
-			owner: "sub",
-			from: { model: "inner", port: "out" },
-			to: { model: "sub", port: "out" },
-		},
-		{
-			owner: "inner",
-			from: { model: "leaf", port: "out" },
-			to: { model: "inner", port: "out" },
-		},
-		{
-			owner: "inner",
-			from: { model: "inner", port: "in" },
-			to: { model: "leaf", port: "in" },
-		},
-	],
+	name: "nested",
 });
 describe("nested generated structures", () => {
 	it("renders real parents through three coupled levels and keeps scoped connections", () => {
@@ -113,14 +114,14 @@ describe("nested generated structures", () => {
 	it("rejects cross-level wiring and containment cycles but allows DEVS feedback", () => {
 		const d = fixture();
 		d.connections.push({
-			owner: "inner",
 			from: { model: "leaf", port: "out" },
+			owner: "inner",
 			to: { model: "leaf", port: "in" },
 		});
 		expect(validateGeneratedStructure(d)).toEqual([]);
 		d.connections.push({
-			owner: "root",
 			from: { model: "leaf", port: "out" },
+			owner: "root",
 			to: { model: "sink", port: "in" },
 		});
 		expect(validateGeneratedStructure(d).join()).toContain("hierarchy");
@@ -129,7 +130,9 @@ describe("nested generated structures", () => {
 	});
 	it("requires explicit owners when definitions are reused in two coupled models", () => {
 		const d: GeneratedDiagram = {
-			name: "reuse",
+			connections: [
+				{ from: { model: "x", port: "out" }, to: { model: "y", port: "in" } },
+			],
 			models: [
 				model("root", ["a", "b"]),
 				model("a", ["x", "y"]),
@@ -137,9 +140,7 @@ describe("nested generated structures", () => {
 				model("x"),
 				model("y"),
 			],
-			connections: [
-				{ from: { model: "x", port: "out" }, to: { model: "y", port: "in" } },
-			],
+			name: "reuse",
 		};
 		expect(validateGeneratedStructure(d).join()).toContain("unambiguous");
 		d.connections[0].owner = "a";
@@ -157,9 +158,9 @@ describe("nested generated structures", () => {
 		const merged = mergeStructureProposal(d, proposal);
 		expect(merged.models.find((m) => m.id === "leaf")).toMatchObject({
 			code: "my unsaved code",
+			codeGenerated: false,
 			integrationId: "xdevs-python",
 			needsRevalidation: true,
-			codeGenerated: false,
 		});
 		expect(d.models.find((m) => m.id === "leaf")!.ports.in).toEqual(["in"]);
 	});

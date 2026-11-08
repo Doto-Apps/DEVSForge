@@ -50,9 +50,14 @@ tasks:
   build:
     desc: Build all simulator modules
     cmds:
-      - task: build:coordinator
-      - task: build:runner
-      - task: build:shared
+      - go build -v ./simulator/coordinator/... ./simulator/runner/... ./simulator/shared/...
+
+  test:
+    desc: Run all simulator tests inside Docker
+    cmds:
+      - task: runner:sh
+        vars:
+          CLI_ARGS: go test ./simulator/coordinator/... ./simulator/runner/... ./simulator/shared/... -timeout 10m {{.CLI_ARGS}}
 
   coordinator:sh:
     interactive: true

@@ -9,7 +9,7 @@ export function LibrariesHome() {
 		<div className="flex h-screen min-w-0 w-full flex-col">
 			<NavHeader
 				breadcrumbs={[
-					{ label: "Libraries", href: "/library" },
+					{ href: "/library", label: "Libraries" },
 					...(libraryId ? [{ label: "Collection" }] : []),
 				]}
 				showModeToggle
