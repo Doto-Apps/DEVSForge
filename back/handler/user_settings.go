@@ -48,7 +48,7 @@ func getCurrentUserAISettings(c *fiber.Ctx) error {
 // patchCurrentUserAISettings godoc
 //
 //	@Summary		Update current user AI settings
-//	@Description	Updates current user AI provider settings (apiUrl, apiKey, apiModel).
+//	@Description	Updates generation and transcription connections. Omitted keys are preserved; an explicit empty key removes it.
 //	@Tags			user
 //	@Accept			json
 //	@Produce		json
@@ -77,22 +77,11 @@ func patchCurrentUserAISettings(c *fiber.Ctx) error {
 		})
 	}
 
-	if req.APIURL != nil {
-		nextURL := strings.TrimSpace(*req.APIURL)
-		if nextURL != "" && !isValidAIURL(nextURL) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "apiUrl must be a valid http(s) URL",
-			})
-		}
-		settings.APIURL = nextURL
+	if err := updateAIConnection(&settings.APIURL, &settings.APIKey, &settings.APIModel, req.APIURL, req.APIKey, req.APIModel); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Generation: " + err.Error()})
 	}
-
-	if req.APIKey != nil {
-		settings.APIKey = strings.TrimSpace(*req.APIKey)
-	}
-
-	if req.APIModel != nil {
-		settings.APIModel = strings.TrimSpace(*req.APIModel)
+	if err := updateAIConnection(&settings.TranscriptionAPIURL, &settings.TranscriptionAPIKey, &settings.TranscriptionAPIModel, req.TranscriptionAPIURL, req.TranscriptionAPIKey, req.TranscriptionAPIModel); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Transcription: " + err.Error()})
 	}
 
 	if isNew {
@@ -116,10 +105,14 @@ func toUserAISettingsResponse(settings model.UserAISettings) response.UserAISett
 	hasKey := strings.TrimSpace(settings.APIKey) != ""
 
 	return response.UserAISettingsResponse{
-		APIURL:       settings.APIURL,
-		APIModel:     settings.APIModel,
-		HasAPIKey:    hasKey,
-		APIKeyMasked: maskSecret(settings.APIKey),
+		APIURL:                    settings.APIURL,
+		APIModel:                  settings.APIModel,
+		HasAPIKey:                 hasKey,
+		APIKeyMasked:              maskSecret(settings.APIKey),
+		TranscriptionAPIURL:       settings.TranscriptionAPIURL,
+		TranscriptionAPIModel:     settings.TranscriptionAPIModel,
+		HasTranscriptionAPIKey:    strings.TrimSpace(settings.TranscriptionAPIKey) != "",
+		TranscriptionAPIKeyMasked: maskSecret(settings.TranscriptionAPIKey),
 	}
 }
 
@@ -135,12 +128,34 @@ func maskSecret(value string) string {
 }
 
 func isValidAIURL(value string) bool {
-	parsed, err := url.ParseRequestURI(value)
+	parsed, err := url.Parse(value)
 	if err != nil {
 		return false
 	}
 	if parsed.Scheme != "http" && parsed.Scheme != "https" {
 		return false
 	}
-	return parsed.Host != ""
+	return parsed.Hostname() != "" && parsed.User == nil && parsed.RawQuery == "" && parsed.Fragment == ""
+}
+
+// Require an explicit key decision when a URL changes; never forward a hidden
+// saved key to a newly entered provider URL.
+func updateAIConnection(apiURL, apiKey, apiModel *string, nextURL, nextKey, nextModel *string) error {
+	if nextURL != nil {
+		value := strings.TrimRight(strings.TrimSpace(*nextURL), "/")
+		if value != "" && !isValidAIURL(value) {
+			return errors.New("API URL must be an http(s) base URL without credentials, query or fragment")
+		}
+		if value != strings.TrimRight(*apiURL, "/") && *apiKey != "" && nextKey == nil {
+			return errors.New("enter a key for the new URL, or explicitly remove the stored key")
+		}
+		*apiURL = value
+	}
+	if nextKey != nil {
+		*apiKey = strings.TrimSpace(*nextKey)
+	}
+	if nextModel != nil {
+		*apiModel = strings.TrimSpace(*nextModel)
+	}
+	return nil
 }

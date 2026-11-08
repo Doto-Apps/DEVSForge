@@ -2537,7 +2537,7 @@ export interface paths {
         head?: never;
         /**
          * Update current user AI settings
-         * @description Updates current user AI provider settings (apiUrl, apiKey, apiModel).
+         * @description Updates generation and transcription connections. Omitted keys are preserved; an explicit empty key removes it.
          */
         patch: {
             parameters: {
@@ -2586,6 +2586,167 @@ export interface paths {
                 };
             };
         };
+        trace?: never;
+    };
+    "/user/settings/ai/models": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * List models exposed by a configured compatible API
+         * @description Discovers model IDs using saved or supplied credentials. This does not verify transcription or structured-output capabilities.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            /** @description Connection to discover */
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["request.ListAIModelsRequest"];
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.AIProviderModelsResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+                /** @description Bad Gateway */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/user/settings/ai/transcriptions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Transcribe a short dictation with the current user's voice provider
+         * @description Sends at most 3 MiB to the saved compatible /audio/transcriptions endpoint. The returned text never starts model generation.
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "multipart/form-data": {
+                        /**
+                         * Format: binary
+                         * @description Recorded audio (WebM, Ogg, MP4/M4A, WAV or MP3), at most 3 MiB
+                         */
+                        file: string;
+                        /** @description Optional ISO language hint */
+                        language?: string;
+                    };
+                };
+            };
+            responses: {
+                /** @description OK */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["response.TranscriptionResponse"];
+                    };
+                };
+                /** @description Bad Request */
+                400: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+                /** @description Request Entity Too Large */
+                413: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+                /** @description Too Many Requests */
+                429: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+                /** @description Bad Gateway */
+                502: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            [key: string]: unknown;
+                        };
+                    };
+                };
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/user/{id}": {
@@ -3502,6 +3663,12 @@ export interface components {
             description: string;
             title: string;
         };
+        "request.ListAIModelsRequest": {
+            apiKey?: string;
+            apiUrl?: string;
+            /** @enum {string} */
+            purpose?: "generation" | "transcription";
+        };
         "request.LoginRequest": {
             identity: string;
             password: string;
@@ -3569,6 +3736,9 @@ export interface components {
             apiModel?: string;
             /** @example https://api.openai.com/v1 */
             apiUrl?: string;
+            transcriptionApiKey?: string;
+            transcriptionApiModel?: string;
+            transcriptionApiUrl?: string;
         };
         "request.UpdateUserRequest": {
             names: string;
@@ -3579,6 +3749,12 @@ export interface components {
             name?: string;
             prompt?: string;
             uiSchema?: components["schemas"]["json.WebAppUISchema"];
+        };
+        "response.AIProviderModelResponse": {
+            id?: string;
+        };
+        "response.AIProviderModelsResponse": {
+            models?: components["schemas"]["response.AIProviderModelResponse"][];
         };
         "response.Connection": {
             from?: components["schemas"]["response.Endpoint"];
@@ -3726,11 +3902,18 @@ export interface components {
             status?: components["schemas"]["model.SimulationStatus"];
             userId?: string;
         };
+        "response.TranscriptionResponse": {
+            text?: string;
+        };
         "response.UserAISettingsResponse": {
             apiKeyMasked?: string;
             apiModel?: string;
             apiUrl?: string;
             hasApiKey?: boolean;
+            hasTranscriptionApiKey?: boolean;
+            transcriptionApiKeyMasked?: string;
+            transcriptionApiModel?: string;
+            transcriptionApiUrl?: string;
         };
         "response.UserResponse": {
             email: string;

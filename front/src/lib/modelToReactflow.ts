@@ -122,8 +122,21 @@ const createReactflowModel = (
 	const resolvedModelRole =
 		metadata.modelRole ?? model.metadata.modelRole ?? "";
 	const resolvedKeywords = metadata.keyword ?? model.metadata.keyword ?? [];
+	// Empty instance colors must not mask the definition's saved colors.
 	const resolvedModelColors =
-		metadata.modelColors ?? model.metadata.modelColors;
+		metadata.modelColors || model.metadata.modelColors
+			? {
+					bodyBackgroundColor:
+						metadata.modelColors?.bodyBackgroundColor ||
+						model.metadata.modelColors?.bodyBackgroundColor,
+					headerBackgroundColor:
+						metadata.modelColors?.headerBackgroundColor ||
+						model.metadata.modelColors?.headerBackgroundColor,
+					headerTextColor:
+						metadata.modelColors?.headerTextColor ||
+						model.metadata.modelColors?.headerTextColor,
+				}
+			: undefined;
 	const resolvedParameters = metadata.parameters ?? model.metadata.parameters;
 
 	return {

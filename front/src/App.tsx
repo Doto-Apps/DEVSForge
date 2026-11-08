@@ -18,8 +18,9 @@ import { Register } from "@/pages/register/register";
 import { AuthProvider, useAuth } from "@/providers/AuthProvider";
 
 import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
+import { Roadmap } from "./pages/roadmap/Roadmap";
 import { GettingStarted } from "./pages/help/GettingStarted";
-import { HowItWorks } from "./pages/help/HowItWorks";
+import { HowItWorks, LegacyDocumentation } from "./pages/help/HowItWorks";
 import { ModelerHome } from "./pages/home/ModelerHome";
 import { CreateLibrary } from "./pages/library/CreateLibrary";
 import { LibrariesHome } from "./pages/library/LibrariesHome";
@@ -75,7 +76,10 @@ const Main = () => {
 
 				<Route element={<GeneratorFlow />} path="/devs-generator" />
 				<Route element={<GettingStarted />} path="/getting-started" />
-				<Route element={<HowItWorks />} path="/how-it-works" />
+				<Route element={<Roadmap />} path="/roadmap" />
+				<Route element={<LegacyDocumentation />} path="/how-it-works" />
+				<Route element={<HowItWorks />} path="/documentation" />
+				<Route element={<HowItWorks />} path="/documentation/:topic" />
 				<Route element={<AccountSettings />} path="/settings" />
 
 				<Route element={<ModelerHome />} path="/" />

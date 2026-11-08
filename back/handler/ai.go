@@ -49,8 +49,8 @@ func getOpenAIClientForUser(userID string) (*openai.Client, model.UserAISettings
 	settings.APIKey = strings.TrimSpace(settings.APIKey)
 	settings.APIModel = strings.TrimSpace(settings.APIModel)
 
-	if settings.APIURL == "" || settings.APIKey == "" || settings.APIModel == "" {
-		return nil, model.UserAISettings{}, fmt.Errorf("AI settings are incomplete: apiUrl, apiKey and apiModel are required")
+	if settings.APIURL == "" || settings.APIModel == "" {
+		return nil, model.UserAISettings{}, fmt.Errorf("AI settings are incomplete: apiUrl and apiModel are required")
 	}
 
 	client := openai.NewClient(

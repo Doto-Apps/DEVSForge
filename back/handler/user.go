@@ -18,6 +18,8 @@ func SetupUserRoutes(app *fiber.App) {
 
 	group.Get("/settings/ai", getCurrentUserAISettings)
 	group.Patch("/settings/ai", patchCurrentUserAISettings)
+	group.Post("/settings/ai/models", listCurrentUserAIModels)
+	group.Post("/settings/ai/transcriptions", transcribeCurrentUserAudio)
 	group.Get("/", getAllUsers)
 	group.Get("/:id", getUser)
 	group.Delete("/:id", deleteUser)

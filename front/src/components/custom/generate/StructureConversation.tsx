@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import { useWorkbenchState } from "@/providers/WorkbenchProvider";
+import { Dictation } from "@/components/custom/Dictation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -115,7 +116,7 @@ export function StructureConversation({
 		}
 	};
 	return (
-		<aside className="w-80 min-w-64 max-w-[45%] shrink-0 border-l flex flex-col min-h-0 bg-muted/20">
+		<aside className="flex min-h-0 max-h-80 w-full shrink-0 flex-col border-t bg-background lg:max-h-none lg:w-64 lg:border-l lg:border-t-0 xl:w-72">
 			<div className="p-3 border-b">
 				<h3 className="font-semibold">Discuss structure</h3>
 				<p className="text-xs text-muted-foreground">
@@ -129,7 +130,7 @@ export function StructureConversation({
 				</div>
 				{history.map((m, i) => (
 					// biome-ignore lint/suspicious/noArrayIndexKey: Conversation entries are append-only and never reordered.
-					<div key={`${i}-${m.role}`} className="rounded border p-2 text-sm">
+					<div key={i} className="rounded bg-muted/30 p-2 text-sm">
 						{m.role === "user" ? (
 							<p className="whitespace-pre-wrap">{m.content}</p>
 						) : (
@@ -228,6 +229,12 @@ export function StructureConversation({
 					disabled={busy}
 					onChange={(e) => setText(e.target.value)}
 					placeholder="Describe the correction you want…"
+				/>
+				<Dictation
+					key={conversationKey}
+					value={text}
+					onChange={setText}
+					disabled={busy}
 				/>
 				<Button
 					className="w-full"

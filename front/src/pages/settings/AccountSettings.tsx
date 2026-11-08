@@ -1,9 +1,8 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
 import NavHeader from "@/components/nav/nav-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -14,183 +13,379 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
-type UserAISettingsResponse =
-	components["schemas"]["response.UserAISettingsResponse"];
-
-const DEFAULT_SETTINGS: UserAISettingsResponse = {
-	apiKeyMasked: "",
-	apiModel: "",
-	apiUrl: "",
-	hasApiKey: false,
+type Settings = components["schemas"]["response.UserAISettingsResponse"];
+type Connection = {
+	url: string;
+	model: string;
+	key: string;
+	clearKey: boolean;
 };
+const empty: Connection = { url: "", model: "", key: "", clearKey: false };
+
+function ProviderFields({
+	purpose,
+	value,
+	onChange,
+	hasKey,
+	masked,
+	savedURL,
+	disabled,
+}: {
+	purpose: "generation" | "transcription";
+	value: Connection;
+	onChange: (value: Connection) => void;
+	hasKey?: boolean;
+	masked?: string;
+	savedURL?: string;
+	disabled: boolean;
+}) {
+	const [models, setModels] = useState<string[]>([]);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState("");
+	const [loaded, setLoaded] = useState(false);
+	const [discoveredFor, setDiscoveredFor] = useState("");
+	const prefix = purpose === "generation" ? "ai" : "transcription";
+	const credentialIdentity = JSON.stringify([
+		value.url,
+		value.key,
+		value.clearKey,
+	]);
+	const currentModels = discoveredFor === credentialIdentity ? models : [];
+	const load = async () => {
+		setLoading(true);
+		setError("");
+		setLoaded(false);
+		setModels([]);
+		setDiscoveredFor("");
+		try {
+			const { data, error: apiError } = await client.POST(
+				"/user/settings/ai/models",
+				{
+					body: {
+						purpose,
+						apiUrl: value.url.trim(),
+						...(value.clearKey
+							? { apiKey: "" }
+							: value.key.trim()
+								? { apiKey: value.key.trim() }
+								: {}),
+					},
+				},
+			);
+			if (apiError || !data)
+				throw new Error(
+					(apiError as { error?: string })?.error ||
+						"Could not load models. You can still enter an ID manually.",
+				);
+			setModels(
+				(data.models ?? []).flatMap((model) => (model.id ? [model.id] : [])),
+			);
+			setDiscoveredFor(credentialIdentity);
+			setLoaded(true);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Could not load models.");
+		} finally {
+			setLoading(false);
+		}
+	};
+	return (
+		<div className="space-y-4">
+			<div className="space-y-2">
+				<Label htmlFor={`${prefix}-api-url`}>API URL</Label>
+				<Input
+					id={`${prefix}-api-url`}
+					disabled={disabled || loading}
+					placeholder="https://your-provider.example/v1"
+					value={value.url}
+					onChange={(e) => onChange({ ...value, url: e.target.value })}
+				/>
+			</div>
+			<div className="space-y-2">
+				<Label htmlFor={`${prefix}-api-key`}>API key</Label>
+				<Input
+					id={`${prefix}-api-key`}
+					type="password"
+					autoComplete="new-password"
+					disabled={disabled || loading}
+					placeholder={
+						hasKey
+							? "Leave blank to keep the stored key"
+							: "Enter your provider key (if required)"
+					}
+					value={value.key}
+					onChange={(e) =>
+						onChange({ ...value, key: e.target.value, clearKey: false })
+					}
+				/>
+				<div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
+					<span>
+						{value.clearKey
+							? "Stored key will be removed."
+							: hasKey
+								? `Stored key: ${masked || "configured"}`
+								: "No key stored."}
+					</span>
+					{hasKey && (
+						<button
+							type="button"
+							disabled={disabled || loading}
+							className="underline underline-offset-2"
+							onClick={() =>
+								onChange({ ...value, key: "", clearKey: !value.clearKey })
+							}
+						>
+							{value.clearKey ? "Keep stored key" : "Remove stored key"}
+						</button>
+					)}
+				</div>
+				{hasKey &&
+					savedURL?.replace(/\/+$/, "") !==
+						value.url.trim().replace(/\/+$/, "") &&
+					!value.key &&
+					!value.clearKey && (
+						<p className="text-xs text-muted-foreground">
+							Enter the key for this new URL, or remove the stored key.
+						</p>
+					)}
+			</div>
+			<div className="flex flex-wrap items-center gap-3">
+				<Button
+					type="button"
+					size="sm"
+					variant="outline"
+					disabled={disabled || loading || !value.url.trim()}
+					onClick={load}
+				>
+					{loading ? (
+						<Loader2 className="animate-spin" size={14} />
+					) : (
+						<RefreshCw size={14} />
+					)}
+					Load models
+				</Button>
+				<span className="text-xs text-muted-foreground">
+					Uses the URL and key above, including unsaved changes.
+				</span>
+			</div>
+			{error && (
+				<p role="alert" className="text-xs leading-5 text-destructive">
+					{error}
+				</p>
+			)}
+			{loaded &&
+				discoveredFor === credentialIdentity &&
+				!currentModels.length && (
+					<p role="status" className="text-xs text-muted-foreground">
+						No model IDs returned. Enter an ID manually below.
+					</p>
+				)}
+			{currentModels.length > 0 && (
+				<Select
+					value={currentModels.includes(value.model) ? value.model : undefined}
+					onValueChange={(model) => onChange({ ...value, model })}
+					disabled={disabled || loading}
+				>
+					<SelectTrigger aria-label={`Choose a ${purpose} model`}>
+						<SelectValue placeholder="Select a discovered model" />
+					</SelectTrigger>
+					<SelectContent>
+						{currentModels.map((id) => (
+							<SelectItem key={id} value={id}>
+								{id}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			)}
+			<div className="space-y-2">
+				<Label htmlFor={`${prefix}-api-model`}>Model ID</Label>
+				<Input
+					id={`${prefix}-api-model`}
+					disabled={disabled || loading}
+					value={value.model}
+					placeholder="Select above or enter an exact model ID"
+					onChange={(e) => onChange({ ...value, model: e.target.value })}
+				/>
+				<p className="text-xs leading-5 text-muted-foreground">
+					The provider’s list may contain models for other uses. Choose one that
+					supports{" "}
+					{purpose === "generation"
+						? "chat generation and structured JSON output"
+						: "audio transcription"}
+					.
+				</p>
+			</div>
+		</div>
+	);
+}
 
 export function AccountSettings() {
 	const { toast } = useToast();
-
-	const [isLoading, setIsLoading] = useState(true);
-	const [isSaving, setIsSaving] = useState(false);
-	const [settings, setSettings] =
-		useState<UserAISettingsResponse>(DEFAULT_SETTINGS);
-	const [apiUrl, setApiUrl] = useState("");
-	const [apiModel, setApiModel] = useState("");
-	const [apiKey, setApiKey] = useState("");
-
-	const applySettings = useCallback((nextSettings: UserAISettingsResponse) => {
-		setSettings(nextSettings);
-		setApiUrl(nextSettings.apiUrl ?? "");
-		setApiModel(nextSettings.apiModel ?? "");
-		setApiKey("");
+	const [settings, setSettings] = useState<Settings>();
+	const [generation, setGeneration] = useState<Connection>(empty);
+	const [transcription, setTranscription] = useState<Connection>(empty);
+	const [loading, setLoading] = useState(true);
+	const [saving, setSaving] = useState(false);
+	const [loadError, setLoadError] = useState("");
+	const apply = useCallback((data: Settings) => {
+		setSettings(data);
+		setGeneration({
+			...empty,
+			url: data.apiUrl ?? "",
+			model: data.apiModel ?? "",
+		});
+		setTranscription({
+			...empty,
+			url: data.transcriptionApiUrl ?? "",
+			model: data.transcriptionApiModel ?? "",
+		});
 	}, []);
-
-	const loadSettings = useCallback(async () => {
+	const load = useCallback(async () => {
+		setLoading(true);
+		setLoadError("");
 		try {
-			setIsLoading(true);
 			const { data, error } = await client.GET("/user/settings/ai");
-			if (error || !data) {
-				throw new Error("Failed to load AI settings.");
-			}
-			applySettings(data);
-		} catch (error) {
-			toast({
-				description: (error as Error).message,
-				title: "Failed to load settings",
-				variant: "destructive",
-			});
+			if (error || !data) throw new Error("Could not load provider settings.");
+			apply(data);
+		} catch (e) {
+			setLoadError(e instanceof Error ? e.message : "Could not load settings.");
 		} finally {
-			setIsLoading(false);
+			setLoading(false);
 		}
-	}, [applySettings, toast]);
-
+	}, [apply]);
 	useEffect(() => {
-		void loadSettings();
-	}, [loadSettings]);
-
-	const onSave = async () => {
+		void load();
+	}, [load]);
+	const save = async () => {
+		setSaving(true);
 		try {
-			setIsSaving(true);
 			const body: components["schemas"]["request.UpdateUserAISettingsRequest"] =
 				{
-					apiModel: apiModel.trim(),
-					apiUrl: apiUrl.trim(),
+					apiUrl: generation.url.trim(),
+					apiModel: generation.model.trim(),
+					transcriptionApiUrl: transcription.url.trim(),
+					transcriptionApiModel: transcription.model.trim(),
+					...(generation.clearKey
+						? { apiKey: "" }
+						: generation.key.trim()
+							? { apiKey: generation.key.trim() }
+							: {}),
+					...(transcription.clearKey
+						? { transcriptionApiKey: "" }
+						: transcription.key.trim()
+							? { transcriptionApiKey: transcription.key.trim() }
+							: {}),
 				};
-			if (apiKey.trim()) {
-				body.apiKey = apiKey.trim();
-			}
-
-			const { data, error } = await client.PATCH("/user/settings/ai", {
-				body,
-			});
-			if (error || !data) {
-				throw new Error("Failed to save AI settings.");
-			}
-
-			applySettings(data);
+			const { data, error } = await client.PATCH("/user/settings/ai", { body });
+			if (error || !data)
+				throw new Error(
+					(error as { error?: string })?.error || "Could not save settings.",
+				);
+			apply(data);
 			toast({
-				description: "Your AI provider settings have been updated.",
 				title: "Settings saved",
+				description: "Generation and dictation connections updated.",
 			});
-		} catch (error) {
+		} catch (e) {
 			toast({
-				description: (error as Error).message,
-				title: "Failed to save settings",
+				title: "Could not save settings",
+				description: e instanceof Error ? e.message : "Please try again.",
 				variant: "destructive",
 			});
 		} finally {
-			setIsSaving(false);
+			setSaving(false);
 		}
 	};
-
+	const disabled = loading || saving || !!loadError;
 	return (
-		<div className="flex flex-col h-screen w-full">
+		<div className="flex h-screen min-w-0 w-full flex-col">
 			<NavHeader
 				breadcrumbs={[{ href: "/", label: "Home" }, { label: "Settings" }]}
 				showModeToggle
 				showNavActions={false}
 			/>
-			<div className="flex-1 overflow-y-auto">
-				<div className="mx-auto w-full max-w-3xl p-6">
+			<main className="flex-1 overflow-y-auto p-4 lg:p-6">
+				<header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+					<div>
+						<h1 className="text-2xl font-semibold tracking-tight">
+							AI providers
+						</h1>
+						<p className="mt-2 text-sm text-muted-foreground">
+							Configure generation and dictation independently, using compatible
+							API endpoints.
+						</p>
+					</div>
+					<Button onClick={save} disabled={disabled}>
+						{saving && <Loader2 className="animate-spin" />}Save settings
+					</Button>
+				</header>
+				{loadError && (
+					<p role="alert" className="mb-4 text-sm text-destructive">
+						{loadError}{" "}
+						<Button variant="outline" size="sm" onClick={load}>
+							Retry
+						</Button>
+					</p>
+				)}
+				<div className="grid items-start gap-5 xl:grid-cols-2">
 					<Card>
 						<CardHeader>
-							<CardTitle>AI Provider Settings</CardTitle>
+							<CardTitle className="text-lg">Model generation</CardTitle>
 							<CardDescription>
-								Configure the API endpoint, key, and model used for your AI
-								generation requests.
+								Used for structures, behavior code and AI corrections. The API
+								must support compatible chat completions.
 							</CardDescription>
 						</CardHeader>
-						<CardContent className="space-y-6">
-							<div className="space-y-2">
-								<Label htmlFor="ai-api-url">API URL</Label>
-								<Input
-									disabled={isLoading || isSaving}
-									id="ai-api-url"
-									onChange={(event) => setApiUrl(event.target.value)}
-									placeholder="https://api.openai.com/v1"
-									value={apiUrl}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="ai-api-model">API Model</Label>
-								<Input
-									disabled={isLoading || isSaving}
-									id="ai-api-model"
-									onChange={(event) => setApiModel(event.target.value)}
-									placeholder="gpt-4.1-mini"
-									value={apiModel}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="ai-api-key">API Key</Label>
-								<Input
-									disabled={isLoading || isSaving}
-									id="ai-api-key"
-									onChange={(event) => setApiKey(event.target.value)}
-									placeholder={
-										settings.hasApiKey
-											? "Enter a new key to replace the current one"
-											: "sk-..."
-									}
-									type="password"
-									value={apiKey}
-								/>
-								{settings.hasApiKey ? (
-									<div className="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-										<Badge className="shrink-0" variant="secondary">
-											Stored key
-										</Badge>
-										<span
-											className="min-w-0 truncate font-mono"
-											title={settings.apiKeyMasked || "Configured"}
-										>
-											{settings.apiKeyMasked || "Configured"}
-										</span>
-									</div>
-								) : (
-									<div className="text-xs text-muted-foreground">
-										No key stored yet.
-									</div>
-								)}
-							</div>
-
-							<div className="flex justify-end">
-								<Button disabled={isLoading || isSaving} onClick={onSave}>
-									{isSaving ? (
-										<>
-											<Loader2 className="h-4 w-4 animate-spin" />
-											Saving...
-										</>
-									) : (
-										"Save settings"
-									)}
-								</Button>
-							</div>
+						<CardContent>
+							<ProviderFields
+								purpose="generation"
+								value={generation}
+								onChange={setGeneration}
+								hasKey={settings?.hasApiKey}
+								masked={settings?.apiKeyMasked}
+								savedURL={settings?.apiUrl}
+								disabled={disabled}
+							/>
+						</CardContent>
+					</Card>
+					<Card>
+						<CardHeader>
+							<CardTitle className="text-lg">Voice dictation</CardTitle>
+							<CardDescription>
+								Used only when you request transcription of a recording. The API
+								must support compatible audio transcriptions; it can be a
+								different provider.
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<ProviderFields
+								purpose="transcription"
+								value={transcription}
+								onChange={setTranscription}
+								hasKey={settings?.hasTranscriptionApiKey}
+								masked={settings?.transcriptionApiKeyMasked}
+								savedURL={settings?.transcriptionApiUrl}
+								disabled={disabled}
+							/>
+							<p className="mt-4 text-xs leading-5 text-muted-foreground">
+								Use the API base URL (including its version prefix, if
+								required). Save the voice configuration before dictating.
+								Stopping a recording automatically sends it to your configured
+								provider for transcription.
+							</p>
 						</CardContent>
 					</Card>
 				</div>
-			</div>
+			</main>
 		</div>
 	);
 }

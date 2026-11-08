@@ -1,16 +1,11 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	CheckCircle2,
-	ChevronRight,
-	Code2,
-	Loader2,
-	Sparkles,
-} from "lucide-react";
+import { CheckCircle2, ChevronRight, Code2, Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { Dictation } from "@/components/custom/Dictation";
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -57,6 +52,11 @@ export function CodeGenerationPanel({
 	const { generateCode, isLoading, error } = useGenerateModelCode();
 	const { data: integrations } = useIntegrations();
 	const available = integrations.filter((d) => d.capabilities?.ai);
+	const defaultIntegration =
+		available.find((integration) => integration.default) ?? available[0];
+	const defaultIntegrationKey = defaultIntegration
+		? integrationKey(defaultIntegration)
+		: "";
 	const { toast } = useToast();
 	const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
 	const [selectedIntegration, setSelectedIntegration] = useState("");
@@ -89,16 +89,14 @@ export function CodeGenerationPanel({
 			setSelectedIntegration(
 				currentModel.integrationId
 					? `${currentModel.integrationId}@${currentModel.integrationVersion}`
-					: integrationKey(
-							available.find((d) => d.default) ?? available[0] ?? {},
-						),
+					: defaultIntegrationKey,
 			);
 		}
 	}, [
 		currentModel?.id,
 		currentModel?.integrationId,
 		currentModel?.integrationVersion,
-		integrations,
+		defaultIntegrationKey,
 	]);
 
 	// Get code from models that current model depends on
@@ -255,10 +253,10 @@ export function CodeGenerationPanel({
 
 	if (isComplete) {
 		return (
-			<div className="h-full flex flex-col items-center justify-center p-8">
-				<CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
-				<h2 className="text-2xl font-bold mb-2">Generation complete!</h2>
-				<p className="text-muted-foreground text-center max-w-md mb-6">
+			<div className="h-full overflow-y-auto px-4 py-6 lg:px-6">
+				<CheckCircle2 className="mb-4 size-6 text-muted-foreground" />
+				<h2 className="mb-2 text-xl font-medium">Code review complete</h2>
+				<p className="mb-6 max-w-xl text-sm text-muted-foreground">
 					{atomicModels.length === 0
 						? "No eligible atomic models for code generation."
 						: "All models have been generated. You can now save them to your library."}
@@ -268,9 +266,9 @@ export function CodeGenerationPanel({
 	}
 
 	return (
-		<div className="h-full min-h-0 flex overflow-hidden">
+		<div className="flex h-full min-h-0 min-w-0 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
 			{/* Left panel: models list with progress */}
-			<div className="w-72 border-r bg-muted/30 flex flex-col min-h-0">
+			<div className="flex max-h-48 w-full shrink-0 flex-col border-b bg-background lg:max-h-none lg:w-48 lg:border-b-0 lg:border-r xl:w-56">
 				<div className="p-4 border-b">
 					<h3 className="font-semibold">Progress</h3>
 					<p className="text-xs text-muted-foreground mt-1">
@@ -366,15 +364,15 @@ export function CodeGenerationPanel({
 			</div>
 
 			{/* Center panel: prompt generator */}
-			<div className="w-80 border-r p-4 flex flex-col min-h-0">
-				<Card className="mb-4">
-					<CardHeader className="pb-2">
-						<CardTitle className="text-lg flex items-center gap-2">
+			<div className="flex min-h-80 w-full shrink-0 flex-col border-b p-4 lg:min-h-0 lg:w-64 lg:border-b-0 lg:border-r xl:w-72">
+				<Card className="mb-4 rounded-none border-0 bg-transparent shadow-none">
+					<CardHeader className="px-0 pb-2 pt-0">
+						<CardTitle className="flex items-center gap-2 text-base">
 							<Code2 className="w-5 h-5" />
 							{selectedModel?.name ?? "Select a model"}
 						</CardTitle>
 					</CardHeader>
-					<CardContent className="text-sm text-muted-foreground">
+					<CardContent className="p-0 text-xs leading-6 text-muted-foreground">
 						<div className="space-y-1">
 							<p>
 								<strong>Type:</strong> {selectedModel?.type}
@@ -429,9 +427,38 @@ export function CodeGenerationPanel({
 								</Select>
 							</div>
 
+							<FormField
+								control={form.control}
+								name="prompt"
+								render={({ field }) => (
+									<FormItem className="mb-5">
+										<FormLabel>Describe the model behavior</FormLabel>
+										<FormControl>
+											<Textarea
+												className="resize-none min-h-[110px] max-h-[170px]"
+												placeholder={`Describe the phases, timing and outputs of ${selectedModel?.name}.`}
+												{...field}
+											/>
+										</FormControl>
+										<Dictation
+											key={selectedModel?.id}
+											value={field.value}
+											disabled={isLoading}
+											onChange={(value) =>
+												form.setValue("prompt", value, {
+													shouldDirty: true,
+													shouldValidate: true,
+												})
+											}
+										/>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
 							<div className="mb-4 space-y-2">
 								<FormLabel>Reuse strategy</FormLabel>
-								<div className="rounded-md border bg-muted/20 p-2">
+								<div className="rounded-md bg-muted/20 p-2">
 									<RadioGroup
 										className="gap-2"
 										onValueChange={setSelectedReuse}
@@ -439,7 +466,8 @@ export function CodeGenerationPanel({
 									>
 										{reuseCandidates.length === 0 && (
 											<div className="text-xs text-muted-foreground px-1 py-1">
-												Run analysis first to load reuse candidates.
+												Look for a matching model in your library, or generate
+												new code.
 											</div>
 										)}
 
@@ -502,7 +530,7 @@ export function CodeGenerationPanel({
 												htmlFor="reuse-force-scratch"
 											>
 												<span className="text-xs font-medium">
-													Force scratch
+													Generate new code
 												</span>
 											</Label>
 										</div>
@@ -513,7 +541,7 @@ export function CodeGenerationPanel({
 										Selected:{" "}
 										<span className="font-medium text-foreground inline-block max-w-full align-bottom truncate">
 											{selectedReuse === "__scratch__"
-												? "Force scratch"
+												? "Generate new code"
 												: (reuseCandidates.find(
 														(candidate) => candidate.modelId === selectedReuse,
 													)?.name ?? "Reuse candidate")}
@@ -522,7 +550,7 @@ export function CodeGenerationPanel({
 								)}
 								<p className="text-xs text-muted-foreground">
 									The system proposes up to 4 candidates. You choose one, or
-									force scratch.
+									generate new code.
 								</p>
 							</div>
 
@@ -535,12 +563,12 @@ export function CodeGenerationPanel({
 										</>
 									) : (
 										<>
-											<Sparkles className="w-4 h-4 mr-2" />
+											<Code2 className="size-4" />
 											{awaitingReuseSelection
-												? "Generate with Selected Strategy"
+												? "Generate with selection"
 												: currentModel?.codeGenerated
 													? "Regenerate"
-													: "Analyze Reuse & Generate"}
+													: "Review reuse & generate"}
 										</>
 									)}
 								</Button>
@@ -565,24 +593,6 @@ export function CodeGenerationPanel({
 									</Button>
 								)}
 							</div>
-
-							<FormField
-								control={form.control}
-								name="prompt"
-								render={({ field }) => (
-									<FormItem className="mt-4">
-										<FormLabel>Describe the model behavior</FormLabel>
-										<FormControl>
-											<Textarea
-												className="resize-none min-h-[110px] max-h-[170px]"
-												placeholder={`Describe how ${selectedModel?.name} should behave. e.g., This model should alternate between ON and OFF states every 10 seconds...`}
-												{...field}
-											/>
-										</FormControl>
-										<FormMessage />
-									</FormItem>
-								)}
-							/>
 						</form>
 					</Form>
 				)}
@@ -614,7 +624,7 @@ export function CodeGenerationPanel({
 			</div>
 
 			{/* Right panel: code editor */}
-			<div className="flex-1 min-w-0 min-h-0 flex flex-col">
+			<div className="flex min-h-[360px] min-w-0 flex-1 flex-col lg:min-h-0">
 				<div className="p-2 border-b bg-muted/30 flex items-center justify-between">
 					<span className="text-sm font-medium">
 						{isSelectedAtomic

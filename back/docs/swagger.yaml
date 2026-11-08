@@ -722,6 +722,18 @@ definitions:
     - description
     - title
     type: object
+  request.ListAIModelsRequest:
+    properties:
+      apiKey:
+        type: string
+      apiUrl:
+        type: string
+      purpose:
+        enum:
+        - generation
+        - transcription
+        type: string
+    type: object
   request.LoginRequest:
     properties:
       identity:
@@ -878,6 +890,12 @@ definitions:
       apiUrl:
         example: https://api.openai.com/v1
         type: string
+      transcriptionApiKey:
+        type: string
+      transcriptionApiModel:
+        type: string
+      transcriptionApiUrl:
+        type: string
     type: object
   request.UpdateUserRequest:
     properties:
@@ -898,6 +916,18 @@ definitions:
         type: string
       uiSchema:
         $ref: '#/definitions/json.WebAppUISchema'
+    type: object
+  response.AIProviderModelResponse:
+    properties:
+      id:
+        type: string
+    type: object
+  response.AIProviderModelsResponse:
+    properties:
+      models:
+        items:
+          $ref: '#/definitions/response.AIProviderModelResponse'
+        type: array
     type: object
   response.Connection:
     properties:
@@ -1254,6 +1284,11 @@ definitions:
       userId:
         type: string
     type: object
+  response.TranscriptionResponse:
+    properties:
+      text:
+        type: string
+    type: object
   response.UserAISettingsResponse:
     properties:
       apiKeyMasked:
@@ -1264,6 +1299,14 @@ definitions:
         type: string
       hasApiKey:
         type: boolean
+      hasTranscriptionApiKey:
+        type: boolean
+      transcriptionApiKeyMasked:
+        type: string
+      transcriptionApiModel:
+        type: string
+      transcriptionApiUrl:
+        type: string
     type: object
   response.UserResponse:
     properties:
@@ -2784,7 +2827,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Updates current user AI provider settings (apiUrl, apiKey, apiModel).
+      description: Updates generation and transcription connections. Omitted keys
+        are preserved; an explicit empty key removes it.
       parameters:
       - description: AI settings to update
         in: body
@@ -2810,6 +2854,85 @@ paths:
             additionalProperties: true
             type: object
       summary: Update current user AI settings
+      tags:
+      - user
+  /user/settings/ai/models:
+    post:
+      consumes:
+      - application/json
+      description: Discovers model IDs using saved or supplied credentials. This does
+        not verify transcription or structured-output capabilities.
+      parameters:
+      - description: Connection to discover
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/request.ListAIModelsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.AIProviderModelsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: List models exposed by a configured compatible API
+      tags:
+      - user
+  /user/settings/ai/transcriptions:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Sends at most 3 MiB to the saved compatible /audio/transcriptions
+        endpoint. The returned text never starts model generation.
+      parameters:
+      - description: Recorded audio (WebM, Ogg, MP4/M4A, WAV or MP3), at most 3 MiB
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: Optional ISO language hint
+        in: formData
+        name: language
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.TranscriptionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            additionalProperties: true
+            type: object
+        "413":
+          description: Request Entity Too Large
+          schema:
+            additionalProperties: true
+            type: object
+        "429":
+          description: Too Many Requests
+          schema:
+            additionalProperties: true
+            type: object
+        "502":
+          description: Bad Gateway
+          schema:
+            additionalProperties: true
+            type: object
+      summary: Transcribe a short dictation with the current user's voice provider
       tags:
       - user
   /webapp/deployment:

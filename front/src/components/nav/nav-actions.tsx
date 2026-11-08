@@ -2,14 +2,6 @@
 
 import {
 	ArrowDown,
-	ArrowUp,
-	Bell,
-	Copy,
-	CornerUpLeft,
-	CornerUpRight,
-	FileText,
-	GalleryVerticalEnd,
-	LineChart,
 	Link,
 	MonitorPlay,
 	MoreHorizontal,
@@ -17,8 +9,6 @@ import {
 	Save,
 	Settings2,
 	ShieldCheck,
-	Trash,
-	Trash2,
 } from "lucide-react";
 import * as React from "react";
 import { client } from "@/api/client";

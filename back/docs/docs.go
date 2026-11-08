@@ -1877,7 +1877,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Updates current user AI provider settings (apiUrl, apiKey, apiModel).",
+                "description": "Updates generation and transcription connections. Omitted keys are preserved; an explicit empty key removes it.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1915,6 +1915,120 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/user/settings/ai/models": {
+            "post": {
+                "description": "Discovers model IDs using saved or supplied credentials. This does not verify transcription or structured-output capabilities.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "List models exposed by a configured compatible API",
+                "parameters": [
+                    {
+                        "description": "Connection to discover",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ListAIModelsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.AIProviderModelsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/user/settings/ai/transcriptions": {
+            "post": {
+                "description": "Sends at most 3 MiB to the saved compatible /audio/transcriptions endpoint. The returned text never starts model generation.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Transcribe a short dictation with the current user's voice provider",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Recorded audio (WebM, Ogg, MP4/M4A, WAV or MP3), at most 3 MiB",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional ISO language hint",
+                        "name": "language",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.TranscriptionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -3500,6 +3614,24 @@ const docTemplate = `{
                 }
             }
         },
+        "request.ListAIModelsRequest": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "type": "string"
+                },
+                "apiUrl": {
+                    "type": "string"
+                },
+                "purpose": {
+                    "type": "string",
+                    "enum": [
+                        "generation",
+                        "transcription"
+                    ]
+                }
+            }
+        },
         "request.LoginRequest": {
             "type": "object",
             "required": [
@@ -3726,6 +3858,15 @@ const docTemplate = `{
                 "apiUrl": {
                     "type": "string",
                     "example": "https://api.openai.com/v1"
+                },
+                "transcriptionApiKey": {
+                    "type": "string"
+                },
+                "transcriptionApiModel": {
+                    "type": "string"
+                },
+                "transcriptionApiUrl": {
+                    "type": "string"
                 }
             }
         },
@@ -3757,6 +3898,25 @@ const docTemplate = `{
                 },
                 "uiSchema": {
                     "$ref": "#/definitions/json.WebAppUISchema"
+                }
+            }
+        },
+        "response.AIProviderModelResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.AIProviderModelsResponse": {
+            "type": "object",
+            "properties": {
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.AIProviderModelResponse"
+                    }
                 }
             }
         },
@@ -4288,6 +4448,14 @@ const docTemplate = `{
                 }
             }
         },
+        "response.TranscriptionResponse": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "response.UserAISettingsResponse": {
             "type": "object",
             "properties": {
@@ -4302,6 +4470,18 @@ const docTemplate = `{
                 },
                 "hasApiKey": {
                     "type": "boolean"
+                },
+                "hasTranscriptionApiKey": {
+                    "type": "boolean"
+                },
+                "transcriptionApiKeyMasked": {
+                    "type": "string"
+                },
+                "transcriptionApiModel": {
+                    "type": "string"
+                },
+                "transcriptionApiUrl": {
+                    "type": "string"
                 }
             }
         },

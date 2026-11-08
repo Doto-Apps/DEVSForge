@@ -9,6 +9,7 @@ import {
 	MiniMap,
 	type NodeChange,
 	ReactFlow,
+	StepEdge,
 	useReactFlow,
 } from "@xyflow/react";
 import "@xyflow/react/dist/base.css";
@@ -42,6 +43,7 @@ const nodeTypes: NonNullable<ComponentProps<typeof ReactFlow>["nodeTypes"]> = {
 };
 
 const edgeTypes = {
+	custom: StepEdge, // Compatibility with previously recovered generator drafts.
 	bidirectional: BiDirectionalEdge,
 };
 
@@ -69,10 +71,20 @@ export function ModelViewEditor({
 	const { toast } = useToast();
 	const needAutoFitView = useRef(!models.viewport);
 	const lastAutoLayoutSignal = useRef<number | undefined>(undefined);
-	const [internalStructure, setInternalStructure] = useState(models);
+	const latestModels = useRef(models);
+	latestModels.current = models;
+	const layoutRequest = useRef(0);
+	const mounted = useRef(false);
+	useEffect(() => {
+		mounted.current = true;
+		return () => {
+			mounted.current = false;
+			layoutRequest.current += 1;
+		};
+	}, []);
 
 	const [copyModelId, setCopyModelId] = useState<string | undefined>(undefined);
-	const { nodes, edges } = internalStructure;
+	const { nodes, edges } = models;
 	const selectedModel = nodes.find(({ selected }) => selected);
 
 	useHotkeys(["ctrl+c", "meta+c"], (e) => {
@@ -141,7 +153,6 @@ export function ModelViewEditor({
 				nodes: updatedNodes,
 			};
 
-			setInternalStructure(newState);
 			onChange(newState);
 		},
 		[models, nodes, edges, onChange],
@@ -159,7 +170,6 @@ export function ModelViewEditor({
 				edges: updatedEdges,
 			};
 
-			setInternalStructure(newState);
 			onChange(newState);
 		},
 		[models, edges, onChange],
@@ -167,8 +177,16 @@ export function ModelViewEditor({
 	const onLayoutFn = async ({ direction = "RIGHT" }) => {
 		const opts = direction;
 		if (models) {
+			const request = ++layoutRequest.current;
 			const { nodes: layoutedNodes, edges: layoutedEdges } =
 				await getLayoutedElements(models.nodes, models.edges, opts);
+			if (
+				!mounted.current ||
+				request !== layoutRequest.current ||
+				latestModels.current !== models
+			)
+				return;
+			lastAutoLayoutSignal.current = autoLayoutSignal;
 			onChange?.({
 				...models,
 				edges: layoutedEdges,
@@ -345,7 +363,6 @@ export function ModelViewEditor({
 		if (lastAutoLayoutSignal.current === autoLayoutSignal) return;
 		if (!models?.nodes || models.nodes.length === 0) return;
 
-		lastAutoLayoutSignal.current = autoLayoutSignal;
 		let cancelled = false;
 
 		const runAutoLayoutThenFit = async () => {
@@ -383,10 +400,6 @@ export function ModelViewEditor({
 			needAutoFitView.current = false;
 		}
 	}, [fitView, models, edges, isLoadingNodes]);
-
-	useEffect(() => {
-		setInternalStructure(models);
-	}, [models]);
 
 	return (
 		<div className="h-full w-full flex flex-col">

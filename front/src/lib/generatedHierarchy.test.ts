@@ -53,6 +53,7 @@ describe("nested generated structures", () => {
 		const d = fixture();
 		expect(validateGeneratedStructure(d)).toEqual([]);
 		const graph = generatedDiagramToReactFlow(d);
+		expect(graph.edges.every((edge) => edge.type === "step")).toBe(true);
 		expect(graph.nodes.find((n) => n.data.id === "leaf")?.parentId).toBe(
 			"root/sub/inner",
 		);

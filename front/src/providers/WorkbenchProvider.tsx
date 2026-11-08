@@ -48,6 +48,44 @@ const signature = (graph: ReactFlowInput) =>
 		viewport: undefined,
 		nodes: graph.nodes.map(({ selected, dragging, ...node }) => node),
 	});
+// Nested models are read-only references. Refresh their colors without replacing
+// the tab's draft, layout, selection or undo history with the server snapshot.
+export function refreshTabColors(tab: Tab, incoming: ReactFlowInput): Tab {
+	const sources = new Map(incoming.nodes.map((node) => [node.id, node]));
+	const refresh = (graph: ReactFlowInput): ReactFlowInput => {
+		let changed = false;
+		const nodes = graph.nodes.map((node) => {
+			const source = sources.get(node.id);
+			if (!node.parentId || !source || source.data.id !== node.data.id)
+				return node;
+			const colors = source.data.reactFlowModelGraphicalData;
+			if (
+				JSON.stringify(colors) ===
+				JSON.stringify(node.data.reactFlowModelGraphicalData)
+			)
+				return node;
+			changed = true;
+			return {
+				...node,
+				data: { ...node.data, reactFlowModelGraphicalData: colors },
+			};
+		});
+		return changed ? { ...graph, nodes } : graph;
+	};
+	const draft = refresh(tab.draft);
+	const baseline = signature(refresh(JSON.parse(tab.baseline)));
+	const past = tab.past.map(refresh);
+	const future = tab.future.map(refresh);
+	if (
+		draft === tab.draft &&
+		baseline === tab.baseline &&
+		past.every((graph, i) => graph === tab.past[i]) &&
+		future.every((graph, i) => graph === tab.future[i])
+	)
+		return tab;
+	return { ...tab, baseline, draft, future, past };
+}
+
 function database(): Promise<IDBDatabase> {
 	return new Promise((resolve, reject) => {
 		const r = indexedDB.open("devsforge-workbench", 1);
@@ -187,11 +225,13 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 				s.tabs.some((t) => t.id === tab.id)
 					? {
 							...s,
-							tabs: s.tabs.map((t) =>
-								t.id === tab.id && t.libraryName !== tab.libraryName
-									? { ...t, libraryName: tab.libraryName }
-									: t,
-							),
+							tabs: s.tabs.map((t) => {
+								if (t.id !== tab.id) return t;
+								const refreshed = refreshTabColors(t, tab.draft);
+								return refreshed.libraryName !== tab.libraryName
+									? { ...refreshed, libraryName: tab.libraryName }
+									: refreshed;
+							}),
 						}
 					: {
 							...s,
@@ -273,9 +313,25 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 				);
 			change((s) => ({
 				...s,
-				tabs: s.tabs.map((t) =>
-					t.id === tabId ? { ...t, baseline: signature(sent) } : t,
-				),
+				tabs: s.tabs.map((t) => {
+					const refreshed = refreshTabColors(t, {
+						...t.draft,
+						nodes: t.draft.nodes.map((node) =>
+							node.parentId && node.data.id === tabId
+								? {
+										...node,
+										data: {
+											...node.data,
+											reactFlowModelGraphicalData: data.metadata.modelColors,
+										},
+									}
+								: node,
+						),
+					});
+					return t.id === tabId
+						? { ...refreshed, baseline: signature(sent) }
+						: refreshed;
+				}),
 			}));
 		},
 		[change],

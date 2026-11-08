@@ -21,6 +21,7 @@ import {
 	StructureEditor,
 } from "@/components/custom/generate";
 import NavHeader from "@/components/nav/nav-header";
+import { Dictation } from "@/components/custom/Dictation";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -379,20 +380,23 @@ export function ValidationModel() {
 				};
 			});
 		},
-		[],
+		[setAiDiagram],
 	);
 
-	const handleAICodeChange = useCallback((modelId: string, code: string) => {
-		setAiDiagram((previousDiagram) => {
-			if (!previousDiagram) return previousDiagram;
-			return {
-				...previousDiagram,
-				models: previousDiagram.models.map((model) =>
-					model.id === modelId ? { ...model, code } : model,
-				),
-			};
-		});
-	}, []);
+	const handleAICodeChange = useCallback(
+		(modelId: string, code: string) => {
+			setAiDiagram((previousDiagram) => {
+				if (!previousDiagram) return previousDiagram;
+				return {
+					...previousDiagram,
+					models: previousDiagram.models.map((model) =>
+						model.id === modelId ? { ...model, code } : model,
+					),
+				};
+			});
+		},
+		[setAiDiagram],
+	);
 
 	const handleAIModelValidated = useCallback(() => {
 		setCurrentAICodeModelIndex((previousIndex) => {
@@ -405,7 +409,7 @@ export function ValidationModel() {
 			}
 			return nextIndex;
 		});
-	}, [aiCodeGenerationTotal, toast]);
+	}, [aiCodeGenerationTotal, toast, setCurrentAICodeModelIndex]);
 
 	const isAICodeGenerationComplete =
 		aiMode === "code" && currentAICodeModelIndex >= aiCodeGenerationTotal;
@@ -590,6 +594,12 @@ export function ValidationModel() {
 							onChange={(e) => setAiPrompt(e.target.value)}
 							placeholder="Example: I need 2 generators to stress input A and 1 acceptor to verify latency threshold on output B..."
 							value={aiPrompt}
+						/>
+						<Dictation
+							key={modelId}
+							value={aiPrompt}
+							onChange={setAiPrompt}
+							disabled={isGeneratingAIStructure}
 						/>
 						{aiError && (
 							<Alert variant="destructive">AI error: {aiError}</Alert>

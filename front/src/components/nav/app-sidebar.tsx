@@ -1,6 +1,13 @@
 "use client";
 
-import { BookOpenText, House, Rocket, Sparkles, Workflow } from "lucide-react";
+import {
+	BookOpenText,
+	House,
+	Map as MapIcon,
+	Rocket,
+	Sparkles,
+	Workflow,
+} from "lucide-react";
 import type * as React from "react";
 import {
 	Sidebar,
@@ -29,14 +36,15 @@ const data = {
 		},
 		{
 			icon: Workflow,
-			name: "How It Works",
-			url: "/how-it-works",
+			name: "Documentation",
+			url: "/documentation",
 		},
 		{
 			icon: Sparkles,
 			name: "DEVS Generator",
 			url: "/devs-generator",
 		},
+		{ icon: MapIcon, name: "Roadmap", url: "/roadmap" },
 		{
 			icon: Rocket,
 			name: "WebApps",

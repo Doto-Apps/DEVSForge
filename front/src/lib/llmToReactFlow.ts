@@ -723,7 +723,7 @@ export const generatedDiagramToReactFlow = (
 				sourceHandle: `${source === path ? INTERNAL_PREFIX : ""}${source}:${c.from.port}`,
 				targetHandle: `${target === path ? INTERNAL_PREFIX : ""}${target}:${c.to.port}`,
 				data: { holderId: path },
-				type: "custom",
+				type: "step",
 			});
 		}
 		return { width, height };
