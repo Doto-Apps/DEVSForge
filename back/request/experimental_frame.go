@@ -31,13 +31,15 @@ func (req ExperimentalFrameRequest) IsAssistedSave() bool {
 }
 
 type AssistedExperimentalFrameModel struct {
-	ID         string                               `json:"id" validate:"required"`
-	Name       string                               `json:"name" validate:"required"`
-	Type       enum.ModelType                       `json:"type" validate:"required,oneof=atomic coupled"`
-	Role       string                               `json:"role,omitempty"`
-	Ports      []AssistedExperimentalFrameModelPort `json:"ports"`
-	Components []string                             `json:"components"`
-	Code       string                               `json:"code,omitempty"`
+	ID                 string                               `json:"id" validate:"required"`
+	Name               string                               `json:"name" validate:"required"`
+	Type               enum.ModelType                       `json:"type" validate:"required,oneof=atomic coupled"`
+	Role               string                               `json:"role,omitempty"`
+	Ports              []AssistedExperimentalFrameModelPort `json:"ports"`
+	Components         []string                             `json:"components"`
+	IntegrationID      *string                              `json:"integrationId,omitempty"`
+	IntegrationVersion *string                              `json:"integrationVersion,omitempty"`
+	Code               string                               `json:"code,omitempty"`
 }
 
 type AssistedExperimentalFrameModelPort struct {
@@ -46,8 +48,9 @@ type AssistedExperimentalFrameModelPort struct {
 }
 
 type AssistedExperimentalFrameConnection struct {
-	From AssistedExperimentalFrameEndpoint `json:"from" validate:"required"`
-	To   AssistedExperimentalFrameEndpoint `json:"to" validate:"required"`
+	Owner string                            `json:"owner,omitempty"`
+	From  AssistedExperimentalFrameEndpoint `json:"from" validate:"required"`
+	To    AssistedExperimentalFrameEndpoint `json:"to" validate:"required"`
 }
 
 type AssistedExperimentalFrameEndpoint struct {

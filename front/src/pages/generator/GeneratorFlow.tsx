@@ -1,4 +1,6 @@
-"use client";
+import { useWorkbench, useWorkbenchState } from "@/providers/WorkbenchProvider";
+import { StructureConversation } from "@/components/custom/generate/StructureConversation";
+("use client");
 
 import {
 	ArrowLeft,
@@ -7,9 +9,9 @@ import {
 	FileText,
 	Loader2,
 	Save,
-	Sparkles,
+	Network,
 } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { client } from "@/api/client";
 import {
@@ -24,6 +26,7 @@ import { useGenerateDiagram } from "@/hooks/useGenerateDiagram";
 import {
 	createAtomicModelRequests,
 	createCoupledModelRequest,
+	validateGeneratedStructure,
 } from "@/lib/llmToReactFlow";
 import type {
 	GeneratedDiagram,
@@ -34,7 +37,7 @@ import type {
 
 const phaseSteps = [
 	{ icon: FileText, id: "prompt", label: "Description" },
-	{ icon: Sparkles, id: "structure", label: "Structure" },
+	{ icon: Network, id: "structure", label: "Structure" },
 	{ icon: Code2, id: "code", label: "Code" },
 	{ icon: CheckCircle2, id: "complete", label: "Complete" },
 ] as const;
@@ -74,28 +77,60 @@ const resolveCreatedModelDatabaseID = (
 export function GeneratorFlow() {
 	const navigate = useNavigate();
 	const { toast } = useToast();
-	const { generateDiagram, isLoading: isGeneratingDiagram } =
-		useGenerateDiagram();
+	const {
+		generateDiagram,
+		error: diagramError,
+		isLoading: isGeneratingDiagram,
+	} = useGenerateDiagram();
 
-	const [phase, setPhase] = useState<GeneratorPhase>("prompt");
-	const [diagramName, setDiagramName] = useState("");
-	const [userPrompt, setUserPrompt] = useState("");
-	const [diagram, setDiagram] = useState<GeneratedDiagram | null>(null);
-	const [currentModelIndex, setCurrentModelIndex] = useState(0);
+	const [phase, setPhase] = useWorkbenchState<GeneratorPhase>(
+		"generator:phase",
+		"prompt",
+	);
+	const [diagramName, setDiagramName] = useWorkbenchState(
+		"generator:diagramName",
+		"",
+	);
+	const [userPrompt, setUserPrompt] = useWorkbenchState(
+		"generator:userPrompt",
+		"",
+	);
+	const [diagram, setDiagram] = useWorkbenchState<GeneratedDiagram | null>(
+		"generator:diagram",
+		null,
+	);
+	const [currentModelIndex, setCurrentModelIndex] = useWorkbenchState(
+		"generator:currentModelIndex",
+		0,
+	);
 	const [isSaving, setIsSaving] = useState(false);
+	const workbench = useWorkbench();
+	const generationRequest = useRef(0);
+	useEffect(
+		() => () => {
+			generationRequest.current += 1;
+		},
+		[],
+	);
 
-	// Phase 1: Génération de la structure du diagram
+	// The description form starts a new system. Refinements belong to the conversation.
 	const handleGenerateDiagram = async (name: string, prompt: string) => {
-		setDiagramName(name);
-		setUserPrompt(prompt);
-
+		const request = ++generationRequest.current;
 		const result = await generateDiagram({
 			diagramName: name,
 			userPrompt: prompt,
 		});
+		if (request !== generationRequest.current) return;
 
 		if (result) {
+			setDiagramName(name);
+			setUserPrompt(prompt);
 			setDiagram(result);
+			setCurrentModelIndex(0);
+			workbench.setDraft("generator:history", []);
+			workbench.setDraft("generator:proposal", null);
+			workbench.setDraft("generator:base", "");
+			workbench.setDraft("generator:input", "");
 			setPhase("structure");
 			toast({
 				description: `${result.models.length} model(s) created`,
@@ -112,26 +147,17 @@ export function GeneratorFlow() {
 
 	// Phase 2: Validation de la structure
 	const handleValidateStructure = () => {
-		if (diagram) {
+		if (diagram && validateGeneratedStructure(diagram).length === 0) {
 			setPhase("code");
 			setCurrentModelIndex(0);
 		}
 	};
 
-	const handleRegenerateStructure = async () => {
-		const result = await generateDiagram({
-			diagramName,
-			userPrompt,
+	const handleRegenerateStructure = () =>
+		toast({
+			title: "Refine the structure",
+			description: "Use Discuss structure to request and review a correction.",
 		});
-
-		if (result) {
-			setDiagram(result);
-			toast({
-				description: `${result.models.length} model(s) created`,
-				title: "Structure regenerated",
-			});
-		}
-	};
 
 	const handleDiagramChange = (updatedDiagram: GeneratedDiagram) => {
 		setDiagram(updatedDiagram);
@@ -139,11 +165,27 @@ export function GeneratorFlow() {
 
 	// Phase 3: Code generation and validation (only for atomic models)
 	const handleCodeGenerated = useCallback(
-		(modelId: string, code: string, language?: GeneratedModelLanguage) => {
+		(
+			modelId: string,
+			code: string,
+			language?: GeneratedModelLanguage,
+			integrationId?: string,
+			integrationVersion?: string,
+		) => {
 			if (!diagram) return;
 
 			const updatedModels = diagram.models.map((m) =>
-				m.id === modelId ? { ...m, code, codeGenerated: true, language } : m,
+				m.id === modelId
+					? {
+							...m,
+							code,
+							codeGenerated: true,
+							needsRevalidation: false,
+							language,
+							integrationId,
+							integrationVersion,
+						}
+					: m,
 			);
 
 			setDiagram({
@@ -151,7 +193,7 @@ export function GeneratorFlow() {
 				models: updatedModels,
 			});
 		},
-		[diagram],
+		[diagram, setDiagram],
 	);
 
 	const handleCodeChange = useCallback(
@@ -167,7 +209,7 @@ export function GeneratorFlow() {
 				models: updatedModels,
 			});
 		},
-		[diagram],
+		[diagram, setDiagram],
 	);
 
 	const handleModelValidated = useCallback(() => {
@@ -182,12 +224,24 @@ export function GeneratorFlow() {
 		} else {
 			setCurrentModelIndex(nextIndex);
 		}
-	}, [diagram, currentModelIndex]);
+	}, [diagram, currentModelIndex, setPhase, setCurrentModelIndex]);
 
 	// Phase 4: Save to library
 	const handleSaveToLibrary = async () => {
 		if (!diagram) return;
-
+		const issues = validateGeneratedStructure(diagram);
+		if (diagram.models.some((m) => m.needsRevalidation))
+			issues.push(
+				"Review the code of models whose interface changed before saving.",
+			);
+		if (issues.length) {
+			toast({
+				title: "Invalid structure",
+				description: issues.join("; "),
+				variant: "destructive",
+			});
+			return;
+		}
 		setIsSaving(true);
 
 		try {
@@ -344,70 +398,97 @@ export function GeneratorFlow() {
 					{ label: "Model Generator" },
 				]}
 				showModeToggle
+				showNavActions={false}
 			/>
 
-			{/* Indicateur de progression */}
-			<div className="border-b bg-muted/30">
-				<div className="max-w-4xl mx-auto px-4 py-3">
-					<div className="flex items-center justify-between">
-						{phaseSteps.map((step, index) => {
-							const Icon = step.icon;
-							const isActive = index === currentPhaseIndex;
-							const isCompleted = index < currentPhaseIndex;
-
-							return (
-								<div className="flex items-center" key={step.id}>
-									<div
-										className={`flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors ${
-											isActive
-												? "bg-primary text-primary-foreground"
-												: isCompleted
-													? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-													: "bg-muted text-muted-foreground"
-										}`}
-									>
-										<Icon className="w-4 h-4" />
-										<span className="text-sm font-medium hidden sm:inline">
-											{step.label}
-										</span>
-									</div>
-									{index < phaseSteps.length - 1 && (
-										<div
-											className={`w-8 sm:w-16 h-0.5 mx-2 ${
-												index < currentPhaseIndex ? "bg-green-500" : "bg-muted"
-											}`}
-										/>
-									)}
-								</div>
-							);
-						})}
-					</div>
-				</div>
-			</div>
-
-			{/* Bouton retour */}
-			{phase !== "prompt" && (
-				<div className="border-b px-4 py-2">
-					<Button onClick={handleGoBack} size="sm" variant="ghost">
-						<ArrowLeft className="w-4 h-4 mr-2" />
+			<div className="flex shrink-0 items-center gap-4 overflow-x-auto border-b px-4 py-3 lg:px-6">
+				{phase !== "prompt" && (
+					<Button
+						onClick={handleGoBack}
+						size="sm"
+						variant="ghost"
+						className="h-7 shrink-0 px-2"
+					>
+						<ArrowLeft className="size-3.5" />
 						Back
 					</Button>
-				</div>
-			)}
+				)}
+				<ol
+					aria-label="Generation steps"
+					className="flex items-center gap-5 text-xs sm:gap-8"
+				>
+					{phaseSteps.map((step, index) => (
+						<li
+							key={step.id}
+							aria-current={index === currentPhaseIndex ? "step" : undefined}
+							className={`flex shrink-0 items-center gap-2 ${index === currentPhaseIndex ? "font-medium text-foreground" : "text-muted-foreground"}`}
+						>
+							<span className="font-mono text-[10px]">
+								{index < currentPhaseIndex ? (
+									<CheckCircle2 size={13} />
+								) : (
+									String(index + 1).padStart(2, "0")
+								)}
+							</span>
+							{step.label}
+						</li>
+					))}
+				</ol>
+				{diagram && (
+					<Button
+						className="ml-auto h-7 shrink-0"
+						size="sm"
+						variant="outline"
+						disabled={isGeneratingDiagram || isSaving}
+						onClick={() =>
+							setPhase(phase === "prompt" ? "structure" : "prompt")
+						}
+					>
+						{phase === "prompt" ? "Resume structure" : "New generation"}
+					</Button>
+				)}
+			</div>
 
 			{/* Contenu principal selon la phase */}
-			<div className="flex-1 overflow-hidden">
+			<div className="min-h-0 flex-1 overflow-hidden">
 				{phase === "prompt" && (
-					<DiagramPromptForm
-						initialName={diagramName}
-						initialPrompt={userPrompt}
-						isLoading={isGeneratingDiagram}
-						onGenerate={handleGenerateDiagram}
-					/>
+					<div className="flex h-full flex-col">
+						{diagram && (
+							<p className="shrink-0 border-b bg-muted/30 px-4 py-2 text-xs text-muted-foreground lg:px-6">
+								Creating a structure here starts a new generation. Your previous
+								work is kept until it succeeds. Use Resume structure to continue
+								it, or Discuss structure to request a correction.
+							</p>
+						)}
+						<div className="min-h-0 flex-1">
+							<DiagramPromptForm
+								initialName={diagramName}
+								initialPrompt={userPrompt}
+								isLoading={isGeneratingDiagram}
+								onGenerate={handleGenerateDiagram}
+							/>
+						</div>
+					</div>
 				)}
 
 				{phase === "structure" && diagram && (
 					<StructureEditor
+						conversation={
+							<StructureConversation
+								conversationKey="generator"
+								initialPrompt={userPrompt}
+								diagram={diagram}
+								onChange={setDiagram}
+								errorMessage={diagramError}
+								onGenerate={(prompt, pastMessages) =>
+									generateDiagram({
+										diagramName,
+										userPrompt: prompt,
+										pastMessages,
+									})
+								}
+							/>
+						}
 						diagram={diagram}
 						onDiagramChange={handleDiagramChange}
 						onRegenerate={handleRegenerateStructure}
@@ -426,15 +507,17 @@ export function GeneratorFlow() {
 				)}
 
 				{phase === "complete" && diagram && (
-					<div className="h-full flex flex-col items-center justify-center p-8">
-						<CheckCircle2 className="w-20 h-20 text-green-500 mb-6" />
-						<h1 className="text-3xl font-bold mb-2">Generation Complete!</h1>
-						<p className="text-muted-foreground text-center max-w-md mb-8">
-							All models for "{diagram.name}" have been generated successfully.
-							You can now save them to your library.
+					<div className="h-full overflow-y-auto px-4 py-8 lg:px-6">
+						<CheckCircle2 className="mb-4 size-6 text-muted-foreground" />
+						<h1 className="mb-2 text-2xl font-semibold tracking-tight">
+							Ready to save
+						</h1>
+						<p className="mb-6 max-w-xl text-sm leading-relaxed text-muted-foreground">
+							Review the models in "{diagram.name}", then save the system to a
+							library.
 						</p>
 
-						<div className="flex gap-4">
+						<div className="flex flex-wrap gap-3">
 							<Button onClick={() => setPhase("code")} variant="outline">
 								<Code2 className="w-4 h-4 mr-2" />
 								Review Code
@@ -454,7 +537,7 @@ export function GeneratorFlow() {
 							</Button>
 						</div>
 
-						<div className="mt-8 p-4 bg-muted rounded-lg max-w-md">
+						<div className="mt-8 max-w-lg rounded-md bg-muted/30 p-4">
 							<h3 className="font-semibold mb-2">Summary</h3>
 							<ul className="text-sm text-muted-foreground space-y-1">
 								<li>

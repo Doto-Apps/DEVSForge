@@ -1,133 +1,194 @@
-import { Globe, Lock, Rocket, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { ArrowRight, Globe, Lock, MonitorPlay, Search } from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import NavHeader from "@/components/nav/nav-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useGetWebAppDeployments } from "@/queries/webapp/useGetWebAppDeployments";
 
 export function WebAppDeployments() {
-	const navigate = useNavigate();
-	const { data: deployments, isLoading } = useGetWebAppDeployments();
-
+	const {
+		data: deployments,
+		isLoading,
+		error,
+		mutate,
+	} = useGetWebAppDeployments();
+	const [search, setSearch] = useState("");
+	const filtered = (deployments ?? []).filter((deployment) =>
+		`${deployment.name} ${deployment.slug} ${deployment.contract?.modelName ?? ""}`
+			.toLowerCase()
+			.includes(search.toLowerCase().trim()),
+	);
 	return (
-		<div className="flex h-screen w-full flex-col">
+		<div className="flex h-screen min-w-0 w-full flex-col">
 			<NavHeader
 				breadcrumbs={[{ href: "/", label: "Home" }, { label: "WebApps" }]}
 				showModeToggle
 				showNavActions={false}
 			/>
-
-			<div className="flex-1 overflow-auto p-6">
-				<div className="mx-auto w-full max-w-6xl space-y-6">
-					<div className="flex items-center justify-between gap-4">
-						<div>
-							<h1 className="text-2xl font-semibold">WebApp Deployments</h1>
-							<p className="text-sm text-muted-foreground">
-								Deployable runtime interfaces generated from validated DEVS
-								models.
-							</p>
-						</div>
-						<Button
-							className="shrink-0"
-							onClick={() => navigate("/")}
-							variant="outline"
-						>
-							<Sparkles className="mr-2 h-4 w-4" />
-							From a model editor
+			<div className="flex-1 overflow-y-auto px-4 py-6 lg:px-6">
+				<header className="mb-7 flex flex-wrap items-end justify-between gap-4">
+					<div>
+						<h1 className="text-2xl font-semibold tracking-tight">
+							WebApp deployments
+						</h1>
+						<p className="mt-2 text-sm text-muted-foreground">
+							Runnable interfaces for your models. Open one to configure and
+							simulate.
+						</p>
+					</div>
+					<Button asChild variant="outline" size="sm">
+						<Link to="/library">
+							<MonitorPlay />
+							Choose a model to deploy
+						</Link>
+					</Button>
+				</header>
+				{error ? (
+					<div
+						role="alert"
+						className="flex items-center gap-3 py-6 text-sm text-destructive"
+					>
+						Deployments could not be loaded.
+						<Button variant="outline" size="sm" onClick={() => void mutate()}>
+							Retry
 						</Button>
 					</div>
-
-					{isLoading ? (
-						<div className="text-sm text-muted-foreground">Loading...</div>
-					) : null}
-
-					{!isLoading && (!deployments || deployments.length === 0) ? (
-						<Card>
-							<CardHeader>
-								<CardTitle>No WebApp deployment yet</CardTitle>
-								<CardDescription>
-									Open a model and use the WebApp action to generate and deploy
-									your first runtime UI.
-								</CardDescription>
-							</CardHeader>
-						</Card>
-					) : null}
-
-					{deployments && deployments.length > 0 ? (
-						<div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
-							{deployments.map((deployment) => (
-								<Card key={deployment.id}>
-									<CardHeader>
-										<div className="flex items-start justify-between gap-2">
-											<div>
-												<CardTitle className="text-lg">
-													{deployment.name || "Unnamed deployment"}
-												</CardTitle>
-												<CardDescription className="font-mono text-xs break-all">
-													{deployment.slug}
-												</CardDescription>
-											</div>
-											<Badge
-												className="flex items-center gap-1"
-												variant="outline"
-											>
-												{deployment.isPublic ? (
-													<>
-														<Globe className="h-3.5 w-3.5" />
-														Public
-													</>
-												) : (
-													<>
-														<Lock className="h-3.5 w-3.5" />
-														Private
-													</>
-												)}
-											</Badge>
-										</div>
-									</CardHeader>
-									<CardContent className="space-y-2 text-sm">
-										<div className="text-muted-foreground">
-											{deployment.description || "No description provided."}
-										</div>
-										<div className="grid grid-cols-2 gap-2 text-xs">
-											<div className="rounded border p-2">
-												<div className="text-muted-foreground">Parameters</div>
-												<div className="font-semibold">
-													{deployment.contract?.parameterBindings?.length ?? 0}
-												</div>
-											</div>
-											<div className="rounded border p-2">
-												<div className="text-muted-foreground">I/O Ports</div>
-												<div className="font-semibold">
-													{(deployment.contract?.inputPortBindings?.length ??
-														0) +
-														(deployment.contract?.outputPortBindings?.length ??
-															0)}
-												</div>
-											</div>
-										</div>
-									</CardContent>
-									<CardFooter className="flex items-center justify-end gap-2">
-										<Button
-											onClick={() => navigate(`/webapps/${deployment.id}`)}
-										>
-											<Rocket className="mr-2 h-4 w-4" />
-											Open runtime
-										</Button>
-									</CardFooter>
-								</Card>
-							))}
+				) : isLoading ? (
+					<div className="space-y-3">
+						<Skeleton className="h-10 w-full" />
+						<Skeleton className="h-16 w-full" />
+						<Skeleton className="h-16 w-full" />
+					</div>
+				) : !deployments?.length ? (
+					<section className="flex min-h-72 flex-col items-start justify-center rounded-md bg-muted/25 p-6">
+						<MonitorPlay className="mb-4 size-7 text-muted-foreground" />
+						<h2 className="text-base font-medium">Deploy your first model</h2>
+						<p className="mt-2 max-w-lg text-sm leading-relaxed text-muted-foreground">
+							Open a model, choose Deploy in the header, then review its
+							parameter and port bindings. Save the interface to add it to this
+							list.
+						</p>
+						<Button asChild className="mt-5" size="sm">
+							<Link to="/library">
+								Browse models
+								<ArrowRight />
+							</Link>
+						</Button>
+						<Link
+							to="/how-it-works#webapps"
+							className="mt-3 text-xs text-muted-foreground hover:underline"
+						>
+							How WebApps use your model →
+						</Link>
+					</section>
+				) : (
+					<>
+						<div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+							<p className="text-xs text-muted-foreground">
+								{filtered.length} of {deployments.length} deployments
+							</p>
+							<div className="relative w-full sm:w-64">
+								<Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
+								<Input
+									aria-label="Search deployments"
+									value={search}
+									onChange={(event) => setSearch(event.target.value)}
+									placeholder="Search deployments…"
+									className="h-9 pl-9"
+								/>
+							</div>
 						</div>
-					) : null}
-				</div>
+						<div className="overflow-x-auto">
+							<table className="w-full min-w-[600px] text-left text-sm">
+								<caption className="sr-only">Saved WebApp deployments</caption>
+								<thead className="border-b text-xs text-muted-foreground">
+									<tr>
+										<th scope="col" className="pb-3 pr-4 font-medium">
+											Deployment
+										</th>
+										<th scope="col" className="pb-3 pr-4 font-medium">
+											Model
+										</th>
+										<th scope="col" className="pb-3 pr-4 font-medium">
+											Visibility
+										</th>
+										<th scope="col" className="pb-3 pr-4 font-medium">
+											Interface
+										</th>
+										<th scope="col" className="pb-3 text-right font-medium">
+											Runtime
+										</th>
+									</tr>
+								</thead>
+								<tbody className="divide-y">
+									{filtered.map((deployment) => (
+										<tr key={deployment.id} className="hover:bg-muted/25">
+											<th
+												scope="row"
+												className="max-w-64 py-4 pr-4 font-normal"
+											>
+												<Link
+													to={`/webapps/${deployment.id}`}
+													className="block truncate font-medium hover:underline"
+												>
+													{deployment.name || "Unnamed deployment"}
+												</Link>
+												<span className="mt-1 block truncate font-mono text-[11px] text-muted-foreground">
+													{deployment.slug}
+												</span>
+											</th>
+											<td className="max-w-48 py-4 pr-4">
+												<span className="block truncate text-muted-foreground">
+													{deployment.contract?.modelName || "—"}
+												</span>
+											</td>
+											<td className="py-4 pr-4">
+												<Badge
+													variant="secondary"
+													className="gap-1.5 font-normal"
+												>
+													{deployment.isPublic ? (
+														<Globe size={12} />
+													) : (
+														<Lock size={12} />
+													)}
+													{deployment.isPublic ? "Public" : "Private"}
+												</Badge>
+											</td>
+											<td className="py-4 pr-4 text-xs text-muted-foreground">
+												{deployment.contract?.parameterBindings?.length ?? 0}{" "}
+												parameters ·{" "}
+												{(deployment.contract?.inputPortBindings?.length ?? 0) +
+													(deployment.contract?.outputPortBindings?.length ??
+														0)}{" "}
+												ports
+											</td>
+											<td className="py-4 text-right">
+												<Button asChild variant="ghost" size="sm">
+													<Link to={`/webapps/${deployment.id}`}>
+														Open
+														<ArrowRight size={14} />
+													</Link>
+												</Button>
+											</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+						{!filtered.length && (
+							<p
+								role="status"
+								className="py-10 text-center text-sm text-muted-foreground"
+							>
+								No deployments match “{search}”.
+							</p>
+						)}
+					</>
+				)}
 			</div>
 		</div>
 	);

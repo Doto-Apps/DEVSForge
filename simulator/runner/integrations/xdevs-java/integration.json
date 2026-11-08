@@ -1,0 +1,58 @@
+{
+  "id": "xdevs-java",
+  "version": "1.0.0",
+  "name": "xDEVS Java",
+  "language": "java",
+  "framework": "xDEVS",
+  "extension": ".java",
+  "legacyLanguage": "java",
+  "default": false,
+  "preparation": "xdevs-java",
+  "wrapper": "wrapper",
+  "modelPath": "src/main/java/com/devsforge/runner/{name}.java",
+  "template": "templates/atomic.tmpl",
+  "prompt": "ai/model.md",
+  "context": [
+    "wrapper/src/main/java/com/devsforge/runner/modeling"
+  ],
+  "servers": [
+    {
+      "id": "jdtls",
+      "command": "/opt/lsp/bin/jdtls",
+      "args": [
+        "-data",
+        "{session}/jdtls"
+      ],
+      "settings": {
+        "java": {
+          "configuration": {
+            "runtimes": [
+              {
+                "name": "JavaSE-21",
+                "path": "/opt/java21",
+                "default": true
+              }
+            ]
+          },
+          "import": {
+            "maven": {
+              "enabled": true
+            }
+          },
+          "autobuild": {
+            "enabled": false
+          },
+          "completion": {
+            "favoriteStaticMembers": [
+              "java.lang.Math.*"
+            ]
+          }
+        }
+      },
+      "allowedCommands": [
+        "java.edit.organizeImports",
+        "java.completion.onDidSelect"
+      ]
+    }
+  ]
+}

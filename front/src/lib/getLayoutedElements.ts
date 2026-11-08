@@ -25,7 +25,8 @@ const buildHierarchy = (nodes: ReactFlowInput["nodes"]) => {
 			id: node.id,
 			layoutOptions: {
 				...elkOptions,
-				"elk.padding": "[top=40,left=16,bottom=16,right=16]",
+				// 40px model header + the same 16px gap as the other sides.
+				"elk.padding": "[top=56,left=16,bottom=16,right=16]",
 			},
 			//targetPosition: isHorizontal ? 'left' : 'top',
 			//sourcePosition: isHorizontal ? 'right' : 'bottom',

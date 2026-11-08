@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 
+	"devsforge-shared/integrations"
 	"devsforge/database"
 	"devsforge/enum"
 	"devsforge/json"
@@ -332,12 +333,16 @@ func validateAssistedExperimentalFrameRequest(
 		return nil, fmt.Errorf("model-under-test type (%s) must match target type (%s)", mutModel.Type, targetModel.Type)
 	}
 
-	if !containsString(rootModel.Components, modelUnderTestID) {
+	tree := map[string][]string{}
+	for id, m := range modelByID {
+		tree[id] = m.Components
+	}
+	if !descendant(rootModel.ID, modelUnderTestID, tree) {
 		return nil, errors.New("root model must include model-under-test as component")
 	}
 
 	for modelID, spec := range modelByID {
-		if spec.Type == enum.Atomic {
+		if spec.Type == enum.Atomic || modelID == modelUnderTestID {
 			continue
 		}
 		for _, componentID := range spec.Components {
@@ -369,30 +374,29 @@ func validateAssistedExperimentalFrameRequest(
 		}
 	}
 
-	for idx, conn := range req.Connections {
-		sourceModelID, sourceModelExists := resolveAssistedModelID(conn.From.Model, modelIDByAlias)
-		targetModelID, targetModelExists := resolveAssistedModelID(conn.To.Model, modelIDByAlias)
-		sourcePort := strings.TrimSpace(conn.From.Port)
-		targetPort := strings.TrimSpace(conn.To.Port)
-		connectionLabel := fmt.Sprintf("connection #%d", idx+1)
-
-		sourcePorts, sourceExists := portDirectionByModelID[sourceModelID]
-		if !sourceModelExists || !sourceExists {
-			return nil, fmt.Errorf("%s references unknown source model %s", connectionLabel, strings.TrimSpace(conn.From.Model))
+	canonical := []response.Model{}
+	for _, spec := range req.Models {
+		ports := []response.PortResponse{}
+		for _, p := range spec.Ports {
+			ports = append(ports, response.PortResponse{Name: p.Name, Type: response.PortDirection(p.Type)})
 		}
-		targetPorts, targetExists := portDirectionByModelID[targetModelID]
-		if !targetModelExists || !targetExists {
-			return nil, fmt.Errorf("%s references unknown target model %s", connectionLabel, strings.TrimSpace(conn.To.Model))
+		canonical = append(canonical, response.Model{ID: spec.ID, Type: response.ModelType(spec.Type), Ports: ports, Components: spec.Components})
+	}
+	connections := make([]response.Connection, len(req.Connections))
+	for i, c := range req.Connections {
+		from, _ := resolveAssistedModelID(c.From.Model, modelIDByAlias)
+		to, _ := resolveAssistedModelID(c.To.Model, modelIDByAlias)
+		owner := c.Owner
+		if owner != "" {
+			owner, _ = resolveAssistedModelID(owner, modelIDByAlias)
 		}
-
-		sourceDirection, sourcePortExists := sourcePorts[sourcePort]
-		if !sourcePortExists || sourceDirection != enum.ModelPortDirectionOut {
-			return nil, fmt.Errorf("%s has invalid source port %s on model %s", connectionLabel, sourcePort, sourceModelID)
-		}
-		targetDirection, targetPortExists := targetPorts[targetPort]
-		if !targetPortExists || targetDirection != enum.ModelPortDirectionIn {
-			return nil, fmt.Errorf("%s has invalid target port %s on model %s", connectionLabel, targetPort, targetModelID)
-		}
+		connections[i] = response.Connection{Owner: owner, From: response.Endpoint{Model: from, Port: c.From.Port}, To: response.Endpoint{Model: to, Port: c.To.Port}}
+	}
+	if issues := validateDiagram(canonical, connections, req.TargetModelID); len(issues) > 0 {
+		return nil, fmt.Errorf("%s", strings.Join(issues, "; "))
+	}
+	for i, c := range connections {
+		req.Connections[i].Owner = c.Owner
 	}
 
 	return modelByID, nil
@@ -475,13 +479,40 @@ func createAssistedModelFromSpec(
 		code = ""
 	}
 
+	var profileID, profileVersion *string
+	if spec.Type == enum.Atomic {
+		var d integrations.Definition
+		var err error
+		if spec.IntegrationID == nil && spec.IntegrationVersion == nil {
+			d, err = integrations.Default()
+		} else {
+			a, b := "", ""
+			if spec.IntegrationID != nil {
+				a = *spec.IntegrationID
+			}
+			if spec.IntegrationVersion != nil {
+				b = *spec.IntegrationVersion
+			}
+			d, err = integrations.Resolve(a, b, "")
+		}
+		if err != nil {
+			return model.Model{}, err
+		}
+		profileID = &d.ID
+		profileVersion = &d.Version
+	}
+	if components == nil {
+		components = []json.ModelComponent{}
+	}
+	if connections == nil {
+		connections = []json.ModelConnection{}
+	}
 	modelRole := role
 	modelToCreate := model.Model{
-		UserID:      userID,
+		UserID: userID, IntegrationID: profileID, IntegrationVersion: profileVersion,
 		LibID:       libraryID,
 		Name:        spec.Name,
 		Type:        spec.Type,
-		Language:    enum.ModelLanguagePython,
 		Description: description,
 		Code:        code,
 		Ports:       modelPorts,
@@ -542,6 +573,9 @@ func buildCoupledConnections(
 
 	result := make([]json.ModelConnection, 0)
 	for _, conn := range connections {
+		if conn.Owner != "" && conn.Owner != spec.ID {
+			continue
+		}
 		fromModelID, fromModelExists := resolveAssistedModelID(conn.From.Model, modelIDByAlias)
 		if !fromModelExists {
 			continue
@@ -575,7 +609,7 @@ func buildCoupledConnections(
 			}
 		}
 
-		if fromInstanceID == toInstanceID {
+		if fromInstanceID == "root" && toInstanceID == "root" {
 			continue
 		}
 

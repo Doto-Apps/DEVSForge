@@ -89,6 +89,7 @@ Access:
 - Frontend: `ghcr.io/doto-apps/devsforge-frontend`
 - Backend: `ghcr.io/doto-apps/devsforge-backend`
 - Simulator: `ghcr.io/doto-apps/devsforge-simulator`
+- LSP: `ghcr.io/doto-apps/devsforge-lsp`
 
 ## Repository Navigation
 
@@ -97,7 +98,7 @@ Access:
 | `back/` | API, persistence, AI generation, simulation orchestration | [back/README.md](back/README.md) |
 | `front/` | UI for modeling, generation, validation, simulation, webapps | [front/README.md](front/README.md) |
 | `simulator/` | DEVS distributed runtime (coordinator, runners, shared contracts) | [simulator/README.md](simulator/README.md) |
-| `simulator/wrappers/` | Go/Python/Java wrapper runtimes and gRPC bridge | [simulator/wrappers/README.md](simulator/wrappers/README.md) |
+| `simulator/runner/integrations/` | Versioned integration resources, wrappers, AI templates and LSP | [docs/integrations.md](docs/integrations.md) |
 | Reproducibility assets | Case-study protocols and experiment flow | [docs/reproducibility.md](docs/reproducibility.md) |
 
 ## Reproducibility
@@ -122,3 +123,11 @@ BibTeX:
 ## License
 
 MIT - see [LICENSE](LICENSE).
+
+## Integrations and language assistance
+
+See [the integration guide](docs/integrations.md) for the unified catalogue, Python/Go/Java LSP, environment limits and adding another integration. Existing `task back:dev` and `task front:dev` commands remain the development entrypoints.
+
+Model editors now share persistent local tabs across libraries. Unsaved changes and generator conversations can be recovered after reload. Python, Go and Java reuse analysis workspaces within a browser window; the default LSP budget is 4 GiB with six active workspaces (at most two Java), and excess requests wait. See [workbench behavior, browser checks and measured startup/memory](docs/integrations.md#model-workbench-and-local-recovery).
+
+Pour comprendre le fonctionnement pas à pas : [guide d’architecture en français — LSP, onglets, fichiers, simulation et IA](docs/architecture-lsp-et-editeur.md).

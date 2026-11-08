@@ -27,7 +27,9 @@ type PortInfo struct {
 
 type GenerateModelRequest struct {
 	ModelName          string     `json:"modelName" validate:"required" example:"MyModel"`
-	Language           string     `json:"language" validate:"required,oneof=python go" example:"python"`
+	Language           string     `json:"language,omitempty" example:"python"`
+	IntegrationID      string     `json:"integrationId"`
+	IntegrationVersion string     `json:"integrationVersion"`
 	Ports              []PortInfo `json:"ports" validate:"required"`
 	PreviousModelsCode string     `json:"previousModelsCode" validate:"required" example:"Existing model code"`
 	UserPrompt         string     `json:"userPrompt" validate:"required" example:"Generate a model based on the previous code"`

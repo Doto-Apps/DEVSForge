@@ -101,13 +101,13 @@ const getModelConnection = (
 			const sourcePort = resolvePortNameFromNode(
 				sourceNode,
 				getPortIdentifierFromHandle(edge.sourceHandle),
-				"out",
+				edge.source === node.id ? "in" : "out",
 			);
 
 			const targetPort = resolvePortNameFromNode(
 				targetNode,
 				getPortIdentifierFromHandle(edge.targetHandle),
-				"in",
+				edge.target === node.id ? "out" : "in",
 			);
 
 			return {
@@ -155,6 +155,12 @@ const nodeToModel = (
 	const comp = getModelComponent(node, nodesAndEdges.nodes);
 	return {
 		code: node.data.code,
+		...(node.data.integrationId
+			? {
+					integrationId: node.data.integrationId,
+					integrationVersion: node.data.integrationVersion,
+				}
+			: {}),
 		components: comp,
 		connections:
 			node.data.modelType === "coupled"

@@ -2,7 +2,7 @@ package runner
 
 import (
 	"devsforge-shared/kafka"
-	devspb "devsforge-wrapper/proto"
+	devspb "devsforge-shared/proto"
 	"encoding/json"
 	"fmt"
 	"log/slog"

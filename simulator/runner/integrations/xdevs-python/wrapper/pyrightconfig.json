@@ -1,0 +1,11 @@
+{
+  "include": [
+    "model.py"
+  ],
+  "extraPaths": [
+    "."
+  ],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true
+}

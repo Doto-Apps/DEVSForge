@@ -1,4 +1,7 @@
+import { ModelTabs } from "./model-tabs";
+import { useOptionalWorkbench } from "@/providers/WorkbenchProvider";
 import React from "react";
+import { useIntegrations } from "@/hooks/useIntegrations";
 import type { components } from "@/api/v1";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Badge } from "@/components/ui/badge";
@@ -28,7 +31,9 @@ type NavHeaderProps = {
 	validateFunction?: () => Promise<void>;
 	deployFunction?: () => Promise<void>;
 	modelId?: components["schemas"]["model.Model"]["id"];
-	modelLanguage?: components["schemas"]["enum.ModelLanguage"];
+	modelLanguage?: string;
+	integrationId?: string;
+	integrationVersion?: string;
 };
 
 const NavHeader: React.FC<NavHeaderProps> = ({
@@ -43,53 +48,85 @@ const NavHeader: React.FC<NavHeaderProps> = ({
 	deployFunction,
 	modelId,
 	modelLanguage,
+	integrationId,
+	integrationVersion,
 }) => {
+	const { data: integrations } = useIntegrations();
+	const workbench = useOptionalWorkbench();
+	const label =
+		integrations.find(
+			(d) => d.id === integrationId && d.version === integrationVersion,
+		)?.name ?? modelLanguage;
 	const lastIndex = breadcrumbs.length - 1;
 
 	return (
-		<header
-			className={`flex sticky top-0 ${headerBgClass} h-16 shrink-0 items-center gap-2 border-b px-4 ${headerExtraClass}`}
+		<div
+			className={`sticky top-0 z-20 min-w-0 shrink-0 ${headerBgClass} ${headerExtraClass}`}
 		>
-			<SidebarTrigger className="-ml-1" />
-			<Separator className="mr-2 h-4" orientation="vertical" />
-			<Breadcrumb>
-				<BreadcrumbList>
-					{breadcrumbs.map((item, index) => (
-						<React.Fragment key={item.href + item.label}>
-							<BreadcrumbItem
-								className={index < lastIndex ? "hidden md:block" : ""}
-							>
-								{index < lastIndex && item.href ? (
-									<BreadcrumbLink href={item.href}>{item.label}</BreadcrumbLink>
-								) : (
-									<BreadcrumbPage>{item.label}</BreadcrumbPage>
-								)}
-							</BreadcrumbItem>
-							{index < lastIndex ? (
-								<BreadcrumbSeparator className="hidden md:block" />
-							) : null}
-						</React.Fragment>
-					))}
-				</BreadcrumbList>
-			</Breadcrumb>
-			{modelLanguage && (
-				<Badge className="shrink-0" title="Model language" variant="secondary">
-					{{ go: "Go", java: "Java", python: "Python" }[modelLanguage]}
-				</Badge>
-			)}
-			<div className="ml-auto px-3 flex items-center gap-2">
-				{showNavActions ? (
-					<NavActions
-						deployFunction={deployFunction}
-						modelId={modelId}
-						saveFunction={saveFunction}
-						simulateFunction={simulateFunction}
-						validateFunction={validateFunction}
-					/>
-				) : null}
-				{showModeToggle && <ModeToggle />}
-			</div>
-		</header>
+			<header className="flex h-12 min-w-0 items-center gap-2 border-b px-3 md:px-4">
+				<SidebarTrigger className="-ml-1" />
+				{workbench?.storageError && (
+					<span
+						role="alert"
+						className="text-xs text-destructive"
+						title={workbench.storageError}
+					>
+						Local recovery unavailable
+					</span>
+				)}
+				<Separator className="mr-2 h-4" orientation="vertical" />
+				<Breadcrumb className="min-w-0 flex-1">
+					<BreadcrumbList className="flex-nowrap">
+						{breadcrumbs.map((item, index) => (
+							<React.Fragment key={item.href + item.label}>
+								<BreadcrumbItem
+									className={
+										index < lastIndex
+											? "hidden min-w-0 md:inline-flex"
+											: "min-w-0"
+									}
+								>
+									{index < lastIndex && item.href ? (
+										<BreadcrumbLink className="truncate" href={item.href}>
+											{item.label}
+										</BreadcrumbLink>
+									) : (
+										<BreadcrumbPage className="truncate">
+											{item.label}
+										</BreadcrumbPage>
+									)}
+								</BreadcrumbItem>
+								{index < lastIndex ? (
+									<BreadcrumbSeparator className="hidden md:block" />
+								) : null}
+							</React.Fragment>
+						))}
+					</BreadcrumbList>
+				</Breadcrumb>
+				{modelLanguage && (
+					<Badge
+						className="hidden shrink-0 xl:inline-flex"
+						title="Model language"
+						variant="secondary"
+					>
+						{label}
+					</Badge>
+				)}
+				<div className="ml-auto flex shrink-0 items-center gap-2">
+					{showNavActions ? (
+						<NavActions
+							deployFunction={deployFunction}
+							modelId={modelId}
+							saveFunction={saveFunction}
+							simulateFunction={simulateFunction}
+							validateFunction={validateFunction}
+						/>
+					) : null}
+					{showModeToggle && <ModeToggle />}
+				</div>
+			</header>
+			{workbench?.tabs.length ? <ModelTabs /> : null}
+		</div>
 	);
 };
 

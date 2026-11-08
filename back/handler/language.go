@@ -1,133 +1,87 @@
 package handler
 
 import (
-	"bytes"
-	"text/template"
-
-	"devsforge/enum"
+	"devsforge-shared/integrations"
 	"devsforge/response"
-	"devsforge/templates"
-
 	"github.com/gofiber/fiber/v2"
 )
 
-// Language metadata
-var languageInfoMap = map[enum.ModelLanguage]response.LanguageInfo{
-	enum.ModelLanguageGo: {
-		ID:          "go",
-		Name:        "Go",
-		Extension:   ".go",
-		Description: "Performant and strongly typed",
-	},
-	enum.ModelLanguagePython: {
-		ID:          "python",
-		Name:        "Python",
-		Extension:   ".py",
-		Description: "Simple and flexible",
-	},
-	enum.ModelLanguageJava: {
-		ID:          "java",
-		Name:        "Java",
-		Extension:   ".java",
-		Description: "JVM-based and strongly typed",
-	},
+// GetIntegrations lists installed versioned framework integrations.
+// @Summary Get integrations
+// @Tags Integrations
+// @Produce json
+// @Success 200 {array} integrations.Definition
+// @Router /integrations [get]
+func GetIntegrations(c *fiber.Ctx) error {
+	defs, err := integrations.List()
+	if err != nil {
+		return SendRequestError(c, 500, err)
+	}
+	return c.JSON(defs)
 }
 
-// GetLanguages returns the list of available languages
-//
-//	@Summary		Get available languages
-//	@Description	Returns the list of programming languages available for DEVS models
-//	@Tags			Languages
-//	@Produce		json
-//	@Success		200	{object}	response.LanguageListResponse
-//	@Router			/languages [get]
-func GetLanguages(c *fiber.Ctx) error {
-	languages := make([]response.LanguageInfo, 0, len(enum.AllModelLanguages()))
+// GetIntegrationTemplate returns the template belonging to a specific profile version.
+// @Summary Get integration template
+// @Tags Integrations
+// @Produce json
+// @Param id path string true "Integration ID"
+// @Param version path string true "Integration version"
+// @Param name query string false "Source identifier" default(MyModel)
+// @Success 200 {object} response.LanguageTemplateResponse
+// @Router /integrations/{id}/versions/{version}/template [get]
+func GetIntegrationTemplate(c *fiber.Ctx) error {
+	d, err := integrations.Resolve(c.Params("id"), c.Params("version"), "")
+	if err != nil {
+		return SendRequestError(c, 404, err)
+	}
+	return renderIntegrationTemplate(c, d)
+}
+func renderIntegrationTemplate(c *fiber.Ctx, d integrations.Definition) error {
+	code, err := d.RenderTemplate(c.Query("name", "MyModel"))
+	if err != nil {
+		return SendRequestError(c, 400, err)
+	}
+	return c.JSON(response.LanguageTemplateResponse{Language: d.Language, Code: code})
+}
 
-	for _, lang := range enum.AllModelLanguages() {
-		if info, ok := languageInfoMap[lang]; ok {
-			languages = append(languages, info)
+// GetLanguages is the compatibility projection of the integration catalogue.
+// @Summary Get available languages
+// @Tags Languages
+// @Produce json
+// @Success 200 {object} response.LanguageListResponse
+// @Router /languages [get]
+func GetLanguages(c *fiber.Ctx) error {
+	defs, err := integrations.List()
+	if err != nil {
+		return SendRequestError(c, 500, err)
+	}
+	result := []response.LanguageInfo{}
+	for _, d := range defs {
+		if d.LegacyLanguage != "" {
+			result = append(result, response.LanguageInfo{ID: d.LegacyLanguage, Name: d.Name, Extension: d.Extension, Description: d.Framework})
 		}
 	}
-
-	return c.JSON(response.LanguageListResponse{
-		Languages: languages,
-	})
+	return c.JSON(response.LanguageListResponse{Languages: result})
 }
 
-// GetLanguageTemplate returns the code template for a specific language
-//
-//	@Summary		Get language template
-//	@Description	Returns the atomic model code template for the specified language
-//	@Tags			Languages
-//	@Produce		json
-//	@Param			lang	path		string	true	"Language ID (go, python, java)"
-//	@Param			name	query		string	false	"Model name to inject in template"	default(MyModel)
-//	@Success		200		{object}	response.LanguageTemplateResponse
-//	@Failure		400		{object}	map[string]any
-//	@Failure		500		{object}	map[string]any
-//	@Router			/languages/{lang}/template [get]
+// GetLanguageTemplate adapts legacy language identifiers to catalogue entries.
+// @Summary Get language template
+// @Tags Languages
+// @Produce json
+// @Param lang path string true "Legacy language"
+// @Param name query string false "Source identifier" default(MyModel)
+// @Success 200 {object} response.LanguageTemplateResponse
+// @Router /languages/{lang}/template [get]
 func GetLanguageTemplate(c *fiber.Ctx) error {
-	langParam := c.Params("lang")
-	modelName := c.Query("name", "MyModel")
-
-	// Validate language
-	lang := enum.ModelLanguage(langParam)
-	if !lang.IsValid() {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Invalid language: " + langParam,
-		})
-	}
-
-	// Get template path based on language
-	var templatePath string
-	switch lang {
-	case enum.ModelLanguageGo:
-		templatePath = "go/atomic.tmpl"
-	case enum.ModelLanguagePython:
-		templatePath = "python/atomic.tmpl"
-	case enum.ModelLanguageJava:
-		templatePath = "java/atomic.tmpl"
-	default:
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"error": "Template not found for language: " + langParam,
-		})
-	}
-
-	// Read template file
-	tmplContent, err := templates.FS.ReadFile(templatePath)
+	d, err := integrations.Resolve("", "", c.Params("lang"))
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to read template: " + err.Error(),
-		})
+		return SendRequestError(c, 400, err)
 	}
-
-	// Parse and execute template
-	tmpl, err := template.New("atomic").Parse(string(tmplContent))
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to parse template: " + err.Error(),
-		})
-	}
-
-	var buf bytes.Buffer
-	err = tmpl.Execute(&buf, map[string]string{
-		"Name": modelName,
-	})
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"error": "Failed to execute template: " + err.Error(),
-		})
-	}
-
-	return c.JSON(response.LanguageTemplateResponse{
-		Language: langParam,
-		Code:     buf.String(),
-	})
+	return renderIntegrationTemplate(c, d)
 }
-
-// SetupLanguageRoutes registers language-related routes
 func SetupLanguageRoutes(app *fiber.App) {
+	app.Get("/integrations", GetIntegrations)
+	app.Get("/integrations/:id/versions/:version/template", GetIntegrationTemplate)
 	app.Get("/languages", GetLanguages)
 	app.Get("/languages/:lang/template", GetLanguageTemplate)
 }

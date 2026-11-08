@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"devsforge-shared/integrations"
 	"devsforge/database"
 	"devsforge/middleware"
 	"devsforge/model"
@@ -48,8 +49,8 @@ func getOpenAIClientForUser(userID string) (*openai.Client, model.UserAISettings
 	settings.APIKey = strings.TrimSpace(settings.APIKey)
 	settings.APIModel = strings.TrimSpace(settings.APIModel)
 
-	if settings.APIURL == "" || settings.APIKey == "" || settings.APIModel == "" {
-		return nil, model.UserAISettings{}, fmt.Errorf("AI settings are incomplete: apiUrl, apiKey and apiModel are required")
+	if settings.APIURL == "" || settings.APIModel == "" {
+		return nil, model.UserAISettings{}, fmt.Errorf("AI settings are incomplete: apiUrl and apiModel are required")
 	}
 
 	client := openai.NewClient(
@@ -67,6 +68,12 @@ func GenerateSchema[T any]() any {
 	}
 	var v T
 	schema := reflector.Reflect(v)
+	return schema
+}
+
+func structureSchema[T any]() any {
+	schema := GenerateSchema[T]().(*jsonschema.Schema)
+	schema.Properties.Delete("validationErrors")
 	return schema
 }
 
@@ -89,6 +96,9 @@ func generateDiagram(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
+	if len(c.Body()) > 256*1024 {
+		return SendRequestError(c, 413, fmt.Errorf("structure conversation exceeds 256 KiB; remove attached code or start a new conversation"))
+	}
 	if request.DiagramName == "" || request.UserPrompt == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "All fields are required"})
 	}
@@ -110,7 +120,7 @@ func generateDiagram(c *fiber.Ctx) error {
 	schemaParam := openai.ResponseFormatJSONSchemaJSONSchemaParam{
 		Name:        openai.F("Diagram"),
 		Description: openai.F("Diagram strutural plan"),
-		Schema:      openai.F(GenerateSchema[response.DiagramResponse]()),
+		Schema:      openai.F(structureSchema[response.DiagramResponse]()),
 		Strict:      openai.Bool(true),
 	}
 
@@ -156,6 +166,7 @@ func generateDiagram(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to parse AI response"})
 	}
 
+	response.ValidationErrors = validateDiagram(response.Models, response.Connections, "")
 	return c.JSON(response)
 }
 
@@ -179,6 +190,9 @@ func generateEFStructure(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
+	if len(c.Body()) > 256*1024 {
+		return SendRequestError(c, 413, fmt.Errorf("structure conversation exceeds 256 KiB"))
+	}
 	if request.TargetModelID == "" || request.UserPrompt == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "TargetModelID and UserPrompt are required"})
 	}
@@ -226,7 +240,7 @@ Please respond ONLY in JSON following the provided schema.
 	schemaParam := openai.ResponseFormatJSONSchemaJSONSchemaParam{
 		Name:        openai.F("ExperimentalFrameStructure"),
 		Description: openai.F("Experimental frame structure around a model-under-test"),
-		Schema:      openai.F(GenerateSchema[response.ExperimentalFrameStructureResponse]()),
+		Schema:      openai.F(structureSchema[response.ExperimentalFrameStructureResponse]()),
 		Strict:      openai.Bool(true),
 	}
 
@@ -280,8 +294,7 @@ Please respond ONLY in JSON following the provided schema.
 	efResponse.TargetModelID = target.ID
 
 	if err := validateEFStructureResponse(&efResponse, target); err != nil {
-		slog.Error("EF structure validation error", "error", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "AI returned invalid EF structure: " + err.Error()})
+		efResponse.ValidationErrors = []string{err.Error()}
 	}
 
 	return c.JSON(efResponse)
@@ -290,7 +303,7 @@ Please respond ONLY in JSON following the provided schema.
 // GenerateModel godoc
 //
 //	@Summary		Generate a model
-//	@Description	Sends a prompt to OpenAI to generate a DEVS model code in Python or Go.
+//	@Description	Sends a prompt to OpenAI to generate a DEVS model code for the selected integration.
 //	@Tags			AI
 //	@Accept			json
 //	@Produce		json
@@ -306,14 +319,18 @@ func generateModel(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
 	}
 
-	if req.ModelName == "" || req.Language == "" || req.UserPrompt == "" {
+	if req.ModelName == "" || req.UserPrompt == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "ModelName, Language, and UserPrompt are required"})
 	}
 
-	// Validate language
-	if req.Language != "python" && req.Language != "go" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Language must be 'python' or 'go'"})
+	d, err := integrations.Resolve(req.IntegrationID, req.IntegrationVersion, req.Language)
+	if err != nil {
+		return SendRequestError(c, 400, err)
 	}
+	if !d.Capabilities.AI {
+		return c.Status(400).JSON(fiber.Map{"error": "AI generation unavailable for this integration"})
+	}
+	req.Language = d.Language
 
 	userID := c.Locals("user_id").(string)
 	client, aiSettings, err := getOpenAIClientForUser(userID)
@@ -330,7 +347,7 @@ func generateModel(c *fiber.Ctx) error {
 	candidates, candidateErr := getReuseCandidates(
 		database.DB,
 		userID,
-		req.Language,
+		d.ID, d.Version,
 		promptKeywords,
 		reuseTopK,
 		reuseLowThreshold,
@@ -376,7 +393,7 @@ func generateModel(c *fiber.Ctx) error {
 	}
 
 	// Get the appropriate prompt with template
-	systemPrompt, err := prompt.BuildModelPromptWithContext(req.Language)
+	systemPrompt, err := d.ModelPrompt()
 	if err != nil {
 		slog.Error("Failed to build model prompt", "error", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to prepare prompt"})
@@ -671,12 +688,16 @@ func validateEFStructureResponse(ef *response.ExperimentalFrameStructureResponse
 	}
 
 	rootModel := modelByID[rootID]
-	if !containsString(rootModel.Components, mutID) {
+	tree := map[string][]string{}
+	for id, m := range modelByID {
+		tree[id] = m.Components
+	}
+	if !descendant(rootModel.ID, mutID, tree) {
 		return fmt.Errorf("experimental-frame root must include model-under-test as component")
 	}
 
 	for _, m := range ef.Models {
-		if m.Type == response.ModelTypeCoupled {
+		if m.Type == response.ModelTypeCoupled && m.ID != mutID {
 			for _, componentID := range m.Components {
 				if _, exists := modelByID[componentID]; !exists {
 					return fmt.Errorf("model %s references unknown component %s", m.ID, componentID)
@@ -694,22 +715,12 @@ func validateEFStructureResponse(ef *response.ExperimentalFrameStructureResponse
 		return err
 	}
 
-	for _, conn := range ef.Connections {
-		fromModel, exists := modelByID[conn.From.Model]
-		if !exists {
-			return fmt.Errorf("connection references unknown source model %s", conn.From.Model)
-		}
-		toModel, exists := modelByID[conn.To.Model]
-		if !exists {
-			return fmt.Errorf("connection references unknown target model %s", conn.To.Model)
-		}
-
-		if !hasPortByNameAndDirection(fromModel.Ports, conn.From.Port, response.PortDirectionOut) {
-			return fmt.Errorf("source port %s does not exist as out port on model %s", conn.From.Port, conn.From.Model)
-		}
-		if !hasPortByNameAndDirection(toModel.Ports, conn.To.Port, response.PortDirectionIn) {
-			return fmt.Errorf("target port %s does not exist as in port on model %s", conn.To.Port, conn.To.Model)
-		}
+	canonical := make([]response.Model, 0, len(ef.Models))
+	for _, m := range ef.Models {
+		canonical = append(canonical, response.Model{ID: m.ID, Type: m.Type, Ports: m.Ports, Components: m.Components})
+	}
+	if issues := validateDiagram(canonical, ef.Connections, mutID); len(issues) > 0 {
+		return fmt.Errorf("%s", strings.Join(issues, "; "))
 	}
 
 	return nil

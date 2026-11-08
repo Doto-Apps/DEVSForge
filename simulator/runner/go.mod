@@ -4,12 +4,10 @@ go 1.26.2
 
 replace devsforge-shared => ../shared
 
-replace devsforge-wrapper => ../wrappers/go
-
 require (
 	devsforge-shared v0.0.0
-	devsforge-wrapper v0.0.0
 	github.com/caarlos0/env/v11 v11.4.0
+	github.com/gorilla/websocket v1.5.3
 	github.com/joho/godotenv v1.5.1
 	github.com/testcontainers/testcontainers-go/modules/kafka v0.42.0
 	github.com/twmb/franz-go v1.20.5
@@ -73,6 +71,7 @@ require (
 	go.opentelemetry.io/otel v1.43.0 // indirect
 	go.opentelemetry.io/otel/metric v1.43.0 // indirect
 	go.opentelemetry.io/otel/sdk v1.43.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.43.0 // indirect
 	go.opentelemetry.io/otel/trace v1.43.0 // indirect
 	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/mod v0.33.0 // indirect

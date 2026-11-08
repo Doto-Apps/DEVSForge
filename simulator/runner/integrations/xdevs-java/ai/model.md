@@ -1,0 +1,1 @@
+Generate a Java 21 atomic DEVS model using the provided modeling sources and template. Keep the package com.devsforge.runner, extend Atomic, and provide a public constructor taking RunnableModel. Use only methods present in the supplied library. Return the requested JSON containing code.

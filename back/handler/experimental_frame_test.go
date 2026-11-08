@@ -6,6 +6,7 @@ import (
 
 	"devsforge/enum"
 	"devsforge/json"
+	"devsforge/model"
 	"devsforge/request"
 )
 
@@ -63,5 +64,26 @@ func TestBuildCoupledConnectionsKeepsRootCouplingsWithModelNames(t *testing.T) {
 
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("unexpected connections:\nwant: %#v\n got: %#v", want, got)
+	}
+}
+
+func TestNestedExperimentalFrameKeepsCoupledTargetOpaque(t *testing.T) {
+	target := model.Model{ID: "existing-mut", Name: "Existing coupled model", Type: enum.Coupled, Components: []json.ModelComponent{{InstanceID: "old-instance", ModelID: "existing-child"}}}
+	req := request.ExperimentalFrameRequest{TargetModelID: target.ID, ModelUnderTestID: target.ID, RootModelID: "room", Models: []request.AssistedExperimentalFrameModel{
+		{ID: "room", Name: "Room", Type: enum.Coupled, Components: []string{"middle"}},
+		{ID: "middle", Name: "Middle", Type: enum.Coupled, Components: []string{"inner"}},
+		{ID: "inner", Name: "Inner", Type: enum.Coupled, Components: []string{target.ID}},
+		{ID: target.ID, Name: target.Name, Type: enum.Coupled, Components: []string{"existing-child"}},
+	}}
+	before := append([]json.ModelComponent{}, target.Components...)
+	if _, err := validateAssistedExperimentalFrameRequest(&req, target); err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(before, target.Components) {
+		t.Fatal("target components changed")
+	}
+	req.Models[2].Components = []string{"room"}
+	if _, err := validateAssistedExperimentalFrameRequest(&req, target); err == nil {
+		t.Fatal("accepted containment cycle or missing target")
 	}
 }

@@ -1,22 +1,10 @@
 export const findHolderId = (source: string, target: string) => {
-	const s = source.split("/").reverse();
-	const t = target.split("/").reverse();
-
-	if (s[0] === t[0]) {
-		return null;
-	}
-	if (s[0] === t[1]) {
-		t.shift();
-		return t.reverse().join("/");
-	}
-	if (s[1] === t[0]) {
-		s.shift();
-		return s.reverse().join("/");
-	}
-	if (s[1] === t[1]) {
-		s.shift();
-		return s.reverse().join("/");
-	}
-
-	return null;
+	const parent = (id: string) =>
+		id.includes("/") ? id.slice(0, id.lastIndexOf("/")) : null;
+	const sourceParent = parent(source),
+		targetParent = parent(target);
+	if (source === target) return sourceParent;
+	if (source === targetParent) return source;
+	if (target === sourceParent) return target;
+	return sourceParent && sourceParent === targetParent ? sourceParent : null;
 };

@@ -97,7 +97,7 @@ func extractPromptKeywords(client *openai.Client, aiModel string, userPrompt str
 func getReuseCandidates(
 	db *gorm.DB,
 	userID string,
-	language string,
+	integrationID string, integrationVersion string,
 	promptKeywords []string,
 	topK int,
 	threshold float64,
@@ -115,7 +115,7 @@ func getReuseCandidates(
 
 	var models []model.Model
 	if err := db.
-		Where("user_id = ? AND language = ? AND deleted_at IS NULL", userID, language).
+		Where("user_id = ? AND integration_id = ? AND integration_version = ? AND deleted_at IS NULL", userID, integrationID, integrationVersion).
 		Find(&models).Error; err != nil {
 		return nil, err
 	}

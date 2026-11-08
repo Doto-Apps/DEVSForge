@@ -21,8 +21,8 @@ Rules:
    - "transducer"
    - "acceptor"
 6. Every model id must be unique.
-7. All components listed in a coupled model must exist in models.
-8. All connections must reference existing model ids and existing port names.
+7. All generated components must exist in models. The existing MUT is an opaque protected reference: preserve its type and ports, do not regenerate its internal components.
+8. Each connection includes owner, the id of its coupled scope. Only that owner and its immediate children may be endpoints. Route across nested coupled models through their boundary ports. Owner input to child input, child output to owner output, and child output to child input are valid. Feedback is valid; containment cycles are forbidden. Coupled models may contain other coupled models. Preserve ids and manual edits from the current structure. Return the complete revised structure.
 9. No extra text, no markdown, no comments.
 
 Design intent:

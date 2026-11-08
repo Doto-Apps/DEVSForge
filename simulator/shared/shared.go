@@ -5,12 +5,6 @@ import "devsforge-shared/enum"
 
 type CodeLanguage string
 
-const (
-	Go     ParameterType = "go"
-	Java   ParameterType = "java"
-	Python ParameterType = "python"
-)
-
 type RunnableModelPort struct {
 	ID   string                  `json:"id" validate:"required"`
 	Name string                  `json:"name" validate:"required"`
@@ -45,13 +39,15 @@ type RunnableModelParameter struct {
 }
 
 type RunnableModel struct {
-	ID          string                    `json:"id" validate:"required"`
-	Name        string                    `json:"name" validate:"required"`
-	Code        string                    `json:"code" validate:"required"`
-	Language    CodeLanguage              `json:"language" validate:"required"`
-	Ports       []RunnableModelPort       `json:"ports" validate:"required"`
-	Parameters  []RunnableModelParameter  `json:"parameters,omitempty"`
-	Connections []RunnableModelConnection `json:"connections" validate:"required"`
+	ID                 string                    `json:"id" validate:"required"`
+	Name               string                    `json:"name" validate:"required"`
+	Code               string                    `json:"code" validate:"required"`
+	Language           CodeLanguage              `json:"language"`
+	IntegrationID      string                    `json:"integrationId"`
+	IntegrationVersion string                    `json:"integrationVersion"`
+	Ports              []RunnableModelPort       `json:"ports" validate:"required"`
+	Parameters         []RunnableModelParameter  `json:"parameters,omitempty"`
+	Connections        []RunnableModelConnection `json:"connections" validate:"required"`
 }
 
 type RunnableManifest struct {

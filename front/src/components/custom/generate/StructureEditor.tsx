@@ -1,12 +1,15 @@
 "use client";
 
 import { ReactFlowProvider } from "@xyflow/react";
-import { CheckCircle2, RefreshCw } from "lucide-react";
+import { ArrowRight, FileCode2, Network, RefreshCw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { ModelViewEditor } from "@/components/custom/ModelViewEditor";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { generatedDiagramToReactFlow } from "@/lib/llmToReactFlow";
+import {
+	generatedDiagramToReactFlow,
+	syncGeneratedStructure,
+	validateGeneratedStructure,
+} from "@/lib/llmToReactFlow";
 import type { ReactFlowInput, StructureEditorProps } from "@/types";
 
 export function StructureEditor({
@@ -14,163 +17,148 @@ export function StructureEditor({
 	onDiagramChange,
 	onValidate,
 	onRegenerate,
+	conversation,
 }: StructureEditorProps) {
 	const [reactFlowData, setReactFlowData] = useState<ReactFlowInput | null>(
 		null,
 	);
 	const [autoLayoutSignal, setAutoLayoutSignal] = useState(0);
-
 	useEffect(() => {
 		if (diagram.reactFlowData) {
 			setReactFlowData(diagram.reactFlowData);
 			return;
 		}
-
-		const rfData = generatedDiagramToReactFlow(diagram);
-		setReactFlowData(rfData);
+		setReactFlowData(generatedDiagramToReactFlow(diagram));
 		setAutoLayoutSignal((current) => current + 1);
 	}, [diagram]);
-
 	const handleReactFlowChange = (newData: ReactFlowInput) => {
 		setReactFlowData(newData);
-		// Sync with parent diagram if needed
-		onDiagramChange({
-			...diagram,
-			reactFlowData: newData,
-		});
+		onDiagramChange(syncGeneratedStructure(diagram, newData));
 	};
-
+	const issues = validateGeneratedStructure(diagram);
 	return (
-		<div className="h-full w-full flex flex-col">
-			{/* Header with actions */}
-			<div className="flex items-center justify-between p-4 border-b bg-background">
-				<div>
-					<h2 className="text-xl font-semibold">{diagram.name}</h2>
-					<p className="text-sm text-muted-foreground">
-						{diagram.models.length} model(s) •{" "}
-						{diagram.models.filter((m) => m.type === "atomic").length} atomic •{" "}
-						{diagram.models.filter((m) => m.type === "coupled").length} coupled
+		<div className="flex h-full min-w-0 w-full flex-col">
+			<div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-b px-4 py-3 lg:px-6">
+				<div className="min-w-0">
+					<h2 className="truncate text-base font-medium">{diagram.name}</h2>
+					<p className="mt-1 text-xs text-muted-foreground">
+						{diagram.models.filter((model) => model.type === "atomic").length}{" "}
+						atomic ·{" "}
+						{diagram.models.filter((model) => model.type === "coupled").length}{" "}
+						coupled · {diagram.connections.length} connections
 					</p>
 				</div>
 				<div className="flex gap-2">
-					<Button onClick={onRegenerate} variant="outline">
-						<RefreshCw className="w-4 h-4 mr-2" />
+					<Button size="sm" onClick={onRegenerate} variant="ghost">
+						<RefreshCw size={14} />
 						Regenerate
 					</Button>
-					<Button onClick={onValidate}>
-						<CheckCircle2 className="w-4 h-4 mr-2" />
-						Validate Structure
+					<Button size="sm" disabled={issues.length > 0} onClick={onValidate}>
+						Continue to code
+						<ArrowRight size={14} />
 					</Button>
 				</div>
 			</div>
-
-			{/* Main content */}
-			<div className="flex-1 flex overflow-hidden">
-				{/* Left panel: models list */}
-				<div className="w-80 border-r bg-muted/30 flex flex-col">
-					<div className="p-4 border-b">
-						<h3 className="font-semibold">Generated Models</h3>
-						<p className="text-xs text-muted-foreground mt-1">
-							Code generation order (dependencies first)
+			{issues.length > 0 && (
+				<div
+					role="alert"
+					className="shrink-0 px-4 py-2 text-xs text-destructive"
+				>
+					{issues.join("; ")}
+				</div>
+			)}
+			<div className="flex min-h-0 flex-1 flex-col overflow-y-auto lg:flex-row lg:overflow-hidden">
+				<aside
+					aria-label="Structure models"
+					className="max-h-40 w-full shrink-0 overflow-auto border-b lg:max-h-none lg:w-56 lg:border-b-0 lg:border-r xl:w-64"
+				>
+					<div className="px-4 py-3">
+						<h3 className="text-xs font-medium">Models</h3>
+						<p className="mt-1 text-[11px] text-muted-foreground">
+							Components and interfaces
 						</p>
 					</div>
-					<div className="flex-1 overflow-auto">
-						<div className="p-2 space-y-2">
-							{diagram.models.map((model, index) => (
-								<Card
-									className={`cursor-pointer hover:bg-accent transition-colors ${
-										model.type === "coupled" ? "border-primary/50" : ""
-									}`}
-									key={model.id}
-								>
-									<CardHeader className="p-3 pb-2">
-										<CardTitle className="text-sm flex items-center gap-2">
-											<span className="text-xs bg-muted px-1.5 py-0.5 rounded">
-												{index + 1}
-											</span>
-											{model.name}
-											<span
-												className={`ml-auto text-xs px-2 py-0.5 rounded ${
-													model.type === "atomic"
-														? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-														: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300"
-												}`}
-											>
-												{model.type}
-											</span>
-										</CardTitle>
-									</CardHeader>
-									<CardContent className="p-3 pt-0">
-										<div className="text-xs text-muted-foreground space-y-1">
-											{model.ports.in.length > 0 && (
-												<div>
-													<span className="font-medium">In:</span>{" "}
-													{model.ports.in.join(", ")}
-												</div>
-											)}
-											{model.ports.out.length > 0 && (
-												<div>
-													<span className="font-medium">Out:</span>{" "}
-													{model.ports.out.join(", ")}
-												</div>
-											)}
-											{model.components && model.components.length > 0 && (
-												<div>
-													<span className="font-medium">Components:</span>{" "}
-													{model.components.join(", ")}
-												</div>
-											)}
-											{model.dependencies.length > 0 && (
-												<div className="text-orange-600 dark:text-orange-400">
-													<span className="font-medium">Depends on:</span>{" "}
-													{model.dependencies.join(", ")}
-												</div>
-											)}
-										</div>
-									</CardContent>
-								</Card>
-							))}
-						</div>
-					</div>
-				</div>
-
-				{/* Right panel: ReactFlow visualization */}
-				<div className="flex-1">
+					<ul className="divide-y px-4">
+						{diagram.models.map((model) => (
+							<li key={model.id} className="py-3">
+								<div className="flex items-center gap-2 text-xs font-medium">
+									{model.type === "coupled" ? (
+										<Network
+											size={14}
+											className="shrink-0 text-muted-foreground"
+										/>
+									) : (
+										<FileCode2
+											size={14}
+											className="shrink-0 text-muted-foreground"
+										/>
+									)}
+									<span className="truncate">{model.name}</span>
+									<span className="ml-auto text-[10px] font-normal text-muted-foreground">
+										{model.type}
+									</span>
+								</div>
+								<p className="mt-1.5 break-words text-[11px] leading-5 text-muted-foreground">
+									{model.ports.in.length} in · {model.ports.out.length} out
+									{model.components?.length
+										? ` · ${model.components.length} components`
+										: ""}
+								</p>
+								{model.ports.in.length > 0 && (
+									<p className="break-words text-[11px] leading-5 text-muted-foreground">
+										In: {model.ports.in.join(", ")}
+									</p>
+								)}
+								{model.ports.out.length > 0 && (
+									<p className="break-words text-[11px] leading-5 text-muted-foreground">
+										Out: {model.ports.out.join(", ")}
+									</p>
+								)}
+								{model.dependencies.length > 0 && (
+									<p className="mt-1 break-words text-[11px] leading-5 text-muted-foreground">
+										Uses {model.dependencies.join(", ")}
+									</p>
+								)}
+							</li>
+						))}
+					</ul>
+				</aside>
+				<div className="min-h-[320px] min-w-0 flex-1 lg:min-h-0">
 					{reactFlowData ? (
 						<ReactFlowProvider>
 							<ModelViewEditor
-								autoLayoutSignal={autoLayoutSignal}
+								autoLayoutSignal={autoLayoutSignal || undefined}
 								models={reactFlowData}
 								onChange={handleReactFlowChange}
 							/>
 						</ReactFlowProvider>
 					) : (
-						<div className="h-full flex items-center justify-center">
-							<p className="text-muted-foreground">Loading...</p>
+						<div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+							Loading diagram…
 						</div>
 					)}
 				</div>
+				{conversation}
 			</div>
-
-			{/* Connections */}
-			<div className="border-t p-4 bg-muted/30">
-				<h3 className="font-semibold mb-2">
-					Connections ({diagram.connections.length})
+			<div className="max-h-28 shrink-0 overflow-auto border-t px-4 py-3 text-xs lg:px-6">
+				<h3 className="mb-2 font-medium">
+					Connections{" "}
+					<span className="font-normal text-muted-foreground">
+						({diagram.connections.length})
+					</span>
 				</h3>
-				<div className="flex flex-wrap gap-2">
-					{diagram.connections.map((conn) => (
-						<div
-							className="text-xs bg-background border rounded px-2 py-1"
-							key={`${conn.from?.model}:${conn.from?.port}-${conn.to?.model}:${conn.to?.port}`}
+				<div className="flex flex-wrap gap-x-5 gap-y-2 font-mono text-[11px] text-muted-foreground">
+					{diagram.connections.map((connection) => (
+						<span
+							className="break-all"
+							key={`${connection.owner}:${connection.from?.model}:${connection.from?.port}-${connection.to?.model}:${connection.to?.port}`}
 						>
-							{conn.from?.model}:{conn.from?.port} → {conn.to?.model}:
-							{conn.to?.port}
-						</div>
+							{connection.from?.model}:{connection.from?.port} →{" "}
+							{connection.to?.model}:{connection.to?.port}
+						</span>
 					))}
-					{diagram.connections.length === 0 && (
-						<p className="text-sm text-muted-foreground">
-							No connections defined
-						</p>
+					{!diagram.connections.length && (
+						<span className="font-sans">No connections defined.</span>
 					)}
 				</div>
 			</div>

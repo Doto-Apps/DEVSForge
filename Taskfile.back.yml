@@ -30,6 +30,7 @@ tasks:
   dev:
     desc: Start with Docker Compose back + simulator
     cmds:
+      - task: :lsp:setup
       - docker compose -f docker-compose.dev-go.yml up --build {{.CLI_ARGS}}
 
   logs:
@@ -52,4 +53,4 @@ tasks:
     desc: Test back-end Go module
     dir: back
     cmds:
-      - go test -timeout 30s -skip "TestGetDevsSympyJSON" ./...
+      - go test -timeout 180s -skip "TestGetDevsSympyJSON" ./...

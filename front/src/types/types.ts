@@ -2,6 +2,7 @@ import type { Edge, Node } from "@xyflow/react";
 import type { components } from "@/api/v1";
 
 export type ReactFlowInput = {
+	viewport?: { x: number; y: number; zoom: number };
 	nodes: Node<ReactFlowModelData>[];
 	edges: Edge<EdgeData>[];
 };
@@ -18,6 +19,9 @@ export type ReactFlowModelData = {
 	reactFlowModelGraphicalData?: ReactFlowModelGraphicalData;
 	parameters?: components["schemas"]["json.ModelParameter"][];
 	code: string;
+	integrationId?: string;
+	integrationVersion?: string;
+	language?: string;
 	modelRole: string;
 	keyword: string[];
 };

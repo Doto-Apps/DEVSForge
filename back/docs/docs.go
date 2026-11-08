@@ -191,7 +191,7 @@ const docTemplate = `{
         },
         "/ai/generate-model": {
             "post": {
-                "description": "Sends a prompt to OpenAI to generate a DEVS model code in Python or Go.",
+                "description": "Sends a prompt to OpenAI to generate a DEVS model code for the selected integration.",
                 "consumes": [
                     "application/json"
                 ],
@@ -685,9 +685,72 @@ const docTemplate = `{
                 }
             }
         },
+        "/integrations": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Get integrations",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/integrations.Definition"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/integrations/{id}/versions/{version}/template": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Get integration template",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Integration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Integration version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "default": "MyModel",
+                        "description": "Source identifier",
+                        "name": "name",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.LanguageTemplateResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/languages": {
             "get": {
-                "description": "Returns the list of programming languages available for DEVS models",
                 "produces": [
                     "application/json"
                 ],
@@ -707,7 +770,6 @@ const docTemplate = `{
         },
         "/languages/{lang}/template": {
             "get": {
-                "description": "Returns the atomic model code template for the specified language",
                 "produces": [
                     "application/json"
                 ],
@@ -718,7 +780,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Language ID (go, python, java)",
+                        "description": "Legacy language",
                         "name": "lang",
                         "in": "path",
                         "required": true
@@ -726,7 +788,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "default": "MyModel",
-                        "description": "Model name to inject in template",
+                        "description": "Source identifier",
                         "name": "name",
                         "in": "query"
                     }
@@ -736,20 +798,6 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.LanguageTemplateResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
                         }
                     }
                 }
@@ -954,6 +1002,174 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/lsp/sessions": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LSP"
+                ],
+                "summary": "Create language server session",
+                "parameters": [
+                    {
+                        "description": "Unsaved editor document",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.LSPSessionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/handler.LSPSessionResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/lsp/sessions/{id}": {
+            "get": {
+                "tags": [
+                    "LSP"
+                ],
+                "summary": "Read language workspace status",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "LSP"
+                ],
+                "summary": "Close language server session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/lsp/sessions/{id}/documents/{document}": {
+            "delete": {
+                "tags": [
+                    "LSP"
+                ],
+                "summary": "Detach language workspace document",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Document ID",
+                        "name": "document",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
+        "/lsp/sessions/{id}/file": {
+            "get": {
+                "produces": [
+                    "text/plain"
+                ],
+                "tags": [
+                    "LSP"
+                ],
+                "summary": "Read language server source",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Source URI",
+                        "name": "uri",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/lsp/sessions/{id}/tickets": {
+            "post": {
+                "tags": [
+                    "LSP"
+                ],
+                "summary": "Renew language workspace connections",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.LSPSessionResponse"
                         }
                     }
                 }
@@ -1661,7 +1877,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Updates current user AI provider settings (apiUrl, apiKey, apiModel).",
+                "description": "Updates generation and transcription connections. Omitted keys are preserved; an explicit empty key removes it.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1699,6 +1915,120 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/user/settings/ai/models": {
+            "post": {
+                "description": "Discovers model IDs using saved or supplied credentials. This does not verify transcription or structured-output capabilities.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "List models exposed by a configured compatible API",
+                "parameters": [
+                    {
+                        "description": "Connection to discover",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ListAIModelsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.AIProviderModelsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/user/settings/ai/transcriptions": {
+            "post": {
+                "description": "Sends at most 3 MiB to the saved compatible /audio/transcriptions endpoint. The returned text never starts model generation.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "user"
+                ],
+                "summary": "Transcribe a short dictation with the current user's voice provider",
+                "parameters": [
+                    {
+                        "type": "file",
+                        "description": "Recorded audio (WebM, Ogg, MP4/M4A, WAV or MP3), at most 3 MiB",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Optional ISO language hint",
+                        "name": "language",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.TranscriptionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "429": {
+                        "description": "Too Many Requests",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "502": {
+                        "description": "Bad Gateway",
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
@@ -2252,18 +2582,186 @@ const docTemplate = `{
                 "Coupled"
             ]
         },
-        "enum.ModelLanguage": {
-            "type": "string",
-            "enum": [
-                "go",
-                "python",
-                "java"
-            ],
-            "x-enum-varnames": [
-                "ModelLanguageGo",
-                "ModelLanguagePython",
-                "ModelLanguageJava"
-            ]
+        "handler.LSPConnection": {
+            "type": "object",
+            "properties": {
+                "allowedCommands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "ticket": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.LSPSessionRequest": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "string"
+                },
+                "documentId": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "integrationVersion": {
+                    "type": "string"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "modelName": {
+                    "type": "string"
+                },
+                "workbenchId": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.LSPSessionResponse": {
+            "type": "object",
+            "properties": {
+                "documentId": {
+                    "type": "string"
+                },
+                "documentUri": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "servers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.LSPConnection"
+                    }
+                },
+                "status": {
+                    "type": "string"
+                },
+                "workspaceUri": {
+                    "type": "string"
+                }
+            }
+        },
+        "integrations.Capabilities": {
+            "type": "object",
+            "properties": {
+                "ai": {
+                    "type": "boolean"
+                },
+                "lsp": {
+                    "type": "boolean"
+                },
+                "simulation": {
+                    "type": "boolean"
+                },
+                "template": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "integrations.Definition": {
+            "type": "object",
+            "properties": {
+                "capabilities": {
+                    "$ref": "#/definitions/integrations.Capabilities"
+                },
+                "context": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "default": {
+                    "type": "boolean"
+                },
+                "digest": {
+                    "type": "string"
+                },
+                "extension": {
+                    "type": "string"
+                },
+                "framework": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "legacyLanguage": {
+                    "type": "string"
+                },
+                "modelPath": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "preparation": {
+                    "type": "string"
+                },
+                "prompt": {
+                    "type": "string"
+                },
+                "servers": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/integrations.Server"
+                    }
+                },
+                "template": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "string"
+                },
+                "wrapper": {
+                    "type": "string"
+                }
+            }
+        },
+        "integrations.Server": {
+            "type": "object",
+            "properties": {
+                "allowedCommands": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "args": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "command": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "settings": {
+                    "type": "object",
+                    "additionalProperties": {}
+                }
+            }
         },
         "json.ModelColors": {
             "type": "object",
@@ -2685,8 +3183,14 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "integrationId": {
+                    "type": "string"
+                },
+                "integrationVersion": {
+                    "type": "string"
+                },
                 "language": {
-                    "$ref": "#/definitions/enum.ModelLanguage"
+                    "type": "string"
                 },
                 "libId": {
                     "type": "string"
@@ -2792,6 +3296,9 @@ const docTemplate = `{
                 "from": {
                     "$ref": "#/definitions/request.AssistedExperimentalFrameEndpoint"
                 },
+                "owner": {
+                    "type": "string"
+                },
                 "to": {
                     "$ref": "#/definitions/request.AssistedExperimentalFrameEndpoint"
                 }
@@ -2830,6 +3337,12 @@ const docTemplate = `{
                     }
                 },
                 "id": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "integrationVersion": {
                     "type": "string"
                 },
                 "name": {
@@ -3010,7 +3523,6 @@ const docTemplate = `{
         "request.GenerateModelRequest": {
             "type": "object",
             "required": [
-                "language",
                 "modelName",
                 "ports",
                 "previousModelsCode",
@@ -3021,12 +3533,14 @@ const docTemplate = `{
                     "type": "boolean",
                     "example": false
                 },
+                "integrationId": {
+                    "type": "string"
+                },
+                "integrationVersion": {
+                    "type": "string"
+                },
                 "language": {
                     "type": "string",
-                    "enum": [
-                        "python",
-                        "go"
-                    ],
                     "example": "python"
                 },
                 "modelName": {
@@ -3100,6 +3614,24 @@ const docTemplate = `{
                 }
             }
         },
+        "request.ListAIModelsRequest": {
+            "type": "object",
+            "properties": {
+                "apiKey": {
+                    "type": "string"
+                },
+                "apiUrl": {
+                    "type": "string"
+                },
+                "purpose": {
+                    "type": "string",
+                    "enum": [
+                        "generation",
+                        "transcription"
+                    ]
+                }
+            }
+        },
         "request.LoginRequest": {
             "type": "object",
             "required": [
@@ -3160,8 +3692,14 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "integrationId": {
+                    "type": "string"
+                },
+                "integrationVersion": {
+                    "type": "string"
+                },
                 "language": {
-                    "$ref": "#/definitions/enum.ModelLanguage"
+                    "type": "string"
                 },
                 "libId": {
                     "type": "string"
@@ -3320,6 +3858,15 @@ const docTemplate = `{
                 "apiUrl": {
                     "type": "string",
                     "example": "https://api.openai.com/v1"
+                },
+                "transcriptionApiKey": {
+                    "type": "string"
+                },
+                "transcriptionApiModel": {
+                    "type": "string"
+                },
+                "transcriptionApiUrl": {
+                    "type": "string"
                 }
             }
         },
@@ -3354,11 +3901,33 @@ const docTemplate = `{
                 }
             }
         },
+        "response.AIProviderModelResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.AIProviderModelsResponse": {
+            "type": "object",
+            "properties": {
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.AIProviderModelResponse"
+                    }
+                }
+            }
+        },
         "response.Connection": {
             "type": "object",
             "properties": {
                 "from": {
                     "$ref": "#/definitions/response.Endpoint"
+                },
+                "owner": {
+                    "type": "string"
                 },
                 "to": {
                     "$ref": "#/definitions/response.Endpoint"
@@ -3378,6 +3947,12 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/response.Model"
+                    }
+                },
+                "validationErrors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
                     }
                 }
             }
@@ -3501,6 +4076,12 @@ const docTemplate = `{
                 },
                 "targetModelId": {
                     "type": "string"
+                },
+                "validationErrors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -3679,8 +4260,14 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "integrationId": {
+                    "type": "string"
+                },
+                "integrationVersion": {
+                    "type": "string"
+                },
                 "language": {
-                    "$ref": "#/definitions/enum.ModelLanguage"
+                    "type": "string"
                 },
                 "libId": {
                     "type": "string"
@@ -3861,6 +4448,14 @@ const docTemplate = `{
                 }
             }
         },
+        "response.TranscriptionResponse": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "response.UserAISettingsResponse": {
             "type": "object",
             "properties": {
@@ -3875,6 +4470,18 @@ const docTemplate = `{
                 },
                 "hasApiKey": {
                     "type": "boolean"
+                },
+                "hasTranscriptionApiKey": {
+                    "type": "boolean"
+                },
+                "transcriptionApiKeyMasked": {
+                    "type": "string"
+                },
+                "transcriptionApiModel": {
+                    "type": "string"
+                },
+                "transcriptionApiUrl": {
+                    "type": "string"
                 }
             }
         },
@@ -3963,9 +4570,6 @@ const docTemplate = `{
         "shared.ParameterType": {
             "type": "string",
             "enum": [
-                "go",
-                "java",
-                "python",
                 "int",
                 "float",
                 "bool",
@@ -3973,9 +4577,6 @@ const docTemplate = `{
                 "object"
             ],
             "x-enum-varnames": [
-                "Go",
-                "Java",
-                "Python",
                 "ParameterTypeInt",
                 "ParameterTypeFloat",
                 "ParameterTypeBool",
@@ -4010,7 +4611,6 @@ const docTemplate = `{
                 "code",
                 "connections",
                 "id",
-                "language",
                 "name",
                 "ports"
             ],
@@ -4025,6 +4625,12 @@ const docTemplate = `{
                     }
                 },
                 "id": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "integrationVersion": {
                     "type": "string"
                 },
                 "language": {

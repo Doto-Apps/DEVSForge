@@ -1,353 +1,197 @@
-import {
-	Binary,
-	Bot,
-	Braces,
-	CheckCheck,
-	Database,
-	FileCheck2,
-	Languages,
-	MessageSquareShare,
-	MonitorCog,
-	Network,
-	Router,
-	Workflow,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpenText, Search } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Link, Navigate, useLocation, useParams } from "react-router-dom";
 import NavHeader from "@/components/nav/nav-header";
-import {
-	Accordion,
-	AccordionContent,
-	AccordionItem,
-	AccordionTrigger,
-} from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { chapters } from "./documentation/chapters";
 
-const contracts = [
-	{
-		endpoint: "/ai/generate-ef-structure",
-		notes:
-			"Target model context is injected. Server validates MUT, root EF coupled, port/link consistency.",
-		output: "response.ExperimentalFrameStructureResponse",
-	},
-	{
-		endpoint: "/ai/generate-model",
-		notes:
-			"Reuse-first shortlist can be returned before code generation. Final code response remains structured.",
-		output: "response.GeneratedModelResponse",
-	},
-	{
-		endpoint: "/ai/generate-documentation",
-		notes:
-			"Documentation blocks (description, keywords, role) are emitted as structured JSON.",
-		output: "response.GeneratedDocumentationResponse",
-	},
-];
-
-const loopSteps = [
-	"Compute global minimum simulation time across runners.",
-	"Select imminent runners at tmin and send RequestOutput.",
-	"Collect OutputReport from runners.",
-	"Route output port values through manifest connections into target inboxes.",
-	"Send ExecuteTransition with modelInputsOption.portValueList.",
-	"Collect TransitionComplete and update each runner nextTime.",
-	"Stop on max simulation time, SimulationDone, or fatal ErrorReport.",
-];
-
-export function HowItWorks() {
+// Preserve bookmarks from the previous single-page documentation.
+export function LegacyDocumentation() {
+	const { hash } = useLocation();
+	const id = hash.slice(1);
 	return (
-		<div className="flex flex-col h-screen w-full">
+		<Navigate
+			replace
+			to={`/documentation/${chapters.some((chapter) => chapter.id === id) ? id : "overview"}`}
+		/>
+	);
+}
+export function HowItWorks() {
+	const { topic = "overview" } = useParams();
+	const { hash } = useLocation();
+	const [query, setQuery] = useState("");
+	const scroller = useRef<HTMLDivElement>(null);
+	const index = chapters.findIndex((chapter) => chapter.id === topic);
+	const chapter = chapters[index];
+	const matches = chapters.filter((item) =>
+		`${item.title} ${item.summary} ${item.sections.map((section) => section.title).join(" ")}`
+			.toLowerCase()
+			.includes(query.toLowerCase()),
+	);
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Reset scroll when the route changes, including browser history.
+	useEffect(() => {
+		if (hash)
+			document
+				.getElementById(hash.slice(1))
+				?.scrollIntoView({ block: "start" });
+		else scroller.current?.scrollTo({ top: 0 });
+	}, [topic, hash]);
+	return (
+		<div className="flex h-screen min-w-0 w-full flex-col">
 			<NavHeader
-				breadcrumbs={[{ href: "/", label: "Home" }, { label: "How It Works" }]}
+				breadcrumbs={[
+					{ label: "Documentation", href: "/documentation" },
+					...(chapter && topic !== "overview"
+						? [{ label: chapter.title }]
+						: []),
+				]}
 				showModeToggle
 				showNavActions={false}
 			/>
-
-			<div className="flex-1 overflow-y-auto">
-				<div className="mx-auto max-w-6xl p-6 space-y-6">
-					<Card className="relative overflow-hidden">
-						<div className="absolute -left-12 -top-12 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-						<CardHeader className="relative space-y-3">
-							<Badge className="w-fit">DEVSForge Architecture</Badge>
-							<CardTitle className="text-3xl">How It Works</CardTitle>
-							<CardDescription className="max-w-4xl text-base">
-								DEVSForge combines strict structured AI outputs, deterministic
-								server validation, and a simulator runtime based on
-								Coordinator/Runner orchestration with RPC wrappers for
-								multi-language models.
-							</CardDescription>
-						</CardHeader>
-					</Card>
-
-					<Card>
-						<CardHeader>
-							<CardTitle>High-Level System Layers</CardTitle>
-							<CardDescription>
-								From UI action to executable DEVS transitions.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<Router className="h-4 w-4 text-primary" />
-									<p className="font-medium">Frontend</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									React + shadcn/ui + React Flow. Users model manually or
-									trigger AI workflows.
+			<div className="flex min-h-0 flex-1 flex-col lg:flex-row">
+				<aside className="shrink-0 border-b lg:w-56 lg:overflow-y-auto lg:border-b-0 lg:border-r xl:w-60">
+					<div className="px-4 pb-3 pt-5">
+						<Link
+							to="/documentation"
+							className="mb-4 hidden items-center gap-2 text-sm font-semibold lg:flex"
+						>
+							<BookOpenText size={16} />
+							Field guide
+						</Link>
+						<div className="relative">
+							<Search className="absolute left-2.5 top-2.5 size-3.5 text-muted-foreground" />
+							<Input
+								aria-label="Find a documentation topic"
+								placeholder="Find a topic…"
+								value={query}
+								onChange={(e) => setQuery(e.target.value)}
+								className="h-8 pl-8 text-xs"
+							/>
+						</div>
+					</div>
+					<nav
+						aria-label="Documentation chapters"
+						className="flex gap-1 overflow-x-auto px-3 pb-3 lg:block"
+					>
+						{[...new Set(chapters.map((item) => item.group))].map((group) => (
+							<div key={group} className="flex shrink-0 gap-1 lg:block">
+								<p className="mb-2 mt-4 hidden px-2 text-[10px] font-medium uppercase tracking-widest text-muted-foreground lg:block">
+									{matches.some((item) => item.group === group) ? group : ""}
 								</p>
+								{matches
+									.filter((item) => item.group === group)
+									.map((item) => (
+										<Link
+											key={item.id}
+											to={`/documentation/${item.id}`}
+											aria-current={topic === item.id ? "page" : undefined}
+											className={`block whitespace-nowrap rounded px-2 py-2 text-xs lg:whitespace-normal ${topic === item.id ? "bg-secondary font-medium" : "text-muted-foreground hover:bg-muted hover:text-foreground"}`}
+										>
+											{item.id === "overview" ? "Overview" : item.title}
+										</Link>
+									))}
 							</div>
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<Bot className="h-4 w-4 text-primary" />
-									<p className="font-medium">AI API Layer</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									Go/Fiber endpoints with per-user provider settings and strict
-									JSON-schema response format.
-								</p>
-							</div>
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<Database className="h-4 w-4 text-primary" />
-									<p className="font-medium">Persistence</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									Models, metadata, simulations, and event streams persisted in
-									backend storage.
-								</p>
-							</div>
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<MonitorCog className="h-4 w-4 text-primary" />
-									<p className="font-medium">Simulator Runtime</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									Coordinator + runner processes exchange DEVS messages and
-									drive time-ordered execution.
-								</p>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card>
-						<CardHeader>
-							<CardTitle>Structured Output Contracts</CardTitle>
-							<CardDescription>
-								AI responses are constrained to typed JSON contracts, not free
-								text.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="rounded-lg border bg-muted/30 p-4">
-								<div className="flex items-center gap-2 mb-2">
-									<Braces className="h-4 w-4 text-primary" />
-									<p className="font-medium">Contract Pattern</p>
-								</div>
-								<pre className="overflow-x-auto rounded-md bg-background p-3 text-xs">
-									{`Prompt + Context
-  -> OpenAI ChatCompletion
-  -> response_format = json_schema (strict = true)
-  -> Parse JSON
-  -> Server-side guardrails
-  -> Typed API response`}
-								</pre>
-							</div>
-
-							<div className="grid gap-3">
-								{contracts.map((c) => (
-									<div
-										className="rounded-lg border bg-muted/30 p-4 space-y-2"
-										key={c.endpoint}
-									>
-										<div className="flex flex-wrap items-center gap-2">
-											<Badge variant="secondary">{c.endpoint}</Badge>
-											<Badge variant="outline">{c.output}</Badge>
-										</div>
-										<p className="text-sm text-muted-foreground">{c.notes}</p>
-									</div>
-								))}
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card>
-						<CardHeader>
-							<CardTitle>Server Guardrails and Validation</CardTitle>
-							<CardDescription>
-								Generation is accepted only after deterministic checks.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="grid gap-4 md:grid-cols-2">
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<FileCheck2 className="h-4 w-4 text-primary" />
-									<p className="font-medium">EF Structure Rules</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									Single MUT, single EF root, root must be coupled, connected
-									port directions must be valid, and MUT interface must match
-									the target model interface.
-								</p>
-							</div>
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<CheckCheck className="h-4 w-4 text-primary" />
-									<p className="font-medium">Simulation Preconditions</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									Manifest generation validates runnable graph consistency
-									before the simulation service launches coordinator/runner
-									processes.
-								</p>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card>
-						<CardHeader>
-							<CardTitle>Simulation Runtime: Coordinator and Runners</CardTitle>
-							<CardDescription>
-								Execution is event-driven and synchronized by simulation time.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="rounded-lg border bg-muted/30 p-4">
-								<div className="flex items-center gap-2 mb-2">
-									<Workflow className="h-4 w-4 text-primary" />
-									<p className="font-medium">Coordinator Loop</p>
-								</div>
-								<div className="space-y-2 text-sm text-muted-foreground">
-									{loopSteps.map((step, index) => (
-										<div className="flex items-start gap-2" key={step}>
-											<Badge variant="secondary">{index + 1}</Badge>
-											<p>{step}</p>
-										</div>
+						))}
+						{!matches.length && (
+							<p className="p-2 text-xs text-muted-foreground">
+								No matching topic.
+							</p>
+						)}
+					</nav>
+				</aside>
+				<div
+					ref={scroller}
+					className="min-w-0 flex-1 overflow-y-auto px-4 py-6 sm:px-6 lg:py-9"
+				>
+					{chapter ? (
+						<div className="grid items-start gap-8 2xl:grid-cols-[minmax(0,1fr)_180px]">
+							<article key={topic} className="min-w-0 max-w-4xl">
+								<header className="mb-8 border-b pb-6">
+									<p className="mb-3 font-mono text-[10px] uppercase tracking-widest text-muted-foreground">
+										{chapter.group} / {String(index + 1).padStart(2, "0")}
+									</p>
+									<h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+										{chapter.title}
+									</h1>
+									<p className="mt-4 max-w-2xl text-sm leading-6 text-muted-foreground">
+										{chapter.summary}
+									</p>
+								</header>
+								<div className="space-y-10">
+									{chapter.sections.map((section) => (
+										<section
+											key={section.id}
+											id={section.id}
+											className="scroll-mt-6"
+										>
+											<h2 className="mb-4 text-lg font-semibold tracking-tight">
+												<a className="hover:underline" href={`#${section.id}`}>
+													{section.title}
+												</a>
+											</h2>
+											<div className="space-y-4 text-sm leading-7 [&_code]:break-words [&_code]:text-xs [&_pre_code]:break-normal">
+												{section.content}
+											</div>
+										</section>
 									))}
 								</div>
-							</div>
-
-							<Separator />
-
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<MessageSquareShare className="h-4 w-4 text-primary" />
-									<p className="font-medium">Transport Message Types</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									Runtime uses DEVS transport events such as
-									<code className="mx-1">ExecuteTransition</code>,
-									<code className="mx-1">RequestOutput</code>,
-									<code className="mx-1">OutputReport</code>,
-									<code className="mx-1">TransitionComplete</code> and
-									<code className="mx-1">devs.msg.SimulationDone</code>.
-									ISO-like
-									<code className="mx-1">ErrorReport</code> is also consumed and
-									can mark the run as failed.
-								</p>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card>
-						<CardHeader>
-							<CardTitle>
-								Runner RPC Boundary and Multi-Language Support
-							</CardTitle>
-							<CardDescription>
-								Go and Python models execute behind one shared RPC contract.
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="grid gap-4 lg:grid-cols-2">
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<Network className="h-4 w-4 text-primary" />
-									<p className="font-medium">AtomicModelService (gRPC)</p>
-								</div>
-								<p className="text-sm text-muted-foreground flex flex-wrap">
-									Runners call a stable RPC interface:
-									<code className="mx-1">Initialize</code>,
-									<code className="mx-1">Finalize</code>,
-									<code className="mx-1">TimeAdvance</code>,
-									<code className="mx-1">InternalTransition</code>,
-									<code className="mx-1">ExternalTransition</code>,
-									<code className="mx-1">ConfluentTransition</code>,
-									<code className="mx-1">Output</code>,
-									<code className="mx-1">AddInput</code>.
-								</p>
-							</div>
-
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2">
-								<div className="flex items-center gap-2">
-									<Languages className="h-4 w-4 text-primary" />
-									<p className="font-medium">Language Wrappers</p>
-								</div>
-								<p className="text-sm text-muted-foreground">
-									Each runner prepares a language-specific bootstrap (Go or
-									Python), starts the model process, and waits until the gRPC
-									service is ready. Once ready, coordinator-driven DEVS messages
-									are translated into RPC calls in a uniform way.
-								</p>
-							</div>
-
-							<div className="rounded-lg border bg-muted/30 p-4 space-y-2 lg:col-span-2">
-								<div className="flex items-center gap-2">
-									<Binary className="h-4 w-4 text-primary" />
-									<p className="font-medium">Execution Mapping</p>
-								</div>
-								<pre className="overflow-x-auto rounded-md bg-background p-3 text-xs">
-									{`ExecuteTransition(portValueList)
-  -> AddInput(portName, valueJson)
-  -> choose Internal / External / Confluent transition
-  -> TimeAdvance -> nextTime
-  -> emit TransitionDone
-
-SendOutput
-  -> Output()
-  -> emit ModelOutputMessage(portValueList)`}
-								</pre>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card>
-						<CardHeader>
-							<CardTitle>Failure Handling and Event Persistence</CardTitle>
-							<CardDescription>
-								Simulation state is finalized from consumed event stream.
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<Accordion className="w-full" collapsible type="single">
-								<AccordionItem value="persist">
-									<AccordionTrigger>
-										Event Consumer and Database Writes
-									</AccordionTrigger>
-									<AccordionContent className="text-sm text-muted-foreground">
-										A backend Kafka consumer stores batches of runtime events
-										into simulation_events and updates simulation status. It
-										handles both DEVS and ISO-like message envelopes.
-									</AccordionContent>
-								</AccordionItem>
-								<AccordionItem value="error">
-									<AccordionTrigger>
-										ErrorReport Priority and Failure Status
-									</AccordionTrigger>
-									<AccordionContent className="text-sm text-muted-foreground">
-										If an ErrorReport with severity error/fatal is received, it
-										takes priority and marks simulation as failed, including
-										error_message propagation to frontend polling.
-									</AccordionContent>
-								</AccordionItem>
-							</Accordion>
-						</CardContent>
-					</Card>
+								<footer className="mt-10 flex items-start justify-between gap-4 border-t pt-5">
+									{index > 0 ? (
+										<Link
+											className="max-w-[45%] text-xs text-muted-foreground hover:text-foreground"
+											to={`/documentation/${chapters[index - 1].id}`}
+										>
+											<span className="mb-2 flex items-center gap-1">
+												<ArrowLeft size={12} />
+												Previous
+											</span>
+											{chapters[index - 1].title}
+										</Link>
+									) : (
+										<span />
+									)}
+									{index < chapters.length - 1 && (
+										<Link
+											className="max-w-[45%] text-right text-xs text-muted-foreground hover:text-foreground"
+											to={`/documentation/${chapters[index + 1].id}`}
+										>
+											<span className="mb-2 flex items-center justify-end gap-1">
+												Next
+												<ArrowRight size={12} />
+											</span>
+											{chapters[index + 1].title}
+										</Link>
+									)}
+								</footer>
+							</article>
+							<nav
+								className="order-first flex flex-wrap gap-3 text-xs 2xl:sticky 2xl:top-0 2xl:order-last 2xl:block 2xl:space-y-3"
+								aria-label="On this page"
+							>
+								<p className="hidden font-medium 2xl:block">On this page</p>
+								{chapter.sections.map((section) => (
+									<a
+										key={section.id}
+										href={`#${section.id}`}
+										className="block text-muted-foreground hover:text-foreground"
+									>
+										{section.title}
+									</a>
+								))}
+							</nav>
+						</div>
+					) : (
+						<div>
+							<h1 className="text-2xl font-semibold">Topic not found</h1>
+							<p className="my-4 text-sm text-muted-foreground">
+								Choose a chapter from the documentation index.
+							</p>
+							<Button asChild>
+								<Link to="/documentation">Open documentation</Link>
+							</Button>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>

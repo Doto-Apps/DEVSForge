@@ -4,6 +4,7 @@ import {
 	mockApiModelRequest,
 	mockReactFlowModelLibrary,
 } from "./__tests__/fakeData";
+import { modelToReactflow } from "./modelToReactflow";
 import { reactflowToModel } from "./reactflowToModel";
 
 describe("reactflowToModel", () => {
@@ -12,6 +13,25 @@ describe("reactflowToModel", () => {
 			reactflowToModel(mockReactFlowModelLibrary),
 			mockApiModelRequest,
 		);
+	});
+
+	it("preserves the integration and version through graph editing", () => {
+		const response = mockApiModelRequest.map((m) =>
+			m.type === "atomic"
+				? { ...m, integrationId: "xdevs-go", integrationVersion: "1.0.0" }
+				: m,
+		);
+		const models = reactflowToModel(modelToReactflow(response));
+		for (const m of models) {
+			assert.equal(
+				m.integrationId,
+				m.type === "atomic" ? "xdevs-go" : undefined,
+			);
+			assert.equal(
+				m.integrationVersion,
+				m.type === "atomic" ? "1.0.0" : undefined,
+			);
+		}
 	});
 
 	it("should keep root couplings even when edge holderId is missing", () => {
@@ -81,5 +101,65 @@ describe("reactflowToModel", () => {
 				to: { instanceId: "root", port: "value" },
 			},
 		]);
+	});
+	it("resolves boundary port IDs using the coupled input/output direction", () => {
+		const flow = {
+			nodes: [
+				{
+					id: "root",
+					position: { x: 0, y: 0 },
+					data: {
+						id: "root",
+						label: "Root",
+						modelType: "coupled",
+						inputPorts: [{ id: "root-in", name: "request" }],
+						outputPorts: [{ id: "root-out", name: "reply" }],
+					},
+				},
+				{
+					id: "root/child",
+					parentId: "root",
+					position: { x: 20, y: 30 },
+					data: {
+						id: "child",
+						label: "Child",
+						modelType: "atomic",
+						inputPorts: [{ id: "child-in", name: "accept" }],
+						outputPorts: [{ id: "child-out", name: "answer" }],
+					},
+				},
+			],
+			edges: [
+				{
+					id: "in",
+					source: "root",
+					target: "root/child",
+					sourceHandle: "in-internal-root:root-in",
+					targetHandle: "root/child:child-in",
+					data: { holderId: "root" },
+				},
+				{
+					id: "out",
+					source: "root/child",
+					target: "root",
+					sourceHandle: "root/child:child-out",
+					targetHandle: "out-internal-root:root-out",
+					data: { holderId: "root" },
+				},
+			],
+		} as ReactFlowInput;
+		assert.deepEqual(
+			reactflowToModel(flow).find((m) => m.id === "root")?.connections,
+			[
+				{
+					from: { instanceId: "root", port: "request" },
+					to: { instanceId: "child", port: "accept" },
+				},
+				{
+					from: { instanceId: "child", port: "answer" },
+					to: { instanceId: "root", port: "reply" },
+				},
+			],
+		);
 	});
 });

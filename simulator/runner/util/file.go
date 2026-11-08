@@ -83,3 +83,16 @@ func copyFile(src, dst string, perm os.FileMode) error {
 
 	return nil
 }
+
+// LinkLibrary keeps analysis projects small and library files immutable.
+func LinkLibrary(source, project, relative string) error {
+	target := filepath.Join(source, relative)
+	if _, err := os.Stat(target); err != nil {
+		return err
+	}
+	destination := filepath.Join(project, relative)
+	if err := os.RemoveAll(destination); err != nil {
+		return err
+	}
+	return os.Symlink(target, destination)
+}

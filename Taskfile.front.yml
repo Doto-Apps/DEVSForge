@@ -23,13 +23,13 @@ tasks:
     desc: Type check front-end with TypeScript
     dir: front
     cmds:
-      - pnpm tsc --noEmit
+      - pnpm run typecheck
 
   dev:
     desc: Start front-end development server
     dir: front
     cmds:
-      - pnpm run dev
+      - pnpm run dev {{.CLI_ARGS}}
 
   build:
     desc: Build front-end for production
@@ -42,3 +42,9 @@ tasks:
     dir: front
     cmds:
       - pnpm run test
+
+  workbench:test:
+    desc: Exercise model tabs, local recovery and shared LSP against an isolated stack
+    dir: front
+    cmds:
+      - node scripts/check-workbench.cjs

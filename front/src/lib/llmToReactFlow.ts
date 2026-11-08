@@ -61,6 +61,7 @@ export const llmResponseToGeneratedDiagram = (
 		connections: response.connections,
 		models: sortedModels,
 		name: diagramName,
+		validationErrors: response.validationErrors,
 		reactFlowData: undefined,
 	};
 };
@@ -113,6 +114,7 @@ export const efStructureResponseToGeneratedDiagram = (
 		models: topologicalSort(models),
 		modelUnderTestId: response.modelUnderTestId ?? undefined,
 		name: response.roomName ?? "Room - EF",
+		validationErrors: response.validationErrors,
 		reactFlowData: undefined,
 		rootModelId: response.rootModelId ?? undefined,
 		targetModelId: response.targetModelId ?? undefined,
@@ -121,26 +123,6 @@ export const efStructureResponseToGeneratedDiagram = (
 
 const dedupeStrings = (values: string[]): string[] =>
 	Array.from(new Set(values.filter((value) => value.trim().length > 0)));
-
-const DEFAULT_MODEL_LANGUAGE: GeneratedModelLanguage = "python";
-
-const getModelRequestLanguage = (
-	model: GeneratedModelData,
-): GeneratedModelLanguage => model.language ?? DEFAULT_MODEL_LANGUAGE;
-
-const inferCoupledModelLanguage = (
-	diagram: GeneratedDiagram,
-): GeneratedModelLanguage => {
-	const atomicLanguages = diagram.models
-		.filter((model) => model.type === "atomic")
-		.map(getModelRequestLanguage);
-	const uniqueLanguages = Array.from(new Set(atomicLanguages));
-
-	if (uniqueLanguages.length === 1 && uniqueLanguages[0]) {
-		return uniqueLanguages[0];
-	}
-	return DEFAULT_MODEL_LANGUAGE;
-};
 
 const getGeneratedModelByLogicalID = (
 	diagram: GeneratedDiagram,
@@ -409,9 +391,12 @@ export const replaceGeneratedMutPlaceholder = (
 			code: targetModel.code ?? "",
 			codeGenerated: Boolean(targetModel.code),
 			components: targetScopedComponents,
+			externalModelId: targetModelID,
 			dependencies: model.dependencies.map(remapModelID),
 			id: targetModelID,
 			language: targetModel.language,
+			integrationId: targetModel.integrationId,
+			integrationVersion: targetModel.integrationVersion,
 			name: targetModel.name ?? model.name,
 			ports: {
 				in: inPorts,
@@ -425,6 +410,7 @@ export const replaceGeneratedMutPlaceholder = (
 	const remappedConnections: components["schemas"]["response.Connection"][] =
 		diagram.connections.map((connection) => ({
 			...connection,
+			owner: connection.owner ? remapModelID(connection.owner) : undefined,
 			from: connection.from
 				? {
 						...connection.from,
@@ -532,116 +518,344 @@ const topologicalSort = (
 /**
  * Convertit une GeneratedDiagram en ReactFlowInput pour l'affichage
  */
-export const generatedDiagramToReactFlow = (
+export const validateGeneratedStructure = (
 	diagram: GeneratedDiagram,
-): ReactFlowInput => {
-	const nodes: ReactFlowInput["nodes"] = [];
-	const edges: ReactFlowInput["edges"] = [];
-
-	// Trouver le modèle racine (coupled principal ou le premier si tous atomic)
-	const rootModel =
-		diagram.models.find(
-			(m) =>
-				diagram.rootModelId &&
-				(m.id === diagram.rootModelId || m.name === diagram.rootModelId),
-		) ??
+): string[] => {
+	const errors: string[] = [...(diagram.validationErrors ?? [])];
+	const byId = new Map<string, GeneratedModelData>();
+	for (const m of diagram.models) {
+		if (!m.id || /[/:]/.test(m.id))
+			errors.push(`Invalid model identifier ${m.id}`);
+		if (byId.has(m.id)) errors.push(`Duplicate model ${m.id}`);
+		byId.set(m.id, m);
+		if (m.type === "atomic" && m.components?.length)
+			errors.push(`Atomic model ${m.name} cannot contain components`);
+		const ports = [...m.ports.in, ...m.ports.out];
+		if (new Set(ports).size !== ports.length)
+			errors.push(`Duplicate port on ${m.name}`);
+	}
+	if (diagram.modelUnderTestId && !byId.has(diagram.modelUnderTestId))
+		errors.push("The protected model under test is missing");
+	const root =
+		diagram.rootModelId ??
 		diagram.models.find(
 			(m) =>
 				m.type === "coupled" &&
-				!diagram.models.some((other) =>
-					other.components?.some(
-						(component) => component === m.id || component === m.name,
-					),
-				),
-		) ??
-		diagram.models[0];
-
-	if (!rootModel) {
-		return { edges: [], nodes: [] };
+				!diagram.models.some((p) => p.components?.includes(m.id)),
+		)?.id;
+	const resolve = (ref: string | undefined) =>
+		byId.has(ref ?? "")
+			? ref
+			: ref === "root"
+				? root
+				: diagram.models.find((m) => m.name === ref)?.id;
+	const visited = new Set<string>();
+	const pending = new Set<string>();
+	const walk = (id: string) => {
+		if (pending.has(id)) {
+			errors.push(`Containment cycle at ${id}`);
+			return;
+		}
+		if (visited.has(id)) return;
+		pending.add(id);
+		const m = byId.get(id);
+		if (m?.externalModelId) {
+			pending.delete(id);
+			visited.add(id);
+			return;
+		}
+		if (new Set(m?.components ?? []).size !== (m?.components ?? []).length)
+			errors.push(`Duplicate component in ${id}`);
+		for (const ref of m?.components ?? []) {
+			const child = resolve(ref);
+			if (!child) {
+				errors.push(`Unknown component ${ref} in ${id}`);
+				continue;
+			}
+			walk(child);
+		}
+		pending.delete(id);
+		visited.add(id);
+	};
+	for (const m of diagram.models) walk(m.id);
+	for (const [index, c] of diagram.connections.entries()) {
+		const from = resolve(c.from?.model),
+			to = resolve(c.to?.model);
+		if (!from || !to) {
+			errors.push(`Connection ${index + 1}: unknown model`);
+			continue;
+		}
+		c.from = { ...c.from, model: from };
+		c.to = { ...c.to, model: to };
+		const candidates = diagram.models.filter(
+			(m) =>
+				m.type === "coupled" &&
+				!m.externalModelId &&
+				(m.id === from || m.components?.some((x) => resolve(x) === from)) &&
+				(m.id === to || m.components?.some((x) => resolve(x) === to)) &&
+				!(m.id === from && m.id === to),
+		);
+		const owner = c.owner
+			? candidates.find((m) => m.id === resolve(c.owner))
+			: candidates.length === 1
+				? candidates[0]
+				: undefined;
+		if (!owner) {
+			errors.push(
+				`Connection ${index + 1}: specify an unambiguous coupled owner; connections cannot cross hierarchy levels`,
+			);
+			continue;
+		}
+		c.owner = owner.id;
+		const source = byId.get(from),
+			target = byId.get(to);
+		const sourcePorts =
+			owner.id === from ? source?.ports.in : source?.ports.out;
+		const targetPorts = owner.id === to ? target?.ports.out : target?.ports.in;
+		if (
+			!sourcePorts?.includes(c.from.port ?? "") ||
+			!targetPorts?.includes(c.to.port ?? "")
+		)
+			errors.push(`Connection ${index + 1}: invalid port or direction`);
 	}
+	return [...new Set(errors)];
+};
 
-	// Calculer les positions en grille
-	const gridSize = Math.ceil(Math.sqrt(diagram.models.length));
-	const spacing = DEFAULT_NODE_SIZE + 50;
-
-	// Créer les nœuds
-	diagram.models.forEach((model, index) => {
-		const isRoot = model.id === rootModel.id;
-		const row = Math.floor(index / gridSize);
-		const col = index % gridSize;
-
-		// Pour le root, position 0,0; sinon position dans la grille
-		const position = isRoot
-			? DEFAULT_POSITION
-			: { x: (col + 1) * spacing, y: (row + 1) * spacing };
-
-		const nodeId = isRoot ? model.id : `${rootModel.id}/${model.id}`;
-
-		nodes.push({
+export const generatedDiagramToReactFlow = (
+	diagram: GeneratedDiagram,
+): ReactFlowInput => {
+	const nodes: ReactFlowInput["nodes"] = [],
+		edges: ReactFlowInput["edges"] = [];
+	const byId = new Map(diagram.models.map((m) => [m.id, m]));
+	const resolve = (ref: string) =>
+		byId.get(ref) ?? diagram.models.find((m) => m.name === ref);
+	const roots = diagram.models.filter(
+		(m) =>
+			!diagram.models.some((p) =>
+				p.components?.some((c) => resolve(c)?.id === m.id),
+			),
+	);
+	validateGeneratedStructure(diagram);
+	const expand = (
+		model: GeneratedModelData,
+		path: string,
+		parentId: string | undefined,
+		index: number,
+		ancestors: Set<string>,
+	): { width: number; height: number } => {
+		if (ancestors.has(model.id)) return { width: 200, height: 200 };
+		const seen = new Set([...ancestors, model.id]);
+		const position = diagram.reactFlowData?.nodes.find((n) => n.id === path)
+			?.position ?? {
+			x: parentId ? 40 + (index % 3) * 280 : index * 300,
+			y: parentId ? 70 + Math.floor(index / 3) * 280 : 0,
+		};
+		const node = {
+			id: path,
+			type: "resizer",
+			deletable: !model.externalModelId,
+			position,
 			data: {
-				code: model.code ?? "",
 				id: model.id,
-				inputPorts: model.ports.in.map((p) => ({ id: p, name: p })),
 				label: model.name,
 				modelType: model.type,
+				code: model.code ?? "",
+				integrationId: model.integrationId,
+				integrationVersion: model.integrationVersion,
+				language: model.language,
+				inputPorts: model.ports.in.map((p) => ({ id: p, name: p })),
 				outputPorts: model.ports.out.map((p) => ({ id: p, name: p })),
 				parameters: [],
+				description: "",
+				modelRole: model.role ?? "",
+				keyword: [],
 			},
-			dragging: false,
-			height: isRoot ? spacing * (gridSize + 1) : DEFAULT_NODE_SIZE,
-			id: nodeId,
-			measured: {
-				height: isRoot ? spacing * (gridSize + 1) : DEFAULT_NODE_SIZE,
-				width: isRoot ? spacing * (gridSize + 1) : DEFAULT_NODE_SIZE,
-			},
-			position,
 			selected: false,
-			type: "resizer",
-			width: isRoot ? spacing * (gridSize + 1) : DEFAULT_NODE_SIZE,
-			...(isRoot
-				? { deletable: false }
-				: { extent: "parent", parentId: rootModel.id }),
-		});
-	});
-
-	// Créer les edges à partir des connexions
-	for (const conn of diagram.connections) {
-		const sourceIsRoot = isRootModelReference(conn.from.model, rootModel);
-		const targetIsRoot = isRootModelReference(conn.to.model, rootModel);
-		const sourceModelID =
-			getGeneratedModelIDFromReference(diagram, conn.from.model) ??
-			conn.from.model;
-		const targetModelID =
-			getGeneratedModelIDFromReference(diagram, conn.to.model) ?? conn.to.model;
-		const sourceId = sourceIsRoot
-			? rootModel.id
-			: `${rootModel.id}/${sourceModelID}`;
-		const targetId = targetIsRoot
-			? rootModel.id
-			: `${rootModel.id}/${targetModelID}`;
-
-		const edge: Edge<EdgeData> = {
-			data: {
-				holderId: rootModel.id,
-			},
-			id: `${sourceId}:${conn.from.port}->${targetId}:${conn.to.port}`,
-			source: sourceId,
-			sourceHandle: sourceIsRoot
-				? `${INTERNAL_PREFIX}${sourceId}:${conn.from.port}`
-				: `${sourceId}:${conn.from.port}`,
-			target: targetId,
-			targetHandle: targetIsRoot
-				? `${INTERNAL_PREFIX}${targetId}:${conn.to.port}`
-				: `${targetId}:${conn.to.port}`,
+			dragging: false,
+			width: 200,
+			height: 200,
+			measured: { width: 200, height: 200 },
+			...(parentId
+				? { parentId, extent: "parent" as const }
+				: { deletable: false }),
 		};
-		edges.push(edge);
-	}
+		if (model.externalModelId) node.deletable = false;
+		nodes.push(node);
+		let width = 200,
+			height = 200;
+		let cursorX = 40;
+		for (const [i, ref] of (model.components ?? []).entries()) {
+			const child = resolve(ref);
+			if (!child) continue;
+			const childPath = `${path}/${child.id}`;
+			const size = expand(child, childPath, path, i, seen);
+			const childNode = nodes.find((n) => n.id === childPath);
+			if (childNode) {
+				childNode.position = {
+					x: cursorX,
+					y: 70,
+				};
+				cursorX += size.width + 40;
+				width = Math.max(width, (childNode?.position.x ?? 0) + size.width + 40);
+				height = Math.max(
+					height,
+					(childNode?.position.y ?? 0) + size.height + 40,
+				);
+			}
+		}
+		node.width = width;
+		node.height = height;
+		node.measured = { width, height };
+		for (const [i, c] of diagram.connections.entries()) {
+			if (c.owner !== model.id || !c.from || !c.to) continue;
+			const source =
+				c.from.model === model.id
+					? path
+					: `${path}/${resolve(c.from.model ?? "")?.id}`;
+			const target =
+				c.to.model === model.id
+					? path
+					: `${path}/${resolve(c.to.model ?? "")?.id}`;
+			edges.push({
+				id: `${path}:connection:${i}`,
+				source,
+				target,
+				sourceHandle: `${source === path ? INTERNAL_PREFIX : ""}${source}:${c.from.port}`,
+				targetHandle: `${target === path ? INTERNAL_PREFIX : ""}${target}:${c.to.port}`,
+				data: { holderId: path },
+				type: "step",
+			});
+		}
+		return { width, height };
+	};
+	for (const [i, root] of roots.entries())
+		expand(root, root.id, undefined, i, new Set());
+	return { nodes, edges };
+};
 
+export const syncGeneratedStructure = (
+	diagram: GeneratedDiagram,
+	graph: ReactFlowInput,
+): GeneratedDiagram => {
+	if (validateGeneratedStructure(diagram).length)
+		return { ...diagram, reactFlowData: graph };
+	const models = diagram.models
+		.filter(
+			(m) => graph.nodes.some((n) => n.data.id === m.id) || m.externalModelId,
+		)
+		.map((m) => {
+			if (m.externalModelId) return m;
+			const node = graph.nodes.find((n) => n.data.id === m.id);
+			if (!node) return m;
+			return {
+				...m,
+				name: node.data.label,
+				ports: {
+					in: (node.data.inputPorts ?? []).map((p) => p.name || p.id),
+					out: (node.data.outputPorts ?? []).map((p) => p.name || p.id),
+				},
+				components: graph.nodes
+					.filter((n) => n.parentId === node.id)
+					.map((n) => n.data.id),
+			};
+		});
+	for (const node of graph.nodes) {
+		if (models.some((m) => m.id === node.data.id)) continue;
+		models.push({
+			id: node.data.id,
+			name: node.data.label,
+			type: node.data.modelType,
+			ports: {
+				in: (node.data.inputPorts ?? []).map((p) => p.name || p.id),
+				out: (node.data.outputPorts ?? []).map((p) => p.name || p.id),
+			},
+			components: graph.nodes
+				.filter((n) => n.parentId === node.id)
+				.map((n) => n.data.id),
+			code: node.data.code,
+			codeGenerated: !!node.data.code,
+			dependencies: [],
+			language: node.data.language,
+			integrationId: node.data.integrationId,
+			integrationVersion: node.data.integrationVersion,
+		});
+	}
+	const connections = [];
+	const seen = new Set<string>();
+	for (const edge of graph.edges) {
+		const source = graph.nodes.find((n) => n.id === edge.source),
+			target = graph.nodes.find((n) => n.id === edge.target);
+		const owner =
+			graph.nodes.find((n) => n.id === edge.data?.holderId) ??
+			graph.nodes.find(
+				(n) =>
+					n.id ===
+					(source?.parentId === target?.id
+						? target.id
+						: target?.parentId === source?.id
+							? source.id
+							: source?.parentId),
+			);
+		if (!source || !target || !owner) continue;
+		const port = (node, handle, root, direction) => {
+			const id = handle?.split(":").pop() ?? "";
+			const ports = root
+				? direction === "source"
+					? node.data.inputPorts
+					: node.data.outputPorts
+				: direction === "source"
+					? node.data.outputPorts
+					: node.data.inputPorts;
+			return ports?.find((p) => p.id === id)?.name ?? id;
+		};
+		const c = {
+			owner: owner.data.id,
+			from: {
+				model: source.data.id,
+				port: port(source, edge.sourceHandle, source.id === owner.id, "source"),
+			},
+			to: {
+				model: target.data.id,
+				port: port(target, edge.targetHandle, target.id === owner.id, "target"),
+			},
+		};
+		const key = JSON.stringify(c);
+		if (!seen.has(key)) {
+			connections.push(c);
+			seen.add(key);
+		}
+	}
 	return {
-		edges,
-		nodes: nodes.sort((a, b) => a.id.length - b.id.length),
+		...diagram,
+		models,
+		connections,
+		reactFlowData: graph,
+		validationErrors: [],
 	};
 };
+
+export const mergeStructureProposal = (
+	current: GeneratedDiagram,
+	proposal: GeneratedDiagram,
+): GeneratedDiagram => ({
+	...proposal,
+	models: proposal.models.map((model) => {
+		const previous = current.models.find((m) => m.id === model.id);
+		if (!previous?.code) return model;
+		const changed =
+			JSON.stringify(previous.ports) !== JSON.stringify(model.ports) ||
+			previous.type !== model.type;
+		return {
+			...model,
+			code: previous.code,
+			language: previous.language,
+			integrationId: previous.integrationId,
+			integrationVersion: previous.integrationVersion,
+			codeGenerated: changed ? false : previous.codeGenerated,
+			needsRevalidation: changed || previous.needsRevalidation,
+		};
+	}),
+});
 
 /**
  * Creates atomic model requests (they have code)
@@ -668,7 +882,8 @@ export const createAtomicModelRequests = (
 			connections: [],
 			description: `Generated atomic model for ${diagram.name}`,
 			id: modelId,
-			language: getModelRequestLanguage(model),
+			integrationId: model.integrationId,
+			integrationVersion: model.integrationVersion,
 			libId: libraryId,
 			metadata: {
 				position: DEFAULT_POSITION,
@@ -718,6 +933,11 @@ export const createCoupledModelRequest = (
 	createdModelIDByName: Map<string, string>,
 	model: GeneratedModelData,
 ): components["schemas"]["request.ModelRequest"] => {
+	const issues = validateGeneratedStructure(diagram);
+	if (issues.length) throw new Error(issues.join("; "));
+	const ownerNode = diagram.reactFlowData?.nodes.find(
+		(n) => n.data.id === model.id,
+	);
 	const modelComponents: components["schemas"]["json.ModelComponent"][] = [];
 	const instanceIDByLogicalModelID = new Map<string, string>();
 
@@ -728,6 +948,7 @@ export const createCoupledModelRequest = (
 				createdModelIDByName,
 				componentName,
 			);
+			if (!componentId) throw new Error(`Unknown component ${componentName}`);
 			if (componentId) {
 				const instanceId = uuid();
 				instanceIDByLogicalModelID.set(componentName, instanceId);
@@ -741,8 +962,30 @@ export const createCoupledModelRequest = (
 					instanceIDByLogicalModelID.set(componentModel.name, instanceId);
 				}
 
+				const occurrence = diagram.reactFlowData?.nodes.find(
+					(n) =>
+						n.parentId === ownerNode?.id &&
+						n.data.id === (componentModel?.id ?? componentName),
+				);
 				modelComponents.push({
 					instanceId,
+					...(occurrence
+						? {
+								instanceMetadata: {
+									position: occurrence.position,
+									style: {
+										width:
+											occurrence.measured?.width ??
+											occurrence.width ??
+											DEFAULT_NODE_SIZE,
+										height:
+											occurrence.measured?.height ??
+											occurrence.height ??
+											DEFAULT_NODE_SIZE,
+									},
+								},
+							}
+						: {}),
 					modelId: componentId,
 				});
 			}
@@ -751,6 +994,7 @@ export const createCoupledModelRequest = (
 
 	const modelConnections: components["schemas"]["json.ModelConnection"][] = [];
 	for (const conn of diagram.connections) {
+		if (conn.owner !== model.id) continue;
 		const fromInstanceId = getCoupledConnectionEndpointInstanceID(
 			model,
 			conn.from.model,
@@ -762,7 +1006,13 @@ export const createCoupledModelRequest = (
 			instanceIDByLogicalModelID,
 		);
 
-		if (fromInstanceId && toInstanceId && fromInstanceId !== toInstanceId) {
+		if (!fromInstanceId || !toInstanceId)
+			throw new Error(`Cannot resolve connection owned by ${model.id}`);
+		if (
+			fromInstanceId &&
+			toInstanceId &&
+			!(fromInstanceId === "root" && toInstanceId === "root")
+		) {
 			modelConnections.push({
 				from: {
 					instanceId: fromInstanceId,
@@ -782,11 +1032,14 @@ export const createCoupledModelRequest = (
 		connections: modelConnections,
 		description: `Generated coupled model for ${diagram.name}`,
 		id: uuid(),
-		language: inferCoupledModelLanguage(diagram),
+
 		libId: libraryId,
 		metadata: {
-			position: DEFAULT_POSITION,
-			style: { height: DEFAULT_NODE_SIZE * 2, width: DEFAULT_NODE_SIZE * 2 },
+			position: ownerNode?.position ?? DEFAULT_POSITION,
+			style: {
+				height: ownerNode?.measured?.height ?? DEFAULT_NODE_SIZE * 2,
+				width: ownerNode?.measured?.width ?? DEFAULT_NODE_SIZE * 2,
+			},
 		},
 		name: model.name,
 		ports: [

@@ -1,6 +1,6 @@
-import { Globe, Loader2, Lock, Rocket } from "lucide-react";
+import { ArrowLeft, Globe, Loader2, Lock } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import type { components } from "@/api/v1";
 import {
 	SimulationPanel,
@@ -8,6 +8,7 @@ import {
 } from "@/components/custom/SimulationPanel";
 import NavHeader from "@/components/nav/nav-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
 	Card,
 	CardContent,
@@ -193,8 +194,11 @@ export function WebAppDeployment() {
 	const renderSection = (section: WebAppUISection): ReactNode => {
 		if (section.kind === "parameters") {
 			return (
-				<Card key={section.id}>
-					<CardHeader>
+				<Card
+					key={section.id}
+					className="rounded-none border-0 bg-transparent shadow-none"
+				>
+					<CardHeader className="px-0 pb-3 pt-0">
 						<CardTitle className="text-base">
 							{section.title || "Parameters"}
 						</CardTitle>
@@ -202,18 +206,15 @@ export function WebAppDeployment() {
 							<CardDescription>{section.description}</CardDescription>
 						) : null}
 					</CardHeader>
-					<CardContent>
-						<div className="space-y-2">
+					<CardContent className="p-0">
+						<div className="divide-y">
 							{parameterTargets.length === 0 ? (
 								<div className="text-xs text-muted-foreground">
 									No runtime parameters available.
 								</div>
 							) : (
 								parameterTargets.map((target) => (
-									<div
-										className="rounded border p-2"
-										key={target.instanceModelId}
-									>
+									<div className="py-3 first:pt-0" key={target.instanceModelId}>
 										<div className="text-sm font-medium">
 											{target.modelName}
 										</div>
@@ -241,8 +242,11 @@ export function WebAppDeployment() {
 
 		if (section.kind === "inputs") {
 			return (
-				<Card key={section.id}>
-					<CardHeader>
+				<Card
+					key={section.id}
+					className="rounded-none border-0 bg-transparent shadow-none"
+				>
+					<CardHeader className="px-0 pb-3 pt-0">
 						<CardTitle className="text-base">
 							{section.title || "Input Interface"}
 						</CardTitle>
@@ -250,7 +254,7 @@ export function WebAppDeployment() {
 							<CardDescription>{section.description}</CardDescription>
 						) : null}
 					</CardHeader>
-					<CardContent>
+					<CardContent className="p-0">
 						{renderPortBadges(deployment.contract?.inputPortBindings)}
 					</CardContent>
 				</Card>
@@ -259,8 +263,11 @@ export function WebAppDeployment() {
 
 		if (section.kind === "outputs") {
 			return (
-				<Card key={section.id}>
-					<CardHeader>
+				<Card
+					key={section.id}
+					className="rounded-none border-0 bg-transparent shadow-none"
+				>
+					<CardHeader className="px-0 pb-3 pt-0">
 						<CardTitle className="text-base">
 							{section.title || "Output Interface"}
 						</CardTitle>
@@ -268,7 +275,7 @@ export function WebAppDeployment() {
 							<CardDescription>{section.description}</CardDescription>
 						) : null}
 					</CardHeader>
-					<CardContent>
+					<CardContent className="p-0">
 						{renderPortBadges(deployment.contract?.outputPortBindings)}
 					</CardContent>
 				</Card>
@@ -284,7 +291,7 @@ export function WebAppDeployment() {
 					modelNameById={modelNameById}
 					panelDescription={
 						section.description ||
-						"Run the deployed WebApp contract against the simulation backend."
+						"Configure a run and inspect the model’s outputs."
 					}
 					panelTitle={section.title || "Simulation"}
 					parameterSectionDescription={
@@ -302,8 +309,11 @@ export function WebAppDeployment() {
 		}
 
 		return (
-			<Card key={section.id}>
-				<CardHeader>
+			<Card
+				key={section.id}
+				className="rounded-none border-0 bg-transparent shadow-none"
+			>
+				<CardHeader className="px-0 pb-3 pt-0">
 					<CardTitle className="text-base">
 						{section.title || section.id}
 					</CardTitle>
@@ -311,7 +321,7 @@ export function WebAppDeployment() {
 						<CardDescription>{section.description}</CardDescription>
 					) : null}
 				</CardHeader>
-				<CardContent>
+				<CardContent className="p-0">
 					<div className="text-sm text-muted-foreground">
 						Custom section placeholder.
 					</div>
@@ -332,75 +342,73 @@ export function WebAppDeployment() {
 				showNavActions={false}
 			/>
 
-			<div className="flex-1 overflow-auto p-6 space-y-6">
-				<div className="mx-auto w-full max-w-7xl space-y-6">
-					<Card>
-						<CardHeader>
-							<div className="flex flex-wrap items-start justify-between gap-3">
-								<div>
-									<CardTitle className="flex items-center gap-2">
-										<Rocket className="h-4 w-4" />
-										{deployment.name || "WebApp Deployment"}
-									</CardTitle>
-									<CardDescription>
-										{deployment.description || "Deployable runtime interface"}
-									</CardDescription>
-								</div>
-								<Badge className="flex items-center gap-1" variant="outline">
-									{deployment.isPublic ? (
-										<>
-											<Globe className="h-3.5 w-3.5" />
-											Public
-										</>
-									) : (
-										<>
-											<Lock className="h-3.5 w-3.5" />
-											Private
-										</>
-									)}
-								</Badge>
+			<div className="min-h-0 flex-1 overflow-auto px-4 py-6 lg:px-6">
+				<div className="space-y-8">
+					<header>
+						<Button
+							asChild
+							variant="ghost"
+							size="sm"
+							className="mb-4 -ml-2 h-7 px-2"
+						>
+							<Link to="/webapps">
+								<ArrowLeft size={13} />
+								All deployments
+							</Link>
+						</Button>
+						<div className="flex flex-wrap items-start justify-between gap-4">
+							<div className="min-w-0">
+								<h1 className="break-words text-2xl font-semibold tracking-tight">
+									{deployment.name || "WebApp deployment"}
+								</h1>
+								<p className="mt-2 text-sm text-muted-foreground">
+									{deployment.description ||
+										"A runnable interface for your model."}
+								</p>
 							</div>
-						</CardHeader>
-						<CardContent className="grid gap-4 md:grid-cols-4">
-							<div className="rounded border p-3">
-								<div className="text-xs text-muted-foreground">Parameters</div>
-								<div className="text-lg font-semibold">
-									{deployment.contract?.parameterBindings?.length ?? 0}
+							<Badge className="gap-1.5 font-normal" variant="secondary">
+								{deployment.isPublic ? <Globe size={13} /> : <Lock size={13} />}
+								{deployment.isPublic ? "Public" : "Private"}
+							</Badge>
+						</div>
+						<dl className="mt-5 flex flex-wrap gap-x-8 gap-y-3 text-xs">
+							{[
+								[
+									"Parameters",
+									deployment.contract?.parameterBindings?.length ?? 0,
+								],
+								[
+									"Input ports",
+									deployment.contract?.inputPortBindings?.length ?? 0,
+								],
+								[
+									"Output ports",
+									deployment.contract?.outputPortBindings?.length ?? 0,
+								],
+							].map(([label, value]) => (
+								<div className="flex items-baseline gap-2" key={label}>
+									<dt className="text-muted-foreground">{label}</dt>
+									<dd className="font-mono">{value}</dd>
 								</div>
-							</div>
-							<div className="rounded border p-3">
-								<div className="text-xs text-muted-foreground">Input ports</div>
-								<div className="text-lg font-semibold">
-									{deployment.contract?.inputPortBindings?.length ?? 0}
-								</div>
-							</div>
-							<div className="rounded border p-3">
-								<div className="text-xs text-muted-foreground">
-									Output ports
-								</div>
-								<div className="text-lg font-semibold">
-									{deployment.contract?.outputPortBindings?.length ?? 0}
-								</div>
-							</div>
-							<div className="rounded border p-3">
-								<div className="text-xs text-muted-foreground">UI sections</div>
-								<div className="text-lg font-semibold">
-									{deployment.uiSchema?.sections?.length ?? 0}
-								</div>
-							</div>
-						</CardContent>
-					</Card>
+							))}
+						</dl>
+					</header>
 
 					<div
 						className={
 							deployment.uiSchema?.layout === "single-column"
-								? "grid grid-cols-1 gap-4"
-								: "grid grid-cols-1 gap-4 lg:grid-cols-2"
+								? "grid min-w-0 grid-cols-1 gap-8"
+								: "grid min-w-0 grid-cols-1 gap-8 lg:grid-cols-2"
 						}
 					>
 						{effectiveSections.map((section) => (
 							<div
-								className={section.kind === "run" ? "lg:col-span-2" : ""}
+								className={
+									section.kind === "run" &&
+									deployment.uiSchema?.layout !== "single-column"
+										? "min-w-0 lg:col-span-2"
+										: "min-w-0"
+								}
 								key={section.id}
 							>
 								{renderSection(section)}

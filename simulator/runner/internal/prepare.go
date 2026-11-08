@@ -6,6 +6,7 @@ import (
 	"devsforge-runner/internal/generators"
 	"devsforge-runner/util"
 	shared "devsforge-shared"
+	"devsforge-shared/integrations"
 	"fmt"
 	"log/slog"
 	"os"
@@ -33,7 +34,17 @@ func PrepareGeneralWrapper(manifest shared.RunnableManifest, yamlConfigFilePath 
 	}
 
 	modelRoot := filepath.Join(cfg.TmpDirectory, "model_"+cfg.Model.ID)
-	modelingFolder := filepath.Join(cfg.Env.Paths.WrappersDir, string(cfg.Model.Language))
+	d, err := integrations.Resolve(cfg.Model.IntegrationID, cfg.Model.IntegrationVersion, string(cfg.Model.Language))
+	if err != nil {
+		return nil, err
+	}
+	cfg.Model.IntegrationID = d.ID
+	cfg.Model.IntegrationVersion = d.Version
+	cfg.Model.Language = shared.CodeLanguage(d.Language)
+	modelingFolder, err := d.Resource(d.Wrapper)
+	if err != nil {
+		return nil, err
+	}
 
 	slog.Debug("Checking wrappers folder is present", "path", modelingFolder)
 	if _, err := os.Stat(modelingFolder); err != nil {
