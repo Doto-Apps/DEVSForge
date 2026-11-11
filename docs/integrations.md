@@ -86,6 +86,10 @@ The client preloads Monaco during browser idle time after authentication. Browse
 
 `POST /lsp/sessions` acquires/reuses a workspace and attaches its document. `GET /lsp/sessions/{id}` exposes status, `POST /lsp/sessions/{id}/tickets` renews unused connection tickets, and `DELETE /lsp/sessions/{id}/documents/{document}` detaches one document. Deleting the session releases the entire workspace. All backend routes authenticate the account; attaching an existing model checks its owner. UTF-16 incremental edits are persisted by document version, once for Pyright/Ruff's shared buffer. A late document-close notification cannot close the other documents' engines.
 
+Closing a tab detaches its editable buffer while retaining its prepared analysis project and registration in the workspace. Removing a Java project immediately can invalidate completion in another project. Reopening a model reuses its framework links and metadata, replaces the user source with the current editor content and starts a fresh document version. Cached projects remain private to the account/window/integration; expiry, eviction, explicit workspace closure or daemon shutdown removes the entire cache. No background model execution or server save is triggered.
+
+For a VPS with an existing Compose file and Traefik, see the [LSP service configuration](lsp-vps.md).
+
 ## Hierarchy and AI refinement
 
 Generated occurrences are expanded recursively with real parent IDs and relative positions. Connections carry their coupled `owner`; legacy missing owners are inferred only if unambiguous. Internal couplings and boundary input/output couplings are validated at their own level. Containment cycles are rejected; DEVS feedback connections remain valid. Save creates children before parents and retains component layout metadata. EF target models are opaque existing references: their original coupled components and code are never recreated by the assisted save.

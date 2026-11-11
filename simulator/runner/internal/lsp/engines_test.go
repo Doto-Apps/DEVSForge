@@ -73,9 +73,6 @@ func TestRealLanguageServers(t *testing.T) {
 					if err := socket.ReadJSON(&msg); err != nil {
 						t.Fatal(err)
 					}
-					if msg.Method == "language/eventNotification" || msg.Method == "language/status" {
-						t.Logf("%s: %s", msg.Method, msg.Params)
-					}
 					if msg.Method != "" && len(msg.ID) > 0 {
 						if err := socket.WriteJSON(map[string]any{"jsonrpc": "2.0", "id": msg.ID, "result": nil}); err != nil {
 							t.Fatal(err)
@@ -171,6 +168,30 @@ func TestRealLanguageServers(t *testing.T) {
 			}
 
 			t.Logf("same engine socket completed both isolated projects and survived detach")
+			reopenedCode, reopenedURI := tt.code, result.DocumentURI
+			if tt.profile == "xdevs-java" {
+				reopenedCode = strings.ReplaceAll(tt.code, "Example", "Reopened")
+				reopenedURI = strings.ReplaceAll(result.DocumentURI, "Example.java", "Reopened.java")
+			}
+			reopened, err := m.Create(Request{UserID: "tester", WorkbenchID: "real-engines", DocumentID: "first", ModelName: "light ", Code: reopenedCode, IntegrationID: tt.profile, IntegrationVersion: "1.0.0"})
+			if err != nil || reopened.ID != result.ID || reopened.DocumentURI != reopenedURI {
+				t.Fatalf("reopening cached project failed: %+v %v", reopened, err)
+			}
+			send(nil, "textDocument/didOpen", map[string]any{"textDocument": map[string]any{"uri": reopened.DocumentURI, "languageId": reopened.Language, "version": 1, "text": reopenedCode}})
+			for _, uri := range []string{reopened.DocumentURI, second.DocumentURI} {
+				found = false
+				for attempt := 0; attempt < 30; attempt++ {
+					send(600+attempt, "textDocument/completion", map[string]any{"textDocument": map[string]any{"uri": uri}, "position": map[string]int{"line": tt.line, "character": tt.column}, "context": map[string]any{"triggerKind": 1}})
+					if strings.Contains(string(receive(600+attempt)), tt.want) {
+						found = true
+						break
+					}
+					time.Sleep(300 * time.Millisecond)
+				}
+				if !found {
+					t.Fatalf("document lost completion after reopening: %s", uri)
+				}
+			}
 		})
 	}
 }

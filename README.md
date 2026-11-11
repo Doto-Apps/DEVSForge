@@ -135,3 +135,5 @@ See [the integration guide](docs/integrations.md) for the unified catalogue, Pyt
 Model editors now share persistent local tabs across libraries. Unsaved changes and generator conversations can be recovered after reload. Python, Go and Java reuse analysis workspaces within a browser window; the default LSP budget is 4 GiB with six active workspaces (at most two Java), and excess requests wait. See [workbench behavior, browser checks and measured startup/memory](docs/integrations.md#model-workbench-and-local-recovery).
 
 Pour comprendre le fonctionnement pas à pas : [guide d’architecture en français — LSP, onglets, fichiers, simulation et IA](docs/architecture-lsp-et-editeur.md).
+
+Pour ajouter le service à un VPS existant : [configuration LSP avec Docker Compose et Traefik](docs/lsp-vps.md).

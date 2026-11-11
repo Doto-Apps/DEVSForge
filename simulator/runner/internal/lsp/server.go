@@ -68,6 +68,7 @@ type session struct {
 	key, state                string
 	admitted                  bool
 	documents                 map[string]*document
+	projects                  map[string]*document
 	senders                   map[string]func([]byte) error
 	initialized               map[string]bool
 	retired                   map[string]bool

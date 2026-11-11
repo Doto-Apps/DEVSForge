@@ -77,6 +77,74 @@ func TestIncrementalUTF16AndCompanionVersionDeduplication(t *testing.T) {
 		t.Fatal("accepted split surrogate")
 	}
 }
+
+func TestClosedProjectsAreReusedWithFreshBuffersAndCleanedWithWorkspace(t *testing.T) {
+	for _, tt := range []struct{ profile, initial, updated string }{
+		{"xdevs-python", "class Example:\n    pass\n", "class Renamed:\n    pass\n"},
+		{"xdevs-go", "package main\nfunc initial() {}\n", "package main\nfunc updated() {}\n"},
+		{"xdevs-java", "public class Example {}", "public class Renamed {}"},
+	} {
+		t.Run(tt.profile, func(t *testing.T) {
+			m := testManager(t)
+			req := Request{UserID: "alice", WorkbenchID: "window", DocumentID: "first", ModelName: "Example", Code: tt.initial, IntegrationID: tt.profile, IntegrationVersion: "1.0.0"}
+			first, err := m.Create(req)
+			if err != nil {
+				t.Fatal(err)
+			}
+			s := m.sessions[first.ID]
+			initial := s.documents[first.DocumentID]
+			root := s.root
+			raw, err := json.Marshal(map[string]any{"textDocument": map[string]any{"uri": first.DocumentURI, "version": 8, "text": req.Code}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err = s.persistDocument("textDocument/didOpen", raw); err != nil {
+				t.Fatal(err)
+			}
+			// Project metadata and library links must survive closing an editor.
+			marker := filepath.Join(initial.Dir, "analysis-cache-marker")
+			if err = os.WriteFile(marker, []byte("keep"), 0600); err != nil {
+				t.Fatal(err)
+			}
+			if err = s.detach(first.DocumentID); err != nil {
+				t.Fatal(err)
+			}
+			if s.writable(first.DocumentURI) || len(s.folders()) != 1 {
+				t.Fatal("closed document must be read-only while its project remains registered")
+			}
+			req.Code = tt.updated
+			reopened, err := m.Create(req)
+			if err != nil || reopened.ID != first.ID {
+				t.Fatalf("reopen failed: %+v %v", reopened, err)
+			}
+			doc := s.documents[reopened.DocumentID]
+			if _, err = os.Stat(marker); err != nil {
+				t.Fatal("prepared project was rebuilt on reopening", err)
+			}
+			if doc.File != initial.File {
+				if _, err = os.Stat(initial.File); !os.IsNotExist(err) {
+					t.Fatal("old Java source remained after renaming its public type")
+				}
+			}
+			raw, err = json.Marshal(map[string]any{"textDocument": map[string]any{"uri": reopened.DocumentURI, "version": 1, "text": req.Code}})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if err = s.persistDocument("textDocument/didOpen", raw); err != nil {
+				t.Fatal(err)
+			}
+			code, err := os.ReadFile(doc.File)
+			if err != nil || string(code) != req.Code || doc.Version != 1 || !s.writable(reopened.DocumentURI) || len(s.projects) != 1 {
+				t.Fatalf("reopened buffer has stale content/version or a duplicate project: %q %v", code, err)
+			}
+			m.Close(first.ID)
+			if _, err = os.Stat(root); !os.IsNotExist(err) {
+				t.Fatal("cached projects survived workspace cleanup")
+			}
+		})
+	}
+}
+
 func TestCapacityQueuesAndReleasesWorkbench(t *testing.T) {
 	m := testManager(t)
 	m.max = 1

@@ -201,6 +201,8 @@ Chaque document garde néanmoins son propre projet : deux fonctions Go ou deux c
 
 Deux comptes ou deux fenêtres indépendantes ne partagent pas leurs espaces ni leurs brouillons. Fermer un onglet retire son document ; cela ne ferme pas automatiquement les moteurs utilisés par les autres onglets.
 
+Le projet d’analyse préparé reste en cache dans cet espace, même après fermeture de son onglet. Cela évite de décharger des ressources Java encore utilisées par l’analyse d’un autre modèle. À la réouverture, on réutilise les bibliothèques et les métadonnées, puis on remet le code courant avec une nouvelle version de document. Tous ces projets temporaires sont supprimés avec l’espace LSP, notamment après quinze minutes d’inactivité ou lors de sa libération sous pression.
+
 ### Les projets temporaires
 
 L’organisation ressemble à ceci ; les détails varient selon le langage :

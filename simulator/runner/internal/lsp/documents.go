@@ -37,7 +37,7 @@ func documentKey(req Request) string {
 }
 func (s *session) folders() []map[string]string {
 	result := []map[string]string{}
-	for _, doc := range s.documents {
+	for _, doc := range s.projects {
 		result = append(result, map[string]string{"uri": fileURI(doc.Dir), "name": doc.ID})
 	}
 	return result
@@ -64,13 +64,11 @@ func (s *session) attach(req Request) (*document, error) {
 		s.mu.Unlock()
 		return doc, nil
 	}
+	cached := s.projects[id]
 	s.mu.Unlock()
 	dir := filepath.Join(s.root, "projects", id)
 	source, err := s.definition.Resource(s.definition.Wrapper)
 	if err != nil {
-		return nil, err
-	}
-	if err = util.CopyDir(source, dir); err != nil {
 		return nil, err
 	}
 	preparation, err := adapters.Get(s.definition.Preparation)
@@ -81,21 +79,46 @@ func (s *session) attach(req Request) (*document, error) {
 	if preparation.SourceName != nil {
 		name = preparation.SourceName(req.Code, name)
 	}
-	model := &shared.RunnableModel{ID: id, Name: name, Code: req.Code, Language: shared.CodeLanguage(s.definition.Language), IntegrationID: s.definition.ID, IntegrationVersion: s.definition.Version}
-	wrapper := &generators.WrapperInfo{ModelDir: dir, RootDir: dir, Cfg: &config.RunnerConfig{Model: model}}
-	if err = preparation.Sources(wrapper, shared.RunnableManifest{Models: []*shared.RunnableModel{model}}); err != nil {
-		return nil, err
-	}
-	if preparation.Analysis != nil {
-		if err = preparation.Analysis(wrapper, source); err != nil {
+	file := filepath.Join(dir, strings.ReplaceAll(s.definition.ModelPath, "{name}", name))
+	changes := []map[string]any{}
+	if cached != nil {
+		// Framework links and project metadata are already prepared. Recopying
+		// the wrapper would overwrite those links and invalidate cached indexes.
+		if err = os.WriteFile(file, []byte(req.Code), 0600); err != nil {
 			return nil, err
+		}
+		kind := 2 // LSP FileChangeType.Changed
+		if cached.File != file {
+			if err = os.Remove(cached.File); err != nil && !os.IsNotExist(err) {
+				return nil, err
+			}
+			changes = append(changes, map[string]any{"uri": fileURI(cached.File), "type": 3})
+			kind = 1
+		}
+		changes = append(changes, map[string]any{"uri": fileURI(file), "type": kind})
+	} else {
+		if err = util.CopyDir(source, dir); err != nil {
+			return nil, err
+		}
+		model := &shared.RunnableModel{ID: id, Name: name, Code: req.Code, Language: shared.CodeLanguage(s.definition.Language), IntegrationID: s.definition.ID, IntegrationVersion: s.definition.Version}
+		wrapper := &generators.WrapperInfo{ModelDir: dir, RootDir: dir, Cfg: &config.RunnerConfig{Model: model}}
+		if err = preparation.Sources(wrapper, shared.RunnableManifest{Models: []*shared.RunnableModel{model}}); err != nil {
+			return nil, err
+		}
+		if preparation.Analysis != nil {
+			if err = preparation.Analysis(wrapper, source); err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	file := filepath.Join(dir, strings.ReplaceAll(s.definition.ModelPath, "{name}", name))
 	doc := &document{ID: id, File: file, Dir: dir, Code: req.Code, Version: -1}
 	s.mu.Lock()
 	s.documents[id] = doc
+	if s.projects == nil {
+		s.projects = map[string]*document{}
+	}
+	s.projects[id] = doc
 	delete(s.retired, fileURI(file))
 	if s.file == "" {
 		s.file = file
@@ -104,6 +127,9 @@ func (s *session) attach(req Request) (*document, error) {
 	senders := s.readySenders()
 	s.mu.Unlock()
 	event, _ := json.Marshal(map[string]any{"jsonrpc": "2.0", "method": "workspace/didChangeWorkspaceFolders", "params": map[string]any{"event": map[string]any{"added": []map[string]string{{"uri": fileURI(dir), "name": id}}, "removed": []any{}}}})
+	if cached != nil {
+		event, _ = json.Marshal(map[string]any{"jsonrpc": "2.0", "method": "workspace/didChangeWatchedFiles", "params": map[string]any{"changes": changes}})
+	}
 	for _, send := range senders {
 		_ = send(event)
 	}
@@ -138,13 +164,12 @@ func (s *session) detach(id string) error {
 		s.retired = map[string]bool{}
 	}
 	s.retired[fileURI(doc.File)] = true
-	senders := s.readySenders()
+	// Closing an editor releases its buffer, while the private analysis project
+	// stays registered. Removing a project can disrupt JDT LS's other documents.
+	// The whole project cache is removed by Manager.Close on expiry or shutdown.
+	doc.Code = ""
 	s.mu.Unlock()
-	event, _ := json.Marshal(map[string]any{"jsonrpc": "2.0", "method": "workspace/didChangeWorkspaceFolders", "params": map[string]any{"event": map[string]any{"added": []any{}, "removed": []map[string]string{{"uri": fileURI(doc.Dir), "name": id}}}}})
-	for _, send := range senders {
-		_ = send(event)
-	}
-	return os.RemoveAll(doc.Dir)
+	return nil
 }
 func (s *session) persistDocument(method string, raw json.RawMessage) error {
 	var p struct {
