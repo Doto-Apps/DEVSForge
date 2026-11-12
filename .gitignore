@@ -5,19 +5,23 @@ sim-logs/
 *.log
 npm-debug.log*
 
+
 # Dependency directories
 node_modules/
 .pnp/
 .pnp.js
+
 
 # IDEs and editors
 .vscode/
 .idea/
 *.sublime-workspace
 
+
 # Operating system files
 .DS_Store
 Thumbs.db
+
 
 # React Native (si applicable)
 .expo/
@@ -28,6 +32,7 @@ android/build/
 ios/Pods/
 ios/build/
 ios/DerivedData/
+
 
 # Environment variables and secrets
 .env.back
@@ -42,13 +47,19 @@ ios/DerivedData/
 .env.development
 .env.production
 
+
 # Build directories
 build/
 dist/
 coverage/
 out/
+**/target/
+*.class
+
 
 # Cache and temporary files
+/front/public/language-tools/
+.task/
 .cache/
 .expo/
 web-build/
@@ -56,10 +67,13 @@ temp/
 tmp/
 vendor/
 
+
 # Testing
 coverage/
 __tests__/output/
 junit.xml
+
+
 
 
 # CocoaPods generated files (macOS)
@@ -67,25 +81,36 @@ junit.xml
 Pods/
 Podfile.lock
 
+
 # Android Studio generated files
 *.iml
 .gradle/
 local.properties
 
+
 # Custom
 .vllm-cache/
+
 
 # OpenAPI
 openapi.json
 
-#python 
+
+#python
 *.pyc
 __pycache__/
 
+
 #executable
 *.exe
+
 
 # binaries
 **/devsforge
 #For java
 !**/devsforge/
+
+
+
+
+
