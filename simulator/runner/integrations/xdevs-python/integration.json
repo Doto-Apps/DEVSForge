@@ -14,29 +14,5 @@
   "prompt": "ai/model.md",
   "context": [
     "wrapper/modeling"
-  ],
-  "servers": [
-    {
-      "id": "pyright",
-      "command": "pyright-langserver",
-      "args": [
-        "--stdio"
-      ],
-      "allowedCommands": [
-        "pyright.organizeimports"
-      ]
-    },
-    {
-      "id": "ruff",
-      "command": "ruff",
-      "args": [
-        "server"
-      ],
-      "allowedCommands": [
-        "ruff.applyAutofix",
-        "ruff.applyOrganizeImports",
-        "ruff.applyFormat"
-      ]
-    }
   ]
 }

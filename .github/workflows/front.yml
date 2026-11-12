@@ -5,11 +5,15 @@ on:
     branches: ["main"]
     paths:
       - "front/**"
+      - "simulator/runner/integrations/**"
+      - "Taskfile.front.yml"
       - ".github/workflows/front.yml"
   pull_request:
     branches: ["main"]
     paths:
       - "front/**"
+      - "simulator/runner/integrations/**"
+      - "Taskfile.front.yml"
       - ".github/workflows/front.yml"
 
 env:
@@ -19,6 +23,7 @@ env:
 jobs:
   front-ci:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v4
@@ -47,6 +52,22 @@ jobs:
       - name: Tests
         working-directory: ./front
         run: pnpm test
+      - uses: docker/setup-buildx-action@v3
+      - name: Build static browser language tools
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: front/Dockerfile
+          target: language-tools
+          outputs: type=local,dest=front/public/language-tools
+          cache-from: type=gha,scope=browser-language-tools
+          cache-to: type=gha,scope=browser-language-tools,mode=max
+      - name: Install test browser
+        working-directory: ./front
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Check Python, Go and Java locally in the browser
+        working-directory: ./front
+        run: node scripts/check-browser-lsp.cjs
       - name: Production build
         working-directory: ./front
         run: pnpm run build

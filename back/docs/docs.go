@@ -707,6 +707,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/integrations/{id}/versions/{version}/analysis": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Integrations"
+                ],
+                "summary": "Get integration analysis sources",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Integration ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Integration version",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/integrations.AnalysisSources"
+                        }
+                    }
+                }
+            }
+        },
         "/integrations/{id}/versions/{version}/template": {
             "get": {
                 "produces": [
@@ -1002,174 +1037,6 @@ const docTemplate = `{
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
-                        }
-                    }
-                }
-            }
-        },
-        "/lsp/sessions": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "LSP"
-                ],
-                "summary": "Create language server session",
-                "parameters": [
-                    {
-                        "description": "Unsaved editor document",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.LSPSessionRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/handler.LSPSessionResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/lsp/sessions/{id}": {
-            "get": {
-                "tags": [
-                    "LSP"
-                ],
-                "summary": "Read language workspace status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "tags": [
-                    "LSP"
-                ],
-                "summary": "Close language server session",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            }
-        },
-        "/lsp/sessions/{id}/documents/{document}": {
-            "delete": {
-                "tags": [
-                    "LSP"
-                ],
-                "summary": "Detach language workspace document",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Document ID",
-                        "name": "document",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    }
-                }
-            }
-        },
-        "/lsp/sessions/{id}/file": {
-            "get": {
-                "produces": [
-                    "text/plain"
-                ],
-                "tags": [
-                    "LSP"
-                ],
-                "summary": "Read language server source",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Session ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Source URI",
-                        "name": "uri",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/lsp/sessions/{id}/tickets": {
-            "post": {
-                "tags": [
-                    "LSP"
-                ],
-                "summary": "Renew language workspace connections",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Workspace ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/handler.LSPSessionResponse"
                         }
                     }
                 }
@@ -2582,34 +2449,17 @@ const docTemplate = `{
                 "Coupled"
             ]
         },
-        "handler.LSPConnection": {
+        "integrations.AnalysisSources": {
             "type": "object",
             "properties": {
-                "allowedCommands": {
-                    "type": "array",
-                    "items": {
+                "digest": {
+                    "type": "string"
+                },
+                "files": {
+                    "type": "object",
+                    "additionalProperties": {
                         "type": "string"
                     }
-                },
-                "id": {
-                    "type": "string"
-                },
-                "ticket": {
-                    "type": "string"
-                },
-                "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.LSPSessionRequest": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "string"
-                },
-                "documentId": {
-                    "type": "string"
                 },
                 "integrationId": {
                     "type": "string"
@@ -2617,42 +2467,13 @@ const docTemplate = `{
                 "integrationVersion": {
                     "type": "string"
                 },
-                "modelId": {
-                    "type": "string"
-                },
-                "modelName": {
-                    "type": "string"
-                },
-                "workbenchId": {
-                    "type": "string"
-                }
-            }
-        },
-        "handler.LSPSessionResponse": {
-            "type": "object",
-            "properties": {
-                "documentId": {
-                    "type": "string"
-                },
-                "documentUri": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
                 "language": {
                     "type": "string"
                 },
-                "servers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/handler.LSPConnection"
-                    }
-                },
-                "status": {
+                "modelPath": {
                     "type": "string"
                 },
-                "workspaceUri": {
+                "module": {
                     "type": "string"
                 }
             }
@@ -2719,12 +2540,6 @@ const docTemplate = `{
                 "prompt": {
                     "type": "string"
                 },
-                "servers": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/integrations.Server"
-                    }
-                },
                 "template": {
                     "type": "string"
                 },
@@ -2733,33 +2548,6 @@ const docTemplate = `{
                 },
                 "wrapper": {
                     "type": "string"
-                }
-            }
-        },
-        "integrations.Server": {
-            "type": "object",
-            "properties": {
-                "allowedCommands": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "args": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "command": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "settings": {
-                    "type": "object",
-                    "additionalProperties": {}
                 }
             }
         },

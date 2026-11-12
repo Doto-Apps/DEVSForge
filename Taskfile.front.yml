@@ -28,12 +28,39 @@ tasks:
   dev:
     desc: Start front-end development server
     dir: front
+    deps: [language-tools]
     cmds:
       - pnpm run dev {{.CLI_ARGS}}
+
+  language-tools:
+    desc: Build the static Python, Go and Java browser language engines
+    sources:
+      - front/Dockerfile
+      - front/language-tools/build-*.py
+      - front/language-tools/NOTICE.md
+      - front/language-tools/java/*.java
+      - front/language-tools/java/*.patch
+      - front/language-tools/java/*.sh
+    generates:
+      - front/public/language-tools/go/gopls.wasm
+      - front/public/language-tools/python/stdlib.json
+      - front/public/language-tools/java/bridge.jar
+      - front/public/language-tools/java/bjvm_main.wasm
+      - front/public/language-tools/java/runtime.js
+    cmds:
+      - docker build --target language-tools -f front/Dockerfile --output type=local,dest=front/public/language-tools .
+
+  lsp:test:
+    desc: Check the real browser language engines with Playwright
+    deps: [language-tools]
+    dir: front
+    cmds:
+      - node scripts/check-browser-lsp.cjs
 
   build:
     desc: Build front-end for production
     dir: front
+    deps: [language-tools]
     cmds:
       - pnpm run build
 

@@ -17,13 +17,6 @@ import (
 	"unicode/utf8"
 )
 
-type Server struct {
-	ID              string         `json:"id"`
-	Command         string         `json:"command"`
-	Args            []string       `json:"args"`
-	Settings        map[string]any `json:"settings,omitempty"`
-	AllowedCommands []string       `json:"allowedCommands,omitempty"`
-}
 type Capabilities struct {
 	Simulation bool `json:"simulation"`
 	Template   bool `json:"template"`
@@ -45,7 +38,6 @@ type Definition struct {
 	Template       string       `json:"template"`
 	Prompt         string       `json:"prompt"`
 	Context        []string     `json:"context"`
-	Servers        []Server     `json:"servers"`
 	Capabilities   Capabilities `json:"capabilities"`
 	Digest         string       `json:"digest"`
 	Dir            string       `json:"-"`
@@ -136,7 +128,7 @@ func List() ([]Definition, error) {
 		if d.ID == "" || d.Version == "" || d.Language == "" || d.Name == "" || d.Framework == "" || d.ModelPath == "" {
 			return fmt.Errorf("incomplete integration: %s", path)
 		}
-		if (d.Preparation != "" && d.Wrapper == "") || (len(d.Servers) > 0 && (d.Preparation == "" || d.Wrapper == "")) || (d.Prompt != "" && (d.Template == "" || len(d.Context) == 0)) {
+		if (d.Preparation != "" && d.Wrapper == "") || (d.Prompt != "" && (d.Template == "" || len(d.Context) == 0)) {
 			return fmt.Errorf("incomplete integration resources: %s", path)
 		}
 		key := d.ID + "@" + d.Version
@@ -163,14 +155,8 @@ func List() ([]Definition, error) {
 		if strings.Contains(d.ModelPath, "..") || filepath.IsAbs(d.ModelPath) {
 			return fmt.Errorf("invalid modelPath")
 		}
-		serverIDs := map[string]bool{}
-		for _, s := range d.Servers {
-			if s.ID == "" || s.Command == "" || serverIDs[s.ID] {
-				return fmt.Errorf("invalid LSP declaration in %s", key)
-			}
-			serverIDs[s.ID] = true
-		}
-		d.Capabilities = Capabilities{Simulation: d.Preparation != "" && d.Wrapper != "", Template: d.Template != "", AI: d.Prompt != "" && d.Template != "", LSP: len(d.Servers) > 0}
+
+		d.Capabilities = Capabilities{Simulation: d.Preparation != "" && d.Wrapper != "", Template: d.Template != "", AI: d.Prompt != "" && d.Template != "", LSP: d.Wrapper != "" && len(d.Context) > 0}
 		// Content fingerprint covers the modeling, templates, and instructions, excluding build products.
 		h := sha256.New()
 		runtimeDefinition := d

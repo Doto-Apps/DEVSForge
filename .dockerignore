@@ -3,4 +3,15 @@
 **/tmp-*/
 **/Dockerfile
 **/Dockerfile.*
+.git/
+.cache/
+.task/
+.env
+.env.*
+!.env.dist
+**/dist/
+**/target/
+**/__pycache__/
+**/*.pyc
+front/public/language-tools/
 **/vendors/

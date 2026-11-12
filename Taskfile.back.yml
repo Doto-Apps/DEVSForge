@@ -31,7 +31,9 @@ tasks:
   dev:
     desc: Start with Docker Compose back + simulator
     cmds:
-      - task: :lsp:setup
+      # This one-shot builder may retain a removed network after switching stacks.
+      # Remove its stopped container, preserving the runner and Go cache volumes.
+      - docker compose -f docker-compose.dev-go.yml rm -f runner-builder
       - docker compose -f docker-compose.dev-go.yml up --build {{.CLI_ARGS}}
 
   logs:

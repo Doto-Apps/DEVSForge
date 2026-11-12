@@ -7,7 +7,7 @@ The `front/` module is the React + TypeScript application for DEVSForge. It prov
 - [Root README](../README.md)
 - [Backend README](../back/README.md)
 - [Simulator README](../simulator/README.md)
-- [Wrappers README](../simulator/wrappers/README.md)
+- [Integration guide](../docs/integrations.md)
 - [Reproducibility Guide](../docs/reproducibility.md)
 
 ## Stack
@@ -41,7 +41,7 @@ The `front/` module is the React + TypeScript application for DEVSForge. It prov
 - `/devs-generator`
 - `/webapps`, `/webapps/:deploymentId`
 - `/settings`
-- `/getting-started`, `/how-it-works`
+- `/getting-started`, `/documentation`, `/documentation/:topic` (legacy `/how-it-works` redirects)
 
 ## Auth and API Pattern
 
@@ -80,34 +80,41 @@ The `front/` module is the React + TypeScript application for DEVSForge. It prov
 
 ## Environment
 
-Create `.env.front` from `.env.front.dist`.
+Use the root `.env`, based on `.env.dist`. Vite reads that directory through `vite.config.ts`.
 
 Required variable:
 
 - `VITE_API_BASE_URL` (example: `http://localhost:3000/`)
 
+## Editor and file architecture
+
+Start with [the file-by-file guide (French)](../docs/architecture-lsp-et-editeur.md).
+`ModelCodeEditor.tsx` owns the view, `lib/lsp/client.ts` connects Monaco,
+`lib/lsp/browser.ts` prepares virtual projects and shares workers, and
+`WorkbenchProvider.tsx` handles tabs and draft recovery. The modeling libraries
+come from the backend's integration sources, not a second frontend copy.
+
+`language-tools/` contains build recipes; `public/language-tools/` contains their
+generated results and must not be edited manually. Engine versions, limits and
+licenses are explained in [the browser engine guide](../docs/browser-lsp.md).
+
 ## Local Development
 
-From `front/`:
+From the repository root:
 
-```bash
-pnpm install
-pnpm dev
+```sh
+task back:dev
+task front:dev
 ```
 
-Other useful commands:
+`front:dev` prepares the static language tools through Docker before starting
+Vite. To rebuild tools explicitly or check the real browser engines:
 
-```bash
-pnpm build
-pnpm typecheck
-pnpm test
-```
-
-From repository root:
-
-```bash
-pnpm run start:front
-pnpm run typecheck
+```sh
+task front:language-tools
+task front:lsp:test
+task front:typecheck
+task front:test
 ```
 
 ## Runtime Notes
@@ -120,5 +127,5 @@ pnpm run typecheck
 - [Root README](../README.md)
 - [Backend README](../back/README.md)
 - [Simulator README](../simulator/README.md)
-- [Wrappers README](../simulator/wrappers/README.md)
+- [Integration guide](../docs/integrations.md)
 - [Reproducibility Guide](../docs/reproducibility.md)

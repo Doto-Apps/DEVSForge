@@ -44,15 +44,13 @@ export const ModelCodeEditor = ({
 	const [source, setSource] = useState(false);
 	const [attempt, setAttempt] = useState(0);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt explicitly requests a new language-server session.
+	// biome-ignore lint/correctness/useExhaustiveDependencies: attempt explicitly reconnects the local language engine.
 	useEffect(() => {
 		let disposed = false;
 		let connection: EditorSession | undefined;
 		let subscription: Monaco.IDisposable | undefined;
-		const activitySubscriptions: Monaco.IDisposable[] = [];
 		let runtime: typeof import("@/lib/lsp/client") | undefined;
 		let connecting = false;
-		let disposeDocument: (() => void) | undefined;
 		let retryAfter = 0;
 		const abort = new AbortController();
 
@@ -107,7 +105,6 @@ export const ModelCodeEditor = ({
 				);
 				if (disposed) {
 					await connection.stop();
-					connection.disposeDocument();
 					return;
 				}
 				const old = main.current;
@@ -124,8 +121,6 @@ export const ModelCodeEditor = ({
 				if (savedView) editor.current?.restoreViewState(savedView);
 				editor.current?.updateOptions({ readOnly: false });
 				setSource(false);
-				disposeDocument?.();
-				disposeDocument = connection.disposeDocument;
 				if (old?.uri.scheme === "inmemory") old.dispose();
 				setStatus("");
 			} catch (error) {
@@ -164,10 +159,6 @@ export const ModelCodeEditor = ({
 					scrollBeyondLastLine: false,
 					theme: "vs-dark",
 				});
-				activitySubscriptions.push(
-					editor.current.onKeyDown(() => connection?.touch()),
-					editor.current.onMouseDown(() => connection?.touch()),
-				);
 				subscription = editor.current.onDidChangeModelContent(() => {
 					const active = editor.current;
 					if (!active || active.getModel() !== main.current) return;
@@ -184,7 +175,6 @@ export const ModelCodeEditor = ({
 			disposed = true;
 			abort.abort();
 			subscription?.dispose();
-			for (const subscription of activitySubscriptions) subscription.dispose();
 			const savedView = editor.current?.saveViewState();
 			if (savedView) {
 				viewStates.set(viewKey, savedView);
@@ -195,7 +185,6 @@ export const ModelCodeEditor = ({
 			}
 			editor.current?.dispose();
 			editor.current = undefined;
-			disposeDocument?.();
 			// Unavailable/queued assistance still keeps the local model and its undo stack.
 			main.current = undefined;
 			void connection?.stop();

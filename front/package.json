@@ -1,5 +1,6 @@
 {
 	"dependencies": {
+		"@astral-sh/ruff-wasm-web": "0.17.4",
 		"@codingame/monaco-vscode-api": "20.2.1",
 		"@codingame/monaco-vscode-editor-api": "20.2.1",
 		"@codingame/monaco-vscode-editor-service-override": "20.2.1",
@@ -22,7 +23,9 @@
 		"@radix-ui/react-switch": "1.2.5",
 		"@radix-ui/react-toast": "1.2.6",
 		"@radix-ui/react-tooltip": "1.1.8",
+		"@typefox/pyright-browser": "1.1.299",
 		"@xyflow/react": "12.4.4",
+		"@zenfs/core": "2.9.0",
 		"class-variance-authority": "0.7.1",
 		"clsx": "2.1.1",
 		"elkjs": "0.9.3",
@@ -48,7 +51,6 @@
 		"vscode": "npm:@codingame/monaco-vscode-extension-api@20.2.1",
 		"vscode-jsonrpc": "8.2.0",
 		"vscode-languageclient": "9.0.1",
-		"vscode-ws-jsonrpc": "3.5.0",
 		"zod": "3.24.2"
 	},
 	"devDependencies": {
@@ -71,7 +73,7 @@
 	"packageManager": "pnpm@10.6.5+sha512.cdf928fca20832cd59ec53826492b7dc25dc524d4370b6b4adbf65803d32efaa6c1c88147c0ae4e8d579a6c9eec715757b50d4fa35eea179d868eada4ed043af",
 	"private": true,
 	"scripts": {
-		"build": "tsc -b && vite build",
+		"build": "node language-tools/check-assets.mjs && tsc -b && vite build",
 		"dev": "vite",
 		"preview": "vite preview",
 		"start-dev": "vite --mode development",

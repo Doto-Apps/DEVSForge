@@ -7,7 +7,7 @@ The `simulator/` module executes DEVS models in distributed mode using a coordin
 - [Root README](../README.md)
 - [Backend README](../back/README.md)
 - [Frontend README](../front/README.md)
-- [Wrappers README](./wrappers/README.md)
+- [Integration guide](../docs/integrations.md)
 - [Reproducibility Guide](../docs/reproducibility.md)
 
 ## Module Layout
@@ -95,10 +95,10 @@ From repository root:
 ```bash
 task simulator:build
 task simulator:test
-task simulator:lsp:test
+task front:lsp:test
 ```
 
-`simulator:test` builds the runner image and runs the coordinator, runner and shared-module tests inside it, with the Go, Python and Java toolchains installed. Integration tests start their own Kafka container through Testcontainers; Docker must be running. `simulator:lsp:test` also checks completion with the real language servers.
+`simulator:test` builds the runner image and runs the coordinator, runner and shared-module tests inside it, with the Go, Python and Java toolchains installed. Integration tests start their own Kafka container through Testcontainers; Docker must be running. `front:lsp:test` checks the browser engines separately; see [browser assistance](../docs/browser-lsp.md) and [the file architecture map](../docs/architecture-lsp-et-editeur.md).
 
 ## Manual Invocation (Advanced)
 
@@ -110,7 +110,7 @@ go run ./simulator/coordinator --file <manifest.json> --kafka localhost:9092 --t
 
 ## Related Docs
 
-- [Wrappers README](./wrappers/README.md)
+- [Integration guide](../docs/integrations.md)
 - [Backend README](../back/README.md)
 - [Frontend README](../front/README.md)
 - [Root README](../README.md)

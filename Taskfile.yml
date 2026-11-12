@@ -23,11 +23,6 @@ tasks:
       - cmd: task --list
         silent: true
 
-  lsp:setup:
-    desc: Create the private LSP service token if missing
-    cmds:
-      - python3 scripts/ensure-lsp-env.py
-
   setup:
     desc: Install all tools required to dev
     cmds:
@@ -38,7 +33,7 @@ tasks:
       - git config set --all hook.verify-message.event commit-msg
       - cp .env.dist .env || true
       - cd front && pnpm install
-      - task: lsp:setup
+      - task: front:language-tools
       - echo "✅ Project setup."
 
   format:

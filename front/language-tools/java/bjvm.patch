@@ -1,0 +1,413 @@
+diff --git a/js/bjvm2.ts b/js/bjvm2.ts
+index 4b2aa5b..b7f53cf 100644
+--- a/js/bjvm2.ts
++++ b/js/bjvm2.ts
+@@ -883,27 +883,11 @@ export async function makeBovineOS(options: BovineOSOptions): Promise<BovineOS>
+             }
+         });
+ 
+-        const contentLength = response.headers.get('Content-Length');
+-        const total = contentLength ? parseInt(contentLength) : 0;
+-
+-        const reader = response.body?.getReader()!;
+-        let loaded = 0;
+-        const data = new Uint8Array(total);
+-        while (true) {
+-            const {done, value} = await reader.read();
+-            if (done)
+-                break;
+-            try {
+-                data.set(value, loaded);
+-            } catch (e) {
+-                console.log(`failed to load ${file}`)
+-            }
+-            loaded += value.length;
+-            totalLoaded += value.length;
+-            options.progress?.(totalLoaded, TOTAL_BYTES);
+-        }
+-        // Insert into the DB
+-        // await addFile(db, file, data);
++        if (!response.ok) throw new Error(`Java runtime resource ${file}: HTTP ${response.status}`);
++        // Content-Length may describe compressed bytes, or be absent entirely.
++        const data = new Uint8Array(await response.arrayBuffer());
++        totalLoaded += data.byteLength;
++        options.progress?.(totalLoaded, TOTAL_BYTES);
+         return {file, data};
+     });
+ 
+diff --git a/natives/share/java/io/FileInputStream.c b/natives/share/java/io/FileInputStream.c
+index dee6973..c3378b8 100644
+--- a/natives/share/java/io/FileInputStream.c
++++ b/natives/share/java/io/FileInputStream.c
+@@ -6,6 +6,8 @@
+ #include <sys/fcntl.h>
+ #endif
+ #include <sys/ioctl.h>
++#include <sys/stat.h>
++#include <limits.h>
+ #include <unistd.h>
+ 
+ DECLARE_NATIVE("java/io", FileInputStream, initIDs, "()V") { return value_null(); }
+@@ -137,6 +139,12 @@ DECLARE_NATIVE("java/io", FileInputStream, available0, "()I") {
+   if (unix_fd == 0 && thread->vm->poll_available_stdin) {
+     available = thread->vm->poll_available_stdin(thread->vm->stdio_override_param);
+   } else {
++    struct stat attributes;
++    off_t position = lseek(unix_fd, 0, SEEK_CUR);
++    if (position >= 0 && fstat(unix_fd, &attributes) == 0 && S_ISREG(attributes.st_mode)) {
++      off_t remaining = attributes.st_size > position ? attributes.st_size - position : 0;
++      return (stack_value){.i = remaining > INT_MAX ? INT_MAX : (s32)remaining};
++    }
+     int err = ioctl(unix_fd, FIONREAD, &available);
+     if (err < 0) {
+       raise_vm_exception(thread, STR("java/io/IOException"), STR("Error getting available bytes"));
+diff --git a/natives/share/java/lang/Class.c b/natives/share/java/lang/Class.c
+index 2b0a638..dd67921 100644
+--- a/natives/share/java/lang/Class.c
++++ b/natives/share/java/lang/Class.c
+@@ -408,10 +408,11 @@ DECLARE_NATIVE("java/lang", Class, isHidden, "()Z") {
+ 
+ DECLARE_NATIVE("java/lang", Class, getNestHost0, "()Ljava/lang/Class;") {
+   classdesc *desc = unmirror_class(obj->obj);
++  if (desc->hidden_nest_host)
++    return (stack_value){.obj = (void *)get_class_mirror(thread, desc->hidden_nest_host)};
+   cp_class_info *nest_host = desc->nest_host;
+-  if (!nest_host || !resolve_class(thread, nest_host)) {
+-    return value_null();
+-  }
++  if (!nest_host) return (stack_value){.obj = obj->obj};
++  if (resolve_class_impl(thread, nest_host, desc->classloader)) return value_null();
+ 
+   return (stack_value){.obj = (void *)get_class_mirror(thread, nest_host->classdesc)};
+ }
+diff --git a/natives/share/java/lang/ClassLoader.c b/natives/share/java/lang/ClassLoader.c
+index f475352..b88c6fe 100644
+--- a/natives/share/java/lang/ClassLoader.c
++++ b/natives/share/java/lang/ClassLoader.c
+@@ -72,6 +72,13 @@ stack_value define_class_shared_impl(vm_thread *thread, handle *loader, handle *
+ 
+   if (result) {
+     result->is_hidden = is_hidden;
++    if ((flags & 1) && parent_class && parent_class->obj) {
++      classdesc *host = unmirror_class(parent_class->obj);
++      while (host->hidden_nest_host) host = host->hidden_nest_host;
++      if (host->nest_host && !resolve_class_impl(thread, host->nest_host, host->classloader))
++        host = host->nest_host->classdesc;
++      result->hidden_nest_host = host;
++    }
+     return (stack_value){.obj = (void *)get_class_mirror(thread, result)};
+   }
+ 
+diff --git a/natives/share/java/lang/Module.c b/natives/share/java/lang/Module.c
+index 8b5af34..f142394 100644
+--- a/natives/share/java/lang/Module.c
++++ b/natives/share/java/lang/Module.c
+@@ -20,7 +20,30 @@ DECLARE_NATIVE("java/lang", Module, defineModule0,
+   }
+ 
+   define_module(thread->vm, hslc(s), args[0].handle->obj);
++  module *owner = hash_table_lookup(&thread->vm->modules, s.chars, s.len);
+   free_heap_str(s);
++  obj_header *packages = args[4].handle->obj;
++  for (s32 i = 0; i < ArrayLength(packages); ++i) {
++    obj_header *name = ((obj_header **)ArrayData(packages))[i];
++    heap_string package;
++    if (read_string_to_utf8(thread, &package, name)) return value_null();
++    for (u32 j = 0; j < package.len; ++j) if (package.chars[j] == '.') package.chars[j] = '/';
++    (void)hash_table_insert(&thread->vm->module_packages, package.chars, package.len, owner);
++    hash_table_iterator it = hash_table_get_iterator(&thread->vm->bootstrap_classloader->loaded);
++    char *key; size_t length; classdesc *clazz;
++    while (hash_table_iterator_has_next(it, &key, &length, (void **)&clazz)) {
++      bool matches = length > package.len && key[package.len] == '/' && !memcmp(key, package.chars, package.len);
++      if (matches) {
++        for (size_t j = package.len + 1; j < length; ++j) if (key[j] == '/') matches = false;
++      }
++      if (matches) {
++        clazz->module = owner;
++        if (clazz->mirror) clazz->mirror->module = owner->reflection_object;
++      }
++      hash_table_iterator_next(&it);
++    }
++    free_heap_str(package);
++  }
+ 
+   return value_null();
+ }
+diff --git a/natives/share/java/lang/System.c b/natives/share/java/lang/System.c
+index d22a6a7..b4ae0d9 100644
+--- a/natives/share/java/lang/System.c
++++ b/natives/share/java/lang/System.c
+@@ -158,7 +158,7 @@ s64 micros() {
+ #endif
+ }
+ 
+-DECLARE_NATIVE("java/lang", System, currentTimeMillis, "()J") { return (stack_value){.l = micros() / 1000}; }
++DECLARE_NATIVE("java/lang", System, currentTimeMillis, "()J") { return (stack_value){.l = (s64)(get_unix_us() / 1000)}; }
+ 
+ int calls = 0;
+ DECLARE_NATIVE("java/lang", System, nanoTime, "()J") { return (stack_value){.l = micros() * 1000}; }
+diff --git a/natives/share/java/lang/ref/Finalizer.c b/natives/share/java/lang/ref/Finalizer.c
+index 9c94500..5f3cc46 100644
+--- a/natives/share/java/lang/ref/Finalizer.c
++++ b/natives/share/java/lang/ref/Finalizer.c
+@@ -7,11 +7,15 @@ DECLARE_NATIVE("java/lang/ref", Finalizer, isFinalizationEnabled, "()Z") { retur
+ 
+ DECLARE_NATIVE("java/lang/ref", Reference, refersTo0, "(Ljava/lang/Object;)Z") {
+   DCHECK(argc == 1);
+-  struct native_Reference *ref = (void *)obj;
++  struct native_Reference *ref = (void *)obj->obj;
+   return (stack_value){.i = ref->referent == args[0].handle->obj};
+ }
+ 
+-DECLARE_NATIVE("java/lang/ref", Reference, clear0, "()V") { return value_null(); }
++DECLARE_NATIVE("java/lang/ref", Reference, clear0, "()V") {
++  struct native_Reference *ref = (void *)obj->obj;
++  ref->referent = nullptr;
++  return value_null();
++}
+ 
+ DECLARE_ASYNC_NATIVE("java/lang/ref", Reference, waitForReferencePendingList, "()V",
+                      locals(rr_wakeup_info wakeup_info;), invoked_methods()) {
+diff --git a/natives/share/sun/misc/VM.c b/natives/share/sun/misc/VM.c
+index d8b6f84..247eb2f 100644
+--- a/natives/share/sun/misc/VM.c
++++ b/natives/share/sun/misc/VM.c
+@@ -1,6 +1,15 @@
+ #include <natives-dsl.h>
++#include <util.h>
+ 
+ // so we dont conflict with the jdk/internal version
+ DECLARE_NATIVE_OVERLOADED("sun/misc", VM, initialize, "()V", 1) { return value_null(); }
+ 
+-DECLARE_NATIVE("jdk/internal/misc", VM, getNanoTimeAdjustment, "(J)J") { return (stack_value){.l = 0}; }
+\ No newline at end of file
++DECLARE_NATIVE("jdk/internal/misc", VM, getNanoTimeAdjustment, "(J)J") {
++  s64 now_us = (s64)get_unix_us();
++  s64 seconds = now_us / 1000000;
++  s64 offset = args[0].l;
++  // Clock.currentInstant renews its offset when outside the JDK's 2^32-second window.
++  if (offset <= seconds - 0x100000000LL || offset >= seconds + 0x100000000LL)
++    return (stack_value){.l = -1};
++  return (stack_value){.l = (seconds - offset) * 1000000000LL + (now_us % 1000000) * 1000};
++}
+\ No newline at end of file
+diff --git a/natives/share/sun/nio/fs/UnixNativeDispatcher.c b/natives/share/sun/nio/fs/UnixNativeDispatcher.c
+index 091e88e..5d5d418 100644
+--- a/natives/share/sun/nio/fs/UnixNativeDispatcher.c
++++ b/natives/share/sun/nio/fs/UnixNativeDispatcher.c
+@@ -148,11 +148,7 @@ DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, open0, "(JII)I") {
+ 
+ DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, access0, "(JI)I") {
+   int result = access((char const *)args[0].l, args[1].i);
+-  if (result == 0)
+-    return (stack_value){.i = 0};
+-
+-  thread->current_exception = create_unix_exception(thread, errno);
+-  return value_null();
++  return (stack_value){.i = result == 0 ? 0 : errno};
+ }
+ 
+ DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, size0, "(Ljava/io/FileDescriptor;)J") {
+@@ -213,4 +209,16 @@ DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, strerror, "(I)[B") {
+   return (stack_value){.obj = array};
+ }
+ 
+-DECLARE_NATIVE("sun/nio/ch", FileDispatcherImpl, init0, "()V") { return value_null(); }
+\ No newline at end of file
++DECLARE_NATIVE("sun/nio/ch", FileDispatcherImpl, init0, "()V") { return value_null(); }
++DECLARE_NATIVE("sun/nio/fs", UnixNativeDispatcher, realpath0, "(J)[B") {
++  char *resolved = realpath((char *)(uintptr_t)args[0].l, nullptr);
++  if (!resolved) {
++    thread->current_exception = create_unix_exception(thread, errno);
++    return value_null();
++  }
++  size_t length = strlen(resolved);
++  obj_header *result = CreatePrimitiveArray1D(thread, TYPE_KIND_BYTE, length);
++  if (result) memcpy(ArrayData(result), resolved, length);
++  free(resolved);
++  return (stack_value){.obj = result};
++}
+diff --git a/vm/bin/main.c b/vm/bin/main.c
+index 5925aaa..4b8163c 100644
+--- a/vm/bin/main.c
++++ b/vm/bin/main.c
+@@ -38,8 +38,10 @@ classdesc *ffi_get_class(vm_thread *thr, const char *name) {
+   if (!clazz)
+     return nullptr;
+   initialize_class_t ctx = {.args = {thr, clazz}};
++  thr->stack.synchronous_depth++;
+   future_t fut = initialize_class(&ctx);
+-  DCHECK(fut.status == FUTURE_READY);
++  thr->stack.synchronous_depth--;
++  CHECK(fut.status == FUTURE_READY);
+   return clazz;
+ }
+ 
+diff --git a/vm/bjvm.c b/vm/bjvm.c
+index 064d6a1..5897863 100644
+--- a/vm/bjvm.c
++++ b/vm/bjvm.c
+@@ -598,6 +598,7 @@ vm *create_vm(const vm_options options) {
+   vm->interned_strings = make_hash_table(nullptr, 0.75, 16);
+   vm->class_padding = make_hash_table(nullptr, 0.75, 16);
+   vm->modules = make_hash_table(free, 0.75, 16);
++  vm->module_packages = make_hash_table(nullptr, 0.75, 64);
+   vm->main_thread_group = nullptr;
+ 
+   vm->heap = aligned_alloc(4096, options.heap_size);
+@@ -667,6 +668,7 @@ void free_vm(vm *vm) {
+   free_hash_table(vm->inchoate_classes);
+   free_hash_table(vm->interned_strings);
+   free_hash_table(vm->class_padding);
++  free_hash_table(vm->module_packages);
+   free_hash_table(vm->modules);
+ 
+   if (vm->primitive_classes[0]) {
+@@ -1436,11 +1438,12 @@ classdesc *define_class(vm_thread *thread, classloader *cl, slice chars, const u
+   class->classloader = cl;
+   class->self->classdesc = class;
+ 
+-  if (is_builtin_class(chars)) {
+-    class->module = get_module(vm, STR("java.base"));
+-  } else {
+-    class->module = get_unnamed_module(thread);
+-  }
++  int package_length = -1;
++  for (u32 i = 0; i < chars.len; ++i) if (chars.chars[i] == '/') package_length = i;
++  module *owner = package_length < 0 ? nullptr : hash_table_lookup(&vm->module_packages, chars.chars, package_length);
++  if (owner) class->module = owner;
++  else if (is_builtin_class(chars)) class->module = get_module(vm, STR("java.base"));
++  else class->module = get_unnamed_module(thread);
+ 
+   // "The Java Virtual Machine marks C as having L as its defining class loader and records that L is an initiating
+   // loader of C."
+diff --git a/vm/bjvm.h b/vm/bjvm.h
+index 92e8431..e6b71ee 100644
+--- a/vm/bjvm.h
++++ b/vm/bjvm.h
+@@ -430,6 +430,7 @@ typedef struct vm {
+ 
+   // Defined moules  (name -> module *)
+   string_hash_table modules;
++  string_hash_table module_packages;
+ 
+   // Overrides for stdio (if nullptr, uses the default implementation)
+   read_bytes read_stdin;
+diff --git a/vm/classfile.h b/vm/classfile.h
+index fe02291..e6d3004 100644
+--- a/vm/classfile.h
++++ b/vm/classfile.h
+@@ -840,6 +840,7 @@ typedef struct classdesc {
+   u16 attributes_count;
+   access_flags access_flags;
+   u8 dimensions;  // array types only
++  struct classdesc *hidden_nest_host;
+   bool is_hidden; // whether this is a hidden class (added in Java 15)
+ 
+   cp_class_info **interfaces;
+diff --git a/vm/interpreter2.c b/vm/interpreter2.c
+index a812b4d..bdf3bb2 100644
+--- a/vm/interpreter2.c
++++ b/vm/interpreter2.c
+@@ -2784,9 +2784,15 @@ static exception_table_entry *find_exception_handler(vm_thread *thread, stack_fr
+ 
+     if (ent->start_insn <= pc_ && pc_ < ent->end_insn) {
+       if (ent->catch_type) {
++        // A user class loader must be able to execute while resolving a catch
++        // type. Preserve the thrown object as a GC root, without a pending
++        // exception interrupting ClassLoader.loadClass itself.
++        handle *thrown = make_handle(thread, thread->current_exception);
++        thread->current_exception = nullptr;
+         int error = resolve_class(thread, ent->catch_type) || link_class(thread, ent->catch_type->classdesc);
+-        if (error)
+-          continue; // can happen if the current classloader != verifier classloader?
++        if (!error) thread->current_exception = thrown->obj;
++        drop_handle(thread, thrown);
++        if (error) return nullptr;
+       }
+ 
+       if (!ent->catch_type || instanceof(exception_type, ent->catch_type->classdesc)) {
+diff --git a/natives/share/java/io/BrowserDirectory.c b/natives/share/java/io/BrowserDirectory.c
+new file mode 100644
+index 0000000..251c791
+--- /dev/null
++++ b/natives/share/java/io/BrowserDirectory.c
+@@ -0,0 +1,33 @@
++#include <natives-dsl.h>
++#include <cached_classdescs.h>
++#include <dirent.h>
++
++DECLARE_NATIVE("java/io", UnixFileSystem, list0, "(Ljava/io/File;)[Ljava/lang/String;") {
++  obj_header *path = LoadFieldObject(args[0].handle->obj, "java/lang/String", "path");
++  heap_string filename = AsHeapString(path, failed);
++  DIR *directory = opendir(filename.chars);
++  free_heap_str(filename);
++  if (!directory) return value_null();
++  char **entries = nullptr;
++  struct dirent *entry;
++  while ((entry = readdir(directory))) {
++    if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) continue;
++    arrput(entries, strdup(entry->d_name));
++  }
++  closedir(directory);
++  handle *result = make_handle(thread, CreateObjectArray1D(thread, cached_classes(thread->vm)->string, arrlen(entries)));
++  if (result->obj) {
++    for (s32 i = 0; i < arrlen(entries); ++i) {
++      obj_header *name = MakeJStringFromModifiedUTF8(thread, (slice){entries[i], strlen(entries[i])}, false);
++      if (!name) break;
++      ReferenceArrayStore(result->obj, i, name);
++    }
++  }
++  for (s32 i = 0; i < arrlen(entries); ++i) free(entries[i]);
++  arrfree(entries);
++  obj_header *array = result->obj;
++  drop_handle(thread, result);
++  return (stack_value){.obj = array};
++failed:
++  return value_null();
++}
+diff --git a/natives/share/sun/nio/ch/BrowserFileChannel.c b/natives/share/sun/nio/ch/BrowserFileChannel.c
+new file mode 100644
+index 0000000..b7465ce
+--- /dev/null
++++ b/natives/share/sun/nio/ch/BrowserFileChannel.c
+@@ -0,0 +1,39 @@
++#include <natives-dsl.h>
++#include <errno.h>
++#include <stdint.h>
++#include <unistd.h>
++
++static stack_value browser_read_result(vm_thread *thread, ssize_t result) {
++  if (result > 0) return (stack_value){.i = (s32)result};
++  if (result == 0) return (stack_value){.i = -1};
++  if (errno == EINTR) return (stack_value){.i = -3};
++  if (errno == EAGAIN) return (stack_value){.i = -2};
++  raise_vm_exception(thread, STR("java/io/IOException"), STR("File channel read failed"));
++  return value_null();
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, read0, "(Ljava/io/FileDescriptor;JI)I") {
++  int fd = LoadFieldInt(args[0].handle->obj, "fd");
++  return browser_read_result(thread, read(fd, (void *)(uintptr_t)args[1].l, args[2].i));
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, pread0, "(Ljava/io/FileDescriptor;JIJ)I") {
++  int fd = LoadFieldInt(args[0].handle->obj, "fd");
++  return browser_read_result(thread, pread(fd, (void *)(uintptr_t)args[1].l, args[2].i, args[3].l));
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, seek0, "(Ljava/io/FileDescriptor;J)J") {
++  int fd = LoadFieldInt(args[0].handle->obj, "fd");
++  off_t result = args[1].l < 0 ? lseek(fd, 0, SEEK_CUR) : lseek(fd, args[1].l, SEEK_SET);
++  if (result >= 0) return (stack_value){.l = result};
++  if (errno == EINTR) return (stack_value){.l = -3};
++  raise_vm_exception(thread, STR("java/io/IOException"), STR("File channel seek failed"));
++  return value_null();
++}
++
++DECLARE_NATIVE("sun/nio/ch", UnixFileDispatcherImpl, closeIntFD, "(I)V") {
++  if (close(args[0].i) && errno != EINTR) {
++    raise_vm_exception(thread, STR("java/io/IOException"), STR("File channel close failed"));
++  }
++  return value_null();
++}

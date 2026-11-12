@@ -21,7 +21,6 @@ COPY --from=builder /app/bin/devsforge-backend /app/devsforge-backend
 COPY --from=builder /app/back/database/migrations /app/database/migrations
 COPY simulator/runner/integrations /opt/devsforge/integrations
 ENV INTEGRATIONS_DIR=/opt/devsforge/integrations
-ENV LSP_ADDR=http://lsp:8090
 ENV DB_MIGRATIONS_PATH=/app/database/migrations
 ENV SIMULATOR_ADDR=simulator:8080
 EXPOSE 3000

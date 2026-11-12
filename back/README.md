@@ -5,9 +5,9 @@ The `back/` module is the Go API layer of DEVSForge. It handles authentication, 
 ## Quick Links
 
 - [Root README](../README.md)
-- [Frontend README](../front/README.md)
+- [Editor and files architecture (French)](../docs/architecture-lsp-et-editeur.md)
 - [Simulator README](../simulator/README.md)
-- [Wrappers README](../simulator/wrappers/README.md)
+- [Integration guide](../docs/integrations.md)
 - [Reproducibility Guide](../docs/reproducibility.md)
 
 ## Responsibilities
@@ -37,14 +37,27 @@ The `back/` module is the Go API layer of DEVSForge. It handles authentication, 
 - `/model`: model CRUD, recursive model loading, simulation file generation.
 - `/simulation`: create/start/list simulations and retrieve simulation events.
 - `/experimental-frame`: manual and assisted EF creation around a model under test.
-- `/language`: available language metadata/templates.
+- `/integrations`: versioned catalogue, templates and modeling source bundles for browser analysis.
+- `/languages`: compatibility metadata and template routes.
 - `/ai`: structured-output generation endpoints.
 - `/webapp`: deterministic skeleton generation, AI refinement, deployment CRUD.
 - `/health`: health checks.
 
+## Modeling sources for the editor
+
+`handler/language.go` exposes `GET /integrations/{id}/versions/{version}/analysis`.
+It delegates file collection to `simulator/shared/integrations/analysis.go` and
+handles the HTTP response and ETag. The catalogue and modeling sources come from
+`INTEGRATIONS_DIR`, packaged in the backend image. User model CRUD remains in
+`handler/model.go`.
+
+There is no analysis process, session ticket or WebSocket relay in the backend.
+The [architecture map](../docs/architecture-lsp-et-editeur.md)
+explains the handlers and distinguishes modeling sources, saved models and local drafts.
+
 ## Environment Configuration
 
-Create `.env.back` (this module loads `.env.back` from its working directory).
+The backend loads `.env` from its working directory when present; Compose supplies the root environment. Use the root `.env.dist` as the reference.
 
 ### Core Variables
 
@@ -61,7 +74,7 @@ Create `.env.back` (this module loads `.env.back` from its working directory).
 
 ### Notes
 
-- Legacy `AI_API_URL`, `AI_API_KEY`, `AI_MODEL` values exist in `.env.back.dist` but authenticated AI endpoints rely on per-user settings stored in DB (`/user/settings/ai`).
+- Authenticated AI endpoints use per-user provider settings stored in DB (`/user/settings/ai`).
 
 ## Run Modes
 
@@ -109,7 +122,7 @@ pnpm dlx openapi-typescript ./docs/openapi.json -o ../front/src/api/v1.d.ts
 ## Related Docs
 
 - [Root README](../README.md)
-- [Frontend README](../front/README.md)
+- [Editor and files architecture (French)](../docs/architecture-lsp-et-editeur.md)
 - [Simulator README](../simulator/README.md)
-- [Wrappers README](../simulator/wrappers/README.md)
+- [Integration guide](../docs/integrations.md)
 - [Reproducibility Guide](../docs/reproducibility.md)

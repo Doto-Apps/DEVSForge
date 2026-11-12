@@ -39,12 +39,17 @@ if (!api || !front)
 	});
 	const code =
 		"from modeling import Atomic\nimport math\nclass Example(Atomic):\n    def test(self):\n        return self.get_phase()\n";
-	async function model(name, libId = lib.id) {
+	async function model(
+		name,
+		libId = lib.id,
+		language = "python",
+		source = code,
+	) {
 		return req("POST", "/model", {
-			code,
+			code: source,
 			components: [],
 			connections: [],
-			integrationId: "xdevs-python",
+			integrationId: `xdevs-${language}`,
 			integrationVersion: "1.0.0",
 			libId,
 			name,
@@ -77,9 +82,18 @@ if (!api || !front)
 		errors.push(e.message);
 		console.log("PAGE_ERROR", e.message);
 	});
-	const sockets = [];
-	page.on("websocket", (ws) => {
-		if (ws.url().includes("/lsp/")) sockets.push(ws.url());
+	const engines = [];
+	// Count foreground engines, excluding Pyright's nested analysis worker.
+	page.on("worker", (worker) => {
+		if (worker.url().includes("ruff.worker")) engines.push(worker.url());
+		if (worker.url().includes("pyright.worker")) {
+			void worker
+				.evaluate(() => self.name)
+				.then((name) => {
+					if (name.startsWith("pyright-")) engines.push(worker.url());
+				})
+				.catch(() => undefined);
+		}
 	});
 	const url = (m) => `${front}/library/${m.libId}/model/${m.id}`;
 	async function navigate(m) {
@@ -98,9 +112,16 @@ if (!api || !front)
 	const monaco = async (fn) =>
 		page.evaluate(async (fn) => {
 			const { monaco } = await import("/src/lib/lsp/client.ts");
-			const editor = monaco.editor
-				.getEditors()
-				.find((e) => e.getDomNode()?.isConnected);
+			const started = Date.now();
+			let editor;
+			while (!editor) {
+				editor = monaco.editor
+					.getEditors()
+					.find((item) => item.getDomNode()?.isConnected && item.getModel());
+				if (Date.now() - started > 30000)
+					throw Error("Active editor did not mount");
+				if (!editor) await new Promise((resolve) => setTimeout(resolve, 50));
+			}
 			return new Function("monaco", "editor", fn)(monaco, editor);
 		}, fn);
 	await page.goto(url(a));
@@ -113,7 +134,7 @@ if (!api || !front)
 		null,
 		{ timeout: 30000 },
 	);
-	console.log("LIGHT_CONNECTED", sockets.length);
+	console.log("LIGHT_CONNECTED", engines.length);
 	console.log(
 		"MONACO_PRELOAD_MS",
 		await page.evaluate(() =>
@@ -135,7 +156,8 @@ if (!api || !front)
 		throw Error("draft lost");
 	if ((await monaco("return editor.getModel().uri.toString()")) !== uri)
 		throw Error("Monaco URI changed");
-	if (sockets.length !== 2) throw Error("servers restarted " + sockets.length);
+	if (engines.length !== 2)
+		throw Error("browser engines restarted " + engines.length);
 	if ((await monaco("return editor.getPosition().lineNumber")) !== 5)
 		throw Error("cursor not restored");
 	console.log("TABS_SHARED_LSP_BUFFER_CURSOR");
@@ -150,7 +172,7 @@ if (!api || !front)
 		await page.getByRole("tab", { name: /light/ }).click();
 		await page.waitForTimeout(120);
 	}
-	if (sockets.length !== 2) throw Error("switching restarted engines");
+	if (engines.length !== 2) throw Error("switching restarted engines");
 	await page.getByRole("button", { exact: true, name: "Close light " }).click();
 	await page.getByRole("dialog").waitFor();
 	await page.getByRole("button", { exact: true, name: "Cancel" }).click();
@@ -170,7 +192,7 @@ if (!api || !front)
 	if ((await page.getByRole("tab", { name: /switch/ }).count()) !== 2)
 		throw Error("homonyms not independent");
 	console.log("HOMONYMOUS_MODELS");
-	const beforeReorder = sockets.length;
+	const beforeReorder = engines.length;
 	const source = await page.getByRole("tab", { name: /light/ }).boundingBox();
 	const destination = await page
 		.locator(`[data-model-tab="${c.id}"]`)
@@ -200,7 +222,7 @@ if (!api || !front)
 		.evaluateAll((tabs) => tabs.map((tab) => tab.dataset.modelTab));
 	if (keyboardOrder.join() !== [c.id, b.id, a.id].join())
 		throw Error("keyboard reorder failed");
-	if (sockets.length !== beforeReorder) throw Error("reorder restarted LSP");
+	if (engines.length !== beforeReorder) throw Error("reorder restarted LSP");
 	console.log("TABS_DRAG_AND_KEYBOARD_REORDER");
 	// Both files remain observed by the same Pyright and Ruff transports.
 	await monaco('editor.setValue("only_in_other_library\\n");');
@@ -240,7 +262,7 @@ if (!api || !front)
 		.getByRole("button", { exact: true, name: "Discard" })
 		.click();
 	console.log("CLOSE_DISCARD");
-	if (sockets.length !== 4)
+	if (engines.length !== 4)
 		throw Error("closing one document restarted the workspace");
 	// Both platform modifiers must save the active tab while Monaco has focus.
 	for (const [target, shortcut] of [
@@ -290,6 +312,124 @@ if (!api || !front)
 	if ((await req("GET", `/model/${b.id}`)).code.includes("# saved with Meta+s"))
 		throw Error("save shortcut retained the previously active tab");
 	console.log("SAVE_SHORTCUTS_CTRL_AND_META_ACTIVE_TAB");
+	// Exercise the React editor and actual catalogue API for the other engines too.
+	for (const [language, source, receiver, expected] of [
+		[
+			"go",
+			'package main\nimport "devsforge-wrapper/modeling"\ntype Example struct { modeling.Atomic }\nfunc (e *Example) Test() string { return e.GetPhase() }\n',
+			"e.",
+			"GetPhase",
+		],
+		[
+			"java",
+			"package com.devsforge.runner;\nimport com.devsforge.runner.modeling.Atomic;\nimport com.devsforge.runner.modeling.RunnableModel;\npublic class Example extends Atomic {\n public Example(RunnableModel cfg) { super(cfg); }\n public String test() { return this.getPhase(); }\n}\n",
+			"this.",
+			"getPhase",
+		],
+	]) {
+		const first = await model(
+			`${language} first`,
+			lib.id,
+			language,
+			`// first\n${source}`,
+		);
+		const second = await model(
+			`${language} second`,
+			lib.id,
+			language,
+			`// second\n${source}`,
+		);
+		const completion = async (target) => {
+			await navigate(target);
+			await page.waitForFunction(
+				async ({ receiver, expected, code }) => {
+					const { monaco } = await import("/src/lib/lsp/client.ts");
+					const vscode = await import("/@id/vscode");
+					const editor = monaco.editor
+						.getEditors()
+						.find((item) => item.getDomNode()?.isConnected);
+					const document = editor?.getModel();
+					if (!document || document.uri.scheme !== "file") return false;
+					if (document.getValue() !== code) return false;
+					const offset = document.getValue().lastIndexOf(receiver);
+					if (offset < 0) return false;
+					const position = document.getPositionAt(offset + receiver.length);
+					const result = await vscode.commands.executeCommand(
+						"vscode.executeCompletionItemProvider",
+						vscode.Uri.parse(document.uri.toString()),
+						new vscode.Position(position.lineNumber - 1, position.column - 1),
+					);
+					return result?.items.some((item) =>
+						(typeof item.label === "string"
+							? item.label
+							: item.label.label
+						).startsWith(expected),
+					);
+				},
+				{ code: target.code, expected, receiver },
+				{ timeout: 120000 },
+			);
+		};
+		await completion(first);
+		const runtime =
+			language === "go"
+				? page.workers().filter((worker) => worker.url().includes("go.worker"))
+				: page
+						.workers()
+						.filter((worker) => worker.url().includes("java.worker"));
+		if (runtime.length !== 1)
+			throw Error(`${language}: missing shared runtime`);
+		const firstURI = await monaco("return editor.getModel().uri.toString()");
+		await completion(second);
+		const next =
+			language === "go"
+				? page.workers().filter((worker) => worker.url().includes("go.worker"))
+				: page
+						.workers()
+						.filter((worker) => worker.url().includes("java.worker"));
+		if (next.length !== 1 || next[0] !== runtime[0])
+			throw Error(`${language}: tab switch replaced the runtime`);
+		await completion(first);
+		if ((await monaco("return editor.getModel().uri.toString()")) !== firstURI)
+			throw Error(`${language}: tab switch changed document URI`);
+		await monaco(
+			'editor.executeEdits("check",[{range:new monaco.Range(1,1,1,1),text:"// browser workbench save\\n"}]);editor.focus();',
+		);
+		await page.getByLabel("Unsaved changes").waitFor();
+		const save = page.waitForResponse(
+			(response) =>
+				response.request().method() === "PATCH" &&
+				new URL(response.url()).pathname === `/model/${first.id}`,
+		);
+		await page.keyboard.press("Control+s");
+		if (
+			!(await save).ok() ||
+			!(await req("GET", `/model/${first.id}`)).code.startsWith(
+				"// browser workbench save",
+			)
+		)
+			throw Error(`${language}: saving the active buffer failed`);
+		await page.getByLabel("Unsaved changes").waitFor({ state: "hidden" });
+		const immediateSave = page.waitForResponse(
+			(response) =>
+				response.request().method() === "PATCH" &&
+				new URL(response.url()).pathname === `/model/${first.id}`,
+		);
+		// Same event turn: React has not rendered the new draft yet.
+		await monaco(
+			'editor.executeEdits("check",[{range:new monaco.Range(1,1,1,1),text:"// immediate save\\n"}]);window.dispatchEvent(new KeyboardEvent("keydown",{key:"s",ctrlKey:true,bubbles:true,cancelable:true}));',
+		);
+		if (
+			!(await immediateSave).ok() ||
+			!(await req("GET", `/model/${first.id}`)).code.startsWith(
+				"// immediate save",
+			)
+		)
+			throw Error(`${language}: immediate save used a stale draft`);
+		console.log(
+			`${language.toUpperCase()}_WORKBENCH_COMPLETION_RUNTIME_REUSE_SAVE`,
+		);
+	}
 	await page.close();
 	await context.close();
 	await browser.close();

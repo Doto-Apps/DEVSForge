@@ -1,0 +1,70 @@
+diff --git a/pom.xml b/pom.xml
+index 6b17a0e..7ceca98 100644
+--- a/pom.xml
++++ b/pom.xml
+@@ -120,8 +120,8 @@
+                 <artifactId>maven-compiler-plugin</artifactId>
+                 <version>3.8.0</version>
+                 <configuration>
+-                    <source>25</source>
+-                    <target>25</target>
++                    <source>23</source>
++                    <target>23</target>
+                     <compilerArgs>
+                         <arg>--add-exports</arg>
+                         <arg>jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED</arg>
+diff --git a/src/main/java/org/javacs/JavaHomeHelper.java b/src/main/java/org/javacs/JavaHomeHelper.java
+index 0ee3d13..17fc322 100644
+--- a/src/main/java/org/javacs/JavaHomeHelper.java
++++ b/src/main/java/org/javacs/JavaHomeHelper.java
+@@ -16,6 +16,8 @@ class JavaHomeHelper {
+     static final Path NOT_FOUND = Paths.get("");
+ 
+     static Path javaHome() {
++        // The browser VM has no host environment or process launcher.
++        if (System.getProperty("java.home") != null) return Paths.get(System.getProperty("java.home"));
+         var fromEnv = System.getenv("JAVA_HOME");
+         if (fromEnv != null) {
+             return Paths.get(fromEnv);
+diff --git a/src/main/java/org/javacs/Parser.java b/src/main/java/org/javacs/Parser.java
+index 33fd9af..ec96b7e 100644
+--- a/src/main/java/org/javacs/Parser.java
++++ b/src/main/java/org/javacs/Parser.java
+@@ -14,7 +14,7 @@ import javax.tools.JavaFileObject;
+ import org.javacs.lsp.*;
+ 
+ class Parser {
+-    private static final JavaCompiler COMPILER = ServiceLoader.load(JavaCompiler.class).iterator().next();
++    private static final JavaCompiler COMPILER = com.sun.tools.javac.api.JavacTool.create();
+     private static final SourceFileManager FILE_MANAGER = new SourceFileManager();
+ 
+     /** Create a task that compiles a single file */
+diff --git a/src/main/java/org/javacs/ReusableCompiler.java b/src/main/java/org/javacs/ReusableCompiler.java
+index 875ad08..973bc4d 100644
+--- a/src/main/java/org/javacs/ReusableCompiler.java
++++ b/src/main/java/org/javacs/ReusableCompiler.java
+@@ -147,6 +147,11 @@ class ReusableCompiler {
+                 var method = JavacTaskImpl.class.getDeclaredMethod("cleanup");
+                 method.setAccessible(true);
+                 method.invoke(task);
++            } catch (java.lang.reflect.InaccessibleObjectException e) {
++                // Browser JVMs cannot pass --add-opens to the native launcher.
++                // Discard this context on the next task rather than reusing a
++                // javac task whose private cleanup method could not be called.
++                currentOptions = null;
+             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+                 throw new RuntimeException(e);
+             }
+diff --git a/src/main/java/org/javacs/SourceFileManager.java b/src/main/java/org/javacs/SourceFileManager.java
+index 9da0e1b..4fd5851 100644
+--- a/src/main/java/org/javacs/SourceFileManager.java
++++ b/src/main/java/org/javacs/SourceFileManager.java
+@@ -14,7 +14,7 @@ class SourceFileManager extends ForwardingJavaFileManager<StandardJavaFileManage
+     }
+ 
+     private static StandardJavaFileManager createDelegateFileManager() {
+-        var compiler = ServiceLoader.load(JavaCompiler.class).iterator().next();
++        var compiler = com.sun.tools.javac.api.JavacTool.create();
+         return compiler.getStandardFileManager(SourceFileManager::logError, null, Charset.defaultCharset());
+     }
+ 

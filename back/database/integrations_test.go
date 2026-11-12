@@ -88,6 +88,41 @@ func TestIntegrationMigrationPreservesExistingModels(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Setenv("INTEGRATIONS_ALLOW_CHANGES", "false")
+	// Fixtures from the released catalogue with native LSP launch declarations.
+	// Removing those declarations must not require changing existing models or
+	// disabling the immutable-version protection in production.
+	for id, digest := range map[string]string{
+		"xdevs-go":     "89a2b353296f49e671d22d68ba4db7bf249f63df49e4adf72baad5154dd6c764",
+		"xdevs-java":   "956985756025b2bbe152b045283521db8148c19e3fd2b41d13466c3cff421011",
+		"xdevs-python": "7593577eef0c128b779a3ecad1f62792ee2f8293bb27c732812f0595f9cfa144",
+	} {
+		if _, err = db.Exec("UPDATE integrations SET digest=$1 WHERE id=$2", digest, id); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err = db.Exec("INSERT INTO integrations(id,version,name,language,framework,digest) VALUES('xdevs-python','custom','Custom','python','Custom','unrecognized-fingerprint')"); err != nil {
+		t.Fatal(err)
+	}
+	if err = m.Steps(2); err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprint(before) != fmt.Sprint(snapshot()) {
+		t.Fatal("model content changed during browser catalogue cleanup")
+	}
+	var customDigest string
+	if err = db.QueryRow("SELECT digest FROM integrations WHERE version='custom'").Scan(&customDigest); err != nil || customDigest != "unrecognized-fingerprint" {
+		t.Fatalf("cleanup rewrote an unrecognized integration: %q %v", customDigest, err)
+	}
+	if err = database.SyncIntegrations(); err != nil {
+		t.Fatalf("released integration fingerprints were not migrated: %v", err)
+	}
+	// The metadata migration is reversible without touching models.
+	if err = m.Steps(-1); err != nil {
+		t.Fatal(err)
+	}
+	if err = m.Steps(1); err != nil {
+		t.Fatal(err)
+	}
 	if err = database.SyncIntegrations(); err != nil {
 		t.Fatal(err)
 	}
@@ -119,7 +154,7 @@ func TestIntegrationMigrationPreservesExistingModels(t *testing.T) {
 	if err = database.SyncIntegrations(); err == nil || !strings.Contains(err.Error(), "missing from installed resources") {
 		t.Fatalf("missing historical resources accepted: %v", err)
 	}
-	if err = m.Steps(-1); err == nil || !strings.Contains(err.Error(), "integration information would be lost") {
+	if err = m.Steps(-3); err == nil || !strings.Contains(err.Error(), "integration information would be lost") {
 		t.Fatalf("unsafe downgrade not rejected: %v", err)
 	}
 }

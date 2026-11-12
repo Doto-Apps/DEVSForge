@@ -37,7 +37,6 @@ Prepare release env:
 
 ```bash
 cp .env.dist .env
-python3 scripts/ensure-lsp-env.py
 ```
 
 Pull and run:
@@ -93,16 +92,15 @@ Access:
 - Frontend: `ghcr.io/doto-apps/devsforge-frontend`
 - Backend: `ghcr.io/doto-apps/devsforge-backend`
 - Simulator: `ghcr.io/doto-apps/devsforge-simulator`
-- LSP: `ghcr.io/doto-apps/devsforge-lsp`
 
 ## Repository Navigation
 
 | Module | Purpose | Documentation |
 | --- | --- | --- |
 | `back/` | API, persistence, AI generation, simulation orchestration | [back/README.md](back/README.md) |
-| `front/` | UI for modeling, generation, validation, simulation, webapps | [front/README.md](front/README.md) |
+| `front/` | UI for modeling, generation, validation, simulation, webapps | [Editor architecture](docs/architecture-lsp-et-editeur.md) |
 | `simulator/` | DEVS distributed runtime (coordinator, runners, shared contracts) | [simulator/README.md](simulator/README.md) |
-| `simulator/runner/integrations/` | Versioned integration resources, wrappers, AI templates and LSP | [docs/integrations.md](docs/integrations.md) |
+| `simulator/runner/integrations/` | Versioned integration resources, wrappers, templates and analysis sources | [docs/integrations.md](docs/integrations.md) |
 | Reproducibility assets | Case-study protocols and experiment flow | [docs/reproducibility.md](docs/reproducibility.md) |
 
 ## Reproducibility
@@ -130,10 +128,10 @@ MIT - see [LICENSE](LICENSE).
 
 ## Integrations and language assistance
 
-See [the integration guide](docs/integrations.md) for the unified catalogue, Python/Go/Java LSP, environment limits and adding another integration. Existing `task back:dev` and `task front:dev` commands remain the development entrypoints.
+Start with [la carte de l’architecture en français](docs/architecture-lsp-et-editeur.md): repository folders, backend handlers, virtual files, browser workers, tabs and local drafts. It includes a table showing where to make each kind of change.
 
-Model editors now share persistent local tabs across libraries. Unsaved changes and generator conversations can be recovered after reload. Python, Go and Java reuse analysis workspaces within a browser window; the default LSP budget is 4 GiB with six active workspaces (at most two Java), and excess requests wait. See [workbench behavior, browser checks and measured startup/memory](docs/integrations.md#model-workbench-and-local-recovery).
+- [Integration guide](docs/integrations.md): catalogue, versions, wrappers and adding another integration.
+- [Browser engines](docs/browser-lsp.md): Python/Go/Java tools, limitations, checks and deployment.
+- [Java maintenance](front/language-tools/java/README.md): B-JVM/Javacs build and compatibility patches.
 
-Pour comprendre le fonctionnement pas à pas : [guide d’architecture en français — LSP, onglets, fichiers, simulation et IA](docs/architecture-lsp-et-editeur.md).
-
-Pour ajouter le service à un VPS existant : [configuration LSP avec Docker Compose et Traefik](docs/lsp-vps.md).
+Keep `task back:dev` and `task front:dev` as the development entrypoints. The frontend task prepares the static language tools through Docker. Analysis runs in the browser using the integration's real modeling sources; simulation runs in the simulator.

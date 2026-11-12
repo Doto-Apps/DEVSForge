@@ -17,7 +17,6 @@ jobs:
       - name: Prepare env files for compose validation
         run: |
           cp .env.dist .env
-          python3 scripts/ensure-lsp-env.py
       - name: Validate aio release compose
         run: docker compose -f docker-compose.yml config --quiet
       - name: Validate islands release compose

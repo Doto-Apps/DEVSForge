@@ -27,12 +27,6 @@ tasks:
     cmds:
       - bash scripts/generate-proto.sh {{.CLI_ARGS}}
 
-  lsp:test:
-    desc: Run language-server tests including real engines in Docker
-    cmds:
-      - docker build --target lsp -f simulator/Dockerfile -t devsforge-lsp-test .
-      - docker run --rm --init -e LSP_REAL_SERVERS=1 -e GOMODCACHE=/tmp/test-modules -e GOCACHE=/tmp/test-build -v {{.ROOT_DIR}}:/app:ro -w /app devsforge-lsp-test go test ./simulator/runner/internal/lsp -v -timeout 10m
-
   format:
     desc: Format all simulator modules (coordinator, runner, shared)
     cmds:

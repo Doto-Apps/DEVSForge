@@ -36,6 +36,32 @@ func GetIntegrationTemplate(c *fiber.Ctx) error {
 	}
 	return renderIntegrationTemplate(c, d)
 }
+
+// GetIntegrationAnalysis provides the actual library sources for local analysis.
+// @Summary Get integration analysis sources
+// @Tags Integrations
+// @Produce json
+// @Param id path string true "Integration ID"
+// @Param version path string true "Integration version"
+// @Success 200 {object} integrations.AnalysisSources
+// @Router /integrations/{id}/versions/{version}/analysis [get]
+func GetIntegrationAnalysis(c *fiber.Ctx) error {
+	d, err := integrations.Resolve(c.Params("id"), c.Params("version"), "")
+	if err != nil {
+		return SendRequestError(c, 404, err)
+	}
+	etag := `"` + d.Digest + `"`
+	c.Set("ETag", etag)
+	c.Set("Cache-Control", "public, max-age=0, must-revalidate")
+	if c.Get("If-None-Match") == etag {
+		return c.SendStatus(fiber.StatusNotModified)
+	}
+	sources, err := d.AnalysisSources()
+	if err != nil {
+		return SendRequestError(c, 500, err)
+	}
+	return c.JSON(sources)
+}
 func renderIntegrationTemplate(c *fiber.Ctx, d integrations.Definition) error {
 	code, err := d.RenderTemplate(c.Query("name", "MyModel"))
 	if err != nil {
@@ -82,6 +108,7 @@ func GetLanguageTemplate(c *fiber.Ctx) error {
 func SetupLanguageRoutes(app *fiber.App) {
 	app.Get("/integrations", GetIntegrations)
 	app.Get("/integrations/:id/versions/:version/template", GetIntegrationTemplate)
+	app.Get("/integrations/:id/versions/:version/analysis", GetIntegrationAnalysis)
 	app.Get("/languages", GetLanguages)
 	app.Get("/languages/:lang/template", GetLanguageTemplate)
 }

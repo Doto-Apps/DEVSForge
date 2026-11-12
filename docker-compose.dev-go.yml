@@ -7,8 +7,6 @@ services:
       GOMODCACHE: /go/pkg/mod
       GOCACHE: /root/.cache/go-build
       SIMULATOR_ADDR: simulator:8080
-      LSP_ADDR: http://lsp:8090
-      LSP_ALLOWED_ORIGINS: ${LSP_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
       INTEGRATIONS_ALLOW_CHANGES: "true"
       INTEGRATIONS_DIR: /app/simulator/runner/integrations
     working_dir: /app/back
@@ -138,23 +136,6 @@ services:
     ports:
       - "9092:9092"
 
-  lsp:
-    build:
-      context: .
-      dockerfile: simulator/Dockerfile
-      target: lsp
-    environment:
-      LSP_INTERNAL_TOKEN: ${LSP_INTERNAL_TOKEN:?Run task lsp:setup first}
-      LSP_MAX_SESSIONS: ${LSP_MAX_SESSIONS:-6}
-      LSP_MAX_JAVA_SESSIONS: ${LSP_MAX_JAVA_SESSIONS:-2}
-      LSP_IDLE_SECONDS: ${LSP_IDLE_SECONDS:-900}
-      LSP_MAX_INITIALIZATIONS: ${LSP_MAX_INITIALIZATIONS:-2}
-    mem_limit: ${LSP_MEMORY_LIMIT:-4g}
-    init: true
-    restart: unless-stopped
-    volumes:
-      - ./simulator/runner/integrations:/opt/devsforge/integrations:ro
-      - ./simulator/shared:/opt/devsforge/shared:ro
 
 volumes:
   go-mod-cache:

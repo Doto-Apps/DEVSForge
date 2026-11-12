@@ -15,9 +15,11 @@ export default defineConfig({
 			"monaco-editor",
 		],
 		include: [
+			"@zenfs/core",
+			"@astral-sh/ruff-wasm-web",
+			"vscode-jsonrpc/browser",
 			"vscode-languageclient/browser.js",
 			"vscode-jsonrpc",
-			"vscode-ws-jsonrpc",
 		],
 	},
 	plugins: [react()],

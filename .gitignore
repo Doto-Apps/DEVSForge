@@ -49,7 +49,9 @@ coverage/
 out/
 
 # Cache and temporary files
+/front/public/language-tools/
 .cache/
+.task/
 .expo/
 web-build/
 temp/

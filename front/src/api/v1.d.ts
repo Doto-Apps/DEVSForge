@@ -960,6 +960,47 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	"/integrations/{id}/versions/{version}/analysis": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Get integration analysis sources */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Integration ID */
+					id: string;
+					/** @description Integration version */
+					version: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["integrations.AnalysisSources"];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/integrations/{id}/versions/{version}/template": {
 		parameters: {
 			query?: never;
@@ -1336,229 +1377,6 @@ export interface paths {
 				};
 			};
 		};
-		trace?: never;
-	};
-	"/lsp/sessions": {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		/** Create language server session */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path?: never;
-				cookie?: never;
-			};
-			/** @description Unsaved editor document */
-			requestBody: {
-				content: {
-					"application/json": components["schemas"]["handler.LSPSessionRequest"];
-				};
-			};
-			responses: {
-				/** @description Created */
-				201: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						"application/json": components["schemas"]["handler.LSPSessionResponse"];
-					};
-				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	"/lsp/sessions/{id}": {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Read language workspace status */
-		get: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path: {
-					/** @description Workspace ID */
-					id: string;
-				};
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				/** @description OK */
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						"*/*": {
-							[key: string]: unknown;
-						};
-					};
-				};
-			};
-		};
-		put?: never;
-		post?: never;
-		/** Close language server session */
-		delete: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path: {
-					/** @description Session ID */
-					id: string;
-				};
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				/** @description No Content */
-				204: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content?: never;
-				};
-			};
-		};
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	"/lsp/sessions/{id}/documents/{document}": {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		post?: never;
-		/** Detach language workspace document */
-		delete: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path: {
-					/** @description Workspace ID */
-					id: string;
-					/** @description Document ID */
-					document: string;
-				};
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				/** @description No Content */
-				204: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content?: never;
-				};
-			};
-		};
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	"/lsp/sessions/{id}/file": {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		/** Read language server source */
-		get: {
-			parameters: {
-				query: {
-					/** @description Source URI */
-					uri: string;
-				};
-				header?: never;
-				path: {
-					/** @description Session ID */
-					id: string;
-				};
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				/** @description OK */
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						"text/plain": string;
-					};
-				};
-			};
-		};
-		put?: never;
-		post?: never;
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
-		trace?: never;
-	};
-	"/lsp/sessions/{id}/tickets": {
-		parameters: {
-			query?: never;
-			header?: never;
-			path?: never;
-			cookie?: never;
-		};
-		get?: never;
-		put?: never;
-		/** Renew language workspace connections */
-		post: {
-			parameters: {
-				query?: never;
-				header?: never;
-				path: {
-					/** @description Workspace ID */
-					id: string;
-				};
-				cookie?: never;
-			};
-			requestBody?: never;
-			responses: {
-				/** @description OK */
-				200: {
-					headers: {
-						[name: string]: unknown;
-					};
-					content: {
-						"*/*": components["schemas"]["handler.LSPSessionResponse"];
-					};
-				};
-			};
-		};
-		delete?: never;
-		options?: never;
-		head?: never;
-		patch?: never;
 		trace?: never;
 	};
 	"/model": {
@@ -3376,29 +3194,16 @@ export interface components {
 		"devsforge_enum.ModelPortDirection": "in" | "out";
 		/** @enum {string} */
 		"devsforge_enum.ModelType": "atomic" | "coupled";
-		"handler.LSPConnection": {
-			allowedCommands?: string[];
-			id?: string;
-			ticket?: string;
-			url?: string;
-		};
-		"handler.LSPSessionRequest": {
-			code?: string;
-			documentId?: string;
+		"integrations.AnalysisSources": {
+			digest?: string;
+			files?: {
+				[key: string]: string;
+			};
 			integrationId?: string;
 			integrationVersion?: string;
-			modelId?: string;
-			modelName?: string;
-			workbenchId?: string;
-		};
-		"handler.LSPSessionResponse": {
-			documentId?: string;
-			documentUri?: string;
-			id?: string;
 			language?: string;
-			servers?: components["schemas"]["handler.LSPConnection"][];
-			status?: string;
-			workspaceUri?: string;
+			modelPath?: string;
+			module?: string;
 		};
 		"integrations.Capabilities": {
 			ai?: boolean;
@@ -3420,19 +3225,9 @@ export interface components {
 			name?: string;
 			preparation?: string;
 			prompt?: string;
-			servers?: components["schemas"]["integrations.Server"][];
 			template?: string;
 			version?: string;
 			wrapper?: string;
-		};
-		"integrations.Server": {
-			allowedCommands?: string[];
-			args?: string[];
-			command?: string;
-			id?: string;
-			settings?: {
-				[key: string]: unknown;
-			};
 		};
 		"json.ModelColors": {
 			bodyBackgroundColor?: string;

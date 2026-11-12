@@ -24,53 +24,23 @@ definitions:
     x-enum-varnames:
     - Atomic
     - Coupled
-  handler.LSPConnection:
+  integrations.AnalysisSources:
     properties:
-      allowedCommands:
-        items:
+      digest:
+        type: string
+      files:
+        additionalProperties:
           type: string
-        type: array
-      id:
-        type: string
-      ticket:
-        type: string
-      url:
-        type: string
-    type: object
-  handler.LSPSessionRequest:
-    properties:
-      code:
-        type: string
-      documentId:
-        type: string
+        type: object
       integrationId:
         type: string
       integrationVersion:
         type: string
-      modelId:
-        type: string
-      modelName:
-        type: string
-      workbenchId:
-        type: string
-    type: object
-  handler.LSPSessionResponse:
-    properties:
-      documentId:
-        type: string
-      documentUri:
-        type: string
-      id:
-        type: string
       language:
         type: string
-      servers:
-        items:
-          $ref: '#/definitions/handler.LSPConnection'
-        type: array
-      status:
+      modelPath:
         type: string
-      workspaceUri:
+      module:
         type: string
     type: object
   integrations.Capabilities:
@@ -114,34 +84,12 @@ definitions:
         type: string
       prompt:
         type: string
-      servers:
-        items:
-          $ref: '#/definitions/integrations.Server'
-        type: array
       template:
         type: string
       version:
         type: string
       wrapper:
         type: string
-    type: object
-  integrations.Server:
-    properties:
-      allowedCommands:
-        items:
-          type: string
-        type: array
-      args:
-        items:
-          type: string
-        type: array
-      command:
-        type: string
-      id:
-        type: string
-      settings:
-        additionalProperties: {}
-        type: object
     type: object
   json.ModelColors:
     properties:
@@ -1935,6 +1883,29 @@ paths:
       summary: Get integrations
       tags:
       - Integrations
+  /integrations/{id}/versions/{version}/analysis:
+    get:
+      parameters:
+      - description: Integration ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Integration version
+        in: path
+        name: version
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/integrations.AnalysisSources'
+      summary: Get integration analysis sources
+      tags:
+      - Integrations
   /integrations/{id}/versions/{version}/template:
     get:
       parameters:
@@ -2136,115 +2107,6 @@ paths:
       summary: Update a library
       tags:
       - libraries
-  /lsp/sessions:
-    post:
-      consumes:
-      - application/json
-      parameters:
-      - description: Unsaved editor document
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/handler.LSPSessionRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/handler.LSPSessionResponse'
-      summary: Create language server session
-      tags:
-      - LSP
-  /lsp/sessions/{id}:
-    delete:
-      parameters:
-      - description: Session ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-      summary: Close language server session
-      tags:
-      - LSP
-    get:
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Read language workspace status
-      tags:
-      - LSP
-  /lsp/sessions/{id}/documents/{document}:
-    delete:
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Document ID
-        in: path
-        name: document
-        required: true
-        type: string
-      responses:
-        "204":
-          description: No Content
-      summary: Detach language workspace document
-      tags:
-      - LSP
-  /lsp/sessions/{id}/file:
-    get:
-      parameters:
-      - description: Session ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Source URI
-        in: query
-        name: uri
-        required: true
-        type: string
-      produces:
-      - text/plain
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-      summary: Read language server source
-      tags:
-      - LSP
-  /lsp/sessions/{id}/tickets:
-    post:
-      parameters:
-      - description: Workspace ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/handler.LSPSessionResponse'
-      summary: Renew language workspace connections
-      tags:
-      - LSP
   /model:
     get:
       description: Retrieve a list of all models

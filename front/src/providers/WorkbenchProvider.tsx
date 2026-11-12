@@ -122,6 +122,8 @@ async function write(key: string, value: Snapshot) {
 export function WorkbenchProvider({ children }: { children: ReactNode }) {
 	const { user } = useAuth();
 	const account = user?.email ?? "";
+	const currentAccount = useRef(account);
+	currentAccount.current = account;
 	const [id] = useState(() => uuid());
 	const [ready, setReady] = useState(false);
 	const [snapshot, setSnapshot] = useState<Snapshot>({ drafts: {}, tabs: [] });
@@ -189,10 +191,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 			if (idle) cancelIdleCallback(preload);
 			else clearTimeout(preload);
 			void import("@/lib/lsp/client").then((m) => {
-				if (epoch.current === generation) return m.closeWorkbench(id);
+				if (epoch.current === generation || currentAccount.current !== account)
+					return m.closeWorkbench(key);
 			});
 		};
-	}, [account, id, key]);
+	}, [account, key]);
 	useEffect(() => {
 		if (!ready || !account) return;
 		const persisted = {
@@ -214,10 +217,11 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 		window.addEventListener("pagehide", flush);
 		return () => window.removeEventListener("pagehide", flush);
 	}, [snapshot, ready, key, account]);
-	const change = useCallback(
-		(fn: (s: Snapshot) => Snapshot) => setSnapshot((s) => fn(s)),
-		[],
-	);
+	const change = useCallback((fn: (s: Snapshot) => Snapshot) => {
+		// Save can follow a Monaco change before React commits the next render.
+		state.current = fn(state.current);
+		setSnapshot(state.current);
+	}, []);
 	const open = useCallback(
 		(tab: Omit<Tab, "baseline" | "past" | "future">) => {
 			if (!ready) return;
@@ -340,10 +344,10 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 		(tabId: string) => {
 			change((s) => ({ ...s, tabs: s.tabs.filter((t) => t.id !== tabId) }));
 			void import("@/lib/lsp/client").then((m) =>
-				m.closeEditorDocument(id, tabId),
+				m.closeEditorDocument(key, tabId),
 			);
 		},
-		[id, change],
+		[key, change],
 	);
 	const setDraft = useCallback(
 		(name: string, value: unknown) =>
@@ -379,7 +383,7 @@ export function WorkbenchProvider({ children }: { children: ReactNode }) {
 			value={{
 				dirty: (t) => signature(t.draft) !== t.baseline,
 				drafts: snapshot.drafts,
-				id,
+				id: key,
 				open,
 				ready,
 				remove,

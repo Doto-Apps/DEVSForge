@@ -34,8 +34,6 @@ func SetupRoutes(app *fiber.App) {
 	// Languages
 	handler.SetupLanguageRoutes(app)
 
-	handler.SetupLSPRoutes(app)
-
 	// AI
 	handler.SetupAiRoutes(app)
 

@@ -1464,18 +1464,18 @@ export const chapters: Chapter[] = [
 				content: (
 					<>
 						<p>
-							Python uses Pyright and Ruff, Go uses gopls, and Java uses Eclipse
-							JDT LS. Project preparation exposes the integration’s actual
-							modeling sources and language dependencies. Completion can
-							therefore include inherited modeling methods as well as
-							standard-library imports.
+							Python uses Pyright and Ruff, Go uses a WebAssembly port of gopls,
+							and Java uses Javacs in a browser JVM. Local projects expose the
+							integration’s actual modeling sources and language dependencies.
+							Completion can therefore include inherited modeling methods as
+							well as standard-library imports.
 						</p>
 						<p>
 							Documents in the same account, workspace, integration and version
-							can share server processes while keeping their projects distinct.
-							Capacity limits or a failed startup can temporarily make
-							assistance unavailable; the editor still accepts changes. This
-							analysis does not execute your model.
+							share browser runtimes while keeping their projects distinct. A
+							failed local startup can temporarily make assistance unavailable;
+							the editor still accepts changes. This analysis does not execute
+							your model.
 						</p>
 					</>
 				),
@@ -1523,8 +1523,8 @@ export const chapters: Chapter[] = [
 									"Transport simulation commands and reports between protocol participants.",
 								],
 								[
-									"LSP service",
-									"Maintain isolated analysis workspaces and language servers.",
+									"Browser language engines",
+									"Analyze private editor projects locally; the backend supplies modeling sources.",
 								],
 							]}
 						/>
@@ -1595,8 +1595,20 @@ export const chapters: Chapter[] = [
 									"Experiment walkthrough and external result analysis.",
 								],
 								[
+									"back/handler/language.go",
+									"HTTP catalogue, templates and modeling source bundles for browser analysis.",
+								],
+								[
+									"simulator/shared/integrations/analysis.go",
+									"Collect the real modeling sources exposed by the backend.",
+								],
+								[
+									"front/src/lib/lsp/",
+									"Monaco connections, virtual projects and local browser workers.",
+								],
+								[
 									"docs/architecture-lsp-et-editeur.md",
-									"Editor workspace and LSP architecture in French.",
+									"File-by-file architecture map in French: handlers, storage, browser analysis and simulation.",
 								],
 							]}
 						/>

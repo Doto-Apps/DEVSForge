@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><title>Browser language engine checks</title><body>Automated browser engine checks.
+<script type="module">
+import * as runtime from "/src/lib/lsp/client.ts";
+
+window.testIDE = { ready: runtime.initializeEditor(), runtime };
+await window.testIDE.ready;
+window.testIDE.vscode = await import("vscode");
+</script>
+</body></html>
