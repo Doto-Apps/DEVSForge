@@ -2,26 +2,14 @@
 package xdevspython
 
 import (
-	"bytes"
-	"context"
 	"devsforge-runner/internal/config"
 	"devsforge-runner/internal/generators"
 	shared "devsforge-shared"
-	devspb "devsforge-shared/proto"
 	"encoding/json"
 	"fmt"
-	"io"
-	"log/slog"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
-	"strconv"
-	"time"
-
-	"google.golang.org/grpc"
-	insecure "google.golang.org/grpc/credentials/insecure"
-	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 var (
@@ -35,104 +23,12 @@ func PreparePythonWraper(wrapper *generators.WrapperInfo, manifest shared.Runnab
 	if err := PrepareSources(wrapper, manifest); err != nil {
 		return err
 	}
-	cfg := wrapper.Cfg
-	// On sérialise le RunnableModel pour le passer en --json
-	modelJSON, err := json.Marshal(cfg.Model)
+	modelJSON, err := json.Marshal(wrapper.Cfg.Model)
 	if err != nil {
-		return fmt.Errorf("failed to marshal model config for python wrapper: %w", err)
+		return err
 	}
-
-	// Commande Python (python sur Windows, python3 sur Unix)
-	pyCmd := pythonCommand()
-	cmd := exec.Command(pyCmd, pythonMainFileName, "--json", string(modelJSON))
-	wrapper.Cmd = cmd
-	cmd.Dir = wrapper.ModelDir
-
-	if err != nil {
-		return fmt.Errorf("failed to get working directory for PYTHONPATH: %w", err)
-	}
-
-	// On passe le port gRPC via l'environnement + le PYTHONPATH
-	portStr := strconv.Itoa(cfg.GRPC.Port)
-	env := append(os.Environ(),
-		"GRPC_PORT="+portStr,
-	)
-	cmd.Env = env
-
-	var stdoutBuf bytes.Buffer
-	var stderrBuf bytes.Buffer
-	cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
-	cmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
-
-	if err := cmd.Start(); err != nil {
-		return fmt.Errorf("failed to start python model process: %w", err)
-	}
-
-	slog.Info("Started PY model process", "model_id", cfg.Model.ID, "pid", cmd.Process.Pid)
-
-	// On surveille le process pour détecter un crash avant que le gRPC soit prêt
-	procErrCh := make(chan error, 1)
-	go func() {
-		procErrCh <- cmd.Wait()
-	}()
-
-	// Connexion gRPC avec surveillance du process et timeout (même logique que Go)
-	addr := fmt.Sprintf("%s:%d", cfg.GRPC.Host, cfg.GRPC.Port)
-	slog.Debug("Waiting for PY gRPC server", "address", addr)
-
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
-	defer cancel()
-
-	ticker := time.NewTicker(200 * time.Millisecond)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-ctx.Done():
-			return fmt.Errorf("timeout waiting for PY gRPC server to be ready")
-
-		case perr := <-procErrCh:
-			if perr != nil {
-				diagnostic := generators.CompactTailLog(stderrBuf.String(), stdoutBuf.String(), 12, 1200)
-				if diagnostic != "" {
-					return fmt.Errorf("python model process exited before gRPC was ready: %w | %s", perr, diagnostic)
-				}
-				return fmt.Errorf("python model process exited before gRPC was ready: %w", perr)
-			}
-			return fmt.Errorf("python model process exited before gRPC was ready (no error from Wait)")
-
-		case <-ticker.C:
-			// Tentative de connexion
-			conn, err := grpc.NewClient(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-			if err != nil {
-				continue
-			}
-
-			// Test rapide : Initialize()
-			testCtx, testCancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
-			modelClient := devspb.NewAtomicModelServiceClient(conn)
-			_, testErr := modelClient.Initialize(testCtx, &emptypb.Empty{})
-			testCancel()
-
-			if testErr == nil {
-				slog.Debug("PY gRPC server is ready")
-				wrapper.GRPCConn = conn
-				return nil
-			}
-
-			if err = conn.Close(); err != nil {
-				slog.Debug("Cannot close gRPC connection")
-			}
-		}
-	}
-}
-
-// pythonCommand renvoie le nom de l'interpréteur Python à utiliser.
-func pythonCommand() string {
-	if runtime.GOOS == "windows" {
-		return "python" // ou "py" selon ta config
-	}
-	return "python3"
+	cmd := exec.Command(generators.PythonCommand(), pythonMainFileName, "--json", string(modelJSON))
+	return generators.LaunchModelProcess(wrapper, cmd, "xDEVS Python")
 }
 
 // GeneratePythonBootstrapSource génère le main.py qui:
@@ -151,7 +47,6 @@ from model import NewModel  # fonction NewModel(cfg) dans model.py
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO, format="[PY-WRAPPER] %%(message)s")
-    logging.info("wrapper starting for model %s (PID=%%s)", os.getpid())
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--json", required=True, help="JSON string to parse")
@@ -159,6 +54,7 @@ def main() -> None:
 
     # Parse le JSON en dict. À toi de mapper ça vers ta structure dans NewModel.
     config = json.loads(args.json)
+    logging.info("wrapper starting for model %%s (PID=%%s)", config.get("name"), os.getpid())
 
     # Création du modèle utilisateur (implémenté dans model.py)
     model = NewModel(config)
@@ -178,12 +74,12 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-`, cfg.Model.Name, cfg.GRPC.Port)
+`, cfg.GRPC.Port)
 }
 
 func PrepareSources(wrapper *generators.WrapperInfo, manifest shared.RunnableManifest) error {
 	cfg := wrapper.Cfg
-	if cfg == nil {
+	if cfg == nil || cfg.Model == nil {
 		return fmt.Errorf("PreparePythonWrapper: missing config")
 	}
 

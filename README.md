@@ -14,9 +14,9 @@ DEVSForge is an AI-assisted modeling and simulation platform for DEVS systems.
 1. Frontend (React) calls backend REST APIs (typed from OpenAPI).
 2. Backend (Go/Fiber) stores data in PostgreSQL.
 3. Simulation orchestration uses Kafka and simulator components (coordinator + runners).
-4. Wrappers execute atomic-model behavior: xDEVS Go/Python/Java and MS4 Me Java. Coupled assemblies are flattened before execution.
+4. Wrappers execute atomic-model behavior: xDEVS Go/Python/Java, MS4 Me Java and DEVSimPy Python (PyPDEVS / Parallel DEVS). Coupled assemblies are flattened before execution.
 
-See [integrations](docs/integrations.md) and the [MS4 Me integration guide](simulator/runner/integrations/ms4me-java/README.md) for templates, AI generation, language assistance and runtime preparation.
+See [integrations](docs/integrations.md), the [MS4 Me guide](simulator/runner/integrations/ms4me-java/README.md) and the [DEVSimPy guide](simulator/runner/integrations/devsimpy-python/README.md) for templates, AI generation, language assistance and runtime preparation.
 
 ## Try it online
 
@@ -128,7 +128,7 @@ BibTeX:
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
+DEVSForge's original code is MIT — see [LICENSE](LICENSE). Bundled third-party code retains its own license. In particular, the PyPDEVS sources referenced by DEVSimPy are Apache-2.0; see [their license and provenance](simulator/runner/integrations/devsimpy-python/README.md#provenance-et-licence).
 
 ## Integrations and language assistance
 

@@ -12,6 +12,7 @@ import { ModelView } from "@/components/custom/ModelView";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useIntegrations } from "@/hooks/useIntegrations";
 import { libraryPreview } from "@/lib/libraryPreview";
 import { useGetLibraries } from "@/queries/library/useGetLibraries";
 import { useGetModels } from "@/queries/model/useGetModels";
@@ -32,6 +33,7 @@ function LibrarySheet({
 	allModels: Model[];
 }) {
 	const [page, setPage] = useState(0);
+	const { data: integrations } = useIntegrations();
 	const [selectedId, setSelectedId] = useState<string>();
 	const [focusId, setFocusId] = useState<string>();
 	const [visible, setVisible] = useState(false);
@@ -191,7 +193,12 @@ function LibrarySheet({
 						<p className="text-xs text-muted-foreground">
 							{selected.type === "coupled"
 								? `${selected.components.length} components`
-								: selected.integrationId?.replace("xdevs-", "xDEVS ") ||
+								: integrations.find(
+										(item) =>
+											item.id === selected.integrationId &&
+											item.version === selected.integrationVersion,
+									)?.name ||
+									selected.integrationId ||
 									"Atomic"}{" "}
 							· {selected.ports.filter((p) => p.type === "in").length} in /{" "}
 							{selected.ports.filter((p) => p.type === "out").length} out

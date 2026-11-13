@@ -194,6 +194,11 @@ jobs:
           docker run --rm --init -v ${{ github.workspace }}:/app -w /app/simulator/runner/integrations/ms4me-java/wrapper \
             devsforge-test-runner:latest ./mvnw -B test
 
+      - name: Validate DEVSimPy Python runtime
+        run: |
+          docker run --rm --init -v ${{ github.workspace }}:/app:ro -w /app \
+            devsforge-test-runner:latest python3 -m unittest discover -s simulator/runner/integrations/devsimpy-python/tests -v
+
 
   test-lsp:
     needs: build-sim

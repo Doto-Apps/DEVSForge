@@ -1,0 +1,58 @@
+{
+  "devsimpy": {
+    "repository": "https://github.com/capocchi/DEVSimPy",
+    "commit": "7f8b9d57fa11ac9c4643175c0a7bd0daf89ad9e7",
+    "reference": "devsimpy/DEVSKernel/PyPDEVS/pypdevs241/pypdevs"
+  },
+  "repository": "https://github.com/kdheepak/pypdevs",
+  "commit": "979d708a184d342313cc7c2b6bd24225e475af3b",
+  "version": "2.4.1",
+  "license": "Apache-2.0",
+  "files": {
+    "pypdevs/__init__.py": {
+      "upstream": "pypdevs/__init__.py",
+      "originalSha256": "9dceaa63efeb065f958fc53feef9227314fa6f6acc663ff89ab58eac738927b8",
+      "installedSha256": "9dceaa63efeb065f958fc53feef9227314fa6f6acc663ff89ab58eac738927b8"
+    },
+    "pypdevs/DEVS.py": {
+      "upstream": "pypdevs/DEVS.py",
+      "originalSha256": "ee9cac856a40a7fcaec6fa93479e2bd8315f91f33a4df767b4952b72e66e156f",
+      "installedSha256": "ee9cac856a40a7fcaec6fa93479e2bd8315f91f33a4df767b4952b72e66e156f"
+    },
+    "pypdevs/infinity.py": {
+      "upstream": "pypdevs/infinity.py",
+      "originalSha256": "6eb6a145d044c8d927bb33362f7ae7e7d9e5a8b8e754641de2b3d967ac5a3832",
+      "installedSha256": "6eb6a145d044c8d927bb33362f7ae7e7d9e5a8b8e754641de2b3d967ac5a3832"
+    },
+    "pypdevs/logger.py": {
+      "upstream": "pypdevs/logger.py",
+      "originalSha256": "e7fc5579e0315ebbfd6187fcdd806fee70f9b7e1e649811bc619294c6984c580",
+      "installedSha256": "e7fc5579e0315ebbfd6187fcdd806fee70f9b7e1e649811bc619294c6984c580"
+    },
+    "pypdevs/util.py": {
+      "upstream": "pypdevs/util.py",
+      "originalSha256": "8da4241576a61d7b94b87454b2df1b90b968c7a3d930842352648f82921b6e92",
+      "installedSha256": "3c857dcf340da6d65bc78cfb78283430a6f18d7b854bbdca5561b104245c63e2"
+    },
+    "pypdevs/middleware.py": {
+      "upstream": "pypdevs/middleware.py",
+      "originalSha256": "92105bbc9caf9c81d23dda2823657850f22b2cfbadf9635b32cfb57c4f7bab51",
+      "installedSha256": "92105bbc9caf9c81d23dda2823657850f22b2cfbadf9635b32cfb57c4f7bab51"
+    },
+    "pypdevs/MPIRedirect.py": {
+      "upstream": "pypdevs/MPIRedirect.py",
+      "originalSha256": "2a9f9656d6f370588a6b4d1bfccc4e7f776324d3b45e9970adfe313c369f2dd1",
+      "installedSha256": "dbc6cf51307716981697e3d404cae1a1ff97aeacccb06f869679bb8f70dcdbc0"
+    }
+  },
+  "fixture": {
+    "path": "tests/fixtures/trafficlight_parallel.py",
+    "upstream": "examples/trafficlight_parallel/model.py",
+    "sha256": "2a936636a72db413ea7953ef991a61c2b39237e430b53732950d7c0352009fab"
+  },
+  "adaptations": [
+    "MPIRedirect imports builtins instead of Python 2 exceptions",
+    "DEVSException.__str__ reads Exception.args on Python 3",
+    "DEVS.py and its native bag/transition API are unchanged"
+  ]
+}

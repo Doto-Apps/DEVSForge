@@ -711,8 +711,8 @@ export const chapters: Chapter[] = [
 							structure in the same language. Keeping framework and version in
 							the identity allows such integrations without treating every Java
 							model as the same runtime. The current catalogue contains xDEVS
-							Python, xDEVS Go, xDEVS Java and MS4 Me Java; other frameworks
-							need an implemented integration.
+							Python, xDEVS Go, xDEVS Java, MS4 Me Java and DEVSimPy Python;
+							other frameworks need an implemented integration.
 						</p>
 					</>
 				),

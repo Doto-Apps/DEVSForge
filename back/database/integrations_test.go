@@ -91,12 +91,14 @@ func TestIntegrationMigrationPreservesExistingModels(t *testing.T) {
 	if err = database.SyncIntegrations(); err != nil {
 		t.Fatal(err)
 	}
-	var installed int
-	if err = db.QueryRow("SELECT count(*) FROM integrations WHERE id='ms4me-java' AND version='1.0.0' AND language='java'").Scan(&installed); err != nil || installed != 1 {
-		t.Fatalf("new Java framework was not synchronized: %d %v", installed, err)
-	}
-	if _, err = db.Exec("UPDATE models SET integration_id='ms4me-java' WHERE id=(SELECT id FROM models WHERE type='atomic' LIMIT 1)"); err != nil {
-		t.Fatalf("model cannot reference new framework: %v", err)
+	for _, profile := range []struct{ id, language string }{{"ms4me-java", "java"}, {"devsimpy-python", "python"}} {
+		var installed int
+		if err = db.QueryRow("SELECT count(*) FROM integrations WHERE id=$1 AND version='1.0.0' AND language=$2", profile.id, profile.language).Scan(&installed); err != nil || installed != 1 {
+			t.Fatalf("framework %s was not synchronized: %d %v", profile.id, installed, err)
+		}
+		if _, err = db.Exec("UPDATE models SET integration_id=$1 WHERE id=(SELECT id FROM models WHERE type='atomic' LIMIT 1)", profile.id); err != nil {
+			t.Fatalf("model cannot reference new framework %s: %v", profile.id, err)
+		}
 	}
 	if _, err = db.Exec("UPDATE integrations SET digest='incompatible' WHERE id='xdevs-python'"); err != nil {
 		t.Fatal(err)

@@ -51,10 +51,11 @@ Les références actuelles sont :
 | `xdevs-go` | `1.0.0` | xDEVS Go | `go` |
 | `xdevs-java` | `1.0.0` | xDEVS Java | `java` |
 | `ms4me-java` | `1.0.0` | MS4 Me Java | `java` |
+| `devsimpy-python` | `1.0.0` | DEVSimPy Python | `python` |
 
 Une future intégration utilisant un autre framework Java pourrait avoir son propre identifiant, tout en gardant `java` pour la coloration du code.
 
-Les intégrations actuelles conservent les adaptateurs de modélisation de DEVSForge inspirés de xDEVS. Leur nom ne garantit pas qu’un modèle provenant d’un projet xDEVS externe fonctionne directement sans adaptation.
+Les intégrations xDEVS conservent les adaptateurs de modélisation de DEVSForge inspirés de xDEVS. Leur nom ne garantit pas qu’un modèle provenant d’un projet xDEVS externe fonctionne directement sans adaptation. DEVSimPy utilise les sources natives PyPDEVS et ses bags Parallel DEVS, distinctes de `modeling` : voir [son architecture et ses limites](../simulator/runner/integrations/devsimpy-python/README.md).
 
 ### Où est la définition ?
 
