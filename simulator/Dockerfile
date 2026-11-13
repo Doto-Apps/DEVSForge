@@ -37,7 +37,9 @@ RUN cd /tmp/java-preheat && ./mvnw -Dmaven.repo.local=/opt/maven-cache dependenc
 COPY simulator/runner/integrations/ms4me-java/wrapper/pom.xml simulator/runner/integrations/ms4me-java/wrapper/mvnw /tmp/ms4me-preheat/
 COPY simulator/runner/integrations/ms4me-java/wrapper/.mvn /tmp/ms4me-preheat/.mvn
 COPY simulator/runner/integrations/ms4me-java/wrapper/dependencies /tmp/ms4me-preheat/dependencies
-RUN cd /tmp/ms4me-preheat && ./mvnw -Dmaven.repo.local=/opt/maven-cache dependency:go-offline -q && rm -rf /tmp/ms4me-preheat
+COPY simulator/runner/integrations/ms4me-java/dependencies.sha256 /tmp/ms4me-preheat/dependencies.sha256
+RUN cd /tmp/ms4me-preheat && sha256sum -c dependencies.sha256 && \
+    ./mvnw -Dmaven.repo.local=/opt/maven-cache dependency:go-offline -q && rm -rf /tmp/ms4me-preheat
 COPY --from=builder /app/bin/ /opt/devsforge/
 COPY simulator/runner/integrations /opt/devsforge/integrations
 COPY simulator/shared /opt/devsforge/shared

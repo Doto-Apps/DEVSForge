@@ -4,6 +4,7 @@ on:
   push:
     branches: ["main"]
     paths:
+      - ".gitattributes"
       - "simulator/**"
       - "go.work*"
       - "scripts/generate-proto.sh"
@@ -11,6 +12,7 @@ on:
   pull_request:
     branches: ["main"]
     paths:
+      - ".gitattributes"
       - "simulator/**"
       - "go.work*"
       - "scripts/generate-proto.sh"
@@ -41,12 +43,14 @@ jobs:
               - 'go.work*'
               - '.github/workflows/go-simulator.yml'
             runner:
+              - '.gitattributes'
               - 'simulator/runner/**'
               - 'simulator/shared/**'
               - 'simulator/Dockerfile'
               - 'go.work*'
               - '.github/workflows/go-simulator.yml'
             shared:
+              - '.gitattributes'
               - 'simulator/shared/**'
               - 'simulator/runner/integrations/**'
               - 'go.work*'

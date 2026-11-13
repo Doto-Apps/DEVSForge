@@ -27,13 +27,16 @@ jobs:
         with:
           filters: |
             front:
+              - '.gitattributes'
               - 'front/**'
             back:
+              - '.gitattributes'
               - 'back/**'
               - 'simulator/shared/**'
               - 'simulator/runner/integrations/**'
               - 'go.work*'
             simulator:
+              - '.gitattributes'
               - 'simulator/**'
               - 'go.work*'
 
