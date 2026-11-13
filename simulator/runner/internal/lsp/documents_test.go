@@ -83,6 +83,7 @@ func TestClosedProjectsAreReusedWithFreshBuffersAndCleanedWithWorkspace(t *testi
 		{"xdevs-python", "class Example:\n    pass\n", "class Renamed:\n    pass\n"},
 		{"xdevs-go", "package main\nfunc initial() {}\n", "package main\nfunc updated() {}\n"},
 		{"xdevs-java", "public class Example {}", "public class Renamed {}"},
+		{"ms4me-java", "package first.project; public class Example {}", "package second.project; public class Renamed {}"},
 	} {
 		t.Run(tt.profile, func(t *testing.T) {
 			m := testManager(t)

@@ -1,0 +1,57 @@
+package com.devsforge.user;
+
+import com.ms4systems.devs.core.model.impl.Atomic;
+import com.ms4systems.devs.core.message.impl.MessageBag;
+import com.ms4systems.devs.core.message.impl.Port;
+import java.io.Serializable;
+import java.util.Map;
+
+public class {{.Name}} extends Atomic {
+    // Declare the same port names and directions in the model's Properties panel.
+    public final Port out = addOutputPort("out", Serializable.class);
+
+    // Add a "period" parameter in Properties to override this field per instance.
+    private double period = 1.0;
+    private double sigma;
+    private int count;
+
+    public {{.Name}}() {
+        super("{{.Name}}");
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        count = 0;
+        sigma = period;
+    }
+
+    @Override
+    public Double getTimeAdvance() {
+        return sigma;
+    }
+
+    @Override
+    public MessageBag getOutput() {
+        MessageBag output = new MessageBag();
+        output.add(out, Map.of("value", count));
+        return output;
+    }
+
+    @Override
+    public void internalTransition() {
+        count++;
+        sigma = period;
+    }
+
+    @Override
+    public void externalTransition(double elapsed, MessageBag input) {
+        sigma = Math.max(0.0, sigma - elapsed);
+    }
+
+    @Override
+    public void confluentTransition(MessageBag input) {
+        internalTransition();
+        externalTransition(0.0, input);
+    }
+}

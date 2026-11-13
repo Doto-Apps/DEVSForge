@@ -108,14 +108,14 @@ export const roadmap = [
 	{
 		category: "Frameworks & import",
 		description:
-			"Add the wrapper and preparation needed to execute models from this additional DEVS framework.",
+			"Execute MS4 Me Java atomics in flattened assemblies, with templates, AI generation and Java language assistance.",
 		id: "ms4me",
 		reference: { label: "MS4 Me · RTSync", url: "https://rtsync.com/ms4me/" },
-		status: "planned",
+		status: "done",
 		tasks: [
-			{ done: false, text: "Prepare the framework integration and wrapper." },
+			{ done: true, text: "Prepare the framework integration and wrapper." },
 			{
-				done: false,
+				done: true,
 				text: "Validate execution and communication with the existing integrations.",
 			},
 		],

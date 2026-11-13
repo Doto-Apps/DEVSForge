@@ -34,9 +34,19 @@ COPY simulator/runner/integrations/xdevs-java/wrapper/mvnw /tmp/java-preheat/mvn
 COPY simulator/runner/integrations/xdevs-java/wrapper/.mvn /tmp/java-preheat/.mvn
 # Cache the same Maven distribution used when a model is compiled at runtime.
 RUN cd /tmp/java-preheat && ./mvnw -Dmaven.repo.local=/opt/maven-cache dependency:go-offline -q && rm -rf /tmp/java-preheat
+COPY simulator/runner/integrations/ms4me-java/wrapper/pom.xml simulator/runner/integrations/ms4me-java/wrapper/mvnw /tmp/ms4me-preheat/
+COPY simulator/runner/integrations/ms4me-java/wrapper/.mvn /tmp/ms4me-preheat/.mvn
+COPY simulator/runner/integrations/ms4me-java/wrapper/dependencies /tmp/ms4me-preheat/dependencies
+RUN cd /tmp/ms4me-preheat && ./mvnw -Dmaven.repo.local=/opt/maven-cache dependency:go-offline -q && rm -rf /tmp/ms4me-preheat
 COPY --from=builder /app/bin/ /opt/devsforge/
 COPY simulator/runner/integrations /opt/devsforge/integrations
 COPY simulator/shared /opt/devsforge/shared
+# Build the MS4 Me runtime once, outside the immutable catalogue resources.
+RUN cp -a /opt/devsforge/integrations/ms4me-java/wrapper /tmp/ms4me-runtime && \
+    cd /tmp/ms4me-runtime && ./mvnw -Dmaven.repo.local=/opt/maven-cache -B package -DskipTests -q && \
+    mkdir -p /opt/devsforge/runtimes/ms4me-java && \
+    cp target/runtime/ms4me-runtime.jar /opt/devsforge/runtimes/ms4me-java/ && rm -rf /tmp/ms4me-runtime
+ENV MS4ME_RUNTIME_JAR=/opt/devsforge/runtimes/ms4me-java/ms4me-runtime.jar
 # Compile framework dependencies once; analysis only loads user documents at runtime.
 RUN cp -a /opt/devsforge/integrations/xdevs-go/wrapper /tmp/go-analysis-preheat && \
     cp -a /opt/devsforge/shared /tmp/go-analysis-preheat/.shared && \

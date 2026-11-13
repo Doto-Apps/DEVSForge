@@ -12,13 +12,14 @@ func TestInstalledProfiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(defs) != 3 {
-		t.Fatalf("expected three installed integrations, got %d", len(defs))
-	}
+	required := map[string]bool{"xdevs-python": true, "xdevs-go": true, "xdevs-java": true, "ms4me-java": true}
 	for _, d := range defs {
-		legacy, err := Resolve("", "", d.LegacyLanguage)
-		if err != nil || legacy.ID != d.ID {
-			t.Fatalf("legacy mapping: %v", err)
+		delete(required, d.ID)
+		if d.LegacyLanguage != "" {
+			legacy, err := Resolve("", "", d.LegacyLanguage)
+			if err != nil || legacy.ID != d.ID {
+				t.Fatalf("legacy mapping: %v", err)
+			}
 		}
 		code, err := d.RenderTemplate("Example")
 		if err != nil || !strings.Contains(code, "Example") {
@@ -28,6 +29,9 @@ func TestInstalledProfiles(t *testing.T) {
 		if err != nil || !strings.Contains(prompt, "Library source") {
 			t.Fatalf("AI context %s: %v", d.ID, err)
 		}
+	}
+	if len(required) != 0 {
+		t.Fatalf("missing integrations: %v", required)
 	}
 }
 func TestRejectUnknownAndConflictingProfiles(t *testing.T) {

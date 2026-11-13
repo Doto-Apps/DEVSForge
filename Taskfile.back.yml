@@ -39,6 +39,17 @@ tasks:
     cmds:
       - docker compose -f docker-compose.dev-go.yml logs -f {{.CLI_ARGS}}
 
+  db:reset:
+    desc: Delete all local development database data (accounts, models and settings)
+    cmds:
+      - docker compose -f docker-compose.dev-go.yml stop backend
+      - docker compose -f docker-compose.dev-go.yml up -d --wait db
+      - |
+        docker compose -f docker-compose.dev-go.yml exec -T db sh -ec '
+          psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" \
+            -c "BEGIN; DROP SCHEMA public CASCADE; CREATE SCHEMA public; COMMIT;"
+        '
+
   clean:
     desc: Stop and remove containers and volumes
     cmds:
