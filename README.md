@@ -14,7 +14,9 @@ DEVSForge is an AI-assisted modeling and simulation platform for DEVS systems.
 1. Frontend (React) calls backend REST APIs (typed from OpenAPI).
 2. Backend (Go/Fiber) stores data in PostgreSQL.
 3. Simulation orchestration uses Kafka and simulator components (coordinator + runners).
-4. Wrappers (Go/Python) execute atomic-model behavior.
+4. Wrappers execute atomic-model behavior: xDEVS Go/Python/Java and MS4 Me Java. Coupled assemblies are flattened before execution.
+
+See [integrations](docs/integrations.md) and the [MS4 Me integration guide](simulator/runner/integrations/ms4me-java/README.md) for templates, AI generation, language assistance and runtime preparation.
 
 ## Try it online
 

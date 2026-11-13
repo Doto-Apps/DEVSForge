@@ -2,6 +2,7 @@
 package integrations
 
 import (
+	ms4adapter "devsforge-runner/integrations/ms4me-java"
 	goadapter "devsforge-runner/integrations/xdevs-go"
 	javaadapter "devsforge-runner/integrations/xdevs-java"
 	pyadapter "devsforge-runner/integrations/xdevs-python"
@@ -19,6 +20,7 @@ type Preparation struct {
 }
 
 var adapters = map[string]Preparation{
+	"ms4me-java":   {Sources: ms4adapter.PrepareSources, Launch: ms4adapter.PrepareWrapper, Analysis: ms4adapter.PrepareAnalysis, SourceName: ms4adapter.SourcePath},
 	"xdevs-go":     {Sources: goadapter.PrepareSources, Launch: goadapter.PrepareGoWraper, Analysis: goadapter.PrepareAnalysis},
 	"xdevs-python": {Sources: pyadapter.PrepareSources, Launch: pyadapter.PreparePythonWraper, Analysis: pyadapter.PrepareAnalysis},
 	"xdevs-java":   {Sources: javaadapter.PrepareSources, Launch: javaadapter.PrepareJavaWrapper, Analysis: javaadapter.PrepareAnalysis, SourceName: javaadapter.SourceName},

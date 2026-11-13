@@ -1,6 +1,6 @@
 # Integrations and language assistance
 
-DEVSForge currently ships **xDEVS Python**, **xDEVS Go**, and **xDEVS Java**. These are DEVSForge's existing modeling adapters inspired by xDEVS, not a guarantee that every upstream xDEVS model can run unchanged.
+DEVSForge currently ships **xDEVS Python**, **xDEVS Go**, **xDEVS Java**, and **MS4 Me Java**. The xDEVS integrations are DEVSForge's existing modeling adapters inspired by xDEVS, not a guarantee that every upstream xDEVS model can run unchanged. MS4 Me uses its bundled Closure-DEVS library and a separate atomic RPC adapter; see its [architecture, model requirements and tests](../simulator/runner/integrations/ms4me-java/README.md). Coupled models retain DEVSForge's existing flattening path, including mixed-framework assemblies.
 
 ## One definition per framework, language, and version
 

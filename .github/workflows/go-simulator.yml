@@ -185,6 +185,11 @@ jobs:
             devsforge-test-runner:latest \
             go test -v ./simulator/runner/... ./simulator/coordinator/... -timeout 10m
 
+      - name: Validate MS4 Me Java runtime
+        run: |
+          docker run --rm --init -v ${{ github.workspace }}:/app -w /app/simulator/runner/integrations/ms4me-java/wrapper \
+            devsforge-test-runner:latest ./mvnw -B test
+
 
   test-lsp:
     needs: build-sim

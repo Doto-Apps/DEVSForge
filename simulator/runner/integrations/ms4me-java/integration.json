@@ -1,0 +1,59 @@
+{
+  "id": "ms4me-java",
+  "version": "1.0.0",
+  "name": "MS4 Me Java",
+  "language": "java",
+  "framework": "MS4 Me",
+  "extension": ".java",
+  "default": false,
+  "preparation": "ms4me-java",
+  "wrapper": "wrapper",
+  "modelPath": "src/model/java/{name}.java",
+  "template": "templates/atomic.tmpl",
+  "prompt": "ai/model.md",
+  "context": [
+    "ai/api.md",
+    "wrapper/src/main/java/com/devsforge/ms4me/ModelHost.java",
+    "wrapper/src/main/java/com/devsforge/ms4me/PortCodec.java"
+  ],
+  "servers": [
+    {
+      "id": "jdtls",
+      "command": "/opt/lsp/bin/jdtls",
+      "args": [
+        "-data",
+        "{session}/jdtls"
+      ],
+      "settings": {
+        "java": {
+          "configuration": {
+            "runtimes": [
+              {
+                "name": "JavaSE-21",
+                "path": "/opt/java21",
+                "default": true
+              }
+            ]
+          },
+          "import": {
+            "maven": {
+              "enabled": true
+            }
+          },
+          "autobuild": {
+            "enabled": false
+          },
+          "completion": {
+            "favoriteStaticMembers": [
+              "java.lang.Math.*"
+            ]
+          }
+        }
+      },
+      "allowedCommands": [
+        "java.edit.organizeImports",
+        "java.completion.onDidSelect"
+      ]
+    }
+  ]
+}

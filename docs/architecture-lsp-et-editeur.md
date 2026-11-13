@@ -50,6 +50,7 @@ Les références actuelles sont :
 | `xdevs-python` | `1.0.0` | xDEVS Python | `python` |
 | `xdevs-go` | `1.0.0` | xDEVS Go | `go` |
 | `xdevs-java` | `1.0.0` | xDEVS Java | `java` |
+| `ms4me-java` | `1.0.0` | MS4 Me Java | `java` |
 
 Une future intégration utilisant un autre framework Java pourrait avoir son propre identifiant, tout en gardant `java` pour la coloration du code.
 

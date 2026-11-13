@@ -29,6 +29,8 @@ func TestRealLanguageServers(t *testing.T) {
 		{"xdevs-go", "gopls", "package main\nimport \"math\"\nfunc test() {\n math.\n}\n", 3, 6, "Sqrt"},
 		{"xdevs-java", "jdtls", "package com.devsforge.runner;\nimport com.devsforge.runner.modeling.*;\npublic class Example extends Atomic {\n public Example(RunnableModel c) { super(c); }\n public void test() { this.\n }\n}\n", 4, 27, "getPhase"},
 		{"xdevs-java", "jdtls", "package com.devsforge.runner;\npublic class Example {\n public void test() { Math.sq\n }\n}\n", 2, 29, "sqrt"},
+		{"ms4me-java", "jdtls", "package demo;\nimport com.ms4systems.devs.core.model.impl.Atomic;\npublic class Example extends Atomic {\n public void test() { this.\n }\n}\n", 3, 27, "addInputPort"},
+		{"ms4me-java", "jdtls", "package demo;\npublic class Example {\n public void test() { Math.sq\n }\n}\n", 2, 29, "sqrt"},
 	}
 	for _, tt := range tests {
 		t.Run(tt.profile+"-"+tt.want, func(t *testing.T) {
@@ -169,7 +171,7 @@ func TestRealLanguageServers(t *testing.T) {
 
 			t.Logf("same engine socket completed both isolated projects and survived detach")
 			reopenedCode, reopenedURI := tt.code, result.DocumentURI
-			if tt.profile == "xdevs-java" {
+			if result.Language == "java" {
 				reopenedCode = strings.ReplaceAll(tt.code, "Example", "Reopened")
 				reopenedURI = strings.ReplaceAll(result.DocumentURI, "Example.java", "Reopened.java")
 			}

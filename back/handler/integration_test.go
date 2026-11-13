@@ -26,3 +26,11 @@ func TestModelIntegrationCompatibilityAndValidation(t *testing.T) {
 		t.Fatalf("coupled integration retained: %+v", coupled)
 	}
 }
+
+func TestAnotherJavaFrameworkKeepsItsIntegration(t *testing.T) {
+	id, version := "ms4me-java", "1.0.0"
+	r := request.ModelRequest{Type: enum.Atomic, Language: "java", IntegrationID: &id, IntegrationVersion: &version}
+	if err := normalizeModelRequest(&r); err != nil || r.IntegrationID == nil || *r.IntegrationID != id || r.Language != "java" {
+		t.Fatalf("MS4 Me was rejected or resolved to xDEVS: %+v %v", r, err)
+	}
+}

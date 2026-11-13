@@ -84,6 +84,9 @@ func (s *session) attach(req Request) (*document, error) {
 	if cached != nil {
 		// Framework links and project metadata are already prepared. Recopying
 		// the wrapper would overwrite those links and invalidate cached indexes.
+		if err = os.MkdirAll(filepath.Dir(file), 0700); err != nil {
+			return nil, err
+		}
 		if err = os.WriteFile(file, []byte(req.Code), 0600); err != nil {
 			return nil, err
 		}
