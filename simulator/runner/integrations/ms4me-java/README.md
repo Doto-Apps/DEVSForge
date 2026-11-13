@@ -85,4 +85,6 @@ Le JAR a été repris du dossier `ms4me` fourni pour cette intégration. SHA-256
 3ff1dc26d774235983d4f5ccd9eb94700e82481168c5db1d99cefc15ef046f9f
 ```
 
+Cette empreinte est épinglée dans `dependencies.sha256`, vérifiée avant le téléchargement Maven dans Docker et par les tests Go. Les fichiers `.jar` sont déclarés binaires dans `.gitattributes` : une conversion CRLF/LF peut corrompre leurs données et les offsets ZIP. Après ajout d'une dépendance binaire, vérifier aussi la copie extraite depuis Git ; une copie locale valide ne garantit pas que le commit contient les mêmes octets.
+
 Aucun fichier de licence ni sources n'accompagnait cette dépendance. Son inclusion ne lui attribue pas la licence du projet DEVSForge ; les droits de redistribution restent à confirmer auprès de son fournisseur avant publication d'images contenant ce binaire.

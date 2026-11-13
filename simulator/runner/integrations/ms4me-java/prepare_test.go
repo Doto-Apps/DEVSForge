@@ -2,12 +2,14 @@ package ms4mejava
 
 import (
 	"context"
+	"crypto/sha256"
 	"devsforge-runner/internal/config"
 	"devsforge-runner/internal/generators"
 	"devsforge-runner/util"
 	shared "devsforge-shared"
 	"devsforge-shared/integrations"
 	pb "devsforge-shared/proto"
+	"fmt"
 	"math"
 	"net"
 	"os"
@@ -20,6 +22,24 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
+
+func TestBundledDependencyIntegrity(t *testing.T) {
+	manifest, err := os.ReadFile("dependencies.sha256")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fields := strings.Fields(string(manifest))
+	if len(fields) != 2 {
+		t.Fatal("expected one pinned dependency checksum")
+	}
+	data, err := os.ReadFile(filepath.Join("wrapper", fields[1]))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := fmt.Sprintf("%x", sha256.Sum256(data)); got != fields[0] {
+		t.Fatalf("Closure-DEVS JAR checksum mismatch: got %s, want %s; check binary Git attributes and restore the original archive", got, fields[0])
+	}
+}
 
 func TestSourcePaths(t *testing.T) {
 	for _, tt := range []struct{ code, fallback, want string }{
