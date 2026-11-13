@@ -1,0 +1,25 @@
+from pypdevs.DEVS import AtomicDEVS
+from pypdevs.infinity import INFINITY
+
+
+class {{.Name}}(AtomicDEVS):
+    def __init__(self):
+        super().__init__("{{.Name}}")
+        self.out = self.addOutPort("out")  # Also declare out in the model properties.
+        self.state = {"phase": "active", "sigma": 1.0}
+
+    def intTransition(self):
+        return {"phase": "passive", "sigma": INFINITY}
+
+    def extTransition(self, inputs):
+        # inputs maps each input port to its complete list of messages.
+        # for message in inputs.get(self.in_port, []): ...
+        self.state["sigma"] = max(0.0, self.state["sigma"] - self.elapsed)
+        return self.state
+
+    def outputFnc(self):
+        # The outer list is a bag, including for a single message.
+        return {self.out: [{"message": "hello"}]}
+
+    def timeAdvance(self):
+        return self.state["sigma"]

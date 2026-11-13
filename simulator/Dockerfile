@@ -25,7 +25,8 @@ ENV GOMODCACHE=/opt/go-cache/mod GOCACHE=/opt/go-cache/build PYTHONPYCACHEPREFIX
 COPY --from=builder /usr/local/go /usr/local/go
 # Dependency layers depend on their declarations, not on model/library source edits.
 COPY simulator/runner/integrations/xdevs-python/wrapper/requirements.txt /tmp/requirements.txt
-RUN pip install --no-cache-dir -r /tmp/requirements.txt
+COPY simulator/runner/integrations/devsimpy-python/wrapper/requirements.txt /tmp/requirements-devsimpy.txt
+RUN pip install --no-cache-dir -r /tmp/requirements.txt -r /tmp/requirements-devsimpy.txt
 COPY simulator/runner/integrations/xdevs-go/wrapper/go.mod simulator/runner/integrations/xdevs-go/wrapper/go.sum /tmp/go-preheat/
 COPY simulator/shared/go.mod simulator/shared/go.sum /tmp/go-preheat/.shared/
 RUN cd /tmp/go-preheat && GOWORK=off go mod download && rm -rf /tmp/go-preheat
@@ -54,7 +55,8 @@ RUN cp -a /opt/devsforge/integrations/xdevs-go/wrapper /tmp/go-analysis-preheat 
     cp -a /opt/devsforge/shared /tmp/go-analysis-preheat/.shared && \
     cd /tmp/go-analysis-preheat && GOWORK=off go build -mod=mod ./modeling ./rpc && \
     rm -rf /tmp/go-analysis-preheat && \
-    python3 -m compileall -q /opt/devsforge/integrations/xdevs-python/wrapper/modeling
+    python3 -m compileall -q /opt/devsforge/integrations/xdevs-python/wrapper/modeling \
+        /opt/devsforge/integrations/devsimpy-python/wrapper
 RUN mkdir -p /tmp/simulations /tmp/sim-logs
 ENV MAVEN_OPTS=-Dmaven.repo.local=/opt/maven-cache
 EXPOSE 8080

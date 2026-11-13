@@ -1,29 +1,15 @@
-import { useEffect, useState } from "react";
-import { client } from "@/api/client";
+import { client, useImmutable } from "@/api/client";
 import type { components } from "@/api/v1";
 
 export type Integration = components["schemas"]["integrations.Definition"];
 export const integrationKey = (d: Integration) => `${d.id}@${d.version}`;
+const emptyIntegrations: Integration[] = [];
 export function useIntegrations() {
-	const [data, setData] = useState<Integration[]>([]);
-	const [error, setError] = useState<string>();
-	useEffect(() => {
-		let active = true;
-		client
-			.GET("/integrations")
-			.then(({ data, error }) => {
-				if (!active) return;
-				if (error || !data) setError("Integration catalogue unavailable");
-				else setData(data);
-			})
-			.catch((e) => {
-				if (active) setError(String(e));
-			});
-		return () => {
-			active = false;
-		};
-	}, []);
-	return { data, error };
+	const { data, error } = useImmutable("/integrations");
+	return {
+		data: data ?? emptyIntegrations,
+		error: error ? "Integration catalogue unavailable" : undefined,
+	};
 }
 export async function fetchIntegrationTemplate(
 	integration: Integration,

@@ -1,0 +1,42 @@
+{
+  "id": "devsimpy-python",
+  "version": "1.0.0",
+  "name": "DEVSimPy Python",
+  "language": "python",
+  "framework": "DEVSimPy",
+  "extension": ".py",
+  "default": false,
+  "preparation": "devsimpy-python",
+  "wrapper": "wrapper",
+  "modelPath": "model.py",
+  "template": "templates/atomic.tmpl",
+  "prompt": "ai/model.md",
+  "context": [
+    "wrapper/pypdevs/DEVS.py",
+    "wrapper/pypdevs/infinity.py"
+  ],
+  "servers": [
+    {
+      "id": "pyright",
+      "command": "pyright-langserver",
+      "args": [
+        "--stdio"
+      ],
+      "allowedCommands": [
+        "pyright.organizeimports"
+      ]
+    },
+    {
+      "id": "ruff",
+      "command": "ruff",
+      "args": [
+        "server"
+      ],
+      "allowedCommands": [
+        "ruff.applyAutofix",
+        "ruff.applyOrganizeImports",
+        "ruff.applyFormat"
+      ]
+    }
+  ]
+}

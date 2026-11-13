@@ -10,18 +10,26 @@ import {
 import { type ComponentProps, useEffect } from "react";
 import "@xyflow/react/dist/base.css";
 import BiDirectionalEdge from "@/components/custom/reactFlow/BiDirectionalEdge.tsx";
+import { useIntegrations } from "@/hooks/useIntegrations";
 import type { ReactFlowInput } from "@/types";
 import ModelNode from "./reactFlow/ModelNode.tsx";
 
 function PreviewNode(props: ComponentProps<typeof ModelNode>) {
 	const { data } = props;
+	const { data: integrations } = useIntegrations();
+	const integration = integrations.find(
+		(item) =>
+			item.id === data.integrationId &&
+			item.version === data.integrationVersion,
+	);
 	return (
 		<div className="relative h-full w-full">
 			<ModelNode {...props} />
 			{data.modelType === "atomic" && (
 				<div className="pointer-events-none absolute inset-x-4 bottom-3 top-14 overflow-hidden text-xs">
 					<p className="mb-3 font-mono text-[10px] uppercase tracking-wider opacity-60">
-						{data.integrationId?.replace("xdevs-", "xDEVS ") ||
+						{integration?.name ||
+							data.integrationId ||
 							data.language ||
 							"Atomic model"}
 					</p>

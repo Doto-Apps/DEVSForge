@@ -12,7 +12,7 @@ func TestInstalledProfiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	required := map[string]bool{"xdevs-python": true, "xdevs-go": true, "xdevs-java": true, "ms4me-java": true}
+	required := map[string]bool{"xdevs-python": true, "xdevs-go": true, "xdevs-java": true, "ms4me-java": true, "devsimpy-python": true}
 	for _, d := range defs {
 		delete(required, d.ID)
 		if d.LegacyLanguage != "" {

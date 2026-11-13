@@ -25,6 +25,9 @@ func TestRealLanguageServers(t *testing.T) {
 	}{
 		{"xdevs-python", "pyright", "from modeling import Atomic\nimport math\nclass Example(Atomic):\n    def test(self):\n        self.\n        math.\n", 4, 13, "get_phase"},
 		{"xdevs-python", "pyright", "import math\nmath.\n", 1, 5, "sqrt"},
+		{"devsimpy-python", "pyright", "from pypdevs.DEVS import AtomicDEVS\nclass Example(AtomicDEVS):\n    def test(self):\n        self.\n", 3, 13, "addInPort"},
+		{"devsimpy-python", "pyright", "from pypdevs.DEVS import AtomicDEVS\nclass Example(AtomicDEVS):\n    def test(self):\n        self.\n", 3, 13, "confTransition"},
+		{"devsimpy-python", "pyright", "import math\nmath.\n", 1, 5, "sqrt"},
 		{"xdevs-go", "gopls", "package main\nimport \"devsforge-wrapper/modeling\"\nimport \"math\"\nfunc test(m modeling.Atomic) {\n m.\n math.\n}\nfunc NewModel(c modeling.RunnableModel) modeling.Atomic { return modeling.NewAtomic(c) }\n", 4, 3, "HoldIn"},
 		{"xdevs-go", "gopls", "package main\nimport \"math\"\nfunc test() {\n math.\n}\n", 3, 6, "Sqrt"},
 		{"xdevs-java", "jdtls", "package com.devsforge.runner;\nimport com.devsforge.runner.modeling.*;\npublic class Example extends Atomic {\n public Example(RunnableModel c) { super(c); }\n public void test() { this.\n }\n}\n", 4, 27, "getPhase"},

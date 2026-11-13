@@ -27,10 +27,12 @@ func TestModelIntegrationCompatibilityAndValidation(t *testing.T) {
 	}
 }
 
-func TestAnotherJavaFrameworkKeepsItsIntegration(t *testing.T) {
-	id, version := "ms4me-java", "1.0.0"
-	r := request.ModelRequest{Type: enum.Atomic, Language: "java", IntegrationID: &id, IntegrationVersion: &version}
-	if err := normalizeModelRequest(&r); err != nil || r.IntegrationID == nil || *r.IntegrationID != id || r.Language != "java" {
-		t.Fatalf("MS4 Me was rejected or resolved to xDEVS: %+v %v", r, err)
+func TestOtherFrameworksKeepTheirIntegration(t *testing.T) {
+	for _, tt := range []struct{ id, language string }{{"ms4me-java", "java"}, {"devsimpy-python", "python"}} {
+		version := "1.0.0"
+		r := request.ModelRequest{Type: enum.Atomic, Language: tt.language, IntegrationID: &tt.id, IntegrationVersion: &version}
+		if err := normalizeModelRequest(&r); err != nil || r.IntegrationID == nil || *r.IntegrationID != tt.id || r.Language != tt.language {
+			t.Fatalf("%s was rejected or resolved to xDEVS: %+v %v", tt.id, r, err)
+		}
 	}
 }

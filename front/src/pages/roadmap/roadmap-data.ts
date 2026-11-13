@@ -124,20 +124,20 @@ export const roadmap = [
 	{
 		category: "Frameworks & import",
 		description:
-			"Extend the available frameworks with a DEVSimPy integration and its execution requirements.",
+			"Run native DEVSimPy/PyPDEVS atomics with Parallel DEVS input/output bags in flattened assemblies, with templates, AI generation and Python language assistance.",
 		id: "devsimpy",
 		reference: {
 			label: "DEVSimPy project",
 			url: "https://github.com/capocchi/DEVSimPy",
 		},
-		status: "planned",
+		status: "done",
 		tasks: [
 			{
-				done: false,
+				done: true,
 				text: "Implement the framework-specific preparation and wrapper.",
 			},
 			{
-				done: false,
+				done: true,
 				text: "Verify representative models in DEVSForge simulations.",
 			},
 		],
