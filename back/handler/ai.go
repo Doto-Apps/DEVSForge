@@ -196,6 +196,9 @@ func generateEFStructure(c *fiber.Ctx) error {
 	if request.TargetModelID == "" || request.UserPrompt == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "TargetModelID and UserPrompt are required"})
 	}
+	if err := checkImportedModel(request.TargetModelID, c.Locals("user_id").(string)); err != nil {
+		return SendRequestError(c, 400, err)
+	}
 
 	db := database.DB
 	var target model.Model

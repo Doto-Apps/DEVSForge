@@ -12,6 +12,8 @@ services:
         condition: service_started
 
   simulator:
+    environment:
+      IMPORT_INTERNAL_TOKEN: ${IMPORT_INTERNAL_TOKEN:?Run task importer:setup first}
     build:
       context: .
       dockerfile: simulator/Dockerfile
@@ -85,3 +87,24 @@ services:
     mem_limit: ${LSP_MEMORY_LIMIT:-4g}
     init: true
     restart: unless-stopped
+
+
+  importer:
+    build:
+      context: .
+      dockerfile: importer/Dockerfile
+    environment:
+      IMPORT_INTERNAL_TOKEN: ${IMPORT_INTERNAL_TOKEN:?Run task importer:setup first}
+    volumes:
+      - import-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 64
+    init: true
+    restart: unless-stopped
+
+volumes:
+  import-data:

@@ -32,6 +32,7 @@ tasks:
     desc: Start with Docker Compose back + simulator
     cmds:
       - task: :lsp:setup
+      - task: :importer:setup
       - docker compose -f docker-compose.dev-go.yml up --build {{.CLI_ARGS}}
 
   logs:

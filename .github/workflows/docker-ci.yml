@@ -18,6 +18,7 @@ jobs:
         run: |
           cp .env.dist .env
           python3 scripts/ensure-lsp-env.py
+          python3 scripts/ensure-import-env.py
       - name: Validate aio release compose
         run: docker compose -f docker-compose.yml config --quiet
       - name: Validate islands release compose

@@ -8,6 +8,39 @@ import { modelToReactflow } from "./modelToReactflow";
 import { reactflowToModel } from "./reactflowToModel";
 
 describe("reactflowToModel", () => {
+	it("preserves imported port names containing colons through editing", () => {
+		const base = mockApiModelRequest[0];
+		const leaf = {
+			...base,
+			components: [],
+			connections: [],
+			id: "leaf",
+			name: "Leaf",
+			ports: [{ id: "output-id", name: "value:payload", type: "out" as const }],
+			type: "atomic" as const,
+		};
+		const root = {
+			...base,
+			components: [{ instanceId: "occurrence", modelId: "leaf" }],
+			connections: [
+				{
+					from: { instanceId: "occurrence", port: "value:payload" },
+					to: { instanceId: "root", port: "value:payload" },
+				},
+			],
+			id: "parent",
+			name: "Parent",
+			ports: [
+				{ id: "root-output", name: "value:payload", type: "out" as const },
+			],
+			type: "coupled" as const,
+		};
+		const saved = reactflowToModel(modelToReactflow([root, leaf]));
+		assert.deepEqual(
+			saved.find((m) => m.id === "parent")?.connections,
+			root.connections,
+		);
+	});
 	it("should convert a model library to api request", () => {
 		assert.deepEqual(
 			reactflowToModel(mockReactFlowModelLibrary),

@@ -51,6 +51,9 @@ func SetupWebAppRoutes(app *fiber.App) {
 //	@Failure		500		{object}	map[string]string
 //	@Router			/webapp/skeleton/{modelId} [post]
 func generateWebAppSkeleton(c *fiber.Ctx) error {
+	if err := checkImportedModel(c.Params("modelId"), c.Locals("user_id").(string)); err != nil {
+		return SendRequestError(c, 400, err)
+	}
 	modelID := strings.TrimSpace(c.Params("modelId"))
 	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "modelId is required"})

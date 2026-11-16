@@ -22,6 +22,7 @@ import (
 
 func main() {
 	app := fiber.New(fiber.Config{
+		BodyLimit:     20 * 1024 * 1024,
 		CaseSensitive: true,
 		StrictRouting: true,
 		ServerHeader:  "Fiber",

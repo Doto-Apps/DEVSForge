@@ -28,6 +28,17 @@ tasks:
     cmds:
       - python3 scripts/ensure-lsp-env.py
 
+  importer:setup:
+    desc: Create the private import-service token if missing
+    cmds:
+      - python3 scripts/ensure-import-env.py
+
+  importer:test:
+    desc: Test import formats and the agent with a local mock provider (no paid calls)
+    dir: importer
+    cmds:
+      - python3 -m unittest discover -s tests -v
+
   setup:
     desc: Install all tools required to dev
     cmds:
@@ -39,6 +50,7 @@ tasks:
       - cp .env.dist .env || true
       - cd front && pnpm install
       - task: lsp:setup
+      - task: importer:setup
       - echo "✅ Project setup."
 
   format:
@@ -58,17 +70,20 @@ tasks:
   test:
     desc: Run all tests (back + simulator)
     cmds:
+      - task: importer:test
       - task: back:test
       - task: simulator:test
 
   start:prod:
     desc: Start production environment
     cmds:
+      - task: importer:setup
       - docker compose -f docker-compose.yml up --pull always
 
   start:
     desc: Start local environment
     cmds:
+      - task: importer:setup
       - docker compose -f docker-compose.local.yml up --build
 
   clean:

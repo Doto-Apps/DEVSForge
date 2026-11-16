@@ -31,24 +31,26 @@ type Capabilities struct {
 	LSP        bool `json:"lsp"`
 }
 type Definition struct {
-	ID             string       `json:"id"`
-	Version        string       `json:"version"`
-	Name           string       `json:"name"`
-	Language       string       `json:"language"`
-	Framework      string       `json:"framework"`
-	Extension      string       `json:"extension"`
-	LegacyLanguage string       `json:"legacyLanguage,omitempty"`
-	Default        bool         `json:"default"`
-	Preparation    string       `json:"preparation"`
-	Wrapper        string       `json:"wrapper"`
-	ModelPath      string       `json:"modelPath"`
-	Template       string       `json:"template"`
-	Prompt         string       `json:"prompt"`
-	Context        []string     `json:"context"`
-	Servers        []Server     `json:"servers"`
-	Capabilities   Capabilities `json:"capabilities"`
-	Digest         string       `json:"digest"`
-	Dir            string       `json:"-"`
+	ID                string       `json:"id"`
+	Version           string       `json:"version"`
+	Name              string       `json:"name"`
+	Language          string       `json:"language"`
+	Framework         string       `json:"framework"`
+	FrameworkAliases  []string     `json:"frameworkAliases,omitempty"`
+	ProvidedLibraries []string     `json:"providedLibraries,omitempty"`
+	Extension         string       `json:"extension"`
+	LegacyLanguage    string       `json:"legacyLanguage,omitempty"`
+	Default           bool         `json:"default"`
+	Preparation       string       `json:"preparation"`
+	Wrapper           string       `json:"wrapper"`
+	ModelPath         string       `json:"modelPath"`
+	Template          string       `json:"template"`
+	Prompt            string       `json:"prompt"`
+	Context           []string     `json:"context"`
+	Servers           []Server     `json:"servers"`
+	Capabilities      Capabilities `json:"capabilities"`
+	Digest            string       `json:"digest"`
+	Dir               string       `json:"-"`
 }
 
 func ValidName(name string) bool {
@@ -177,6 +179,8 @@ func List() ([]Definition, error) {
 		runtimeDefinition.Name = ""
 		runtimeDefinition.Default = false
 		runtimeDefinition.LegacyLanguage = ""
+		runtimeDefinition.FrameworkAliases = nil
+		runtimeDefinition.ProvidedLibraries = nil
 		runtimeBytes, _ := json.Marshal(runtimeDefinition)
 		h.Write(runtimeBytes)
 		for _, r := range []string{d.Template, d.Prompt, d.Wrapper} {

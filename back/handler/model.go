@@ -235,7 +235,13 @@ func patchModel(c *fiber.Ctx) error {
 	if err := json.Unmarshal(data, req); err != nil {
 		return SendRequestError(c, 400, err)
 	}
-	if err := normalizeModelRequest(req); err != nil {
+	// Unsupported profiles can only enter through the validated import route.
+	// Editing their source must not silently select the legacy language default.
+	if model.ImportSource != nil && model.IntegrationID == nil && model.Type == enum.Atomic {
+		if req.Type != enum.Atomic || req.IntegrationID != nil || req.IntegrationVersion != nil {
+			return SendRequestError(c, 400, errors.New("use the import conversion workflow to change an unsupported framework"))
+		}
+	} else if err := normalizeModelRequest(req); err != nil {
 		return SendRequestError(c, 400, err)
 	}
 	if strings.TrimSpace(req.Name) == "" {

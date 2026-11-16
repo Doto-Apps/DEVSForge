@@ -19,6 +19,7 @@ type ModelResponse struct {
 	Name               string                 `json:"name" validate:"required"`
 	Type               enum.ModelType         `json:"type" validate:"required"`
 	Language           string                 `json:"language,omitempty"`
+	ImportSource       *json.ImportSource     `json:"importSource,omitempty"`
 	IntegrationID      *string                `json:"integrationId"`
 	IntegrationVersion *string                `json:"integrationVersion"`
 	Description        string                 `json:"description" validate:"required"`
@@ -42,11 +43,12 @@ func CreateModelResponse(m model.Model) ModelResponse {
 		Name:     m.Name,
 		Type:     m.Type,
 		Language: m.Language, IntegrationID: m.IntegrationID, IntegrationVersion: m.IntegrationVersion,
-		Description: m.Description,
-		Code:        m.Code,
-		Ports:       m.Ports,
-		Components:  m.Components,
-		Connections: m.Connections,
-		Metadata:    m.Metadata,
+		ImportSource: m.ImportSource,
+		Description:  m.Description,
+		Code:         m.Code,
+		Ports:        m.Ports,
+		Components:   m.Components,
+		Connections:  m.Connections,
+		Metadata:     m.Metadata,
 	}
 }

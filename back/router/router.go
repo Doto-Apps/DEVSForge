@@ -24,6 +24,7 @@ func SetupRoutes(app *fiber.App) {
 
 	// Model
 	handler.SetupModelRoutes(app)
+	handler.SetupImportRoutes(app)
 
 	// Simulation
 	handler.SetupSimulationRoutes(app)

@@ -1,6 +1,11 @@
 version: "3"
 
 tasks:
+  import:test:
+    desc: Exercise the import UI with intercepted API calls (start front:dev on port 5189 first)
+    dir: front
+    cmds:
+      - node scripts/check-import.cjs
   format:
     desc: Format front-end code with Biome
     dir: front

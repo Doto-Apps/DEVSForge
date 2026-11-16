@@ -4,6 +4,8 @@
   "name": "DEVSimPy Python",
   "language": "python",
   "framework": "DEVSimPy",
+  "frameworkAliases": ["PyPDEVS"],
+  "providedLibraries": ["pypdevs"],
   "extension": ".py",
   "default": false,
   "preparation": "devsimpy-python",

@@ -17,6 +17,7 @@ type Model struct {
 	Name               string                 `json:"name"`
 	Type               enum.ModelType         `gorm:"type:model_type" json:"type"`
 	Language           string                 `gorm:"-" json:"language,omitempty"`
+	ImportSource       *json.ImportSource     `gorm:"serializer:json;type:jsonb" json:"importSource,omitempty"`
 	IntegrationID      *string                `json:"integrationId"`
 	IntegrationVersion *string                `json:"integrationVersion"`
 	Description        string                 `json:"description"`
@@ -33,6 +34,9 @@ type Model struct {
 // AfterFind derives language; it is no longer persisted independently of the profile.
 func (m *Model) AfterFind(tx *gorm.DB) error {
 	m.Language = ""
+	if m.ImportSource != nil {
+		m.Language = m.ImportSource.Language
+	}
 	if m.IntegrationID != nil && m.IntegrationVersion != nil {
 		var profile struct{ Language string }
 		if err := tx.Session(&gorm.Session{NewDB: true}).Table("integrations").Select("language").Where("id=? AND version=?", *m.IntegrationID, *m.IntegrationVersion).Take(&profile).Error; err != nil {
@@ -48,6 +52,10 @@ func (m *Model) BeforeCreate(_ *gorm.DB) error {
 		m.Language = ""
 		m.IntegrationID = nil
 		m.IntegrationVersion = nil
+		return nil
+	}
+	if m.ImportSource != nil && m.IntegrationID == nil && m.IntegrationVersion == nil {
+		m.Language = m.ImportSource.Language
 		return nil
 	}
 	id, version := "", ""

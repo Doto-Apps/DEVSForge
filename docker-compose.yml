@@ -10,6 +10,8 @@ services:
 
   simulator:
     image: ghcr.io/doto-apps/devsforge-simulator:${DEVSFORGE_IMAGE_TAG:-latest}
+    environment:
+      IMPORT_INTERNAL_TOKEN: ${IMPORT_INTERNAL_TOKEN:?Run task importer:setup first}
     restart: unless-stopped
     volumes:
       - ./tmp/logs:/tmp/sim-logs
@@ -74,3 +76,22 @@ services:
     mem_limit: ${LSP_MEMORY_LIMIT:-4g}
     init: true
     restart: unless-stopped
+
+
+  importer:
+    image: ghcr.io/doto-apps/devsforge-importer:${DEVSFORGE_IMAGE_TAG:-latest}
+    environment:
+      IMPORT_INTERNAL_TOKEN: ${IMPORT_INTERNAL_TOKEN:?Run task importer:setup first}
+    volumes:
+      - import-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 64
+    init: true
+    restart: unless-stopped
+
+volumes:
+  import-data:

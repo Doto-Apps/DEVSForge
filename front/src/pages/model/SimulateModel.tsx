@@ -1,12 +1,13 @@
 import { Loader } from "lucide-react";
 import { useMemo } from "react";
 import { useParams } from "react-router-dom";
-
+import { ExecutionUnavailable } from "@/components/custom/ExecutionUnavailable";
 import {
 	SimulationPanel,
 	type SimulationParameterTarget,
 } from "@/components/custom/SimulationPanel";
 import NavHeader from "@/components/nav/nav-header";
+import { useModelCapabilities } from "@/hooks/useModelCapabilities";
 import { modelToReactflow } from "@/lib/modelToReactflow";
 import { useGetLibraryById } from "@/queries/library/useGetLibraryById";
 import { useGetModelById } from "@/queries/model/useGetModelById";
@@ -25,6 +26,7 @@ export function SimulateModel() {
 				}
 			: null,
 	);
+	const capability = useModelCapabilities(modelId);
 
 	const { data: recursiveModels } = useGetModelByIdRecursive(
 		modelId
@@ -99,6 +101,14 @@ export function SimulateModel() {
 			.sort((a, b) => a.instanceModelId.localeCompare(b.instanceModelId));
 	}, [reactFlowModel]);
 
+	if (!capability.available)
+		return (
+			<ExecutionUnavailable
+				libraryId={libraryId}
+				modelId={modelId}
+				reason={capability.reason}
+			/>
+		);
 	if (isLoadingModel || isLoadingLib) {
 		return (
 			<div className="flex items-center justify-center h-screen w-full">

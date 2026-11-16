@@ -1,2 +1,9 @@
+root = ".."
+
 [build]
+    cmd = "go build -o ./tmp/main ."
+    bin = "./tmp/main"
+    include_dir = ["coordinator", "shared"]
+    include_ext = ["go", "mod", "sum"]
+    exclude_dir = ["coordinator/tmp"]
     poll = true

@@ -174,7 +174,11 @@ export const ModelCodeEditor = ({
 					current.current.onCodeChange(active.getValue(), modelId);
 					if (!connection && !connecting) void start();
 				});
-				void start();
+				if (!integrationId || !integrationVersion)
+					setStatus(
+						"Language assistance is unavailable for this framework. Source editing remains available.",
+					);
+				else void start();
 			})
 			.catch((error) => {
 				if (!disposed) setStatus(String(error));
@@ -221,13 +225,15 @@ export const ModelCodeEditor = ({
 			{status && (
 				<div className="text-xs text-muted-foreground px-2 py-1" role="status">
 					{status}{" "}
-					<button
-						className="underline"
-						onClick={() => setAttempt((v) => v + 1)}
-						type="button"
-					>
-						Retry
-					</button>
+					{integrationId && integrationVersion && (
+						<button
+							className="underline"
+							onClick={() => setAttempt((v) => v + 1)}
+							type="button"
+						>
+							Retry
+						</button>
+					)}
 				</div>
 			)}
 			{source && (

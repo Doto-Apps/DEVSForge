@@ -47,7 +47,7 @@ services:
       - runner-build:/build
       - go-mod-cache:/go/pkg/mod
       - go-build-cache:/root/.cache/go-build
-    command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
+    command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner.next ./simulator/runner && mv /build/devsforge-runner.next /build/devsforge-runner"
     develop:
       watch:
         - action: sync+exec
@@ -55,13 +55,13 @@ services:
           target: /app/simulator/runner
           exec:
             working_dir: /app
-            command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
+            command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner.next ./simulator/runner && mv /build/devsforge-runner.next /build/devsforge-runner"
         - action: sync+exec
           path: ./simulator/shared
           target: /app/simulator/shared
           exec:
             working_dir: /app
-            command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner ./simulator/runner"
+            command: sh -c "CGO_ENABLED=0 go build -ldflags='-s -w' -o /build/devsforge-runner.next ./simulator/runner && mv /build/devsforge-runner.next /build/devsforge-runner"
   simulator:
     build:
       context: .
@@ -70,7 +70,7 @@ services:
     environment:
       GOMODCACHE: /go/pkg/mod
       GOCACHE: /root/.cache/go-build
-      PATHS_RUNNER_CMD: /runner-build/devsforge-runner
+      PATHS_RUNNER_CMD: /usr/local/bin/devsforge-dev-runner
       INTEGRATIONS_DIR: /app/simulator/runner/integrations
       SHARED_GO_DIR: /app/simulator/shared
     env_file:
@@ -156,7 +156,25 @@ services:
       - ./simulator/runner/integrations:/opt/devsforge/integrations:ro
       - ./simulator/shared:/opt/devsforge/shared:ro
 
+  importer:
+    build:
+      context: .
+      dockerfile: importer/Dockerfile
+    environment:
+      IMPORT_INTERNAL_TOKEN: ${IMPORT_INTERNAL_TOKEN:?Run task importer:setup first}
+    volumes:
+      - import-data:/data
+    read_only: true
+    tmpfs:
+      - /tmp:size=64m
+    mem_limit: 512m
+    cpus: 1
+    pids_limit: 64
+    init: true
+    restart: unless-stopped
+
 volumes:
+  import-data:
   go-mod-cache:
   go-build-cache:
   runner-build:

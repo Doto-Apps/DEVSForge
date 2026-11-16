@@ -679,6 +679,193 @@
                 }
             }
         },
+        "/imports": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Imports"
+                ],
+                "summary": "List resumable import drafts for the current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/handler.ImportDraft"
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Imports"
+                ],
+                "summary": "Analyze an import",
+                "parameters": [
+                    {
+                        "description": "Files and import mode",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ImportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ImportJob"
+                        }
+                    }
+                }
+            }
+        },
+        "/imports/{id}": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Imports"
+                ],
+                "summary": "Get import progress and preview",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Import id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ImportJob"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Imports"
+                ],
+                "summary": "Cancel and discard an import",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Import id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/imports/{id}/commit": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Imports"
+                ],
+                "summary": "Save reviewed models as new copies in a library",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Import id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Destination and review confirmation",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CommitImportRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ImportResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/imports/{id}/turns": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Imports"
+                ],
+                "summary": "Discuss, adapt or verify an import draft",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Import id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Next step",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.ImportTurn"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ImportJob"
+                        }
+                    }
+                }
+            }
+        },
         "/integrations": {
             "get": {
                 "produces": [
@@ -1361,6 +1548,34 @@
                         "schema": {
                             "type": "object",
                             "additionalProperties": true
+                        }
+                    }
+                }
+            }
+        },
+        "/model/{id}/capabilities": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "models"
+                ],
+                "summary": "Get model execution availability including nested components",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Model id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ModelCapabilities"
                         }
                     }
                 }
@@ -2576,6 +2791,348 @@
                 "Coupled"
             ]
         },
+        "exchange.Component": {
+            "type": "object",
+            "properties": {
+                "instanceId": {
+                    "type": "string"
+                },
+                "modelId": {
+                    "type": "string"
+                },
+                "parameterOverrides": {
+                    "type": "object",
+                    "additionalProperties": {}
+                }
+            }
+        },
+        "exchange.Model": {
+            "type": "object",
+            "properties": {
+                "blockedReason": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
+                "components": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/exchange.Component"
+                    }
+                },
+                "connections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.ModelConnection"
+                    }
+                },
+                "dependencies": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "description": {
+                    "type": "string"
+                },
+                "evidence": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "files": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    }
+                },
+                "framework": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "integrationId": {
+                    "type": "string"
+                },
+                "integrationVersion": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "missing": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "name": {
+                    "type": "string"
+                },
+                "original": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "parameters": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.ModelParameter"
+                    }
+                },
+                "ports": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/json.ModelPort"
+                    }
+                },
+                "runnerId": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
+        "exchange.Package": {
+            "type": "object",
+            "properties": {
+                "assets": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/exchange.Model"
+                    }
+                },
+                "roots": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "version": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.CommitImportRequest": {
+            "type": "object",
+            "properties": {
+                "libraryId": {
+                    "type": "string"
+                },
+                "reviewed": {
+                    "type": "boolean"
+                },
+                "revision": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.ImportDraft": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "modelCount": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "updated": {
+                    "type": "number"
+                },
+                "verificationStatus": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ImportFile": {
+            "type": "object",
+            "properties": {
+                "base64": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ImportJob": {
+            "type": "object",
+            "properties": {
+                "attempts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.ImportVerification"
+                    }
+                },
+                "changes": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "error": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "messages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.ImportMessage"
+                    }
+                },
+                "package": {
+                    "$ref": "#/definitions/exchange.Package"
+                },
+                "phase": {
+                    "type": "string"
+                },
+                "progress": {
+                    "type": "string"
+                },
+                "revision": {
+                    "type": "integer"
+                },
+                "state": {
+                    "type": "string"
+                },
+                "strategy": {
+                    "type": "string"
+                },
+                "verification": {
+                    "$ref": "#/definitions/handler.ImportVerification"
+                },
+                "warnings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handler.ImportMessage": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ImportRequest": {
+            "type": "object",
+            "properties": {
+                "files": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.ImportFile"
+                    }
+                },
+                "instructions": {
+                    "type": "string"
+                },
+                "mode": {
+                    "type": "string"
+                },
+                "targetIntegrationId": {
+                    "type": "string"
+                },
+                "targetIntegrationVersion": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ImportResult": {
+            "type": "object",
+            "properties": {
+                "modelIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "rootIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "handler.ImportTurn": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string"
+                },
+                "instructions": {
+                    "type": "string"
+                },
+                "maxTime": {
+                    "type": "number"
+                },
+                "rootId": {
+                    "type": "string"
+                },
+                "targetIntegrationId": {
+                    "type": "string"
+                },
+                "targetIntegrationVersion": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.ImportVerification": {
+            "type": "object",
+            "properties": {
+                "digest": {
+                    "type": "string"
+                },
+                "durationMs": {
+                    "type": "integer"
+                },
+                "error": {
+                    "type": "string"
+                },
+                "logs": {
+                    "type": "string"
+                },
+                "maxTime": {
+                    "type": "number"
+                },
+                "revision": {
+                    "type": "integer"
+                },
+                "rootId": {
+                    "type": "string"
+                },
+                "simulationId": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "handler.LSPConnection": {
             "type": "object",
             "properties": {
@@ -2651,6 +3208,17 @@
                 }
             }
         },
+        "handler.ModelCapabilities": {
+            "type": "object",
+            "properties": {
+                "reason": {
+                    "type": "string"
+                },
+                "simulation": {
+                    "type": "boolean"
+                }
+            }
+        },
         "integrations.Capabilities": {
             "type": "object",
             "properties": {
@@ -2692,6 +3260,12 @@
                 "framework": {
                     "type": "string"
                 },
+                "frameworkAliases": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "id": {
                     "type": "string"
                 },
@@ -2712,6 +3286,12 @@
                 },
                 "prompt": {
                     "type": "string"
+                },
+                "providedLibraries": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "servers": {
                     "type": "array",
@@ -2754,6 +3334,28 @@
                 "settings": {
                     "type": "object",
                     "additionalProperties": {}
+                }
+            }
+        },
+        "json.ImportSource": {
+            "type": "object",
+            "properties": {
+                "assets": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "document": {
+                    "type": "object",
+                    "additionalProperties": {}
+                },
+                "framework": {
+                    "type": "string"
+                },
+                "language": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
                 }
             }
         },
@@ -3176,6 +3778,9 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "importSource": {
+                    "$ref": "#/definitions/json.ImportSource"
                 },
                 "integrationId": {
                     "type": "string"
@@ -4253,6 +4858,9 @@
                 },
                 "id": {
                     "type": "string"
+                },
+                "importSource": {
+                    "$ref": "#/definitions/json.ImportSource"
                 },
                 "integrationId": {
                     "type": "string"

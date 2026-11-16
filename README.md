@@ -96,6 +96,7 @@ Access:
 - Backend: `ghcr.io/doto-apps/devsforge-backend`
 - Simulator: `ghcr.io/doto-apps/devsforge-simulator`
 - LSP: `ghcr.io/doto-apps/devsforge-lsp`
+- Import worker: `ghcr.io/doto-apps/devsforge-importer`
 
 ## Repository Navigation
 
@@ -104,6 +105,7 @@ Access:
 | `back/` | API, persistence, AI generation, simulation orchestration | [back/README.md](back/README.md) |
 | `front/` | UI for modeling, generation, validation, simulation, webapps | [front/README.md](front/README.md) |
 | `simulator/` | DEVS distributed runtime (coordinator, runners, shared contracts) | [simulator/README.md](simulator/README.md) |
+| `importer/` | ISO draft reader, AI import agent, reusable adapters and exchange core | [docs/model-import.md](docs/model-import.md) |
 | `simulator/runner/integrations/` | Versioned integration resources, wrappers, AI templates and LSP | [docs/integrations.md](docs/integrations.md) |
 | Reproducibility assets | Case-study protocols and experiment flow | [docs/reproducibility.md](docs/reproducibility.md) |
 

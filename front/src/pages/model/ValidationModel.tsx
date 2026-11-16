@@ -12,6 +12,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { client } from "@/api/client";
 import type { components } from "@/api/v1";
 import { Dictation } from "@/components/custom/Dictation";
+import { ExecutionUnavailable } from "@/components/custom/ExecutionUnavailable";
 import {
 	CodeGenerationPanel,
 	StructureEditor,
@@ -35,6 +36,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useGenerateEFStructure } from "@/hooks/useGenerateEFStructure";
+import { useModelCapabilities } from "@/hooks/useModelCapabilities";
 import {
 	replaceGeneratedMutPlaceholder,
 	validateGeneratedMutConnections,
@@ -92,6 +94,7 @@ export function ValidationModel() {
 		modelId: string;
 	}>();
 	const navigate = useNavigate();
+	const capability = useModelCapabilities(modelId);
 	const { toast } = useToast();
 	const [isCreating, setIsCreating] = useState(false);
 	const [isSavingAssisted, setIsSavingAssisted] = useState(false);
@@ -530,6 +533,14 @@ export function ValidationModel() {
 		}
 	};
 
+	if (!capability.available)
+		return (
+			<ExecutionUnavailable
+				libraryId={libraryId}
+				modelId={modelId}
+				reason={capability.reason}
+			/>
+		);
 	if (isLoadingTargetModel || isLoadingLibrary || isLoadingFrames) {
 		return (
 			<div className="flex items-center justify-center h-screen w-full">

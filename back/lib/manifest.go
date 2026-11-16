@@ -3,6 +3,7 @@ package lib
 import (
 	"devsforge/json"
 	"devsforge/model"
+	"devsforge/services"
 	"errors"
 	"fmt"
 	"math"
@@ -52,6 +53,9 @@ func ModelToManifest(
 	maxTime float64,
 	runtimeOverrides []RuntimeInstanceOverride,
 ) (*shared.RunnableManifest, error) {
+	if err := services.CheckSimulation(models); err != nil {
+		return nil, err
+	}
 	rootModel := getModelWithId(models, rootID)
 	if rootModel == nil {
 		return nil, ErrModelNotFound

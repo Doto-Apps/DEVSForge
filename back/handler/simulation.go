@@ -48,6 +48,9 @@ func SetupSimulationRoutes(app *fiber.App) {
 func createSimulation(c *fiber.Ctx) error {
 	modelID := c.Params("modelId")
 	userID := c.Locals("user_id").(string)
+	if err := checkImportedModel(modelID, userID); err != nil {
+		return SendRequestError(c, 400, err)
+	}
 
 	if modelID == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
@@ -121,6 +124,9 @@ func startSimulation(c *fiber.Ctx) error {
 	}
 
 	// Check if simulation is in pending state
+	if err := checkImportedModel(simulation.ModelID, userID); err != nil {
+		return SendRequestError(c, 400, err)
+	}
 	if simulation.Status != model.SimulationStatusPending {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"error": "Simulation is not in pending state",

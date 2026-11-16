@@ -6,8 +6,11 @@ import type { ReactFlowInput } from "@/types";
 const cleanHandleId = (str: string | undefined | null) =>
 	str?.replace(/^(in-internal-|out-internal-|out-|in-)/, "");
 
-const getPortIdentifierFromHandle = (handle: string | undefined | null) =>
-	cleanHandleId(handle)?.split(":")[1] ?? "";
+const getPortIdentifierFromHandle = (handle: string | undefined | null) => {
+	const value = cleanHandleId(handle) ?? "";
+	const separator = value.indexOf(":");
+	return separator < 0 ? "" : value.slice(separator + 1);
+};
 
 const resolvePortNameFromNode = (
 	node: ReactFlowInput["nodes"][number] | undefined,

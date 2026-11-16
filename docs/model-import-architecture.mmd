@@ -1,0 +1,27 @@
+flowchart TD
+    INPUT["Fichiers, dossier ou archive"] --> MODE{"Mode d'import"}
+    MODE -->|ISO| ISO["Lecture du format standard"]
+    MODE -->|Autre format| AI["Agent : exploration et interpretation"]
+    PARSERS[("Bibliotheque de parseurs")] <--> AI
+    ISO --> DRAFT["Brouillon commun : modeles, ports et connexions"]
+    AI --> DRAFT
+    DRAFT --> CHAT["Discussion : expliquer, poser des questions, choisir un objectif"]
+    CHAT -->|Conserver cette version| REVIEW["Revue du code, des changements et des resultats"]
+    CHAT -->|Adapter et verifier| ADAPT["Adaptation vers un framework installe"]
+    CHAT -->|Verifier sans modifier| TEST["Compilation et simulation reelles"]
+    ADAPT --> TEST
+    TEST --> RESULT{"Resultat"}
+    RESULT -->|Succes| REVIEW
+    RESULT -->|Erreur corrigeable, budget disponible| ADAPT
+    RESULT -->|Question, blocage ou limite atteinte| CHAT
+    REVIEW -->|Enregistrer| LIB[("Bibliotheque de modeles")]
+    REVIEW -->|Poursuivre la discussion| CHAT
+    STATE[("Session persistante : fichiers originaux, echanges, essais")] -.-> CHAT
+    STATE -.-> DRAFT
+    LIB --> CAP["Simulation disponible selon compatibilite du modele"]
+    classDef ai fill:#ede9fe,stroke:#7c3aed,color:#2e1065
+    classDef data fill:#eff6ff,stroke:#2563eb,color:#172554
+    classDef success fill:#dcfce7,stroke:#16a34a,color:#14532d
+    class AI,ADAPT,CHAT ai
+    class DRAFT,STATE,PARSERS data
+    class LIB,REVIEW success

@@ -24,6 +24,231 @@ definitions:
     x-enum-varnames:
     - Atomic
     - Coupled
+  exchange.Component:
+    properties:
+      instanceId:
+        type: string
+      modelId:
+        type: string
+      parameterOverrides:
+        additionalProperties: {}
+        type: object
+    type: object
+  exchange.Model:
+    properties:
+      blockedReason:
+        type: string
+      code:
+        type: string
+      components:
+        items:
+          $ref: '#/definitions/exchange.Component'
+        type: array
+      connections:
+        items:
+          $ref: '#/definitions/json.ModelConnection'
+        type: array
+      dependencies:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      evidence:
+        items:
+          type: string
+        type: array
+      files:
+        additionalProperties:
+          type: string
+        type: object
+      framework:
+        type: string
+      id:
+        type: string
+      integrationId:
+        type: string
+      integrationVersion:
+        type: string
+      language:
+        type: string
+      missing:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      original:
+        additionalProperties: {}
+        type: object
+      parameters:
+        items:
+          $ref: '#/definitions/json.ModelParameter'
+        type: array
+      ports:
+        items:
+          $ref: '#/definitions/json.ModelPort'
+        type: array
+      runnerId:
+        type: string
+      type:
+        type: string
+    type: object
+  exchange.Package:
+    properties:
+      assets:
+        additionalProperties: {}
+        type: object
+      models:
+        items:
+          $ref: '#/definitions/exchange.Model'
+        type: array
+      roots:
+        items:
+          type: string
+        type: array
+      version:
+        type: string
+    type: object
+  handler.CommitImportRequest:
+    properties:
+      libraryId:
+        type: string
+      reviewed:
+        type: boolean
+      revision:
+        type: integer
+    type: object
+  handler.ImportDraft:
+    properties:
+      id:
+        type: string
+      modelCount:
+        type: integer
+      state:
+        type: string
+      title:
+        type: string
+      updated:
+        type: number
+      verificationStatus:
+        type: string
+    type: object
+  handler.ImportFile:
+    properties:
+      base64:
+        type: string
+      name:
+        type: string
+    type: object
+  handler.ImportJob:
+    properties:
+      attempts:
+        items:
+          $ref: '#/definitions/handler.ImportVerification'
+        type: array
+      changes:
+        items:
+          type: string
+        type: array
+      error:
+        type: string
+      id:
+        type: string
+      messages:
+        items:
+          $ref: '#/definitions/handler.ImportMessage'
+        type: array
+      package:
+        $ref: '#/definitions/exchange.Package'
+      phase:
+        type: string
+      progress:
+        type: string
+      revision:
+        type: integer
+      state:
+        type: string
+      strategy:
+        type: string
+      verification:
+        $ref: '#/definitions/handler.ImportVerification'
+      warnings:
+        items:
+          type: string
+        type: array
+    type: object
+  handler.ImportMessage:
+    properties:
+      content:
+        type: string
+      id:
+        type: string
+      role:
+        type: string
+    type: object
+  handler.ImportRequest:
+    properties:
+      files:
+        items:
+          $ref: '#/definitions/handler.ImportFile'
+        type: array
+      instructions:
+        type: string
+      mode:
+        type: string
+      targetIntegrationId:
+        type: string
+      targetIntegrationVersion:
+        type: string
+    type: object
+  handler.ImportResult:
+    properties:
+      modelIds:
+        items:
+          type: string
+        type: array
+      rootIds:
+        items:
+          type: string
+        type: array
+    type: object
+  handler.ImportTurn:
+    properties:
+      action:
+        type: string
+      instructions:
+        type: string
+      maxTime:
+        type: number
+      rootId:
+        type: string
+      targetIntegrationId:
+        type: string
+      targetIntegrationVersion:
+        type: string
+    type: object
+  handler.ImportVerification:
+    properties:
+      digest:
+        type: string
+      durationMs:
+        type: integer
+      error:
+        type: string
+      logs:
+        type: string
+      maxTime:
+        type: number
+      revision:
+        type: integer
+      rootId:
+        type: string
+      simulationId:
+        type: string
+      status:
+        type: string
+    type: object
   handler.LSPConnection:
     properties:
       allowedCommands:
@@ -73,6 +298,13 @@ definitions:
       workspaceUri:
         type: string
     type: object
+  handler.ModelCapabilities:
+    properties:
+      reason:
+        type: string
+      simulation:
+        type: boolean
+    type: object
   integrations.Capabilities:
     properties:
       ai:
@@ -100,6 +332,10 @@ definitions:
         type: string
       framework:
         type: string
+      frameworkAliases:
+        items:
+          type: string
+        type: array
       id:
         type: string
       language:
@@ -114,6 +350,10 @@ definitions:
         type: string
       prompt:
         type: string
+      providedLibraries:
+        items:
+          type: string
+        type: array
       servers:
         items:
           $ref: '#/definitions/integrations.Server'
@@ -142,6 +382,21 @@ definitions:
       settings:
         additionalProperties: {}
         type: object
+    type: object
+  json.ImportSource:
+    properties:
+      assets:
+        additionalProperties: {}
+        type: object
+      document:
+        additionalProperties: {}
+        type: object
+      framework:
+        type: string
+      language:
+        type: string
+      reason:
+        type: string
     type: object
   json.ModelColors:
     properties:
@@ -430,6 +685,8 @@ definitions:
         type: string
       id:
         type: string
+      importSource:
+        $ref: '#/definitions/json.ImportSource'
       integrationId:
         type: string
       integrationVersion:
@@ -1148,6 +1405,8 @@ definitions:
         type: string
       id:
         type: string
+      importSource:
+        $ref: '#/definitions/json.ImportSource'
       integrationId:
         type: string
       integrationVersion:
@@ -1921,6 +2180,127 @@ paths:
       summary: API health check
       tags:
       - Health
+  /imports:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/handler.ImportDraft'
+            type: array
+      summary: List resumable import drafts for the current user
+      tags:
+      - Imports
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Files and import mode
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ImportRequest'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/handler.ImportJob'
+      summary: Analyze an import
+      tags:
+      - Imports
+  /imports/{id}:
+    delete:
+      parameters:
+      - description: Import id
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Cancel and discard an import
+      tags:
+      - Imports
+    get:
+      parameters:
+      - description: Import id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ImportJob'
+      summary: Get import progress and preview
+      tags:
+      - Imports
+  /imports/{id}/commit:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Import id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Destination and review confirmation
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CommitImportRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ImportResult'
+      summary: Save reviewed models as new copies in a library
+      tags:
+      - Imports
+  /imports/{id}/turns:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: Import id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Next step
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.ImportTurn'
+      produces:
+      - application/json
+      responses:
+        "202":
+          description: Accepted
+          schema:
+            $ref: '#/definitions/handler.ImportJob'
+      summary: Discuss, adapt or verify an import draft
+      tags:
+      - Imports
   /integrations:
     get:
       produces:
@@ -2376,6 +2756,24 @@ paths:
             additionalProperties: true
             type: object
       summary: Update a model
+      tags:
+      - models
+  /model/{id}/capabilities:
+    get:
+      parameters:
+      - description: Model id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/handler.ModelCapabilities'
+      summary: Get model execution availability including nested components
       tags:
       - models
   /model/{id}/manifest:

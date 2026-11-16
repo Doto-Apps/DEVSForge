@@ -2,7 +2,7 @@ import type { Node } from "@xyflow/react";
 import { Loader } from "lucide-react";
 import { useCallback, useEffect } from "react";
 import { type Options, useHotkeys } from "react-hotkeys-hook";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ModelCodeEditor } from "@/components/custom/ModelCodeEditor";
 import { ModelPropertyEditor } from "@/components/custom/ModelPropertyEditor";
 import { ModelViewEditor } from "@/components/custom/ModelViewEditor";
@@ -13,6 +13,7 @@ import {
 	ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { useToast } from "@/hooks/use-toast";
+import { getLayoutedElements } from "@/lib/getLayoutedElements";
 import { modelToReactflow } from "@/lib/modelToReactflow";
 import { updateCodeBasedOnProperties } from "@/lib/updateCodeBasedOnProperties";
 import { useWorkbench } from "@/providers/WorkbenchProvider";
@@ -34,6 +35,7 @@ export function EditModel() {
 		modelId: string;
 	}>();
 	const navigate = useNavigate();
+	const [searchParams, setSearchParams] = useSearchParams();
 
 	const { data, error, isLoading, mutate } = useGetModelByIdRecursive(
 		modelId
@@ -62,6 +64,23 @@ export function EditModel() {
 	);
 	const undo = () => modelId && workbench.undo(modelId);
 	const redo = () => modelId && workbench.undo(modelId, true);
+	useEffect(() => {
+		if (searchParams.get("layout") !== "import" || !structure || !modelId)
+			return;
+		let active = true;
+		void getLayoutedElements(structure.nodes, structure.edges)
+			.then((graph) => {
+				if (!active) return;
+				workbench.update(modelId, graph, true);
+				setSearchParams({}, { replace: true });
+			})
+			.catch(() => {
+				if (active) setSearchParams({}, { replace: true });
+			});
+		return () => {
+			active = false;
+		};
+	}, [searchParams, structure, modelId, workbench.update, setSearchParams]);
 
 	useHotkeys(
 		["ctrl+z", "meta+z"],
@@ -240,6 +259,20 @@ export function EditModel() {
 				simulateFunction={simulateModel}
 				validateFunction={validateModel}
 			/>
+			{profileModel?.importSource && (
+				<div
+					className="border-b px-4 py-2 text-sm text-muted-foreground"
+					role="note"
+				>
+					Imported model ·{" "}
+					{profileModel.importSource.framework ||
+						profileModel.importSource.language ||
+						"Unspecified framework"}
+					.
+					{profileModel.importSource.reason &&
+						` ${profileModel.importSource.reason}`}
+				</div>
+			)}
 
 			{mainModel?.data.modelType === "atomic" ? (
 				<ResizablePanelGroup direction="horizontal">

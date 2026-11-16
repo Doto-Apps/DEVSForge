@@ -54,6 +54,9 @@ func createExperimentalFrame(c *fiber.Ctx) error {
 	if req.TargetModelID == "" {
 		return SendRequestError(c, fiber.StatusBadRequest, errors.New("targetModelId is required"))
 	}
+	if err := checkImportedModel(req.TargetModelID, userID); err != nil {
+		return SendRequestError(c, 400, err)
+	}
 
 	if req.IsAssistedSave() {
 		return createAssistedExperimentalFrame(c, db, userID, req)

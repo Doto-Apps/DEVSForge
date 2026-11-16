@@ -924,6 +924,219 @@ export interface paths {
 		patch?: never;
 		trace?: never;
 	};
+	"/imports": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** List resumable import drafts for the current user */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["handler.ImportDraft"][];
+					};
+				};
+			};
+		};
+		put?: never;
+		/** Analyze an import */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path?: never;
+				cookie?: never;
+			};
+			/** @description Files and import mode */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["handler.ImportRequest"];
+				};
+			};
+			responses: {
+				/** @description Accepted */
+				202: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["handler.ImportJob"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/imports/{id}": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Get import progress and preview */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Import id */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["handler.ImportJob"];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		/** Cancel and discard an import */
+		delete: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Import id */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"*/*": {
+							[key: string]: string;
+						};
+					};
+				};
+			};
+		};
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/imports/{id}/commit": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Save reviewed models as new copies in a library */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Import id */
+					id: string;
+				};
+				cookie?: never;
+			};
+			/** @description Destination and review confirmation */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["handler.CommitImportRequest"];
+				};
+			};
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["handler.ImportResult"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
+	"/imports/{id}/turns": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		get?: never;
+		put?: never;
+		/** Discuss, adapt or verify an import draft */
+		post: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Import id */
+					id: string;
+				};
+				cookie?: never;
+			};
+			/** @description Next step */
+			requestBody: {
+				content: {
+					"application/json": components["schemas"]["handler.ImportTurn"];
+				};
+			};
+			responses: {
+				/** @description Accepted */
+				202: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["handler.ImportJob"];
+					};
+				};
+			};
+		};
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
+		trace?: never;
+	};
 	"/integrations": {
 		parameters: {
 			query?: never;
@@ -1804,6 +2017,45 @@ export interface paths {
 				};
 			};
 		};
+		trace?: never;
+	};
+	"/model/{id}/capabilities": {
+		parameters: {
+			query?: never;
+			header?: never;
+			path?: never;
+			cookie?: never;
+		};
+		/** Get model execution availability including nested components */
+		get: {
+			parameters: {
+				query?: never;
+				header?: never;
+				path: {
+					/** @description Model id */
+					id: string;
+				};
+				cookie?: never;
+			};
+			requestBody?: never;
+			responses: {
+				/** @description OK */
+				200: {
+					headers: {
+						[name: string]: unknown;
+					};
+					content: {
+						"application/json": components["schemas"]["handler.ModelCapabilities"];
+					};
+				};
+			};
+		};
+		put?: never;
+		post?: never;
+		delete?: never;
+		options?: never;
+		head?: never;
+		patch?: never;
 		trace?: never;
 	};
 	"/model/{id}/manifest": {
@@ -3376,6 +3628,114 @@ export interface components {
 		"devsforge_enum.ModelPortDirection": "in" | "out";
 		/** @enum {string} */
 		"devsforge_enum.ModelType": "atomic" | "coupled";
+		"exchange.Component": {
+			instanceId?: string;
+			modelId?: string;
+			parameterOverrides?: {
+				[key: string]: unknown;
+			};
+		};
+		"exchange.Model": {
+			blockedReason?: string;
+			code?: string;
+			components?: components["schemas"]["exchange.Component"][];
+			connections?: components["schemas"]["json.ModelConnection"][];
+			dependencies?: string[];
+			description?: string;
+			evidence?: string[];
+			files?: {
+				[key: string]: string;
+			};
+			framework?: string;
+			id?: string;
+			integrationId?: string;
+			integrationVersion?: string;
+			language?: string;
+			missing?: string[];
+			name?: string;
+			original?: {
+				[key: string]: unknown;
+			};
+			parameters?: components["schemas"]["json.ModelParameter"][];
+			ports?: components["schemas"]["json.ModelPort"][];
+			runnerId?: string;
+			type?: string;
+		};
+		"exchange.Package": {
+			assets?: {
+				[key: string]: unknown;
+			};
+			models?: components["schemas"]["exchange.Model"][];
+			roots?: string[];
+			version?: string;
+		};
+		"handler.CommitImportRequest": {
+			libraryId?: string;
+			reviewed?: boolean;
+			revision?: number;
+		};
+		"handler.ImportDraft": {
+			id?: string;
+			modelCount?: number;
+			state?: string;
+			title?: string;
+			updated?: number;
+			verificationStatus?: string;
+		};
+		"handler.ImportFile": {
+			base64?: string;
+			name?: string;
+		};
+		"handler.ImportJob": {
+			attempts?: components["schemas"]["handler.ImportVerification"][];
+			changes?: string[];
+			error?: string;
+			id?: string;
+			messages?: components["schemas"]["handler.ImportMessage"][];
+			package?: components["schemas"]["exchange.Package"];
+			phase?: string;
+			progress?: string;
+			revision?: number;
+			state?: string;
+			strategy?: string;
+			verification?: components["schemas"]["handler.ImportVerification"];
+			warnings?: string[];
+		};
+		"handler.ImportMessage": {
+			content?: string;
+			id?: string;
+			role?: string;
+		};
+		"handler.ImportRequest": {
+			files?: components["schemas"]["handler.ImportFile"][];
+			instructions?: string;
+			mode?: string;
+			targetIntegrationId?: string;
+			targetIntegrationVersion?: string;
+		};
+		"handler.ImportResult": {
+			modelIds?: string[];
+			rootIds?: string[];
+		};
+		"handler.ImportTurn": {
+			action?: string;
+			instructions?: string;
+			maxTime?: number;
+			rootId?: string;
+			targetIntegrationId?: string;
+			targetIntegrationVersion?: string;
+		};
+		"handler.ImportVerification": {
+			digest?: string;
+			durationMs?: number;
+			error?: string;
+			logs?: string;
+			maxTime?: number;
+			revision?: number;
+			rootId?: string;
+			simulationId?: string;
+			status?: string;
+		};
 		"handler.LSPConnection": {
 			allowedCommands?: string[];
 			id?: string;
@@ -3400,6 +3760,10 @@ export interface components {
 			status?: string;
 			workspaceUri?: string;
 		};
+		"handler.ModelCapabilities": {
+			reason?: string;
+			simulation?: boolean;
+		};
 		"integrations.Capabilities": {
 			ai?: boolean;
 			lsp?: boolean;
@@ -3413,6 +3777,7 @@ export interface components {
 			digest?: string;
 			extension?: string;
 			framework?: string;
+			frameworkAliases?: string[];
 			id?: string;
 			language?: string;
 			legacyLanguage?: string;
@@ -3420,6 +3785,7 @@ export interface components {
 			name?: string;
 			preparation?: string;
 			prompt?: string;
+			providedLibraries?: string[];
 			servers?: components["schemas"]["integrations.Server"][];
 			template?: string;
 			version?: string;
@@ -3433,6 +3799,17 @@ export interface components {
 			settings?: {
 				[key: string]: unknown;
 			};
+		};
+		"json.ImportSource": {
+			assets?: {
+				[key: string]: unknown;
+			};
+			document?: {
+				[key: string]: unknown;
+			};
+			framework?: string;
+			language?: string;
+			reason?: string;
 		};
 		"json.ModelColors": {
 			bodyBackgroundColor?: string;
@@ -3552,6 +3929,7 @@ export interface components {
 			deletedAt?: string;
 			description?: string;
 			id?: string;
+			importSource?: components["schemas"]["json.ImportSource"];
 			integrationId?: string;
 			integrationVersion?: string;
 			language?: string;
@@ -3860,6 +4238,7 @@ export interface components {
 			connections: components["schemas"]["json.ModelConnection"][];
 			description: string;
 			id: string;
+			importSource?: components["schemas"]["json.ImportSource"];
 			integrationId?: string;
 			integrationVersion?: string;
 			language?: string;

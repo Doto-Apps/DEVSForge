@@ -6,6 +6,7 @@ import {
 	Map as MapIcon,
 	Rocket,
 	Sparkles,
+	Upload,
 	Workflow,
 } from "lucide-react";
 import type * as React from "react";
@@ -45,6 +46,7 @@ const data = {
 			url: "/devs-generator",
 		},
 		{ icon: MapIcon, name: "Roadmap", url: "/roadmap" },
+		{ icon: Upload, name: "Import models", url: "/import" },
 		{
 			icon: Rocket,
 			name: "WebApps",

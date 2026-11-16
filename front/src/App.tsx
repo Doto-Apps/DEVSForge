@@ -21,6 +21,7 @@ import { GeneratorFlow } from "./pages/generator/GeneratorFlow";
 import { GettingStarted } from "./pages/help/GettingStarted";
 import { HowItWorks, LegacyDocumentation } from "./pages/help/HowItWorks";
 import { ModelerHome } from "./pages/home/ModelerHome";
+import { ImportModels } from "./pages/import/ImportModels";
 import { CreateLibrary } from "./pages/library/CreateLibrary";
 import { LibrariesHome } from "./pages/library/LibrariesHome";
 import { CreateModel } from "./pages/model/CreateModel";
@@ -52,6 +53,7 @@ const Main = () => {
 		<DefaultLayout>
 			<Routes>
 				<Route element={<CreateLibrary />} path="/library/new" />
+				<Route element={<ImportModels />} path="/import" />
 				<Route element={<LibrariesHome />} path="/library" />
 				<Route element={<LibrariesHome />} path="/library/:libraryId" />
 				<Route element={<CreateModel />} path="/library/:libId/model/new" />

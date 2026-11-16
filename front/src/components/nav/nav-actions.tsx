@@ -11,7 +11,7 @@ import {
 	ShieldCheck,
 } from "lucide-react";
 import * as React from "react";
-import { client } from "@/api/client";
+import { client, useQuery } from "@/api/client";
 import type { components } from "@/api/v1";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +28,12 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const data = [
 	{
@@ -66,6 +72,17 @@ export function NavActions({
 	modelId,
 }: NavActionsProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
+	const { data: capability, error: capabilityError } = useQuery(
+		"/model/{id}/capabilities",
+		modelId ? { params: { path: { id: modelId } } } : null,
+	);
+	const blockedReason = modelId
+		? capabilityError
+			? "Execution availability could not be checked."
+			: capability?.simulation
+				? ""
+				: capability?.reason || "Checking execution availability…"
+		: "";
 
 	const handleExportManifest = async () => {
 		if (modelId) {
@@ -94,40 +111,49 @@ export function NavActions({
 	return (
 		<div className="flex items-center gap-2 text-sm">
 			{validateFunction && (
-				<Button
-					aria-label="Validate"
-					className="size-7 xl:w-auto xl:px-2"
-					onClick={validateFunction}
-					size="icon"
-					title="Validate"
-				>
-					<ShieldCheck />
-					<span className="hidden xl:inline">Validate</span>
-				</Button>
+				<ExecutionHint reason={blockedReason}>
+					<Button
+						aria-label="Validate"
+						className="size-7 xl:w-auto xl:px-2"
+						disabled={!!blockedReason}
+						onClick={validateFunction}
+						size="icon"
+						title="Validate"
+					>
+						<ShieldCheck />
+						<span className="hidden xl:inline">Validate</span>
+					</Button>
+				</ExecutionHint>
 			)}
 			{deployFunction && (
-				<Button
-					aria-label="Deploy"
-					className="size-7 xl:w-auto xl:px-2"
-					onClick={deployFunction}
-					size="icon"
-					title="Deploy"
-				>
-					<MonitorPlay />
-					<span className="hidden xl:inline">Deploy</span>
-				</Button>
+				<ExecutionHint reason={blockedReason}>
+					<Button
+						aria-label="Deploy"
+						className="size-7 xl:w-auto xl:px-2"
+						disabled={!!blockedReason}
+						onClick={deployFunction}
+						size="icon"
+						title="Deploy"
+					>
+						<MonitorPlay />
+						<span className="hidden xl:inline">Deploy</span>
+					</Button>
+				</ExecutionHint>
 			)}
 			{simulateFunction && (
-				<Button
-					aria-label="Simulate"
-					className="size-7 xl:w-auto xl:px-2"
-					onClick={simulateFunction}
-					size="icon"
-					title="Simulate"
-				>
-					<Play />
-					<span className="hidden xl:inline">Simulate</span>
-				</Button>
+				<ExecutionHint reason={blockedReason}>
+					<Button
+						aria-label="Simulate"
+						className="size-7 xl:w-auto xl:px-2"
+						disabled={!!blockedReason}
+						onClick={simulateFunction}
+						size="icon"
+						title="Simulate"
+					>
+						<Play />
+						<span className="hidden xl:inline">Simulate</span>
+					</Button>
+				</ExecutionHint>
 			)}
 			{saveFunction && (
 				<Button
@@ -194,5 +220,27 @@ export function NavActions({
 				</PopoverContent>
 			</Popover>
 		</div>
+	);
+}
+
+function ExecutionHint({
+	reason,
+	children,
+}: {
+	reason: string;
+	children: React.ReactNode;
+}) {
+	if (!reason) return children;
+	return (
+		<TooltipProvider>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<span className="inline-flex" title={reason}>
+						{children}
+					</span>
+				</TooltipTrigger>
+				<TooltipContent className="max-w-xs">{reason}</TooltipContent>
+			</Tooltip>
+		</TooltipProvider>
 	);
 }

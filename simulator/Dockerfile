@@ -86,6 +86,8 @@ CMD ["/opt/devsforge/devsforge-runner", "--lsp-daemon"]
 
 FROM simulator AS development
 RUN go install github.com/air-verse/air@v1.64.5
+COPY simulator/dev-runner.py /usr/local/bin/devsforge-dev-runner
+RUN chmod +x /usr/local/bin/devsforge-dev-runner
 CMD ["air", "-c", ".air.toml", "--", "--daemon"]
 
 FROM simulator AS runner

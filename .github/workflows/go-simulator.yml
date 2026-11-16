@@ -44,6 +44,8 @@ jobs:
               - '.github/workflows/go-simulator.yml'
             runner:
               - '.gitattributes'
+              - 'simulator/dev-runner.py'
+              - 'simulator/tests/**'
               - 'simulator/runner/**'
               - 'simulator/shared/**'
               - 'simulator/Dockerfile'
@@ -198,6 +200,11 @@ jobs:
         run: |
           docker run --rm --init -v ${{ github.workspace }}:/app:ro -w /app \
             devsforge-test-runner:latest python3 -m unittest discover -s simulator/runner/integrations/devsimpy-python/tests -v
+
+      - name: Validate development runner rebuilds shared source changes
+        run: |
+          docker run --rm --init -v ${{ github.workspace }}:/app:ro -w /app \
+            devsforge-test-runner:latest python3 -m unittest discover -s simulator/tests -v
 
 
   test-lsp:
